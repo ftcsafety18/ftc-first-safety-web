@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FTC First Safety Paperless</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-100 font-sans">
+
+    <!-- แถบเมนูด้านบน (Navbar) -->
+    <nav class="bg-emerald-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                    <span class="font-bold text-xl">First Safety Construction</span>
+                </div>
+                <div>
+                    <button onclick="logout()" class="hover:bg-emerald-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- พื้นที่เนื้อหาหลัก -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">ภาพรวมระบบความปลอดภัย</h1>
+        
+        <!-- การ์ดสรุปข้อมูล 3 ใบ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                        <i class="fa-solid fa-clipboard-list text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">ใบอนุญาต (Permit) รอดำเนินการ</p>
+                        <p class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-emerald-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-emerald-100 text-emerald-500 mr-4">
+                        <i class="fa-solid fa-users text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">ผู้รับเหมาในพื้นที่วันนี้</p>
+                        <p class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">สถิติอุบัติเหตุ</p>
+                        <p class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // ฟังก์ชันง่ายๆ สำหรับกดปุ่มออกจากระบบแล้วเด้งกลับไปหน้า Login
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
