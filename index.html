@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เข้าสู่ระบบ | FTC First Safety Paperless</title>
-    <!-- โหลดชุดตกแต่งหน้าตาให้สวยงาม (Tailwind CSS) -->
+    <!-- โหลดชุดตกแต่งหน้าตา (Tailwind CSS) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -52,11 +52,51 @@
                 </div>
             </div>
 
-            <button type="button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
+            <!-- เปลี่ยนปุ่มเป็น type submit เพื่อส่งข้อมูล -->
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
                 เข้าสู่ระบบ
             </button>
         </form>
     </div>
 
+    <!-- สคริปต์เชื่อมต่อกับ Supabase -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+        // ⚠️ พี่ณัฐธัญนำ URL และ Key จาก Supabase มาใส่ในเครื่องหมายคำพูดด้านล่างนี้นะคะ
+        const supabaseUrl = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        const supabaseKey = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // ป้องกันไม่ให้เว็บโหลดหน้าใหม่
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = e.target.querySelector('button');
+            
+            // เปลี่ยนข้อความปุ่มระหว่างรอ
+            btn.innerText = 'กำลังตรวจสอบข้อมูล...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            // ส่งข้อมูลไปถาม Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                alert('เข้าสู่ระบบไม่สำเร็จ: อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+                btn.innerText = 'เข้าสู่ระบบ';
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            } else {
+                alert('ยินดีต้อนรับเข้าสู่ระบบค่ะ!');
+                btn.innerText = 'เข้าสู่ระบบสำเร็จ';
+                // เมื่อเรามีหน้า Dashboard แล้ว จะใส่คำสั่งเปลี่ยนหน้าตรงนี้ค่ะ
+            }
+        });
+    </script>
 </body>
 </html>
