@@ -128,13 +128,13 @@
         </form>
     </div>
 <!-- โหลดไลบรารี Supabase -->
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // 1. ตั้งค่าการเชื่อมต่อ (อัปเดต URL และ Key เรียบร้อยครับ)
+        <script>
+        // 1. ตั้งค่าการเชื่อมต่อ
         const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ⚠️ แก้ไขแล้ว: เปลี่ยนชื่อตัวแปรเป็น supabaseClient เพื่อไม่ให้ชนกับระบบของ Supabase
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 2. จับ Event เมื่อมีการกดส่งฟอร์ม
         document.getElementById('permitForm').addEventListener('submit', async function(e) {
@@ -167,7 +167,7 @@
                     permit_id: document.getElementById('permit_id').value,
                     project_id: document.getElementById('project_id').value || null,
                     vendor_id: document.getElementById('vendor_id').value || null,
-                    risk_level: document.getElementById('risk_level').value, // ดึงค่า Warm_Zone, Hot_Zone, Cloud_Zone
+                    risk_level: document.getElementById('risk_level').value,
                     geo_location: geoLocation,
                     workers_list: workersList,
                     assets_list: assetsList,
@@ -178,8 +178,8 @@
                     status: 'Draft' 
                 };
 
-                // 5. สั่ง Insert ข้อมูลลง Supabase
-                const { data, error } = await supabase
+                // 5. สั่ง Insert ข้อมูลลง Supabase (เรียกใช้ supabaseClient)
+                const { data, error } = await supabaseClient
                     .from('table_permits')
                     .insert([permitData]);
 
