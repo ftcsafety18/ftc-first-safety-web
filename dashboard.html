@@ -77,41 +77,49 @@
     </main>
 
 <script>
- // 1. ตั้งค่ากุญแจเชื่อมต่อ Supabase (ใช้ Publishable Key ที่ถูกต้องแล้ว)
-        const supabaseUrl = 'https://ancwqgaaqliandzdzphg.supabase.co';
-        const supabaseKey = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // ใช้ try...catch คลุมโค้ดทั้งหมด เพื่อดักจับ Error กรณีเบราว์เซอร์บล็อกสคริปต์
+        try {
+            // ด่านที่ 1: เช็กว่าตัวเชื่อมต่อโดนบล็อกหรือไม่ (มักเจอใน Incognito Mode)
+            // ถ้าโดนบล็อก ให้เตะกลับหน้าแรกทันที
+            if (typeof window.supabase === 'undefined') {
+                window.location.replace('index.html');
+            }
 
-        // 2. ฟังก์ชันตรวจสอบสิทธิ์ (Auth Guard)
-        async function checkAuth() {
-            try {
-                // ขอตรวจสอบ Session จากหลังบ้าน
-                const { data, error } = await supabase.auth.getSession();
-                
-                // ถ้ามี Error หรือไม่มี Session (ยังไม่ได้ล็อกอิน) ให้เตะออก
-                if (error || !data.session) {
-                    alert('ไม่อนุญาตให้เข้าถึง! กรุณาเข้าสู่ระบบก่อนค่ะ');
+            // 1. ตั้งค่ากุญแจเชื่อมต่อ Supabase
+            const supabaseUrl = 'https://ancwqgaaqliandzdzphg.supabase.co';
+            const supabaseKey = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // 2. ฟังก์ชันตรวจสอบสิทธิ์ (Auth Guard)
+            async function checkAuth() {
+                try {
+                    const { data, error } = await supabase.auth.getSession();
+                    // ถ้าตรวจไม่พบเซสชัน หรือเกิดข้อผิดพลาด ให้เตะกลับทันที
+                    if (error || !data.session) {
+                        window.location.replace('index.html');
+                    }
+                } catch (err) {
                     window.location.replace('index.html');
                 }
-            } catch (err) {
-                // ดักจับกรณีระบบรวน
-                alert('เซสชันไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่ค่ะ');
-                window.location.replace('index.html');
             }
-        }
 
-        // สั่งให้ตรวจสอบทันทีที่หน้าเว็บโหลด
-        checkAuth();
+            // สั่งให้ตรวจสอบทันที
+            checkAuth();
 
-        // 3. ฟังก์ชันออกจากระบบ
-        async function logout() {
-            try {
-                await supabase.auth.signOut();
-                window.location.replace('index.html');
-            } catch (err) {
-                console.error("Logout Error:", err);
-                window.location.replace('index.html');
-            }
+            // 3. ฟังก์ชันออกจากระบบ
+            // อัปเกรดโดยการผูกคำสั่งเข้ากับหน้าต่างเว็บ (window) โดยตรง เพื่อให้ปุ่มหาฟังก์ชันเจอเสมอ
+            window.logout = async function() {
+                try {
+                    await supabase.auth.signOut();
+                    window.location.replace('index.html');
+                } catch (err) {
+                    window.location.replace('index.html');
+                }
+            };
+
+        } catch (mainError) {
+            // ด่านสุดท้าย: ถ้าโค้ดพังด้วยสาเหตุใดๆ ก็ตาม (เน็ตหลุด, คีย์ผิด, โดนบล็อก) ให้ดีดกลับหน้าแรก
+            window.location.replace('index.html');
         }
     </script>
 </body>
