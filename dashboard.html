@@ -77,31 +77,41 @@
     </main>
 
 <script>
-        // 1. ตั้งค่ากุญแจเชื่อมต่อ Supabase (ใช้ข้อมูลเดียวกับหน้า Login)
+ // 1. ตั้งค่ากุญแจเชื่อมต่อ Supabase (ใช้ Publishable Key ที่ถูกต้องแล้ว)
         const supabaseUrl = 'https://ancwqgaaqliandzdzphg.supabase.co';
-        const supabaseKey = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; // ⚠️ อย่าลืมนำ Key ยาวๆ มาใส่นะคะ
+        const supabaseKey = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // 2. ฟังก์ชันตรวจสอบสิทธิ์ (Auth Guard)
         async function checkAuth() {
-            // ขอตรวจสอบสถานะปัจจุบันจากระบบหลังบ้าน
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            // ถ้าตรวจไม่พบข้อมูลการล็อกอิน
-            if (!session) {
-                // แจ้งเตือนและดีดกลับไปหน้าแรกทันที
-                alert('ไม่อนุญาตให้เข้าถึง! กรุณาเข้าสู่ระบบก่อนค่ะ');
-                window.location.href = 'index.html';
+            try {
+                // ขอตรวจสอบ Session จากหลังบ้าน
+                const { data, error } = await supabase.auth.getSession();
+                
+                // ถ้ามี Error หรือไม่มี Session (ยังไม่ได้ล็อกอิน) ให้เตะออก
+                if (error || !data.session) {
+                    alert('ไม่อนุญาตให้เข้าถึง! กรุณาเข้าสู่ระบบก่อนค่ะ');
+                    window.location.replace('index.html');
+                }
+            } catch (err) {
+                // ดักจับกรณีระบบรวน
+                alert('เซสชันไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่ค่ะ');
+                window.location.replace('index.html');
             }
         }
 
-        // สั่งให้ระบบทำการตรวจสอบทันทีที่หน้าเว็บถูกเปิดขึ้นมา
+        // สั่งให้ตรวจสอบทันทีที่หน้าเว็บโหลด
         checkAuth();
 
-        // 3. อัปเกรดปุ่มออกจากระบบ (Logout) ให้ตัดการเชื่อมต่อจากฐานข้อมูล
+        // 3. ฟังก์ชันออกจากระบบ
         async function logout() {
-            await supabase.auth.signOut(); // แจ้งหลังบ้านว่าขอคืนบัตรคิว/ออกจากระบบ
-            window.location.href = 'index.html'; // ส่งกลับไปหน้าประตู
+            try {
+                await supabase.auth.signOut();
+                window.location.replace('index.html');
+            } catch (err) {
+                console.error("Logout Error:", err);
+                window.location.replace('index.html');
+            }
         }
     </script>
 </body>
