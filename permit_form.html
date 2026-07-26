@@ -6,6 +6,8 @@
     <title>ระบบขออนุญาตเข้าทำงาน - Permit to Work (PTW)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- โหลด Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style> body { font-family: 'Prompt', sans-serif; } </style>
 </head>
 <body class="bg-slate-100 min-h-screen p-6">
@@ -92,11 +94,11 @@
                 <!-- บุคคลหลักที่ทุกงานเสี่ยงสูงต้องมี -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">ผู้ควบคุมงาน (Supervisor) *</label>
+                        <label class="block text-sm font-medium text-gray-700">ผู้ควบคุมงาน (Supervisor)</label>
                         <input type="text" id="supervisor_name" placeholder="ชื่อผู้ควบคุมงานตามกฎหมาย" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 border p-2">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">ผู้อนุญาต (Authorizer) *</label>
+                        <label class="block text-sm font-medium text-gray-700">ผู้อนุญาต (Authorizer)</label>
                         <input type="text" id="authorizer_name" placeholder="ชื่อผู้อนุญาตตามกฎหมาย" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 border p-2">
                     </div>
                 </div>
@@ -108,43 +110,43 @@
                     <div id="risk_2" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานที่เกิดความร้อน (Hot Work)</h4>
                         <label class="block text-sm font-medium text-gray-700 mt-2">ผู้เฝ้าระวังไฟ (Fire Watcher) *</label>
-                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>จัดเตรียมถังดับเพลิงและตรวจสอบรัศมีจัดเก็บเชื้อเพลิงแล้ว</span></label>
+                        <input type="text" id="fire_watcher" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_extinguisher" class="h-5 w-5 text-red-600 rounded"><span>จัดเตรียมถังดับเพลิงและตรวจสอบรัศมีจัดเก็บเชื้อเพลิงแล้ว</span></label>
                     </div>
 
                     <!-- 3. Confined Space -->
                     <div id="risk_3" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานในที่อับอากาศ (Confined Space)</h4>
                         <label class="block text-sm font-medium text-gray-700 mt-2">ผู้ช่วยเหลือ (Attendant) *</label>
-                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span class="font-semibold text-red-700">แนบใบรับรองแพทย์/ใบตรวจสุขภาพ (Fit to Work) ไม่หมดอายุ</span></label>
-                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ทะเบียนผลการตรวจวัดก๊าซ และเครื่องมือวัดก๊าซที่ผ่านการ Calibrate</span></label>
-                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>มีแผนการกู้ภัยฉุกเฉิน (Rescue Plan) บริเวณหน้างาน</span></label>
+                        <input type="text" id="attendant" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_med_cs" class="h-5 w-5 text-red-600 rounded"><span class="font-semibold text-red-700">แนบใบรับรองแพทย์/ใบตรวจสุขภาพ (Fit to Work) ไม่หมดอายุ</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" id="chk_gas_cs" class="h-5 w-5 text-red-600 rounded"><span>ทะเบียนผลการตรวจวัดก๊าซ และเครื่องมือวัดก๊าซที่ผ่านการ Calibrate</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" id="chk_rescue_cs" class="h-5 w-5 text-red-600 rounded"><span>มีแผนการกู้ภัยฉุกเฉิน (Rescue Plan) บริเวณหน้างาน</span></label>
                     </div>
 
                     <!-- 4. Work at Height -->
                     <div id="risk_4" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานบนที่สูง (Work at Height)</h4>
                         <label class="block text-sm font-medium text-gray-700 mt-2">ผู้ตรวจสอบนั่งร้าน (Scaffold Inspector) *</label>
-                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span class="font-semibold text-red-700">แนบใบรับรองแพทย์/ใบตรวจสุขภาพ (Fit to Work) ไม่หมดอายุ</span></label>
-                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ป้ายตรวจสอบนั่งร้าน (Scaffold Tag) และอุปกรณ์กันตกครบถ้วน</span></label>
+                        <input type="text" id="scaffold_inspector" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_med_wah" class="h-5 w-5 text-red-600 rounded"><span class="font-semibold text-red-700">แนบใบรับรองแพทย์/ใบตรวจสุขภาพ (Fit to Work) ไม่หมดอายุ</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" id="chk_tag_wah" class="h-5 w-5 text-red-600 rounded"><span>ป้ายตรวจสอบนั่งร้าน (Scaffold Tag) และอุปกรณ์กันตกครบถ้วน</span></label>
                     </div>
 
                     <!-- 5. Electrical Work -->
                     <div id="risk_5" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานระบบไฟฟ้า (Electrical Work)</h4>
                         <label class="block text-sm font-medium text-gray-700 mt-2">ช่างไฟฟ้าที่มีหนังสือรับรอง (Licensed Electrician) *</label>
-                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>แผนผังตัดแยกระบบพลังงาน และทะเบียนการทำ Lockout / Tagout</span></label>
+                        <input type="text" id="electrician" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_loto" class="h-5 w-5 text-red-600 rounded"><span>แผนผังตัดแยกระบบพลังงาน และทะเบียนการทำ Lockout / Tagout</span></label>
                     </div>
 
                     <!-- 6. Excavation -->
                     <div id="risk_6" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานขุดเจาะ (Excavation)</h4>
                         <label class="block text-sm font-medium text-gray-700 mt-2">ผู้เชี่ยวชาญโครงสร้าง/ดิน (Soil/Structural Expert) *</label>
-                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>แบบแปลนสาธารณูปโภคใต้ดิน และระบบป้องกันดินพัง (Shoring)</span></label>
+                        <input type="text" id="soil_expert" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_shoring" class="h-5 w-5 text-red-600 rounded"><span>แบบแปลนสาธารณูปโภคใต้ดิน และระบบป้องกันดินพัง (Shoring)</span></label>
                     </div>
 
                     <!-- 7. Lifting / Crane -->
@@ -153,28 +155,28 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">ผู้บังคับปั้นจั่น (Operator) *</label>
-                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                                <input type="text" id="crane_op" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">ผู้ให้สัญญาณ (Signal Person) *</label>
-                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                                <input type="text" id="signal_man" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">ผู้ยึดเกาะวัสดุ (Rigger) *</label>
-                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                                <input type="text" id="rigger" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
                             </div>
                         </div>
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ใบอนุญาต ปจ.1 / ปจ.2 และแผนการยก (Lifting Plan)</span></label>
-                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ใบเซอร์รับรองการฝึกอบรมทีม 4 ผู้ ครบถ้วน</span></label>
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_lift_plan" class="h-5 w-5 text-red-600 rounded"><span>ใบอนุญาต ปจ.1 / ปจ.2 และแผนการยก (Lifting Plan)</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" id="chk_cert" class="h-5 w-5 text-red-600 rounded"><span>ใบเซอร์รับรองการฝึกอบรมทีม 4 ผู้ ครบถ้วน</span></label>
                     </div>
 
                     <!-- 8. Radiography -->
                     <div id="risk_8" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานรังสีถ่ายภาพ (Radiography Work)</h4>
                         <label class="block text-sm font-medium text-gray-700 mt-2">จนท.ความปลอดภัยทางรังสี (RSO) *</label>
-                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
-                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ใบอนุญาตครอบครองเครื่องกำเนิดรังสี</span></label>
-                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>แผนการกั้นพื้นที่ "พื้นที่อันตราย" (Hot Zone) เรียบร้อยแล้ว</span></label>
+                        <input type="text" id="rso_name" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" id="chk_rad_license" class="h-5 w-5 text-red-600 rounded"><span>ใบอนุญาตครอบครองเครื่องกำเนิดรังสี</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" id="chk_hot_zone" class="h-5 w-5 text-red-600 rounded"><span>แผนการกั้นพื้นที่ "พื้นที่อันตราย" (Hot Zone) เรียบร้อยแล้ว</span></label>
                     </div>
                     
                     <!-- ส่วนผูก JSA (แสดงในทุกงานเสี่ยง) -->
@@ -206,6 +208,13 @@
     </div>
 
     <script>
+        // ==========================================
+        // 1. ตั้งค่าการเชื่อมต่อ Supabase (นายณัฐธัญใส่ให้เรียบร้อยแล้วครับ)
+        // ==========================================
+        const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // --- Logic ล็อกเวลาสิ้นสุด ---
         const startInput = document.getElementById('start_datetime');
         const endInput = document.getElementById('end_datetime');
@@ -241,10 +250,96 @@
             }
         });
 
-        // จำลองการ Submit Form
-        document.getElementById('permitForm').addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            alert('✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ!');
+        // ==========================================
+        // 2. Logic บันทึกข้อมูลเข้า Supabase
+        // ==========================================
+        document.getElementById('permitForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // หยุดการรีเฟรชหน้าเว็บตอนกดปุ่ม
+            
+            // ดึงข้อมูลหลักจากฟอร์ม
+            const permitId = document.getElementById('permit_id').value;
+            const requestorName = document.getElementById('requestor_name').value;
+            const requestorPosition = document.getElementById('requestor_position').value;
+            const supervisorName = document.getElementById('supervisor_name').value;
+            const authorizerName = document.getElementById('authorizer_name').value;
+            const workType = document.getElementById('work_type').value;
+
+            // สร้าง JSON สำหรับเก็บรายละเอียดงานเสี่ยงสูง
+            let riskDetailsJSON = {};
+
+            // ตรวจสอบว่าไม่ใช่งานเสี่ยงต่ำ (1 หรือ 9)
+            if (workType !== '1' && workType !== '9') {
+                // ทุกงานเสี่ยงสูงต้องมี JSA
+                riskDetailsJSON.jsa_attached = document.getElementById('link_jsa_check').checked;
+
+                // ดึงข้อมูลตามประเภทงานที่เลือก
+                switch (workType) {
+                    case '2': // Hot Work
+                        riskDetailsJSON.fire_watcher = document.getElementById('fire_watcher').value;
+                        riskDetailsJSON.extinguisher_ready = document.getElementById('chk_extinguisher').checked;
+                        break;
+                    case '3': // Confined Space
+                        riskDetailsJSON.attendant = document.getElementById('attendant').value;
+                        riskDetailsJSON.fit_to_work = document.getElementById('chk_med_cs').checked;
+                        riskDetailsJSON.gas_test = document.getElementById('chk_gas_cs').checked;
+                        riskDetailsJSON.rescue_plan = document.getElementById('chk_rescue_cs').checked;
+                        break;
+                    case '4': // Work at Height
+                        riskDetailsJSON.scaffold_inspector = document.getElementById('scaffold_inspector').value;
+                        riskDetailsJSON.fit_to_work = document.getElementById('chk_med_wah').checked;
+                        riskDetailsJSON.scaffold_tag = document.getElementById('chk_tag_wah').checked;
+                        break;
+                    case '5': // Electrical
+                        riskDetailsJSON.electrician = document.getElementById('electrician').value;
+                        riskDetailsJSON.loto = document.getElementById('chk_loto').checked;
+                        break;
+                    case '6': // Excavation
+                        riskDetailsJSON.soil_expert = document.getElementById('soil_expert').value;
+                        riskDetailsJSON.shoring = document.getElementById('chk_shoring').checked;
+                        break;
+                    case '7': // Lifting
+                        riskDetailsJSON.crane_op = document.getElementById('crane_op').value;
+                        riskDetailsJSON.signal_man = document.getElementById('signal_man').value;
+                        riskDetailsJSON.rigger = document.getElementById('rigger').value;
+                        riskDetailsJSON.lifting_plan = document.getElementById('chk_lift_plan').checked;
+                        riskDetailsJSON.training_cert = document.getElementById('chk_cert').checked;
+                        break;
+                    case '8': // Radiography
+                        riskDetailsJSON.rso_name = document.getElementById('rso_name').value;
+                        riskDetailsJSON.radiation_license = document.getElementById('chk_rad_license').checked;
+                        riskDetailsJSON.hot_zone_prepared = document.getElementById('chk_hot_zone').checked;
+                        break;
+                }
+            }
+
+            // ส่งข้อมูลขึ้น Supabase
+            try {
+                // ใช้ upsert เพื่อให้บันทึกทับข้อมูลเดิมได้ถ้าใช้รหัส Permit ซ้ำตอนทดสอบ
+                const { data, error } = await supabase
+                    .from('table_permits')
+                    .upsert([
+                        {
+                            permit_id: permitId,
+                            requestor_name: requestorName,
+                            requestor_position: requestorPosition,
+                            supervisor_name: supervisorName,
+                            authorizer_name: authorizerName,
+                            high_risk_details: riskDetailsJSON
+                        }
+                    ], { onConflict: 'permit_id' });
+
+                if (error) {
+                    console.error("Supabase Error:", error);
+                    alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                } else {
+                    alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ! ข้อมูลถูกส่งเข้า Supabase เรียบร้อยครับ");
+                    // ถ้าอยากให้เคลียร์ฟอร์มหลังบันทึกเสร็จ เอาเครื่องหมาย // ด้านล่างออกได้ครับ
+                    // document.getElementById('permitForm').reset();
+                }
+            } catch (err) {
+                console.error("System Error:", err);
+                alert("เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง");
+            }
         });
     </script>
 </body>
