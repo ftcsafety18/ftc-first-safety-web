@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | FTC First Safety Paperless</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-100 font-sans">
@@ -72,10 +76,32 @@
         </div>
     </main>
 
-    <script>
-        // ฟังก์ชันง่ายๆ สำหรับกดปุ่มออกจากระบบแล้วเด้งกลับไปหน้า Login
-        function logout() {
-            window.location.href = 'index.html';
+<script>
+        // 1. ตั้งค่ากุญแจเชื่อมต่อ Supabase (ใช้ข้อมูลเดียวกับหน้า Login)
+        const supabaseUrl = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        const supabaseKey = 'ใส่_Publishable_key_ของพี่ณัฐธัญตรงนี้'; // ⚠️ อย่าลืมนำ Key ยาวๆ มาใส่นะคะ
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 2. ฟังก์ชันตรวจสอบสิทธิ์ (Auth Guard)
+        async function checkAuth() {
+            // ขอตรวจสอบสถานะปัจจุบันจากระบบหลังบ้าน
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            // ถ้าตรวจไม่พบข้อมูลการล็อกอิน
+            if (!session) {
+                // แจ้งเตือนและดีดกลับไปหน้าแรกทันที
+                alert('ไม่อนุญาตให้เข้าถึง! กรุณาเข้าสู่ระบบก่อนค่ะ');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // สั่งให้ระบบทำการตรวจสอบทันทีที่หน้าเว็บถูกเปิดขึ้นมา
+        checkAuth();
+
+        // 3. อัปเกรดปุ่มออกจากระบบ (Logout) ให้ตัดการเชื่อมต่อจากฐานข้อมูล
+        async function logout() {
+            await supabase.auth.signOut(); // แจ้งหลังบ้านว่าขอคืนบัตรคิว/ออกจากระบบ
+            window.location.href = 'index.html'; // ส่งกลับไปหน้าประตู
         }
     </script>
 </body>
