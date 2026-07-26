@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบขออนุญาตเข้าทำงาน - Work Permit</title>
+    <title>ระบบขออนุญาตเข้าทำงาน - Permit to Work (PTW)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style> body { font-family: 'Prompt', sans-serif; } </style>
@@ -12,8 +12,8 @@
 
     <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <div class="bg-blue-800 text-white px-6 py-4">
-            <h2 class="text-2xl font-semibold">แบบฟอร์มขออนุญาตเข้าทำงาน (Work Permit)</h2>
-            <p class="text-blue-200 text-sm mt-1">ระบบฐานข้อมูล FTC-Master-DB (ตามมาตรฐานสากล)</p>
+            <h2 class="text-2xl font-semibold">ใบขออนุญาตเข้าทำงาน (Permit to Work - PTW)</h2>
+            <p class="text-blue-200 text-sm mt-1">ระบบจัดการและควบคุมความปลอดภัย FTC-Master-DB</p>
         </div>
 
         <form id="permitForm" class="p-6 space-y-8">
@@ -27,23 +27,12 @@
                         <input type="text" id="permit_id" required placeholder="เช่น WP-202607-001" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">รหัสโครงการ (Project ID)</label>
-                        <input type="text" id="project_id" placeholder="ดึงจาก table_budgets" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">รหัสผู้รับเหมา (Vendor ID)</label>
-                        <input type="text" id="vendor_id" placeholder="ดึงจาก table_vendors" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
-                    </div>
-                </div>
-                <!-- เพิ่มข้อมูลผู้ขออนุญาต -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
                         <label class="block text-sm font-medium text-gray-700">ผู้ขออนุญาต (Requestor Name) *</label>
                         <input type="text" id="requestor_name" required placeholder="ชื่อ-นามสกุล ผู้ขอเปิดงาน" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ตำแหน่ง (Position) *</label>
-                        <input type="text" id="requestor_position" required placeholder="ตำแหน่งของผู้ขออนุญาต" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
+                        <input type="text" id="requestor_position" required placeholder="ตำแหน่งผู้ขออนุญาต" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
                     </div>
                 </div>
             </div>
@@ -54,7 +43,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ประเภทงาน (Type of Work)</label>
-                        <select id="work_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
+                        <select id="work_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white font-medium text-blue-800">
                             <option value="1">1. งานทั่วไป (General / Cold Work) - เสี่ยงต่ำ</option>
                             <option value="2">2. งานที่เกิดความร้อน/ประกายไฟ (Hot Work)</option>
                             <option value="3">3. งานในที่อับอากาศ (Confined Space)</option>
@@ -77,7 +66,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">ระดับความเสี่ยง (Risk Level)</label>
+                        <label class="block text-sm font-medium text-gray-700">ระดับความเสี่ยงพื้นที่ (Risk Level)</label>
                         <select id="risk_level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
                             <option value="Warm_Zone" selected>พื้นที่ควบคุม (Warm Zone)</option>
                             <option value="Hot_Zone">พื้นที่อันตราย (Hot Zone)</option>
@@ -89,21 +78,18 @@
                         <select id="geo_location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
                             <option value='null'>-- โปรดเลือกพื้นที่ปฏิบัติงาน --</option>
                             <option value='{"lat": 12.678, "lng": 101.245, "name": "Zone A"}'>Zone A - อาคารคลังสินค้า</option>
-                            <option value='{"lat": 12.679, "lng": 101.246, "name": "Zone B"}'>Zone B - อาคารโรงผลิตหลัก</option>
-                            <option value='{"lat": 0, "lng": 0, "name": "Other"}'>พื้นที่อื่นๆ</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">* หมายเหตุ: โซนพื้นที่ปฏิบัติงานและพิกัดนี้ จะถูกควบคุมและตั้งค่าโดย Admin ในระบบหลังบ้าน</p>
                     </div>
                 </div>
             </div>
 
-            <!-- ส่วนเสริมสำหรับงานเสี่ยง 8 ประเภท (ซ่อนเป็นค่าเริ่มต้น) -->
-            <div id="high_risk_section" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-6">
-                <h3 class="text-lg font-medium text-orange-900 border-b border-orange-200 pb-2 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    ข้อกำหนดสำหรับงานที่มีความเสี่ยงสูง (High-Risk Requirements)
+            <!-- หมวดบังคับ: งานที่มีความเสี่ยงสูง (แสดงเมื่อเลือกข้อ 2-8) -->
+            <div id="high_risk_section" class="hidden bg-orange-50 border border-orange-300 rounded-lg p-6 shadow-inner">
+                <h3 class="text-lg font-semibold text-orange-900 border-b border-orange-200 pb-2 mb-4">
+                    ⚠️ ข้อกำหนดเฉพาะสำหรับงานเสี่ยงสูง (High-Risk Requirements)
                 </h3>
                 
+                <!-- บุคคลหลักที่ทุกงานเสี่ยงสูงต้องมี -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ผู้ควบคุมงาน (Supervisor) *</label>
@@ -115,164 +101,150 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded border border-orange-100 space-y-4">
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input id="link_jsa_check" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                <!-- ส่วนไดนามิก (สลับหน้ากากตามประเภทงาน) -->
+                <div id="dynamic_risk_content" class="bg-white p-5 rounded-md border border-orange-200 mt-4 space-y-4">
+                    
+                    <!-- 2. Hot Work -->
+                    <div id="risk_2" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานที่เกิดความร้อน (Hot Work)</h4>
+                        <label class="block text-sm font-medium text-gray-700 mt-2">ผู้เฝ้าระวังไฟ (Fire Watcher) *</label>
+                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>จัดเตรียมถังดับเพลิงและตรวจสอบรัศมีจัดเก็บเชื้อเพลิงแล้ว</span></label>
+                    </div>
+
+                    <!-- 3. Confined Space -->
+                    <div id="risk_3" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานในที่อับอากาศ (Confined Space)</h4>
+                        <label class="block text-sm font-medium text-gray-700 mt-2">ผู้ช่วยเหลือ (Attendant) *</label>
+                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span class="font-semibold text-red-700">แนบใบรับรองแพทย์/ใบตรวจสุขภาพ (Fit to Work) ไม่หมดอายุ</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ทะเบียนผลการตรวจวัดก๊าซ และเครื่องมือวัดก๊าซที่ผ่านการ Calibrate</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>มีแผนการกู้ภัยฉุกเฉิน (Rescue Plan) บริเวณหน้างาน</span></label>
+                    </div>
+
+                    <!-- 4. Work at Height -->
+                    <div id="risk_4" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานบนที่สูง (Work at Height)</h4>
+                        <label class="block text-sm font-medium text-gray-700 mt-2">ผู้ตรวจสอบนั่งร้าน (Scaffold Inspector) *</label>
+                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span class="font-semibold text-red-700">แนบใบรับรองแพทย์/ใบตรวจสุขภาพ (Fit to Work) ไม่หมดอายุ</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ป้ายตรวจสอบนั่งร้าน (Scaffold Tag) และอุปกรณ์กันตกครบถ้วน</span></label>
+                    </div>
+
+                    <!-- 5. Electrical Work -->
+                    <div id="risk_5" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานระบบไฟฟ้า (Electrical Work)</h4>
+                        <label class="block text-sm font-medium text-gray-700 mt-2">ช่างไฟฟ้าที่มีหนังสือรับรอง (Licensed Electrician) *</label>
+                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>แผนผังตัดแยกระบบพลังงาน และทะเบียนการทำ Lockout / Tagout</span></label>
+                    </div>
+
+                    <!-- 6. Excavation -->
+                    <div id="risk_6" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานขุดเจาะ (Excavation)</h4>
+                        <label class="block text-sm font-medium text-gray-700 mt-2">ผู้เชี่ยวชาญโครงสร้าง/ดิน (Soil/Structural Expert) *</label>
+                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>แบบแปลนสาธารณูปโภคใต้ดิน และระบบป้องกันดินพัง (Shoring)</span></label>
+                    </div>
+
+                    <!-- 7. Lifting / Crane -->
+                    <div id="risk_7" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานยกสิ่งของหนัก/เครน (Lifting Work)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">ผู้บังคับปั้นจั่น (Operator) *</label>
+                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">ผู้ให้สัญญาณ (Signal Person) *</label>
+                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">ผู้ยึดเกาะวัสดุ (Rigger) *</label>
+                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2">
+                            </div>
                         </div>
-                        <div class="ml-3 text-sm">
-                            <label for="link_jsa_check" class="font-medium text-gray-900">แนบ/สร้างฟอร์ม JSA (Job Safety Analysis) *</label>
-                            <p class="text-gray-500">งานที่มีความเสี่ยงสูงบังคับให้ต้องประเมิน JSA (ระบบจะดึงรหัส JSA มาผูกกับ Permit นี้)</p>
-                        </div>
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ใบอนุญาต ปจ.1 / ปจ.2 และแผนการยก (Lifting Plan)</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ใบเซอร์รับรองการฝึกอบรมทีม 4 ผู้ ครบถ้วน</span></label>
+                    </div>
+
+                    <!-- 8. Radiography -->
+                    <div id="risk_8" class="hidden risk-panel">
+                        <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานรังสีถ่ายภาพ (Radiography Work)</h4>
+                        <label class="block text-sm font-medium text-gray-700 mt-2">จนท.ความปลอดภัยทางรังสี (RSO) *</label>
+                        <input type="text" class="mb-3 mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm border p-2">
+                        <label class="flex items-center space-x-3"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>ใบอนุญาตครอบครองเครื่องกำเนิดรังสี</span></label>
+                        <label class="flex items-center space-x-3 mt-2"><input type="checkbox" class="h-5 w-5 text-red-600 rounded"><span>แผนการกั้นพื้นที่ "พื้นที่อันตราย" (Hot Zone) เรียบร้อยแล้ว</span></label>
                     </div>
                     
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input id="gas_test_check" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <label for="gas_test_check" class="font-medium text-gray-900">มีผลการตรวจวัดสภาพอากาศ (Gas Testing) *</label>
-                            <p class="text-gray-500">บังคับใช้สำหรับพื้นที่อับอากาศและพื้นที่เสี่ยงติดไฟ</p>
-                        </div>
+                    <!-- ส่วนผูก JSA (แสดงในทุกงานเสี่ยง) -->
+                    <div class="mt-4 pt-4 border-t border-orange-200">
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="link_jsa_check" class="h-6 w-6 text-orange-600 rounded border-gray-300 focus:ring-orange-500">
+                            <span class="font-bold text-gray-800 text-base">แนบและผูกเอกสารการประเมินความเสี่ยง (JSA) เข้าระบบเรียบร้อยแล้ว *</span>
+                        </label>
                     </div>
+
                 </div>
             </div>
 
-            <!-- ส่วนที่ 3: ผู้ปฏิบัติงานและอุปกรณ์ -->
+            <!-- ส่วนที่ 3: ผู้ปฏิบัติงาน (JSON) -->
             <div>
-                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">3. ผู้ปฏิบัติงานและอุปกรณ์ (Workers & Assets)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-gray-50 p-4 rounded-lg border">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">รายชื่อผู้ปฏิบัติงาน (Workers List - JSON)</label>
-                        <textarea id="workers_list" rows="3" placeholder='[{"id": "FTC-001", "name": "นาย A", "role": "Worker", "trained": true}]' class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 text-sm font-mono"></textarea>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-lg border">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">รายการอุปกรณ์ (Assets List - JSON)</label>
-                        <textarea id="assets_list" rows="3" placeholder='[{"asset_id": "EQ-01", "status": "Ready"}]' class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 text-sm font-mono"></textarea>
-                    </div>
+                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">3. รายชื่อทีมงาน (Workers List)</h3>
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รายชื่อผู้ปฏิบัติงาน (Workers List - JSON) <span class="text-xs font-normal text-gray-500">*ระบบจะตรวจสอบใบแพทย์จากฐานข้อมูลตรงนี้</span></label>
+                    <textarea id="workers_list" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm border p-2 text-sm font-mono"></textarea>
                 </div>
             </div>
 
-            <!-- ส่วนที่ 4: Checklists ความปลอดภัยตามกฎหมาย -->
-            <div>
-                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">4. การตรวจสอบความปลอดภัยพื้นฐาน (General Safety Checklists)</h3>
-                <div class="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
-                    <div class="flex items-center">
-                        <input id="check_jsa" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="check_jsa" class="ml-3 text-sm font-medium text-gray-700">ทีมงานรับทราบความเสี่ยงและมาตรการป้องกันทั้งหมดแล้ว</label>
-                    </div>
-                    <div class="flex items-center">
-                        <input id="check_loto" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="check_loto" class="ml-3 text-sm font-medium text-gray-700">ทำการตัดแยกระบบพลังงาน (Lockout / Tagout) เรียบร้อยแล้ว (หากมี)</label>
-                    </div>
-                    <div class="flex items-center">
-                        <input id="check_ppe" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="check_ppe" class="ml-3 text-sm font-medium text-gray-700">จัดเตรียมอุปกรณ์ป้องกันอันตรายส่วนบุคคล (PPE) ตรงตามประเภทงาน</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ปุ่ม Submit -->
             <div class="flex justify-end pt-4 border-t">
                 <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-md shadow-sm hover:bg-blue-800 transition font-medium text-lg">
-                    ส่งคำขออนุญาตทำงาน (Submit Permit)
+                    บันทึกใบขออนุญาตเข้าทำงาน
                 </button>
             </div>
         </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // --- Logic ล็อกเวลาสิ้นสุด ห้ามก่อนเวลาเริ่ม ---
+        // --- Logic ล็อกเวลาสิ้นสุด ---
         const startInput = document.getElementById('start_datetime');
         const endInput = document.getElementById('end_datetime');
         
         startInput.addEventListener('change', function() {
-            // เซ็ตค่า min ของ end_datetime ให้เท่ากับ start_datetime เป็นอย่างน้อย
             endInput.min = startInput.value;
-            // ถ้าเวลาที่เลือกไปแล้วน้อยกว่าเวลาเริ่มที่เพิ่งเปลี่ยน ให้รีเซ็ตเวลาสิ้นสุด
             if(endInput.value && endInput.value < startInput.value) {
                 endInput.value = startInput.value;
             }
         });
 
-        // --- Logic ซ่อน/แสดง JSA และ ผู้ควบคุมงาน (อิงจากความเสี่ยง 8 ประเภท) ---
+        // --- Logic สลับหน้ากาก Dynamic Risk Requirements ---
         const workTypeSelect = document.getElementById('work_type');
         const highRiskSection = document.getElementById('high_risk_section');
+        const riskPanels = document.querySelectorAll('.risk-panel');
 
         workTypeSelect.addEventListener('change', function() {
-            // ประเภท 1 (ทั่วไป) และ 9 (อื่นๆ) คือเสี่ยงต่ำ
-            if(this.value === '1' || this.value === '9') {
+            const selectedType = this.value;
+            
+            // ปิด Panel ย่อยทั้งหมดก่อน
+            riskPanels.forEach(panel => panel.classList.add('hidden'));
+
+            if(selectedType === '1' || selectedType === '9') {
+                // งานเสี่ยงต่ำ ซ่อนกล่องส้มทั้งหมด
                 highRiskSection.classList.add('hidden');
             } else {
-                // งาน 2-8 เสี่ยงสูง เปิด JSA
+                // งานเสี่ยงสูง แสดงกล่องส้ม และแสดง Panel เฉพาะงานนั้น
                 highRiskSection.classList.remove('hidden');
+                const targetPanel = document.getElementById('risk_' + selectedType);
+                if(targetPanel) {
+                    targetPanel.classList.remove('hidden');
+                }
             }
         });
 
-        // --- การ Submit Form ---
-        document.getElementById('permitForm').addEventListener('submit', async function(e) {
+        // จำลองการ Submit Form
+        document.getElementById('permitForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.innerText = 'กำลังบันทึกข้อมูล...';
-            submitBtn.disabled = true;
-
-            try {
-                // ดึงข้อมูล JSON พื้นที่
-                let geoLocStr = document.getElementById('geo_location').value;
-                let geoLocation = geoLocStr !== 'null' ? JSON.parse(geoLocStr) : null;
-                
-                let workersList = JSON.parse(document.getElementById('workers_list').value || '[]');
-                let assetsList = JSON.parse(document.getElementById('assets_list').value || '[]');
-
-                // ข้อมูลที่จะส่ง (รวมของใหม่)
-                const permitData = {
-                    permit_id: document.getElementById('permit_id').value,
-                    project_id: document.getElementById('project_id').value || null,
-                    vendor_id: document.getElementById('vendor_id').value || null,
-                    
-                    // --- เพิ่มข้อมูลใหม่: ยังไม่ได้สร้างคอลัมน์ในตาราง แต่เตรียมส่งไว้ ---
-                    // requestor_name: document.getElementById('requestor_name').value,
-                    // requestor_position: document.getElementById('requestor_position').value,
-                    // supervisor_name: document.getElementById('supervisor_name').value,
-                    // authorizer_name: document.getElementById('authorizer_name').value,
-                    
-                    work_type: document.getElementById('work_type').options[document.getElementById('work_type').selectedIndex].text,
-                    start_datetime: document.getElementById('start_datetime').value,
-                    end_datetime: document.getElementById('end_datetime').value,
-                    risk_level: document.getElementById('risk_level').value,
-                    geo_location: geoLocation,
-                    workers_list: workersList,
-                    assets_list: assetsList,
-                    
-                    jsa_completed: document.getElementById('check_jsa').checked,
-                    loto_applied: document.getElementById('check_loto').checked,
-                    ppe_checked: document.getElementById('check_ppe').checked,
-                    
-                    status: 'Draft' 
-                };
-
-                const { data, error } = await supabaseClient
-                    .from('table_permits')
-                    .insert([permitData]);
-
-                if (error) throw error;
-
-                alert('✅ บันทึกข้อมูลและมาตรฐานความปลอดภัยสากลสำเร็จแล้วครับ!');
-                document.getElementById('permitForm').reset();
-                highRiskSection.classList.add('hidden'); // ซ่อนกลับไปหลังกดส่ง
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('❌ เกิดข้อผิดพลาด: ' + (error.message || 'ไม่สามารถบันทึกข้อมูลได้'));
-            } finally {
-                submitBtn.innerText = 'ส่งคำขออนุญาตทำงาน (Submit Permit)';
-                submitBtn.disabled = false;
-            }
+            alert('✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ!');
         });
     </script>
 </body>
