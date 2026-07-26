@@ -120,9 +120,9 @@
 
             <!-- ปุ่ม Submit -->
             <div class="flex justify-end pt-4 border-t">
-                <button type="button" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md mr-3 hover:bg-gray-300 transition">
-                    บันทึกฉบับร่าง (Draft)
-                </button>
+                <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-md shadow-sm hover:bg-blue-800 transition font-medium">
+    ส่งคำขออนุญาต (Submit Permit)
+</button>
                 <button type="button" class="bg-blue-700 text-white px-6 py-2 rounded-md shadow-sm hover:bg-blue-800 transition font-medium">
                     ส่งคำขออนุญาต (Submit Permit)
                 </button>
@@ -130,6 +130,83 @@
 
         </form>
     </div>
+<!-- โหลดไลบรารี Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+ <!-- โหลดไลบรารี Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // 1. ตั้งค่าการเชื่อมต่อ (อัปเดต URL และ Key เรียบร้อยครับ)
+        const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 2. จับ Event เมื่อมีการกดส่งฟอร์ม
+        document.getElementById('permitForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // ป้องกันไม่ให้หน้าเว็บรีเฟรช
+
+            // เปลี่ยนข้อความปุ่มระหว่างรอโหลด
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = 'กำลังบันทึกข้อมูล...';
+            submitBtn.disabled = true;
+
+            try {
+                // 3. ดึงข้อมูล JSON จากช่องกรอก และตรวจเช็คความถูกต้อง
+                const workersStr = document.getElementById('workers_list').value || '[]';
+                const assetsStr = document.getElementById('assets_list').value || '[]';
+                let geoLocStr = document.getElementById('geo_location').value || 'null';
+                
+                let workersList, assetsList, geoLocation;
+                try {
+                    workersList = JSON.parse(workersStr);
+                    assetsList = JSON.parse(assetsStr);
+                    geoLocation = JSON.parse(geoLocStr);
+                } catch (parseError) {
+                    alert('⚠️ รูปแบบข้อมูล JSON ไม่ถูกต้องครับ โปรดตรวจสอบช่องพนักงาน อุปกรณ์ หรือพิกัดอีกครั้ง');
+                    throw new Error('Invalid JSON format');
+                }
+
+                // 4. จัดเรียงข้อมูลให้ตรงกับคอลัมน์ใน table_permits
+                const permitData = {
+                    permit_id: document.getElementById('permit_id').value,
+                    project_id: document.getElementById('project_id').value || null,
+                    vendor_id: document.getElementById('vendor_id').value || null,
+                    risk_level: document.getElementById('risk_level').value, // ดึงค่า Warm_Zone, Hot_Zone, Cloud_Zone
+                    geo_location: geoLocation,
+                    workers_list: workersList,
+                    assets_list: assetsList,
+                    way1_scope_cleared: document.getElementById('way1_scope_cleared').checked,
+                    way2_contract_linked: document.getElementById('way2_contract_linked').value || null,
+                    way3_safety_cert_url: document.getElementById('way3_safety_cert_url').value || null,
+                    way4_budget_approved: document.getElementById('way4_budget_approved').checked,
+                    status: 'Draft' 
+                };
+
+                // 5. สั่ง Insert ข้อมูลลง Supabase
+                const { data, error } = await supabase
+                    .from('table_permits')
+                    .insert([permitData]);
+
+                if (error) {
+                    throw error;
+                }
+
+                // แจ้งเตือนเมื่อสำเร็จและล้างข้อมูลในฟอร์ม
+                alert('✅ บันทึกใบขออนุญาตเข้าทำงาน (Work Permit) ลงฐานข้อมูลสำเร็จแล้วครับ!');
+                document.getElementById('permitForm').reset();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ เกิดข้อผิดพลาด: ' + (error.message || 'ไม่สามารถบันทึกข้อมูลได้'));
+            } finally {
+                // คืนสถานะปุ่มกลับมาเหมือนเดิม
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
