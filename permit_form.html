@@ -209,53 +209,77 @@
 
     <script>
         // ==========================================
-        // 1. ตั้งค่าการเชื่อมต่อ Supabase (นายณัฐธัญใส่ให้เรียบร้อยแล้วครับ)
+        // 🚀 ส่วนที่ 1: ระบบควบคุมหน้าจอ (UI Logic)
+        // (เอามาไว้ด้านบนสุด เพื่อให้ทำงานได้ทันที ไม่ต้องรอฐานข้อมูล)
         // ==========================================
-        const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- Logic ล็อกเวลาสิ้นสุด ---
+        // --- 1.1 Logic ล็อกเวลาสิ้นสุด ---
         const startInput = document.getElementById('start_datetime');
         const endInput = document.getElementById('end_datetime');
-        
-        startInput.addEventListener('change', function() {
-            endInput.min = startInput.value;
-            if(endInput.value && endInput.value < startInput.value) {
-                endInput.value = startInput.value;
-            }
-        });
+        if(startInput && endInput) {
+            startInput.addEventListener('change', function() {
+                endInput.min = startInput.value;
+                if(endInput.value && endInput.value < startInput.value) {
+                    endInput.value = startInput.value;
+                }
+            });
+        }
 
-        // --- Logic สลับหน้ากาก Dynamic Risk Requirements ---
+        // --- 1.2 Logic สลับหน้ากาก Dynamic Risk Requirements ---
         const workTypeSelect = document.getElementById('work_type');
         const highRiskSection = document.getElementById('high_risk_section');
         const riskPanels = document.querySelectorAll('.risk-panel');
 
-        workTypeSelect.addEventListener('change', function() {
-            const selectedType = this.value;
-            
-            // ปิด Panel ย่อยทั้งหมดก่อน
-            riskPanels.forEach(panel => panel.classList.add('hidden'));
+        if(workTypeSelect && highRiskSection) {
+            workTypeSelect.addEventListener('change', function() {
+                const selectedType = this.value;
+                
+                // ปิด Panel ย่อยทั้งหมดก่อน
+                riskPanels.forEach(panel => panel.classList.add('hidden'));
 
-            if(selectedType === '1' || selectedType === '9') {
-                // งานเสี่ยงต่ำ ซ่อนกล่องส้มทั้งหมด
-                highRiskSection.classList.add('hidden');
-            } else {
-                // งานเสี่ยงสูง แสดงกล่องส้ม และแสดง Panel เฉพาะงานนั้น
-                highRiskSection.classList.remove('hidden');
-                const targetPanel = document.getElementById('risk_' + selectedType);
-                if(targetPanel) {
-                    targetPanel.classList.remove('hidden');
+                if(selectedType === '1' || selectedType === '9') {
+                    // งานเสี่ยงต่ำ ซ่อนกล่องส้มทั้งหมด
+                    highRiskSection.classList.add('hidden');
+                } else {
+                    // งานเสี่ยงสูง แสดงกล่องส้ม และแสดง Panel เฉพาะงานนั้น
+                    highRiskSection.classList.remove('hidden');
+                    const targetPanel = document.getElementById('risk_' + selectedType);
+                    if(targetPanel) {
+                        targetPanel.classList.remove('hidden');
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // ==========================================
-        // 2. Logic บันทึกข้อมูลเข้า Supabase
+        // 💾 ส่วนที่ 2: ระบบเชื่อมต่อฐานข้อมูล (Supabase Logic)
+        // ==========================================
+        let supabase = null;
+        try {
+            // เช็คว่าระบบโหลด Library สำเร็จหรือไม่ (ป้องกันการโดน Firewall บล็อก)
+            if (typeof window.supabase !== 'undefined') {
+                const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
+                const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.error("โหลด Supabase ไม่สำเร็จ: ระบบอาจถูกบล็อกโดย Firewall");
+            }
+        } catch (error) {
+            console.error("Supabase Init Error:", error);
+        }
+
+        // ==========================================
+        // 📤 ส่วนที่ 3: ระบบบันทึกข้อมูล (Submit)
         // ==========================================
         document.getElementById('permitForm').addEventListener('submit', async function(e) {
             e.preventDefault(); // หยุดการรีเฟรชหน้าเว็บตอนกดปุ่ม
             
+            // ดักจับกรณีฐานข้อมูลไม่พร้อม
+            if (!supabase) {
+                alert("❌ ระบบฐานข้อมูลไม่พร้อมใช้งาน กรุณาตรวจสอบอินเทอร์เน็ตหรือติดต่อ IT ครับ");
+                return;
+            }
+
             // ดึงข้อมูลหลักจากฟอร์ม
             const permitId = document.getElementById('permit_id').value;
             const requestorName = document.getElementById('requestor_name').value;
@@ -274,37 +298,37 @@
 
                 // ดึงข้อมูลตามประเภทงานที่เลือก
                 switch (workType) {
-                    case '2': // Hot Work
+                    case '2': 
                         riskDetailsJSON.fire_watcher = document.getElementById('fire_watcher').value;
                         riskDetailsJSON.extinguisher_ready = document.getElementById('chk_extinguisher').checked;
                         break;
-                    case '3': // Confined Space
+                    case '3': 
                         riskDetailsJSON.attendant = document.getElementById('attendant').value;
                         riskDetailsJSON.fit_to_work = document.getElementById('chk_med_cs').checked;
                         riskDetailsJSON.gas_test = document.getElementById('chk_gas_cs').checked;
                         riskDetailsJSON.rescue_plan = document.getElementById('chk_rescue_cs').checked;
                         break;
-                    case '4': // Work at Height
+                    case '4': 
                         riskDetailsJSON.scaffold_inspector = document.getElementById('scaffold_inspector').value;
                         riskDetailsJSON.fit_to_work = document.getElementById('chk_med_wah').checked;
                         riskDetailsJSON.scaffold_tag = document.getElementById('chk_tag_wah').checked;
                         break;
-                    case '5': // Electrical
+                    case '5': 
                         riskDetailsJSON.electrician = document.getElementById('electrician').value;
                         riskDetailsJSON.loto = document.getElementById('chk_loto').checked;
                         break;
-                    case '6': // Excavation
+                    case '6': 
                         riskDetailsJSON.soil_expert = document.getElementById('soil_expert').value;
                         riskDetailsJSON.shoring = document.getElementById('chk_shoring').checked;
                         break;
-                    case '7': // Lifting
+                    case '7': 
                         riskDetailsJSON.crane_op = document.getElementById('crane_op').value;
                         riskDetailsJSON.signal_man = document.getElementById('signal_man').value;
                         riskDetailsJSON.rigger = document.getElementById('rigger').value;
                         riskDetailsJSON.lifting_plan = document.getElementById('chk_lift_plan').checked;
                         riskDetailsJSON.training_cert = document.getElementById('chk_cert').checked;
                         break;
-                    case '8': // Radiography
+                    case '8': 
                         riskDetailsJSON.rso_name = document.getElementById('rso_name').value;
                         riskDetailsJSON.radiation_license = document.getElementById('chk_rad_license').checked;
                         riskDetailsJSON.hot_zone_prepared = document.getElementById('chk_hot_zone').checked;
@@ -314,7 +338,7 @@
 
             // ส่งข้อมูลขึ้น Supabase
             try {
-                // ใช้ upsert เพื่อให้บันทึกทับข้อมูลเดิมได้ถ้าใช้รหัส Permit ซ้ำตอนทดสอบ
+                // ใช้ upsert เพื่อให้บันทึกทับข้อมูลเดิมได้ถ้าใช้รหัส Permit ซ้ำ
                 const { data, error } = await supabase
                     .from('table_permits')
                     .upsert([
@@ -333,8 +357,6 @@
                     alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
                 } else {
                     alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ! ข้อมูลถูกส่งเข้า Supabase เรียบร้อยครับ");
-                    // ถ้าอยากให้เคลียร์ฟอร์มหลังบันทึกเสร็จ เอาเครื่องหมาย // ด้านล่างออกได้ครับ
-                    // document.getElementById('permitForm').reset();
                 }
             } catch (err) {
                 console.error("System Error:", err);
