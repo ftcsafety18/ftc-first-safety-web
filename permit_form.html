@@ -13,7 +13,7 @@
     <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <div class="bg-blue-800 text-white px-6 py-4">
             <h2 class="text-2xl font-semibold">แบบฟอร์มขออนุญาตเข้าทำงาน (Work Permit)</h2>
-            <p class="text-blue-200 text-sm mt-1">ระบบฐานข้อมูล FTC-Master-DB</p>
+            <p class="text-blue-200 text-sm mt-1">ระบบฐานข้อมูล FTC-Master-DB (ตามมาตรฐานสากล)</p>
         </div>
 
         <form id="permitForm" class="p-6 space-y-8">
@@ -21,7 +21,7 @@
             <!-- ส่วนที่ 1: ข้อมูลหลัก -->
             <div>
                 <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">1. ข้อมูลหลัก (General Information)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">รหัสใบอนุญาต (Permit ID) *</label>
                         <input type="text" id="permit_id" required placeholder="เช่น WP-202607-001" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
@@ -35,56 +35,105 @@
                         <input type="text" id="vendor_id" placeholder="ดึงจาก table_vendors" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
                     </div>
                 </div>
+                <!-- เพิ่มข้อมูลผู้ขออนุญาต -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ผู้ขออนุญาต (Requestor Name) *</label>
+                        <input type="text" id="requestor_name" required placeholder="ชื่อ-นามสกุล ผู้ขอเปิดงาน" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ตำแหน่ง (Position) *</label>
+                        <input type="text" id="requestor_position" required placeholder="ตำแหน่งของผู้ขออนุญาต" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
+                    </div>
+                </div>
             </div>
 
-            <!-- ส่วนที่ 2: รายละเอียดการทำงานและพื้นที่ (อัปเดตกฎหมาย) -->
+            <!-- ส่วนที่ 2: รายละเอียดการทำงานและพื้นที่ -->
             <div>
-                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">2. รายละเอียดการทำงานและพื้นที่ (Work Details & Safety Area)</h3>
+                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">2. รายละเอียดการทำงานและพื้นที่ (Work Details)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                    <!-- Dropdown ประเภทงาน อัปเดตใหม่ 9 หมวด -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ประเภทงาน (Type of Work)</label>
                         <select id="work_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
-                            <option value="General_Cold_Work">1. งานทั่วไป (General / Cold Work)</option>
-                            <option value="Hot_Work">2. งานที่เกิดความร้อน/ประกายไฟ (Hot Work)</option>
-                            <option value="Confined_Space">3. งานในที่อับอากาศ (Confined Space)</option>
-                            <option value="Work_at_Height">4. งานบนที่สูง (Work at Height)</option>
-                            <option value="Electrical_Work">5. งานระบบไฟฟ้า (Electrical Work)</option>
-                            <option value="Excavation_Trenching">6. งานขุดเจาะ (Excavation / Trenching)</option>
-                            <option value="Lifting_Crane">7. งานยกสิ่งของหนัก/เครน (Lifting / Crane Work)</option>
-                            <option value="Radiography">8. งานรังสีถ่ายภาพ (Radiography Work)</option>
-                            <option value="Other">9. งานอื่นๆ (Other Works)</option>
+                            <option value="1">1. งานทั่วไป (General / Cold Work) - เสี่ยงต่ำ</option>
+                            <option value="2">2. งานที่เกิดความร้อน/ประกายไฟ (Hot Work)</option>
+                            <option value="3">3. งานในที่อับอากาศ (Confined Space)</option>
+                            <option value="4">4. งานบนที่สูง (Work at Height)</option>
+                            <option value="5">5. งานระบบไฟฟ้า (Electrical Work)</option>
+                            <option value="6">6. งานขุดเจาะ (Excavation / Trenching)</option>
+                            <option value="7">7. งานยกสิ่งของหนัก/เครน (Lifting / Crane Work)</option>
+                            <option value="8">8. งานรังสีถ่ายภาพ (Radiography Work)</option>
+                            <option value="9">9. งานอื่นๆ (Other Works) - เสี่ยงต่ำ</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">เวลาเริ่มงาน (Start Time)</label>
+                        <label class="block text-sm font-medium text-gray-700">เวลาเริ่มงาน (Start Time) *</label>
                         <input type="datetime-local" id="start_datetime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">เวลาสิ้นสุดงาน (End Time)</label>
+                        <label class="block text-sm font-medium text-gray-700">เวลาสิ้นสุดงาน (End Time) *</label>
                         <input type="datetime-local" id="end_datetime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">ระดับความเสี่ยงของพื้นที่ (Risk Level)</label>
+                        <label class="block text-sm font-medium text-gray-700">ระดับความเสี่ยง (Risk Level)</label>
                         <select id="risk_level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
                             <option value="Warm_Zone" selected>พื้นที่ควบคุม (Warm Zone)</option>
                             <option value="Hot_Zone">พื้นที่อันตราย (Hot Zone)</option>
                             <option value="Cloud_Zone">พื้นที่ปลอดภัย (Cloud Zone)</option>
                         </select>
                     </div>
-                    <!-- Dropdown พิกัดสถานที่ อัปเดตซ่อนค่า JSON -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">พื้นที่ปฏิบัติงาน (Location)</label>
                         <select id="geo_location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
                             <option value='null'>-- โปรดเลือกพื้นที่ปฏิบัติงาน --</option>
                             <option value='{"lat": 12.678, "lng": 101.245, "name": "Zone A"}'>Zone A - อาคารคลังสินค้า</option>
                             <option value='{"lat": 12.679, "lng": 101.246, "name": "Zone B"}'>Zone B - อาคารโรงผลิตหลัก</option>
-                            <option value='{"lat": 12.680, "lng": 101.247, "name": "Zone C"}'>Zone C - ลานถังเก็บสารเคมี</option>
-                            <option value='{"lat": 12.681, "lng": 101.248, "name": "Zone D"}'>Zone D - ระบบบ่อบำบัดน้ำเสีย</option>
-                            <option value='{"lat": 0, "lng": 0, "name": "Other"}'>พื้นที่อื่นๆ (รอการระบุเพิ่มเติม)</option>
+                            <option value='{"lat": 0, "lng": 0, "name": "Other"}'>พื้นที่อื่นๆ</option>
                         </select>
+                        <p class="text-xs text-gray-500 mt-1">* หมายเหตุ: โซนพื้นที่ปฏิบัติงานและพิกัดนี้ จะถูกควบคุมและตั้งค่าโดย Admin ในระบบหลังบ้าน</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ส่วนเสริมสำหรับงานเสี่ยง 8 ประเภท (ซ่อนเป็นค่าเริ่มต้น) -->
+            <div id="high_risk_section" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-orange-900 border-b border-orange-200 pb-2 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    ข้อกำหนดสำหรับงานที่มีความเสี่ยงสูง (High-Risk Requirements)
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ผู้ควบคุมงาน (Supervisor) *</label>
+                        <input type="text" id="supervisor_name" placeholder="ชื่อผู้ควบคุมงานตามกฎหมาย" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 border p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ผู้อนุญาต (Authorizer) *</label>
+                        <input type="text" id="authorizer_name" placeholder="ชื่อผู้อนุญาตตามกฎหมาย" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 border p-2">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded border border-orange-100 space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="link_jsa_check" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="link_jsa_check" class="font-medium text-gray-900">แนบ/สร้างฟอร์ม JSA (Job Safety Analysis) *</label>
+                            <p class="text-gray-500">งานที่มีความเสี่ยงสูงบังคับให้ต้องประเมิน JSA (ระบบจะดึงรหัส JSA มาผูกกับ Permit นี้)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="gas_test_check" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="gas_test_check" class="font-medium text-gray-900">มีผลการตรวจวัดสภาพอากาศ (Gas Testing) *</label>
+                            <p class="text-gray-500">บังคับใช้สำหรับพื้นที่อับอากาศและพื้นที่เสี่ยงติดไฟ</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -95,7 +144,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-gray-50 p-4 rounded-lg border">
                         <label class="block text-sm font-medium text-gray-700 mb-2">รายชื่อผู้ปฏิบัติงาน (Workers List - JSON)</label>
-                        <textarea id="workers_list" rows="3" placeholder='[{"id": "FTC-001", "name": "นาย A", "role": "Supervisor", "trained": true}]' class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 text-sm font-mono"></textarea>
+                        <textarea id="workers_list" rows="3" placeholder='[{"id": "FTC-001", "name": "นาย A", "role": "Worker", "trained": true}]' class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 text-sm font-mono"></textarea>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg border">
                         <label class="block text-sm font-medium text-gray-700 mb-2">รายการอุปกรณ์ (Assets List - JSON)</label>
@@ -106,108 +155,104 @@
 
             <!-- ส่วนที่ 4: Checklists ความปลอดภัยตามกฎหมาย -->
             <div>
-                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">4. การตรวจสอบความปลอดภัย (Safety Compliance Checklists)</h3>
-                
-                <div class="space-y-3 bg-red-50 p-4 rounded-lg border border-red-100 mb-6">
-                    <p class="text-sm font-medium text-red-800 mb-2">ข้อกำหนดตามมาตรฐานความปลอดภัย (Mandatory Checks)</p>
+                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">4. การตรวจสอบความปลอดภัยพื้นฐาน (General Safety Checklists)</h3>
+                <div class="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
                     <div class="flex items-center">
-                        <input id="check_jsa" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500">
-                        <label for="check_jsa" class="ml-3 text-sm font-medium text-gray-700">ผ่านการประเมินความเสี่ยงและมีเอกสาร JSA เรียบร้อยแล้ว</label>
+                        <input id="check_jsa" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="check_jsa" class="ml-3 text-sm font-medium text-gray-700">ทีมงานรับทราบความเสี่ยงและมาตรการป้องกันทั้งหมดแล้ว</label>
                     </div>
                     <div class="flex items-center">
-                        <input id="check_loto" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                        <input id="check_loto" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <label for="check_loto" class="ml-3 text-sm font-medium text-gray-700">ทำการตัดแยกระบบพลังงาน (Lockout / Tagout) เรียบร้อยแล้ว (หากมี)</label>
                     </div>
                     <div class="flex items-center">
-                        <input id="check_ppe" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                        <input id="check_ppe" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <label for="check_ppe" class="ml-3 text-sm font-medium text-gray-700">จัดเตรียมอุปกรณ์ป้องกันอันตรายส่วนบุคคล (PPE) ตรงตามประเภทงาน</label>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <input id="way1_scope_cleared" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="way1_scope_cleared" class="ml-3 text-sm font-medium text-gray-700">Way 1: เคลียร์พื้นที่และขอบเขตงานเรียบร้อย (Scope Cleared)</label>
-                    </div>
-                    <div class="flex items-center">
-                        <input id="way4_budget_approved" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="way4_budget_approved" class="ml-3 text-sm font-medium text-gray-700">Way 4: งบประมาณได้รับการอนุมัติ (Budget Approved)</label>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Way 2: สัญญาที่เกี่ยวข้อง (Contract Linked)</label>
-                            <input type="text" id="way2_contract_linked" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Way 3: ลิงก์ใบรับรอง (Safety Cert URL)</label>
-                            <input type="url" id="way3_safety_cert_url" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
-                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- ปุ่ม Submit -->
             <div class="flex justify-end pt-4 border-t">
-                <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-md shadow-sm hover:bg-blue-800 transition font-medium">
-                    ส่งคำขออนุญาต (Submit Permit)
+                <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-md shadow-sm hover:bg-blue-800 transition font-medium text-lg">
+                    ส่งคำขออนุญาตทำงาน (Submit Permit)
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- โหลดไลบรารี Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // --- Logic ล็อกเวลาสิ้นสุด ห้ามก่อนเวลาเริ่ม ---
+        const startInput = document.getElementById('start_datetime');
+        const endInput = document.getElementById('end_datetime');
+        
+        startInput.addEventListener('change', function() {
+            // เซ็ตค่า min ของ end_datetime ให้เท่ากับ start_datetime เป็นอย่างน้อย
+            endInput.min = startInput.value;
+            // ถ้าเวลาที่เลือกไปแล้วน้อยกว่าเวลาเริ่มที่เพิ่งเปลี่ยน ให้รีเซ็ตเวลาสิ้นสุด
+            if(endInput.value && endInput.value < startInput.value) {
+                endInput.value = startInput.value;
+            }
+        });
+
+        // --- Logic ซ่อน/แสดง JSA และ ผู้ควบคุมงาน (อิงจากความเสี่ยง 8 ประเภท) ---
+        const workTypeSelect = document.getElementById('work_type');
+        const highRiskSection = document.getElementById('high_risk_section');
+
+        workTypeSelect.addEventListener('change', function() {
+            // ประเภท 1 (ทั่วไป) และ 9 (อื่นๆ) คือเสี่ยงต่ำ
+            if(this.value === '1' || this.value === '9') {
+                highRiskSection.classList.add('hidden');
+            } else {
+                // งาน 2-8 เสี่ยงสูง เปิด JSA
+                highRiskSection.classList.remove('hidden');
+            }
+        });
+
+        // --- การ Submit Form ---
         document.getElementById('permitForm').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerText;
             submitBtn.innerText = 'กำลังบันทึกข้อมูล...';
             submitBtn.disabled = true;
 
             try {
-                const workersStr = document.getElementById('workers_list').value || '[]';
-                const assetsStr = document.getElementById('assets_list').value || '[]';
-                let geoLocStr = document.getElementById('geo_location').value || 'null';
+                // ดึงข้อมูล JSON พื้นที่
+                let geoLocStr = document.getElementById('geo_location').value;
+                let geoLocation = geoLocStr !== 'null' ? JSON.parse(geoLocStr) : null;
                 
-                let workersList, assetsList, geoLocation;
-                try {
-                    workersList = JSON.parse(workersStr);
-                    assetsList = JSON.parse(assetsStr);
-                    geoLocation = JSON.parse(geoLocStr);
-                } catch (parseError) {
-                    alert('⚠️ รูปแบบข้อมูล JSON ไม่ถูกต้อง โปรดตรวจสอบอีกครั้ง');
-                    throw new Error('Invalid JSON format');
-                }
+                let workersList = JSON.parse(document.getElementById('workers_list').value || '[]');
+                let assetsList = JSON.parse(document.getElementById('assets_list').value || '[]');
 
+                // ข้อมูลที่จะส่ง (รวมของใหม่)
                 const permitData = {
                     permit_id: document.getElementById('permit_id').value,
                     project_id: document.getElementById('project_id').value || null,
                     vendor_id: document.getElementById('vendor_id').value || null,
                     
-                    // --- ข้อมูลที่อัปเดตใหม่ ---
-                    work_type: document.getElementById('work_type').value,
-                    start_datetime: document.getElementById('start_datetime').value || null,
-                    end_datetime: document.getElementById('end_datetime').value || null,
+                    // --- เพิ่มข้อมูลใหม่: ยังไม่ได้สร้างคอลัมน์ในตาราง แต่เตรียมส่งไว้ ---
+                    // requestor_name: document.getElementById('requestor_name').value,
+                    // requestor_position: document.getElementById('requestor_position').value,
+                    // supervisor_name: document.getElementById('supervisor_name').value,
+                    // authorizer_name: document.getElementById('authorizer_name').value,
+                    
+                    work_type: document.getElementById('work_type').options[document.getElementById('work_type').selectedIndex].text,
+                    start_datetime: document.getElementById('start_datetime').value,
+                    end_datetime: document.getElementById('end_datetime').value,
                     risk_level: document.getElementById('risk_level').value,
                     geo_location: geoLocation,
                     workers_list: workersList,
                     assets_list: assetsList,
                     
-                    // --- Checklists ความปลอดภัยใหม่ ---
                     jsa_completed: document.getElementById('check_jsa').checked,
                     loto_applied: document.getElementById('check_loto').checked,
                     ppe_checked: document.getElementById('check_ppe').checked,
                     
-                    // --- ข้อมูลเดิม ---
-                    way1_scope_cleared: document.getElementById('way1_scope_cleared').checked,
-                    way2_contract_linked: document.getElementById('way2_contract_linked').value || null,
-                    way3_safety_cert_url: document.getElementById('way3_safety_cert_url').value || null,
-                    way4_budget_approved: document.getElementById('way4_budget_approved').checked,
                     status: 'Draft' 
                 };
 
@@ -217,14 +262,15 @@
 
                 if (error) throw error;
 
-                alert('✅ บันทึกใบขออนุญาตเข้าทำงาน (พร้อมมาตรฐานความปลอดภัย) สำเร็จแล้วครับ!');
+                alert('✅ บันทึกข้อมูลและมาตรฐานความปลอดภัยสากลสำเร็จแล้วครับ!');
                 document.getElementById('permitForm').reset();
+                highRiskSection.classList.add('hidden'); // ซ่อนกลับไปหลังกดส่ง
                 
             } catch (error) {
                 console.error('Error:', error);
                 alert('❌ เกิดข้อผิดพลาด: ' + (error.message || 'ไม่สามารถบันทึกข้อมูลได้'));
             } finally {
-                submitBtn.innerText = originalBtnText;
+                submitBtn.innerText = 'ส่งคำขออนุญาตทำงาน (Submit Permit)';
                 submitBtn.disabled = false;
             }
         });
