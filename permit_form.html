@@ -41,14 +41,19 @@
             <div>
                 <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">2. รายละเอียดการทำงานและพื้นที่ (Work Details & Safety Area)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                    <!-- Dropdown ประเภทงาน อัปเดตใหม่ 9 หมวด -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ประเภทงาน (Type of Work)</label>
                         <select id="work_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
-                            <option value="General_Cold_Work">งานทั่วไป (General / Cold Work)</option>
-                            <option value="Hot_Work">งานที่เกิดความร้อน/ประกายไฟ (Hot Work)</option>
-                            <option value="Confined_Space">งานในที่อับอากาศ (Confined Space)</option>
-                            <option value="Work_at_Height">งานบนที่สูง (Work at Height)</option>
-                            <option value="Electrical_Work">งานระบบไฟฟ้า (Electrical Work)</option>
+                            <option value="General_Cold_Work">1. งานทั่วไป (General / Cold Work)</option>
+                            <option value="Hot_Work">2. งานที่เกิดความร้อน/ประกายไฟ (Hot Work)</option>
+                            <option value="Confined_Space">3. งานในที่อับอากาศ (Confined Space)</option>
+                            <option value="Work_at_Height">4. งานบนที่สูง (Work at Height)</option>
+                            <option value="Electrical_Work">5. งานระบบไฟฟ้า (Electrical Work)</option>
+                            <option value="Excavation_Trenching">6. งานขุดเจาะ (Excavation / Trenching)</option>
+                            <option value="Lifting_Crane">7. งานยกสิ่งของหนัก/เครน (Lifting / Crane Work)</option>
+                            <option value="Radiography">8. งานรังสีถ่ายภาพ (Radiography Work)</option>
+                            <option value="Other">9. งานอื่นๆ (Other Works)</option>
                         </select>
                     </div>
                     <div>
@@ -69,9 +74,17 @@
                             <option value="Cloud_Zone">พื้นที่ปลอดภัย (Cloud Zone)</option>
                         </select>
                     </div>
+                    <!-- Dropdown พิกัดสถานที่ อัปเดตซ่อนค่า JSON -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">พิกัดสถานที่ (Geo Location)</label>
-                        <input type="text" id="geo_location" placeholder="เช่น { lat: 13.756, lng: 100.501 }" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2">
+                        <label class="block text-sm font-medium text-gray-700">พื้นที่ปฏิบัติงาน (Location)</label>
+                        <select id="geo_location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 bg-white">
+                            <option value='null'>-- โปรดเลือกพื้นที่ปฏิบัติงาน --</option>
+                            <option value='{"lat": 12.678, "lng": 101.245, "name": "Zone A"}'>Zone A - อาคารคลังสินค้า</option>
+                            <option value='{"lat": 12.679, "lng": 101.246, "name": "Zone B"}'>Zone B - อาคารโรงผลิตหลัก</option>
+                            <option value='{"lat": 12.680, "lng": 101.247, "name": "Zone C"}'>Zone C - ลานถังเก็บสารเคมี</option>
+                            <option value='{"lat": 12.681, "lng": 101.248, "name": "Zone D"}'>Zone D - ระบบบ่อบำบัดน้ำเสีย</option>
+                            <option value='{"lat": 0, "lng": 0, "name": "Other"}'>พื้นที่อื่นๆ (รอการระบุเพิ่มเติม)</option>
+                        </select>
                     </div>
                 </div>
             </div>
