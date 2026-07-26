@@ -6,8 +6,6 @@
     <title>ระบบขออนุญาตเข้าทำงาน - Permit to Work (PTW)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- โหลด Supabase Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style> body { font-family: 'Prompt', sans-serif; } </style>
 </head>
 <body class="bg-slate-100 min-h-screen p-6">
@@ -207,161 +205,143 @@
         </form>
     </div>
 
+    <!-- ========================================== -->
+    <!-- สคริปต์ส่วนที่ 1: ควบคุมหน้าจอ (ทำงานทันทีไม่รอฐานข้อมูล) -->
+    <!-- ========================================== -->
     <script>
-        // ==========================================
-        // 🚀 ส่วนที่ 1: ระบบควบคุมหน้าจอ (UI Logic)
-        // (เอามาไว้ด้านบนสุด เพื่อให้ทำงานได้ทันที ไม่ต้องรอฐานข้อมูล)
-        // ==========================================
+        // 🚨 เช็คสถานะการอัปเดตโค้ด!
+        alert("✅ นายณัฐธัญรายงานตัว! โค้ดเวอร์ชันล่าสุดทำงานแล้วครับพี่ณัฐธัญ! (ถ้าระบบไม่ขึ้นข้อความนี้ แปลว่าเบราว์เซอร์ยังดื้อจำค่าเก่าอยู่ครับ)");
 
-        // --- 1.1 Logic ล็อกเวลาสิ้นสุด ---
-        const startInput = document.getElementById('start_datetime');
-        const endInput = document.getElementById('end_datetime');
-        if(startInput && endInput) {
-            startInput.addEventListener('change', function() {
-                endInput.min = startInput.value;
-                if(endInput.value && endInput.value < startInput.value) {
-                    endInput.value = startInput.value;
-                }
-            });
-        }
-
-        // --- 1.2 Logic สลับหน้ากาก Dynamic Risk Requirements ---
-        const workTypeSelect = document.getElementById('work_type');
-        const highRiskSection = document.getElementById('high_risk_section');
-        const riskPanels = document.querySelectorAll('.risk-panel');
-
-        if(workTypeSelect && highRiskSection) {
-            workTypeSelect.addEventListener('change', function() {
-                const selectedType = this.value;
-                
-                // ปิด Panel ย่อยทั้งหมดก่อน
-                riskPanels.forEach(panel => panel.classList.add('hidden'));
-
-                if(selectedType === '1' || selectedType === '9') {
-                    // งานเสี่ยงต่ำ ซ่อนกล่องส้มทั้งหมด
-                    highRiskSection.classList.add('hidden');
-                } else {
-                    // งานเสี่ยงสูง แสดงกล่องส้ม และแสดง Panel เฉพาะงานนั้น
-                    highRiskSection.classList.remove('hidden');
-                    const targetPanel = document.getElementById('risk_' + selectedType);
-                    if(targetPanel) {
-                        targetPanel.classList.remove('hidden');
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- 1.1 Logic ล็อกเวลาสิ้นสุด ---
+            const startInput = document.getElementById('start_datetime');
+            const endInput = document.getElementById('end_datetime');
+            if(startInput && endInput) {
+                startInput.addEventListener('change', function() {
+                    endInput.min = startInput.value;
+                    if(endInput.value && endInput.value < startInput.value) {
+                        endInput.value = startInput.value;
                     }
-                }
-            });
-        }
+                });
+            }
 
-        // ==========================================
-        // 💾 ส่วนที่ 2: ระบบเชื่อมต่อฐานข้อมูล (Supabase Logic)
-        // ==========================================
-        let supabase = null;
-        try {
-            // เช็คว่าระบบโหลด Library สำเร็จหรือไม่ (ป้องกันการโดน Firewall บล็อก)
-            if (typeof window.supabase !== 'undefined') {
+            // --- 1.2 Logic สลับหน้ากาก Dynamic Risk Requirements ---
+            const workTypeSelect = document.getElementById('work_type');
+            const highRiskSection = document.getElementById('high_risk_section');
+            const riskPanels = document.querySelectorAll('.risk-panel');
+
+            if(workTypeSelect && highRiskSection) {
+                workTypeSelect.addEventListener('change', function() {
+                    const selectedType = this.value;
+                    
+                    // ปิด Panel ย่อยทั้งหมดก่อน
+                    riskPanels.forEach(panel => panel.classList.add('hidden'));
+
+                    if(selectedType === '1' || selectedType === '9') {
+                        highRiskSection.classList.add('hidden');
+                    } else {
+                        highRiskSection.classList.remove('hidden');
+                        const targetPanel = document.getElementById('risk_' + selectedType);
+                        if(targetPanel) {
+                            targetPanel.classList.remove('hidden');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- ========================================== -->
+    <!-- สคริปต์ส่วนที่ 2: โหลด Supabase ไว้ท้ายสุด ป้องกันการบล็อก -->
+    <!-- ========================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script defer>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ระบบบันทึกข้อมูลเข้าฐานข้อมูล
+            document.getElementById('permitForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (typeof window.supabase === 'undefined') {
+                    alert("❌ ระบบฐานข้อมูลถูกบล็อกโดยเครือข่าย กรุณาลองใหม่อีกครั้งครับ");
+                    return;
+                }
+
                 const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
                 const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                console.error("โหลด Supabase ไม่สำเร็จ: ระบบอาจถูกบล็อกโดย Firewall");
-            }
-        } catch (error) {
-            console.error("Supabase Init Error:", error);
-        }
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ==========================================
-        // 📤 ส่วนที่ 3: ระบบบันทึกข้อมูล (Submit)
-        // ==========================================
-        document.getElementById('permitForm').addEventListener('submit', async function(e) {
-            e.preventDefault(); // หยุดการรีเฟรชหน้าเว็บตอนกดปุ่ม
-            
-            // ดักจับกรณีฐานข้อมูลไม่พร้อม
-            if (!supabase) {
-                alert("❌ ระบบฐานข้อมูลไม่พร้อมใช้งาน กรุณาตรวจสอบอินเทอร์เน็ตหรือติดต่อ IT ครับ");
-                return;
-            }
+                const permitId = document.getElementById('permit_id').value;
+                const requestorName = document.getElementById('requestor_name').value;
+                const requestorPosition = document.getElementById('requestor_position').value;
+                const supervisorName = document.getElementById('supervisor_name').value;
+                const authorizerName = document.getElementById('authorizer_name').value;
+                const workType = document.getElementById('work_type').value;
 
-            // ดึงข้อมูลหลักจากฟอร์ม
-            const permitId = document.getElementById('permit_id').value;
-            const requestorName = document.getElementById('requestor_name').value;
-            const requestorPosition = document.getElementById('requestor_position').value;
-            const supervisorName = document.getElementById('supervisor_name').value;
-            const authorizerName = document.getElementById('authorizer_name').value;
-            const workType = document.getElementById('work_type').value;
+                let riskDetailsJSON = {};
 
-            // สร้าง JSON สำหรับเก็บรายละเอียดงานเสี่ยงสูง
-            let riskDetailsJSON = {};
-
-            // ตรวจสอบว่าไม่ใช่งานเสี่ยงต่ำ (1 หรือ 9)
-            if (workType !== '1' && workType !== '9') {
-                // ทุกงานเสี่ยงสูงต้องมี JSA
-                riskDetailsJSON.jsa_attached = document.getElementById('link_jsa_check').checked;
-
-                // ดึงข้อมูลตามประเภทงานที่เลือก
-                switch (workType) {
-                    case '2': 
-                        riskDetailsJSON.fire_watcher = document.getElementById('fire_watcher').value;
-                        riskDetailsJSON.extinguisher_ready = document.getElementById('chk_extinguisher').checked;
-                        break;
-                    case '3': 
-                        riskDetailsJSON.attendant = document.getElementById('attendant').value;
-                        riskDetailsJSON.fit_to_work = document.getElementById('chk_med_cs').checked;
-                        riskDetailsJSON.gas_test = document.getElementById('chk_gas_cs').checked;
-                        riskDetailsJSON.rescue_plan = document.getElementById('chk_rescue_cs').checked;
-                        break;
-                    case '4': 
-                        riskDetailsJSON.scaffold_inspector = document.getElementById('scaffold_inspector').value;
-                        riskDetailsJSON.fit_to_work = document.getElementById('chk_med_wah').checked;
-                        riskDetailsJSON.scaffold_tag = document.getElementById('chk_tag_wah').checked;
-                        break;
-                    case '5': 
-                        riskDetailsJSON.electrician = document.getElementById('electrician').value;
-                        riskDetailsJSON.loto = document.getElementById('chk_loto').checked;
-                        break;
-                    case '6': 
-                        riskDetailsJSON.soil_expert = document.getElementById('soil_expert').value;
-                        riskDetailsJSON.shoring = document.getElementById('chk_shoring').checked;
-                        break;
-                    case '7': 
-                        riskDetailsJSON.crane_op = document.getElementById('crane_op').value;
-                        riskDetailsJSON.signal_man = document.getElementById('signal_man').value;
-                        riskDetailsJSON.rigger = document.getElementById('rigger').value;
-                        riskDetailsJSON.lifting_plan = document.getElementById('chk_lift_plan').checked;
-                        riskDetailsJSON.training_cert = document.getElementById('chk_cert').checked;
-                        break;
-                    case '8': 
-                        riskDetailsJSON.rso_name = document.getElementById('rso_name').value;
-                        riskDetailsJSON.radiation_license = document.getElementById('chk_rad_license').checked;
-                        riskDetailsJSON.hot_zone_prepared = document.getElementById('chk_hot_zone').checked;
-                        break;
+                if (workType !== '1' && workType !== '9') {
+                    riskDetailsJSON.jsa_attached = document.getElementById('link_jsa_check').checked;
+                    switch (workType) {
+                        case '2': 
+                            riskDetailsJSON.fire_watcher = document.getElementById('fire_watcher').value;
+                            riskDetailsJSON.extinguisher_ready = document.getElementById('chk_extinguisher').checked;
+                            break;
+                        case '3': 
+                            riskDetailsJSON.attendant = document.getElementById('attendant').value;
+                            riskDetailsJSON.fit_to_work = document.getElementById('chk_med_cs').checked;
+                            riskDetailsJSON.gas_test = document.getElementById('chk_gas_cs').checked;
+                            riskDetailsJSON.rescue_plan = document.getElementById('chk_rescue_cs').checked;
+                            break;
+                        case '4': 
+                            riskDetailsJSON.scaffold_inspector = document.getElementById('scaffold_inspector').value;
+                            riskDetailsJSON.fit_to_work = document.getElementById('chk_med_wah').checked;
+                            riskDetailsJSON.scaffold_tag = document.getElementById('chk_tag_wah').checked;
+                            break;
+                        case '5': 
+                            riskDetailsJSON.electrician = document.getElementById('electrician').value;
+                            riskDetailsJSON.loto = document.getElementById('chk_loto').checked;
+                            break;
+                        case '6': 
+                            riskDetailsJSON.soil_expert = document.getElementById('soil_expert').value;
+                            riskDetailsJSON.shoring = document.getElementById('chk_shoring').checked;
+                            break;
+                        case '7': 
+                            riskDetailsJSON.crane_op = document.getElementById('crane_op').value;
+                            riskDetailsJSON.signal_man = document.getElementById('signal_man').value;
+                            riskDetailsJSON.rigger = document.getElementById('rigger').value;
+                            riskDetailsJSON.lifting_plan = document.getElementById('chk_lift_plan').checked;
+                            riskDetailsJSON.training_cert = document.getElementById('chk_cert').checked;
+                            break;
+                        case '8': 
+                            riskDetailsJSON.rso_name = document.getElementById('rso_name').value;
+                            riskDetailsJSON.radiation_license = document.getElementById('chk_rad_license').checked;
+                            riskDetailsJSON.hot_zone_prepared = document.getElementById('chk_hot_zone').checked;
+                            break;
+                    }
                 }
-            }
 
-            // ส่งข้อมูลขึ้น Supabase
-            try {
-                // ใช้ upsert เพื่อให้บันทึกทับข้อมูลเดิมได้ถ้าใช้รหัส Permit ซ้ำ
-                const { data, error } = await supabase
-                    .from('table_permits')
-                    .upsert([
-                        {
-                            permit_id: permitId,
-                            requestor_name: requestorName,
-                            requestor_position: requestorPosition,
-                            supervisor_name: supervisorName,
-                            authorizer_name: authorizerName,
-                            high_risk_details: riskDetailsJSON
-                        }
-                    ], { onConflict: 'permit_id' });
+                try {
+                    const { data, error } = await supabase
+                        .from('table_permits')
+                        .upsert([{
+                                permit_id: permitId,
+                                requestor_name: requestorName,
+                                requestor_position: requestorPosition,
+                                supervisor_name: supervisorName,
+                                authorizer_name: authorizerName,
+                                high_risk_details: riskDetailsJSON
+                        }], { onConflict: 'permit_id' });
 
-                if (error) {
-                    console.error("Supabase Error:", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
-                } else {
-                    alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ! ข้อมูลถูกส่งเข้า Supabase เรียบร้อยครับ");
+                    if (error) {
+                        alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                    } else {
+                        alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ!");
+                    }
+                } catch (err) {
+                    alert("เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง");
                 }
-            } catch (err) {
-                console.error("System Error:", err);
-                alert("เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง");
-            }
+            });
         });
     </script>
 </body>
