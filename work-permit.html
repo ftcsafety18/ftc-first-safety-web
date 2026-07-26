@@ -127,13 +127,15 @@
 
         </form>
     </div>
-<!-- โหลดไลบรารี Supabase -->
-        <script>
+   <!-- โหลดไลบรารี Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
         // 1. ตั้งค่าการเชื่อมต่อ
         const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
         
-        // ⚠️ แก้ไขแล้ว: เปลี่ยนชื่อตัวแปรเป็น supabaseClient เพื่อไม่ให้ชนกับระบบของ Supabase
+        // ⚠️ เปลี่ยนชื่อตัวแปรเป็น supabaseClient เพื่อไม่ให้ชนกับระบบของ Supabase
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 2. จับ Event เมื่อมีการกดส่งฟอร์ม
@@ -201,5 +203,11 @@
             }
         });
     </script>
+</body>
+</html> 
+    
+
+
+
 </body>
 </html>
