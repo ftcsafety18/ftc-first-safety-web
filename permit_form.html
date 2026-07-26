@@ -83,13 +83,12 @@
                 </div>
             </div>
 
-            <!-- หมวดบังคับ: งานที่มีความเสี่ยงสูง (แสดงเมื่อเลือกข้อ 2-8) -->
+            <!-- หมวดบังคับ: งานที่มีความเสี่ยงสูง -->
             <div id="high_risk_section" class="hidden bg-orange-50 border border-orange-300 rounded-lg p-6 shadow-inner">
                 <h3 class="text-lg font-semibold text-orange-900 border-b border-orange-200 pb-2 mb-4">
                     ⚠️ ข้อกำหนดเฉพาะสำหรับงานเสี่ยงสูง (High-Risk Requirements)
                 </h3>
                 
-                <!-- บุคคลหลักที่ทุกงานเสี่ยงสูงต้องมี -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ผู้ควบคุมงาน (Supervisor)</label>
@@ -101,7 +100,6 @@
                     </div>
                 </div>
 
-                <!-- ส่วนไดนามิก (สลับหน้ากากตามประเภทงาน) -->
                 <div id="dynamic_risk_content" class="bg-white p-5 rounded-md border border-orange-200 mt-4 space-y-4">
                     
                     <!-- 2. Hot Work -->
@@ -177,14 +175,12 @@
                         <label class="flex items-center space-x-3 mt-2"><input type="checkbox" id="chk_hot_zone" class="h-5 w-5 text-red-600 rounded"><span>แผนการกั้นพื้นที่ "พื้นที่อันตราย" (Hot Zone) เรียบร้อยแล้ว</span></label>
                     </div>
                     
-                    <!-- ส่วนผูก JSA (แสดงในทุกงานเสี่ยง) -->
                     <div class="mt-4 pt-4 border-t border-orange-200">
                         <label class="flex items-center space-x-3">
                             <input type="checkbox" id="link_jsa_check" class="h-6 w-6 text-orange-600 rounded border-gray-300 focus:ring-orange-500">
                             <span class="font-bold text-gray-800 text-base">แนบและผูกเอกสารการประเมินความเสี่ยง (JSA) เข้าระบบเรียบร้อยแล้ว *</span>
                         </label>
                     </div>
-
                 </div>
             </div>
 
@@ -205,19 +201,26 @@
         </form>
     </div>
 
-    <!-- ========================================== -->
-    <!-- สคริปต์ส่วนที่ 1: ควบคุมหน้าจอ (ทำงานทันทีไม่รอฐานข้อมูล) -->
-    <!-- ========================================== -->
+    <!-- สคริปต์ควบคุมหน้าจอและการล็อกเวลา -->
     <script>
-        // 🚨 เช็คสถานะการอัปเดตโค้ด!
-        alert("✅ นายณัฐธัญรายงานตัว! โค้ดเวอร์ชันล่าสุดทำงานแล้วครับพี่ณัฐธัญ! (ถ้าระบบไม่ขึ้นข้อความนี้ แปลว่าเบราว์เซอร์ยังดื้อจำค่าเก่าอยู่ครับ)");
-
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- 1.1 Logic ล็อกเวลาสิ้นสุด ---
+            // ==========================================
+            // 🕒 1. ระบบล็อกเวลา (ป้องกันการเลือกอดีต)
+            // ==========================================
             const startInput = document.getElementById('start_datetime');
             const endInput = document.getElementById('end_datetime');
+            
             if(startInput && endInput) {
+                // คำนวณเวลาปัจจุบันของโซนเวลาท้องถิ่น
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                const localNow = now.toISOString().slice(0, 16); 
+                
+                // ล็อกเวลาเริ่มต้นขั้นต่ำให้เป็น "ปัจจุบัน"
+                startInput.min = localNow;
+                
+                // เช็คว่าถ้าเวลาจบมาก่อนเวลาเริ่ม ให้ปรับเวลาจบขยับตาม
                 startInput.addEventListener('change', function() {
                     endInput.min = startInput.value;
                     if(endInput.value && endInput.value < startInput.value) {
@@ -226,7 +229,9 @@
                 });
             }
 
-            // --- 1.2 Logic สลับหน้ากาก Dynamic Risk Requirements ---
+            // ==========================================
+            // 🎭 2. ระบบสลับหน้ากากงานเสี่ยงสูง
+            // ==========================================
             const workTypeSelect = document.getElementById('work_type');
             const highRiskSection = document.getElementById('high_risk_section');
             const riskPanels = document.querySelectorAll('.risk-panel');
@@ -234,8 +239,6 @@
             if(workTypeSelect && highRiskSection) {
                 workTypeSelect.addEventListener('change', function() {
                     const selectedType = this.value;
-                    
-                    // ปิด Panel ย่อยทั้งหมดก่อน
                     riskPanels.forEach(panel => panel.classList.add('hidden'));
 
                     if(selectedType === '1' || selectedType === '9') {
@@ -252,18 +255,15 @@
         });
     </script>
 
-    <!-- ========================================== -->
-    <!-- สคริปต์ส่วนที่ 2: โหลด Supabase ไว้ท้ายสุด ป้องกันการบล็อก -->
-    <!-- ========================================== -->
+    <!-- โหลด Supabase และสคริปต์ส่งข้อมูล -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script defer>
         document.addEventListener('DOMContentLoaded', function() {
-            // ระบบบันทึกข้อมูลเข้าฐานข้อมูล
             document.getElementById('permitForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 if (typeof window.supabase === 'undefined') {
-                    alert("❌ ระบบฐานข้อมูลถูกบล็อกโดยเครือข่าย กรุณาลองใหม่อีกครั้งครับ");
+                    alert("❌ ระบบฐานข้อมูลไม่พร้อมทำงาน");
                     return;
                 }
 
@@ -271,13 +271,28 @@
                 const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
                 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+                // ดึงข้อมูลพื้นฐานทั้งหมด
                 const permitId = document.getElementById('permit_id').value;
                 const requestorName = document.getElementById('requestor_name').value;
                 const requestorPosition = document.getElementById('requestor_position').value;
-                const supervisorName = document.getElementById('supervisor_name').value;
-                const authorizerName = document.getElementById('authorizer_name').value;
-                const workType = document.getElementById('work_type').value;
+                const startTime = document.getElementById('start_datetime').value;
+                const endTime = document.getElementById('end_datetime').value;
+                const riskLevel = document.getElementById('risk_level').value;
+                
+                // จัดการข้อมูล JSON ของรายชื่อผู้ปฏิบัติงาน
+                let workersListJson = null;
+                const workersStr = document.getElementById('workers_list').value;
+                if(workersStr.trim() !== '') {
+                    try {
+                        workersListJson = JSON.parse(workersStr);
+                    } catch(err) {
+                        alert("⚠️ รูปแบบข้อมูลรายชื่อทีมงาน (JSON) ไม่ถูกต้อง ระบบจะบันทึกเป็นค่าว่างแทนครับ");
+                        workersListJson = [];
+                    }
+                }
 
+                // จัดการข้อมูลหมวดเสี่ยงสูง
+                const workType = document.getElementById('work_type').value;
                 let riskDetailsJSON = {};
 
                 if (workType !== '1' && workType !== '9') {
@@ -321,22 +336,33 @@
                     }
                 }
 
+                // ==========================================
+                // 📤 3. เตรียม Payload ข้อมูล (ส่งไปครบทุกคอลัมน์แล้วครับ!)
+                // ==========================================
+                const payload = {
+                    permit_id: permitId,
+                    requestor_name: requestorName,
+                    requestor_position: requestorPosition,
+                    supervisor_name: document.getElementById('supervisor_name').value,
+                    authorizer_name: document.getElementById('authorizer_name').value,
+                    risk_level: riskLevel,
+                    start_time: startTime,
+                    end_time: endTime,
+                    workers_list: workersListJson,
+                    high_risk_details: riskDetailsJSON
+                };
+
+                // ส่งข้อมูลขึ้น Supabase
                 try {
                     const { data, error } = await supabase
                         .from('table_permits')
-                        .upsert([{
-                                permit_id: permitId,
-                                requestor_name: requestorName,
-                                requestor_position: requestorPosition,
-                                supervisor_name: supervisorName,
-                                authorizer_name: authorizerName,
-                                high_risk_details: riskDetailsJSON
-                        }], { onConflict: 'permit_id' });
+                        .upsert([payload], { onConflict: 'permit_id' });
 
                     if (error) {
+                        console.error(error);
                         alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
                     } else {
-                        alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ!");
+                        alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ! ข้อมูลครบถ้วนแล้วครับ");
                     }
                 } catch (err) {
                     alert("เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง");
