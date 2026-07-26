@@ -357,15 +357,23 @@
 
                 // ส่งข้อมูลขึ้น Supabase
                 try {
+                    // เปลี่ยนจาก .upsert เป็น .insert เพื่อบังคับให้สร้างใหม่เท่านั้น ห้ามเขียนทับ!
                     const { data, error } = await supabase
                         .from('table_permits')
-                        .upsert([payload], { onConflict: 'permit_id' });
+                        .insert([payload]); 
 
                     if (error) {
-                        console.error(error);
-                        alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                        // เช็ค Error Code 23505 คือ Unique Violation (ข้อมูลซ้ำ)
+                        if (error.code === '23505') {
+                            alert("❌ บันทึกไม่สำเร็จ: รหัสใบอนุญาต (Permit ID) '" + permitId + "' มีในระบบแล้ว กรุณาใช้รหัสอื่นครับ!");
+                        } else {
+                            console.error(error);
+                            alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                        }
                     } else {
                         alert("✅ บันทึกข้อมูลใบขออนุญาตเข้าทำงานสำเร็จ! ข้อมูลครบถ้วนแล้วครับ");
+                        // ถ้าอยากให้ระบบล้างข้อมูลในฟอร์มอัตโนมัติหลังบันทึกเสร็จ ให้เอาเครื่องหมาย // บรรทัดล่างออกครับ
+                        // document.getElementById('permitForm').reset();
                     }
                 } catch (err) {
                     alert("เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง");
