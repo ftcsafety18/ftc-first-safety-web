@@ -101,7 +101,6 @@
                 </div>
 
                 <div id="dynamic_risk_content" class="bg-white p-5 rounded-md border border-orange-200 mt-4 space-y-4">
-                    
                     <!-- 2. Hot Work -->
                     <div id="risk_2" class="hidden risk-panel">
                         <h4 class="font-medium text-red-700 mb-2">เอกสารและบุคลากร: งานที่เกิดความร้อน (Hot Work)</h4>
@@ -206,7 +205,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             
             // ==========================================
-            // 🕒 1. ระบบล็อกเวลา (ป้องกันการเลือกอดีต)
+            // 🕒 1. ระบบล็อกเวลาหน้า UI
             // ==========================================
             const startInput = document.getElementById('start_datetime');
             const endInput = document.getElementById('end_datetime');
@@ -217,10 +216,8 @@
                 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
                 const localNow = now.toISOString().slice(0, 16); 
                 
-                // ล็อกเวลาเริ่มต้นขั้นต่ำให้เป็น "ปัจจุบัน"
                 startInput.min = localNow;
                 
-                // เช็คว่าถ้าเวลาจบมาก่อนเวลาเริ่ม ให้ปรับเวลาจบขยับตาม
                 startInput.addEventListener('change', function() {
                     endInput.min = startInput.value;
                     if(endInput.value && endInput.value < startInput.value) {
@@ -262,6 +259,16 @@
             document.getElementById('permitForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
+                // 🚨 ด่านตรวจขั้นเด็ดขาด: เช็คว่าเวลาจบ ต้องไม่น้อยกว่าเวลาเริ่ม
+                const startVal = document.getElementById('start_datetime').value;
+                const endVal = document.getElementById('end_datetime').value;
+                if (startVal && endVal) {
+                    if (new Date(endVal) < new Date(startVal)) {
+                        alert("⚠️ ระบบไม่อนุญาตให้บันทึก: เวลาสิ้นสุดงาน เกิดขึ้นก่อนเวลาเริ่มงานครับ!");
+                        return; // บล็อกการส่งข้อมูลทันที
+                    }
+                }
+
                 if (typeof window.supabase === 'undefined') {
                     alert("❌ ระบบฐานข้อมูลไม่พร้อมทำงาน");
                     return;
@@ -275,8 +282,6 @@
                 const permitId = document.getElementById('permit_id').value;
                 const requestorName = document.getElementById('requestor_name').value;
                 const requestorPosition = document.getElementById('requestor_position').value;
-                const startTime = document.getElementById('start_datetime').value;
-                const endTime = document.getElementById('end_datetime').value;
                 const riskLevel = document.getElementById('risk_level').value;
                 
                 // จัดการข้อมูล JSON ของรายชื่อผู้ปฏิบัติงาน
@@ -336,9 +341,7 @@
                     }
                 }
 
-                // ==========================================
-                // 📤 3. เตรียม Payload ข้อมูล (ส่งไปครบทุกคอลัมน์แล้วครับ!)
-                // ==========================================
+                // เตรียม Payload ข้อมูล 
                 const payload = {
                     permit_id: permitId,
                     requestor_name: requestorName,
@@ -346,8 +349,8 @@
                     supervisor_name: document.getElementById('supervisor_name').value,
                     authorizer_name: document.getElementById('authorizer_name').value,
                     risk_level: riskLevel,
-                    start_time: startTime,
-                    end_time: endTime,
+                    start_time: startVal,
+                    end_time: endVal,
                     workers_list: workersListJson,
                     high_risk_details: riskDetailsJSON
                 };
