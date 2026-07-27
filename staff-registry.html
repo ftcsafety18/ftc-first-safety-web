@@ -18,15 +18,14 @@
         .form-group { flex: 1; min-width: 250px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
         label span { font-weight: 400; color: #718096; font-size: 13px; }
-        input[type="text"], input[type="tel"], select, input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
+        input[type="text"], input[type="tel"], select, input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; transition: 0.3s; }
+        input[type="text"]:focus, input[type="tel"]:focus { border-color: #319795; outline: none; box-shadow: 0 0 0 3px rgba(49, 151, 149, 0.2); }
         
-        /* Dynamic Document Styles */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 6px; position: relative; }
         .btn-remove { position: absolute; top: 10px; right: 10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
         .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; }
         .btn-add:hover { background-color: #e2e8f0; }
         
-        /* Checkbox & Consent Styles */
         .consent-box { display: flex; gap: 10px; background: #ebf8f6; padding: 15px; border-radius: 4px; border-left: 4px solid #319795; margin-bottom: 15px; }
         .pdpa-box { background: #fffaf0; border-left: 4px solid #dd6b20; }
         .consent-box input { margin-top: 4px; transform: scale(1.2); cursor: pointer; }
@@ -46,7 +45,6 @@
 
     <form id="staffRegistryForm" onsubmit="submitForm(event)">
         
-        <!-- Section 1: ข้อมูลส่วนตัว (Personal Info) -->
         <div class="form-section">
             <div class="section-title">1. ข้อมูลส่วนตัว (Personal Info)</div>
             
@@ -70,9 +68,19 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>เลขบัตร ปชช. หรือ พาสปอร์ต <span>/ ID or Passport No.</span> *</label>
-                    <input type="text" id="idNumber" required placeholder="กรอกตัวเลข หรือ ตัวอักษร" pattern="[a-zA-Z0-9]+">
+                    <label>ประเภทเอกสารยืนยันตัวตน <span>/ ID Type</span> *</label>
+                    <select id="idType" required onchange="toggleIdInput()">
+                        <option value="thai_id">บัตรประจำตัวประชาชน (Thai ID)</option>
+                        <option value="passport">พาสปอร์ต (Passport)</option>
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label>เลขบัตร <span>/ ID or Passport No.</span> *</label>
+                    <input type="text" id="idNumber" required placeholder="กรอกเลขบัตร ปชช. 13 หลัก" maxlength="13" oninput="validateIdInput(this)">
+                </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label>สังกัด / บริษัท <span>/ Company or Contractor</span> *</label>
                     <select id="company" required>
@@ -82,13 +90,13 @@
                         <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์มือถือ <span>/ Mobile No.</span> *</label>
+                    <input type="tel" id="mobileNo" required placeholder="08XXXXXXXX" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
             </div>
 
             <div class="form-row">
-                <div class="form-group">
-                    <label>เบอร์โทรศัพท์มือถือ <span>/ Mobile No.</span> *</label>
-                    <input type="tel" id="mobileNo" required placeholder="08X-XXX-XXXX" pattern="[0-9]{9,10}">
-                </div>
                 <div class="form-group">
                     <label>กรุ๊ปเลือด <span>/ Blood Group</span> *</label>
                     <select id="bloodGroup" required>
@@ -103,7 +111,6 @@
             </div>
         </div>
 
-        <!-- Section 2: ข้อมูลผู้ติดต่อฉุกเฉิน (Emergency Contact) -->
         <div class="form-section" style="background-color: #faf5ff;">
             <div class="section-title" style="border-left-color: #805ad5; color: #805ad5;">2. ข้อมูลผู้ติดต่อฉุกเฉิน (Emergency Contact)</div>
             
@@ -127,26 +134,23 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>เบอร์โทรศัพท์ <span>/ Contact No.</span> *</label>
-                    <input type="tel" id="emergencyPhone" required placeholder="08X-XXX-XXXX" pattern="[0-9]{9,10}">
+                    <input type="tel" id="emergencyPhone" required placeholder="08XXXXXXXX" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: ยืนยันตัวตน (Face ID) -->
         <div class="form-section">
             <div class="section-title">3. ภาพถ่ายยืนยันตัวตน (Face ID / Profile Photo)</div>
             <div class="form-group">
-                <label>อัปโหลดรูปถ่ายหน้าตรง <span>/ Upload Profile Photo (สำหรับทำบัตรผ่านดิจิทัล)</span> *</label>
-                <input type="file" id="profilePhoto" accept="image/*" required>
+                <label>อัปโหลดรูปถ่ายหน้าตรง <span>/ Upload Profile Photo</span> *</label>
+                <input type="file" id="profilePhoto" accept="image/*" capture="user" required>
             </div>
         </div>
 
-        <!-- Section 4: เอกสารความปลอดภัย (Dynamic JSONB) -->
         <div class="form-section" style="background: #fffcf5;">
             <div class="section-title" style="border-left-color: #d69e2e; color: #d69e2e;">4. เอกสารความปลอดภัย (Safety Documents)</div>
             <p style="font-size: 13px; color: #718096; margin-top: -10px;">
-                * สำหรับช่างทั่วไป ไม่ต้องอัปโหลดเอกสาร / No document required for general worker.<br>
-                * สำหรับงานเสี่ยง โปรดกดเพิ่มเอกสารด้านล่าง / For high-risk tasks, please add documents below.
+                * สำหรับช่างทั่วไป ไม่ต้องอัปโหลดเอกสาร / No document required for general worker.
             </p>
             
             <div id="dynamicDocsContainer"></div>
@@ -156,24 +160,18 @@
             </button>
         </div>
 
-        <!-- Section 5: การยินยอม (Consents & PDPA) -->
         <div class="form-section" style="border-bottom: none;">
-            
-            <!-- Site Induction Consent -->
             <div class="consent-box">
                 <input type="checkbox" id="inductionCheck" required>
                 <label class="consent-text" for="inductionCheck">
                     ข้าพเจ้ารับทราบและพร้อมเข้ารับการอบรมความปลอดภัยก่อนเข้าทำงาน (Site Safety Induction) ณ พื้นที่โครงการ<br>
-                    <span style="color: #718096; font-size: 13px;">I acknowledge and agree to attend the Site Safety Induction before starting work.</span>
                 </label>
             </div>
 
-            <!-- PDPA Consent -->
             <div class="consent-box pdpa-box">
                 <input type="checkbox" id="pdpaCheck" required>
                 <label class="consent-text" for="pdpaCheck">
-                    <strong>การยินยอมข้อมูลส่วนบุคคล (PDPA Consent):</strong> ข้าพเจ้ายินยอมให้โครงการ FTC เก็บรวบรวม ใช้ และประมวลผลข้อมูลส่วนบุคคลและข้อมูลสุขภาพของข้าพเจ้า (เช่น กรุ๊ปเลือด, ใบรับรองแพทย์) เพื่อวัตถุประสงค์ในการบริหารจัดการด้านความปลอดภัย อาชีวอนามัย และการอนุญาตเข้าพื้นที่ปฏิบัติงานเท่านั้น<br>
-                    <span style="color: #718096; font-size: 13px;">I consent to the collection and processing of my personal and health data for safety, occupational health, and site access control purposes.</span>
+                    <strong>การยินยอมข้อมูลส่วนบุคคล (PDPA Consent):</strong> ข้าพเจ้ายินยอมให้โครงการ FTC เก็บรวบรวม ใช้ และประมวลผลข้อมูลส่วนบุคคลและข้อมูลสุขภาพของข้าพเจ้า เพื่อวัตถุประสงค์ในการบริหารจัดการด้านความปลอดภัย อาชีวอนามัย และการอนุญาตเข้าพื้นที่ปฏิบัติงานเท่านั้น<br>
                 </label>
             </div>
 
@@ -183,9 +181,42 @@
 </div>
 
 <script>
+    function toggleIdInput() {
+        const idType = document.getElementById('idType').value;
+        const idInput = document.getElementById('idNumber');
+        idInput.value = ''; 
+        if (idType === 'thai_id') {
+            idInput.placeholder = 'กรอกเลขบัตร ปชช. 13 หลัก';
+            idInput.setAttribute('maxlength', '13');
+        } else {
+            idInput.placeholder = 'กรอกเลขพาสปอร์ต';
+            idInput.removeAttribute('maxlength');
+        }
+    }
+
+    function validateIdInput(input) {
+        const idType = document.getElementById('idType').value;
+        if (idType === 'thai_id') {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        } else {
+            input.value = input.value.replace(/[^a-zA-Z0-9]/g, '');
+        }
+    }
+
     let docCounter = 0;
 
-    // ฟังก์ชันเพิ่มกล่องเอกสาร (เพิ่มประเภทตามที่คุยกันไว้)
+    function checkOtherDoc(selectElement) {
+        const specifyInput = selectElement.parentElement.querySelector('.doc-other-specify');
+        if (selectElement.value === 'other') {
+            specifyInput.style.display = 'block';
+            specifyInput.required = true;
+        } else {
+            specifyInput.style.display = 'none';
+            specifyInput.required = false;
+            specifyInput.value = '';
+        }
+    }
+
     function addDocument() {
         docCounter++;
         const container = document.getElementById('dynamicDocsContainer');
@@ -195,19 +226,23 @@
                 <div class="form-row">
                     <div class="form-group" style="flex: 100%;">
                         <label>ประเภทเอกสาร <span>/ Document Type</span></label>
-                        <select class="doc-type" required>
+                        <select class="doc-type" required onchange="checkOtherDoc(this)">
                             <option value="">-- เลือกประเภท / Select --</option>
+                            <!-- หมวดหมู่เอกสารแรงงานต่างชาติ -->
+                            <option value="work_permit">ใบอนุญาตทำงาน (Work Permit)</option>
+                            <option value="passport_visa">สำเนาพาสปอร์ตพร้อมวีซ่า (Passport & Visa)</option>
+                            
+                            <!-- หมวดหมู่เอกสารความปลอดภัย -->
                             <option value="fit_to_work">ใบรับรองแพทย์ (Fit to Work)</option>
                             <option value="working_at_height">ใบผ่านการอบรมการทำงานบนที่สูง</option>
                             <option value="confined_space">ใบผ่านการอบรมที่อับอากาศ (4 ผู้)</option>
                             <option value="hot_work_welding">ใบรับรองช่างเชื่อม (Hot Work)</option>
-                            <option value="electrical_safety">ใบผ่านการอบรมความปลอดภัยไฟฟ้า</option>
-                            <option value="chemical_hazard">ใบผ่านการอบรมการใช้สารเคมีอันตราย</option>
                             <option value="crane_operator">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
                             <option value="heavy_machinery">ใบอนุญาตขับขี่เครื่องจักรกลหนัก</option>
-                            <option value="scaffolding">ใบรับรองการติดตั้ง/ตรวจสอบนั่งร้าน</option>
                             <option value="safety_officer">ใบรับรอง จป. (Safety Officer)</option>
+                            <option value="other">อื่นๆ (โปรดระบุ) / Other (Specify)</option>
                         </select>
+                        <input type="text" class="doc-other-specify" placeholder="โปรดระบุชื่อเอกสาร..." style="display:none; margin-top: 10px;">
                     </div>
                 </div>
                 <div class="form-row">
@@ -225,58 +260,39 @@
         container.insertAdjacentHTML('beforeend', docHtml);
     }
 
-    // ฟังก์ชันลบกล่องเอกสาร
     function removeDocument(id) {
         const docItem = document.getElementById(id);
         if(docItem) docItem.remove();
     }
 
-    // ฟังก์ชันรวบรวมข้อมูลเมื่อกด Submit
     function submitForm(event) {
         event.preventDefault(); 
         
-        // 1. เก็บข้อมูลทั่วไป, ข้อมูลติดต่อ และการยินยอม
         const payload = {
             personalInfo: {
-                fullName: document.getElementById('fullName').value,
-                nationality: document.getElementById('nationality').value,
+                idType: document.getElementById('idType').value,
                 idNumber: document.getElementById('idNumber').value,
-                company: document.getElementById('company').value,
-                mobileNo: document.getElementById('mobileNo').value,
-                bloodGroup: document.getElementById('bloodGroup').value
+                mobileNo: document.getElementById('mobileNo').value
             },
-            emergencyContact: {
-                name: document.getElementById('emergencyName').value,
-                relation: document.getElementById('emergencyRelation').value,
-                phone: document.getElementById('emergencyPhone').value
-            },
-            consents: {
-                siteInductionAgreed: document.getElementById('inductionCheck').checked,
-                pdpaAgreed: document.getElementById('pdpaCheck').checked
-            },
-            status: "Pending", // ส่งเข้าฐานข้อมูลด้วยสถานะรอตรวจสอบ
-            safetyDocuments: [] // รอรับ JSON Array ของเอกสาร
+            safetyDocuments: [] 
         };
 
-        // 2. เก็บข้อมูลเอกสาร
         const docItems = document.querySelectorAll('.doc-item');
         docItems.forEach(item => {
-            const type = item.querySelector('.doc-type').value;
-            const expiry = item.querySelector('.doc-expiry').value;
-            const fileInput = item.querySelector('.doc-file');
-            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์';
+            const selectType = item.querySelector('.doc-type').value;
+            const actualType = selectType === 'other' ? item.querySelector('.doc-other-specify').value : selectType;
+            const fileName = item.querySelector('.doc-file').files[0]?.name || '';
 
-            if(type) {
+            if(selectType) {
                 payload.safetyDocuments.push({
-                    document_type: type,
-                    expiry_date: expiry,
+                    document_type: actualType,
                     file_name: fileName
                 });
             }
         });
 
-        console.log("Supabase Payload (ข้อมูลพร้อมส่งเข้า DB):", payload);
-        alert("บันทึกข้อมูลเรียบร้อยแล้ว!\n\nข้อมูลของท่านอยู่ในสถานะ 'รอตรวจสอบ (Pending)' โดย จป.\n(สามารถดู Payload Data ได้ที่ Console)");
+        console.log("Supabase Payload (ข้อมูลพร้อมส่ง):", payload);
+        alert("ตรวจสอบความถูกต้องผ่าน!\n\n(ลองกด F12 ดู Console เพื่อดู Payload ที่แพ็กคำว่า 'อื่นๆ' ลง JSON แล้วได้เลยครับ)");
     }
 </script>
 
