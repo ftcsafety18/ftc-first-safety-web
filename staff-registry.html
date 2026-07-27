@@ -3,170 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ขึ้นทะเบียนบุคลากรและเอกสารความปลอดภัย</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Prompt', sans-serif; } </style>
+    <title>ระบบขึ้นทะเบียนบุคลากร - FTC Digital Safety</title>
+    <!-- นำเข้าฟอนต์ Sarabun เพื่อความสวยงามอ่านง่าย -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background-color: #2c7a7b; color: white; padding: 20px; }
+        .header h2 { margin: 0; font-size: 22px; }
+        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+        .form-section { padding: 20px; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2c7a7b; margin-bottom: 15px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 250px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        label span { font-weight: 400; color: #718096; font-size: 13px; }
+        input[type="text"], select, input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
+        
+        /* สไตล์กล่องเอกสารแบบ Dynamic */
+        .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 6px; position: relative; }
+        .btn-remove { position: absolute; top: 10px; right: 10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
+        .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; }
+        .btn-add:hover { background-color: #e2e8f0; }
+        
+        /* สไตล์ Checkbox อบรม */
+        .induction-box { display: flex; gap: 10px; background: #ebf8f6; padding: 15px; border-radius: 4px; border-left: 4px solid #319795; margin-bottom: 20px; }
+        .induction-box input { margin-top: 4px; transform: scale(1.2); cursor: pointer; }
+        
+        .btn-submit { background-color: #319795; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; float: right; margin: 20px; transition: 0.3s; }
+        .btn-submit:hover { background-color: #2c7a7b; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen p-6">
+<body>
 
-    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="bg-teal-700 text-white px-6 py-4">
-            <h2 class="text-2xl font-semibold">ระบบขึ้นทะเบียนบุคลากร และเอกสารความปลอดภัย</h2>
-            <p class="text-teal-200 text-sm mt-1">FTC Digital Safety Transformation</p>
-        </div>
-
-        <form id="staffForm" class="p-6 space-y-8">
-            
-            <!-- ส่วนที่ 1: ข้อมูลบุคคล -->
-            <div>
-                <h3 class="text-lg font-medium text-gray-900 border-b pb-2 mb-4">1. ข้อมูลส่วนตัว (Personal Info)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">รหัสพนักงาน / เลขบัตร ปชช. *</label>
-                        <!-- นายณัฐธัญแก้ไขเพิ่มตัวกรองตัวเลข 13 หลักตรงนี้ครับ -->
-                        <input type="text" id="id_card" required maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="กรอกตัวเลขเท่านั้น (สูงสุด 13 หลัก)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2 bg-gray-50 font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล *</label>
-                        <input type="text" id="full_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
-                        <input type="text" id="position" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">สังกัด / บริษัทผู้รับเหมา</label>
-                        <input type="text" id="company" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">
-                    </div>
-                </div>
-            </div>
-
-            <!-- ส่วนที่ 2: เอกสารใบรับรองแพทย์ -->
-            <div class="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                <h3 class="text-lg font-medium text-blue-900 border-b border-blue-300 pb-2 mb-4">2. เอกสารประเมินสุขภาพ (Fit to Work)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">อัปโหลดไฟล์ (PDF / รูปภาพ)</label>
-                        <input type="file" id="fit_to_work_file" accept=".pdf, image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">วันหมดอายุใบรับรองแพทย์</label>
-                        <input type="date" id="fit_to_work_expiry" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">
-                    </div>
-                </div>
-            </div>
-
-            <!-- ส่วนที่ 3: ใบเซอร์ / อบรมความปลอดภัย -->
-            <div class="bg-orange-50 p-5 rounded-lg border border-orange-200">
-                <h3 class="text-lg font-medium text-orange-900 border-b border-orange-300 pb-2 mb-4">3. เอกสารอบรมความปลอดภัย (Training Certificate)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">อัปโหลดไฟล์ (เช่น ทีม 4 ผู้, ที่อับอากาศ)</label>
-                        <input type="file" id="training_cert_file" accept=".pdf, image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-600 file:text-white hover:file:bg-orange-700">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">วันหมดอายุใบเซอร์</label>
-                        <input type="date" id="training_cert_expiry" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end pt-4 border-t">
-                <button type="submit" id="submitBtn" class="bg-teal-700 text-white px-6 py-2 rounded-md shadow-sm hover:bg-teal-800 transition font-medium text-lg flex items-center">
-                    บันทึกข้อมูลและอัปโหลดเอกสาร
-                </button>
-            </div>
-        </form>
+<div class="container">
+    <div class="header">
+        <h2>ระบบขึ้นทะเบียนบุคลากร และเอกสารความปลอดภัย</h2>
+        <p>FTC Digital Safety Transformation</p>
     </div>
 
-    <!-- โหลด Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+    <form id="staffRegistryForm" onsubmit="submitForm(event)">
+        
+        <!-- Section 1: ข้อมูลส่วนตัว (Bilingual) -->
+        <div class="form-section">
+            <div class="section-title">1. ข้อมูลส่วนตัว (Personal Info)</div>
             
-            const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-            const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ชื่อ-นามสกุล <span>/ Full Name</span> *</label>
+                    <input type="text" id="fullName" required placeholder="นายสมชาย ใจดี">
+                </div>
+                <div class="form-group">
+                    <label>สัญชาติ <span>/ Nationality</span> *</label>
+                    <select id="nationality" required>
+                        <option value="">-- เลือกสัญชาติ / Select --</option>
+                        <option value="Thai">ไทย (Thai)</option>
+                        <option value="Myanmar">เมียนมา (Myanmar)</option>
+                        <option value="Cambodia">กัมพูชา (Cambodia)</option>
+                        <option value="Laos">ลาว (Laos)</option>
+                        <option value="Other">อื่นๆ (Other)</option>
+                    </select>
+                </div>
+            </div>
 
-            document.getElementById('staffForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const submitBtn = document.getElementById('submitBtn');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = 'กำลังบันทึกและอัปโหลด...⏳';
+            <div class="form-row">
+                <!-- ปลดล็อกให้กรอกพาสปอร์ตได้ -->
+                <div class="form-group">
+                    <label>เลขบัตร ปชช. หรือ พาสปอร์ต <span>/ ID or Passport No.</span> *</label>
+                    <input type="text" id="idNumber" required placeholder="กรอกตัวเลข หรือ ตัวอักษร" pattern="[a-zA-Z0-9]+">
+                </div>
+                <!-- ระบบ Master Data สังกัด/บริษัท -->
+                <div class="form-group">
+                    <label>สังกัด / บริษัท <span>/ Company or Contractor</span> *</label>
+                    <select id="company" required>
+                        <option value="">-- เลือกสังกัด / Select --</option>
+                        <option value="FTC">พนักงาน FTC</option>
+                        <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
+                        <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-                try {
-                    const idCard = document.getElementById('id_card').value;
-                    let fitToWorkUrl = null;
-                    let trainingCertUrl = null;
+        <!-- Section 2: ยืนยันตัวตน (Face ID) -->
+        <div class="form-section">
+            <div class="section-title">2. ภาพถ่ายยืนยันตัวตน (Face ID / Profile Photo)</div>
+            <div class="form-group">
+                <label>อัปโหลดรูปถ่ายหน้าตรง <span>/ Upload Profile Photo (สำหรับทำบัตรผ่านดิจิทัล)</span> *</label>
+                <input type="file" id="profilePhoto" accept="image/*" required>
+            </div>
+        </div>
 
-                    // 1. ฟังก์ชันอัปโหลดไฟล์ไปที่ Supabase Storage
-                    async function uploadFile(fileInputId, folderName) {
-                        const fileInput = document.getElementById(fileInputId);
-                        if (fileInput.files.length > 0) {
-                            const file = fileInput.files[0];
-                            const fileExt = file.name.split('.').pop();
-                            const fileName = `${idCard}_${Date.now()}.${fileExt}`;
-                            const filePath = `${folderName}/${fileName}`;
+        <!-- Section 3: เอกสารความปลอดภัยแบบยืดหยุ่น (Dynamic JSONB) -->
+        <div class="form-section" style="background: #fffcf5;">
+            <div class="section-title">3. เอกสารความปลอดภัย (Safety Documents)</div>
+            <p style="font-size: 13px; color: #718096; margin-top: -10px;">
+                * สำหรับช่างทั่วไป ไม่ต้องอัปโหลดเอกสาร / No document required for general worker.<br>
+                * สำหรับงานเสี่ยง โปรดกดเพิ่มเอกสารด้านล่าง / For high-risk tasks, please add documents below.
+            </p>
+            
+            <div id="dynamicDocsContainer">
+                <!-- กล่องเอกสารจะถูกเพิ่มตรงนี้ด้วย JavaScript -->
+            </div>
+            
+            <button type="button" class="btn-add" onclick="addDocument()">
+                + เพิ่มเอกสารความปลอดภัย <span>/ Add Safety Document</span>
+            </button>
+        </div>
 
-                            const { data, error } = await supabase.storage
-                                .from('safety-documents')
-                                .upload(filePath, file);
+        <!-- Section 4: การยินยอมเข้าอบรมหน้างาน -->
+        <div class="form-section">
+            <div class="induction-box">
+                <input type="checkbox" id="inductionCheck" required>
+                <label for="inductionCheck" style="margin-bottom: 0;">
+                    ข้าพเจ้ารับทราบและพร้อมเข้ารับการอบรมความปลอดภัยก่อนเข้าทำงาน (Site Safety Induction) ณ พื้นที่โครงการ<br>
+                    <span>I acknowledge and agree to attend the Site Safety Induction before starting work.</span>
+                </label>
+            </div>
+        </div>
 
-                            if (error) throw error;
+        <div class="clearfix">
+            <button type="submit" class="btn-submit">บันทึกข้อมูล <span>/ Submit Data</span></button>
+        </div>
+    </form>
+</div>
 
-                            const { data: publicUrlData } = supabase.storage
-                                .from('safety-documents')
-                                .getPublicUrl(filePath);
-                            
-                            return publicUrlData.publicUrl;
-                        }
-                        return null;
-                    }
+<script>
+    let docCounter = 0;
 
-                    // อัปโหลดไฟล์ Fit to Work (ถ้ามีแนบมา)
-                    fitToWorkUrl = await uploadFile('fit_to_work_file', 'fit-to-work');
-                    
-                    // อัปโหลดไฟล์ Training Cert (ถ้ามีแนบมา)
-                    trainingCertUrl = await uploadFile('training_cert_file', 'training-certs');
+    // ฟังก์ชันสำหรับกดปุ่มเพิ่มกล่องเอกสาร (Dynamic Documents)
+    function addDocument() {
+        docCounter++;
+        const container = document.getElementById('dynamicDocsContainer');
+        const docHtml = `
+            <div class="doc-item" id="doc-${docCounter}">
+                <button type="button" class="btn-remove" onclick="removeDocument('doc-${docCounter}')">X</button>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 100%;">
+                        <label>ประเภทเอกสาร <span>/ Document Type</span></label>
+                        <select class="doc-type" required>
+                            <option value="">-- เลือกประเภท / Select --</option>
+                            <option value="fit_to_work">ใบรับรองแพทย์ (Fit to Work)</option>
+                            <option value="confined_space">ใบผ่านการอบรมที่อับอากาศ (4 ผู้)</option>
+                            <option value="crane_operator">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
+                            <option value="scaffolding">ใบรับรองการติดตั้ง/ตรวจสอบนั่งร้าน</option>
+                            <option value="hot_work_welding">ใบรับรองช่างเชื่อม (Hot Work)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>อัปโหลดไฟล์ <span>/ Upload File (PDF/JPG)</span></label>
+                        <input type="file" class="doc-file" accept=".pdf,image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label>วันหมดอายุ <span>/ Expiry Date</span></label>
+                        <input type="date" class="doc-expiry" required>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', docHtml);
+    }
 
-// 2. นำข้อมูลและ URL ของไฟล์ ไปบันทึกในตาราง
-const payload = {
-    staff_id: idCard,                 // ส่งรหัส 13 หลักเข้า Primary Key
-    id_card_or_employee_id: idCard,   // ส่งรหัส 13 หลักเข้าช่องสำรอง (กันเหนียวตามโครงสร้างเดิม)
-    full_name: document.getElementById('full_name').value,
-    position: document.getElementById('position').value,
-    company: document.getElementById('company').value,
-    fit_to_work_url: fitToWorkUrl,
-    fit_to_work_expiry: document.getElementById('fit_to_work_expiry').value || null,
-    training_cert_url: trainingCertUrl,
-    training_cert_expiry: document.getElementById('training_cert_expiry').value || null
-};
+    // ฟังก์ชันลบกล่องเอกสาร
+    function removeDocument(id) {
+        const docItem = document.getElementById(id);
+        if(docItem) docItem.remove();
+    }
 
-                    const { data, error } = await supabase
-                        .from('table_internal_staff')
-                        .insert([payload]);
+    // ฟังก์ชันรวบรวมข้อมูลเมื่อกด Submit (แปลงเป็น JSON เพื่อส่งไป Supabase)
+    function submitForm(event) {
+        event.preventDefault(); // ป้องกันเว็บรีเฟรช
+        
+        // 1. เก็บข้อมูลทั่วไป
+        const payload = {
+            fullName: document.getElementById('fullName').value,
+            nationality: document.getElementById('nationality').value,
+            idNumber: document.getElementById('idNumber').value,
+            company: document.getElementById('company').value,
+            siteInductionAgreed: document.getElementById('inductionCheck').checked,
+            other_documents: [] // เตรียมรอรับข้อมูลแบบ JSONB
+        };
 
-                    if (error) {
-                        if (error.code === '23505') {
-                            alert("❌ มีรหัสพนักงาน/บัตร ปชช. นี้ในระบบแล้วครับ");
-                        } else {
-                            throw error;
-                        }
-                    } else {
-                        alert("✅ ขึ้นทะเบียนบุคลากรและอัปโหลดเอกสารสำเร็จ!");
-                        document.getElementById('staffForm').reset();
-                    }
+        // 2. เก็บข้อมูลเอกสารแบบยืดหยุ่น (Loop ตามจำนวนที่ผู้รับเหมากดเพิ่ม)
+        const docItems = document.querySelectorAll('.doc-item');
+        docItems.forEach(item => {
+            const type = item.querySelector('.doc-type').value;
+            const expiry = item.querySelector('.doc-expiry').value;
+            const fileInput = item.querySelector('.doc-file');
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์';
 
-                } catch (err) {
-                    console.error(err);
-                    alert("เกิดข้อผิดพลาด: " + err.message);
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'บันทึกข้อมูลและอัปโหลดเอกสาร';
-                }
-            });
+            if(type) {
+                payload.other_documents.push({
+                    document_type: type,
+                    expiry_date: expiry,
+                    file_name: fileName
+                });
+            }
         });
-    </script>
+
+        // จำลองการส่งข้อมูลไปหลังบ้าน
+        console.log("แพ็กเกจข้อมูลที่พร้อมส่งเข้าฐานข้อมูล (Supabase Payload):", payload);
+        alert("บันทึกข้อมูลจำลองสำเร็จ! \n\nระบบแพ็กเอกสารเข้า JSONB เรียบร้อย (ดูโครงสร้างข้อมูลได้ที่ F12 > Console)");
+    }
+</script>
+
 </body>
 </html>
