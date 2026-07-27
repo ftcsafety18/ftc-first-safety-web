@@ -4,35 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบขึ้นทะเบียนบุคลากร - FTC Digital Safety</title>
-    <!-- นำเข้าฟอนต์ Sarabun เพื่อความสวยงามอ่านง่าย -->
+    <!-- นำเข้าฟอนต์ Sarabun -->
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background-color: #2c7a7b; color: white; padding: 20px; }
-        .header h2 { margin: 0; font-size: 22px; }
-        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
-        .form-section { padding: 20px; border-bottom: 1px solid #e2e8f0; }
-        .section-title { font-size: 18px; font-weight: 600; color: #2c7a7b; margin-bottom: 15px; }
+        .container { max-width: 850px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background-color: #2c7a7b; color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0; font-size: 15px; opacity: 0.9; }
+        .form-section { padding: 25px; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2c7a7b; margin-bottom: 15px; border-left: 4px solid #2c7a7b; padding-left: 10px; }
         .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .form-group { flex: 1; min-width: 250px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
         label span { font-weight: 400; color: #718096; font-size: 13px; }
-        input[type="text"], select, input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
+        input[type="text"], input[type="tel"], select, input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
         
-        /* สไตล์กล่องเอกสารแบบ Dynamic */
+        /* Dynamic Document Styles */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 6px; position: relative; }
         .btn-remove { position: absolute; top: 10px; right: 10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
         .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; }
         .btn-add:hover { background-color: #e2e8f0; }
         
-        /* สไตล์ Checkbox อบรม */
-        .induction-box { display: flex; gap: 10px; background: #ebf8f6; padding: 15px; border-radius: 4px; border-left: 4px solid #319795; margin-bottom: 20px; }
-        .induction-box input { margin-top: 4px; transform: scale(1.2); cursor: pointer; }
+        /* Checkbox & Consent Styles */
+        .consent-box { display: flex; gap: 10px; background: #ebf8f6; padding: 15px; border-radius: 4px; border-left: 4px solid #319795; margin-bottom: 15px; }
+        .pdpa-box { background: #fffaf0; border-left: 4px solid #dd6b20; }
+        .consent-box input { margin-top: 4px; transform: scale(1.2); cursor: pointer; }
+        .consent-text { font-size: 14px; line-height: 1.5; margin-bottom: 0; }
         
-        .btn-submit { background-color: #319795; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; float: right; margin: 20px; transition: 0.3s; }
+        .btn-submit { background-color: #319795; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 10px; }
         .btn-submit:hover { background-color: #2c7a7b; }
-        .clearfix::after { content: ""; clear: both; display: table; }
     </style>
 </head>
 <body>
@@ -45,7 +46,7 @@
 
     <form id="staffRegistryForm" onsubmit="submitForm(event)">
         
-        <!-- Section 1: ข้อมูลส่วนตัว (Bilingual) -->
+        <!-- Section 1: ข้อมูลส่วนตัว (Personal Info) -->
         <div class="form-section">
             <div class="section-title">1. ข้อมูลส่วนตัว (Personal Info)</div>
             
@@ -68,12 +69,10 @@
             </div>
 
             <div class="form-row">
-                <!-- ปลดล็อกให้กรอกพาสปอร์ตได้ -->
                 <div class="form-group">
                     <label>เลขบัตร ปชช. หรือ พาสปอร์ต <span>/ ID or Passport No.</span> *</label>
                     <input type="text" id="idNumber" required placeholder="กรอกตัวเลข หรือ ตัวอักษร" pattern="[a-zA-Z0-9]+">
                 </div>
-                <!-- ระบบ Master Data สังกัด/บริษัท -->
                 <div class="form-group">
                     <label>สังกัด / บริษัท <span>/ Company or Contractor</span> *</label>
                     <select id="company" required>
@@ -84,47 +83,101 @@
                     </select>
                 </div>
             </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์มือถือ <span>/ Mobile No.</span> *</label>
+                    <input type="tel" id="mobileNo" required placeholder="08X-XXX-XXXX" pattern="[0-9]{9,10}">
+                </div>
+                <div class="form-group">
+                    <label>กรุ๊ปเลือด <span>/ Blood Group</span> *</label>
+                    <select id="bloodGroup" required>
+                        <option value="">-- เลือกกรุ๊ปเลือด / Select --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="O">O</option>
+                        <option value="AB">AB</option>
+                        <option value="Unknown">ไม่ทราบ (Unknown)</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <!-- Section 2: ยืนยันตัวตน (Face ID) -->
+        <!-- Section 2: ข้อมูลผู้ติดต่อฉุกเฉิน (Emergency Contact) -->
+        <div class="form-section" style="background-color: #faf5ff;">
+            <div class="section-title" style="border-left-color: #805ad5; color: #805ad5;">2. ข้อมูลผู้ติดต่อฉุกเฉิน (Emergency Contact)</div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ชื่อผู้ติดต่อ <span>/ Contact Name</span> *</label>
+                    <input type="text" id="emergencyName" required placeholder="ชื่อ-นามสกุล ญาติหรือหัวหน้างาน">
+                </div>
+                <div class="form-group">
+                    <label>ความสัมพันธ์ <span>/ Relationship</span> *</label>
+                    <select id="emergencyRelation" required>
+                        <option value="">-- เลือกระบุ / Select --</option>
+                        <option value="Spouse">คู่สมรส (Spouse)</option>
+                        <option value="Parent">บิดา/มารดา (Parent)</option>
+                        <option value="Sibling">พี่น้อง (Sibling)</option>
+                        <option value="Supervisor">หัวหน้างาน/นายจ้าง (Supervisor)</option>
+                        <option value="Other">อื่นๆ (Other)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์ <span>/ Contact No.</span> *</label>
+                    <input type="tel" id="emergencyPhone" required placeholder="08X-XXX-XXXX" pattern="[0-9]{9,10}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: ยืนยันตัวตน (Face ID) -->
         <div class="form-section">
-            <div class="section-title">2. ภาพถ่ายยืนยันตัวตน (Face ID / Profile Photo)</div>
+            <div class="section-title">3. ภาพถ่ายยืนยันตัวตน (Face ID / Profile Photo)</div>
             <div class="form-group">
                 <label>อัปโหลดรูปถ่ายหน้าตรง <span>/ Upload Profile Photo (สำหรับทำบัตรผ่านดิจิทัล)</span> *</label>
                 <input type="file" id="profilePhoto" accept="image/*" required>
             </div>
         </div>
 
-        <!-- Section 3: เอกสารความปลอดภัยแบบยืดหยุ่น (Dynamic JSONB) -->
+        <!-- Section 4: เอกสารความปลอดภัย (Dynamic JSONB) -->
         <div class="form-section" style="background: #fffcf5;">
-            <div class="section-title">3. เอกสารความปลอดภัย (Safety Documents)</div>
+            <div class="section-title" style="border-left-color: #d69e2e; color: #d69e2e;">4. เอกสารความปลอดภัย (Safety Documents)</div>
             <p style="font-size: 13px; color: #718096; margin-top: -10px;">
                 * สำหรับช่างทั่วไป ไม่ต้องอัปโหลดเอกสาร / No document required for general worker.<br>
                 * สำหรับงานเสี่ยง โปรดกดเพิ่มเอกสารด้านล่าง / For high-risk tasks, please add documents below.
             </p>
             
-            <div id="dynamicDocsContainer">
-                <!-- กล่องเอกสารจะถูกเพิ่มตรงนี้ด้วย JavaScript -->
-            </div>
+            <div id="dynamicDocsContainer"></div>
             
             <button type="button" class="btn-add" onclick="addDocument()">
                 + เพิ่มเอกสารความปลอดภัย <span>/ Add Safety Document</span>
             </button>
         </div>
 
-        <!-- Section 4: การยินยอมเข้าอบรมหน้างาน -->
-        <div class="form-section">
-            <div class="induction-box">
+        <!-- Section 5: การยินยอม (Consents & PDPA) -->
+        <div class="form-section" style="border-bottom: none;">
+            
+            <!-- Site Induction Consent -->
+            <div class="consent-box">
                 <input type="checkbox" id="inductionCheck" required>
-                <label for="inductionCheck" style="margin-bottom: 0;">
+                <label class="consent-text" for="inductionCheck">
                     ข้าพเจ้ารับทราบและพร้อมเข้ารับการอบรมความปลอดภัยก่อนเข้าทำงาน (Site Safety Induction) ณ พื้นที่โครงการ<br>
-                    <span>I acknowledge and agree to attend the Site Safety Induction before starting work.</span>
+                    <span style="color: #718096; font-size: 13px;">I acknowledge and agree to attend the Site Safety Induction before starting work.</span>
                 </label>
             </div>
-        </div>
 
-        <div class="clearfix">
-            <button type="submit" class="btn-submit">บันทึกข้อมูล <span>/ Submit Data</span></button>
+            <!-- PDPA Consent -->
+            <div class="consent-box pdpa-box">
+                <input type="checkbox" id="pdpaCheck" required>
+                <label class="consent-text" for="pdpaCheck">
+                    <strong>การยินยอมข้อมูลส่วนบุคคล (PDPA Consent):</strong> ข้าพเจ้ายินยอมให้โครงการ FTC เก็บรวบรวม ใช้ และประมวลผลข้อมูลส่วนบุคคลและข้อมูลสุขภาพของข้าพเจ้า (เช่น กรุ๊ปเลือด, ใบรับรองแพทย์) เพื่อวัตถุประสงค์ในการบริหารจัดการด้านความปลอดภัย อาชีวอนามัย และการอนุญาตเข้าพื้นที่ปฏิบัติงานเท่านั้น<br>
+                    <span style="color: #718096; font-size: 13px;">I consent to the collection and processing of my personal and health data for safety, occupational health, and site access control purposes.</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit">บันทึกข้อมูลและส่งตรวจสอบ <span>/ Submit Data</span></button>
         </div>
     </form>
 </div>
@@ -132,23 +185,28 @@
 <script>
     let docCounter = 0;
 
-    // ฟังก์ชันสำหรับกดปุ่มเพิ่มกล่องเอกสาร (Dynamic Documents)
+    // ฟังก์ชันเพิ่มกล่องเอกสาร (เพิ่มประเภทตามที่คุยกันไว้)
     function addDocument() {
         docCounter++;
         const container = document.getElementById('dynamicDocsContainer');
         const docHtml = `
             <div class="doc-item" id="doc-${docCounter}">
-                <button type="button" class="btn-remove" onclick="removeDocument('doc-${docCounter}')">X</button>
+                <button type="button" class="btn-remove" onclick="removeDocument('doc-${docCounter}')" title="ลบเอกสาร">X</button>
                 <div class="form-row">
                     <div class="form-group" style="flex: 100%;">
                         <label>ประเภทเอกสาร <span>/ Document Type</span></label>
                         <select class="doc-type" required>
                             <option value="">-- เลือกประเภท / Select --</option>
                             <option value="fit_to_work">ใบรับรองแพทย์ (Fit to Work)</option>
+                            <option value="working_at_height">ใบผ่านการอบรมการทำงานบนที่สูง</option>
                             <option value="confined_space">ใบผ่านการอบรมที่อับอากาศ (4 ผู้)</option>
-                            <option value="crane_operator">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
-                            <option value="scaffolding">ใบรับรองการติดตั้ง/ตรวจสอบนั่งร้าน</option>
                             <option value="hot_work_welding">ใบรับรองช่างเชื่อม (Hot Work)</option>
+                            <option value="electrical_safety">ใบผ่านการอบรมความปลอดภัยไฟฟ้า</option>
+                            <option value="chemical_hazard">ใบผ่านการอบรมการใช้สารเคมีอันตราย</option>
+                            <option value="crane_operator">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
+                            <option value="heavy_machinery">ใบอนุญาตขับขี่เครื่องจักรกลหนัก</option>
+                            <option value="scaffolding">ใบรับรองการติดตั้ง/ตรวจสอบนั่งร้าน</option>
+                            <option value="safety_officer">ใบรับรอง จป. (Safety Officer)</option>
                         </select>
                     </div>
                 </div>
@@ -173,21 +231,34 @@
         if(docItem) docItem.remove();
     }
 
-    // ฟังก์ชันรวบรวมข้อมูลเมื่อกด Submit (แปลงเป็น JSON เพื่อส่งไป Supabase)
+    // ฟังก์ชันรวบรวมข้อมูลเมื่อกด Submit
     function submitForm(event) {
-        event.preventDefault(); // ป้องกันเว็บรีเฟรช
+        event.preventDefault(); 
         
-        // 1. เก็บข้อมูลทั่วไป
+        // 1. เก็บข้อมูลทั่วไป, ข้อมูลติดต่อ และการยินยอม
         const payload = {
-            fullName: document.getElementById('fullName').value,
-            nationality: document.getElementById('nationality').value,
-            idNumber: document.getElementById('idNumber').value,
-            company: document.getElementById('company').value,
-            siteInductionAgreed: document.getElementById('inductionCheck').checked,
-            other_documents: [] // เตรียมรอรับข้อมูลแบบ JSONB
+            personalInfo: {
+                fullName: document.getElementById('fullName').value,
+                nationality: document.getElementById('nationality').value,
+                idNumber: document.getElementById('idNumber').value,
+                company: document.getElementById('company').value,
+                mobileNo: document.getElementById('mobileNo').value,
+                bloodGroup: document.getElementById('bloodGroup').value
+            },
+            emergencyContact: {
+                name: document.getElementById('emergencyName').value,
+                relation: document.getElementById('emergencyRelation').value,
+                phone: document.getElementById('emergencyPhone').value
+            },
+            consents: {
+                siteInductionAgreed: document.getElementById('inductionCheck').checked,
+                pdpaAgreed: document.getElementById('pdpaCheck').checked
+            },
+            status: "Pending", // ส่งเข้าฐานข้อมูลด้วยสถานะรอตรวจสอบ
+            safetyDocuments: [] // รอรับ JSON Array ของเอกสาร
         };
 
-        // 2. เก็บข้อมูลเอกสารแบบยืดหยุ่น (Loop ตามจำนวนที่ผู้รับเหมากดเพิ่ม)
+        // 2. เก็บข้อมูลเอกสาร
         const docItems = document.querySelectorAll('.doc-item');
         docItems.forEach(item => {
             const type = item.querySelector('.doc-type').value;
@@ -196,7 +267,7 @@
             const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'ไม่มีไฟล์';
 
             if(type) {
-                payload.other_documents.push({
+                payload.safetyDocuments.push({
                     document_type: type,
                     expiry_date: expiry,
                     file_name: fileName
@@ -204,9 +275,8 @@
             }
         });
 
-        // จำลองการส่งข้อมูลไปหลังบ้าน
-        console.log("แพ็กเกจข้อมูลที่พร้อมส่งเข้าฐานข้อมูล (Supabase Payload):", payload);
-        alert("บันทึกข้อมูลจำลองสำเร็จ! \n\nระบบแพ็กเอกสารเข้า JSONB เรียบร้อย (ดูโครงสร้างข้อมูลได้ที่ F12 > Console)");
+        console.log("Supabase Payload (ข้อมูลพร้อมส่งเข้า DB):", payload);
+        alert("บันทึกข้อมูลเรียบร้อยแล้ว!\n\nข้อมูลของท่านอยู่ในสถานะ 'รอตรวจสอบ (Pending)' โดย จป.\n(สามารถดู Payload Data ได้ที่ Console)");
     }
 </script>
 
