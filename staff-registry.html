@@ -55,7 +55,8 @@
                 </div>
                 <div class="form-group">
                     <label>สัญชาติ <span>/ Nationality</span> *</label>
-                    <select id="nationality" required>
+                    <!-- เพิ่มคำสั่ง onchange เพื่อเช็คสัญชาติทันทีที่เลือก -->
+                    <select id="nationality" required onchange="filterIdTypes()">
                         <option value="">-- เลือกสัญชาติ / Select --</option>
                         <option value="Thai">ไทย (Thai)</option>
                         <option value="Myanmar">เมียนมา (Myanmar)</option>
@@ -69,16 +70,14 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>ประเภทเอกสารยืนยันตัวตน <span>/ ID Type</span> *</label>
+                    <!-- ตัวเลือกจะเปลี่ยนไปตามสัญชาติที่เลือกอัตโนมัติ -->
                     <select id="idType" required onchange="toggleIdInput()">
-                        <option value="thai_id">บัตรประจำตัวประชาชน (Thai ID)</option>
-                        <option value="passport">พาสปอร์ต (Passport)</option>
-                        <option value="pink_card">บัตรสีชมพู / บัตรต่างด้าว (Pink Card)</option>
-                        <option value="work_permit_id">ใบอนุญาตทำงาน (Work Permit)</option>
+                        <option value="">-- โปรดเลือกสัญชาติก่อน --</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>เลขบัตรอ้างอิง <span>/ ID or Document No.</span> *</label>
-                    <input type="text" id="idNumber" required placeholder="กรอกเลขบัตร ปชช. 13 หลัก" maxlength="13" oninput="validateIdInput(this)">
+                    <input type="text" id="idNumber" required placeholder="โปรดระบุประเภทเอกสารก่อน" oninput="validateIdInput(this)" disabled>
                 </div>
             </div>
 
@@ -184,6 +183,36 @@
 </div>
 
 <script>
+    // ฟังก์ชันกรองประเภทเอกสารตามสัญชาติ
+    function filterIdTypes() {
+        const nationality = document.getElementById('nationality').value;
+        const idTypeSelect = document.getElementById('idType');
+        const idInput = document.getElementById('idNumber');
+        
+        // ล้างค่าปัจจุบัน
+        idTypeSelect.innerHTML = '';
+        idInput.value = '';
+        idInput.disabled = false;
+        
+        if (nationality === 'Thai') {
+            idTypeSelect.innerHTML = '<option value="thai_id">บัตรประจำตัวประชาชน (Thai ID)</option>';
+        } else if (nationality === '') {
+            idTypeSelect.innerHTML = '<option value="">-- โปรดเลือกสัญชาติก่อน --</option>';
+            idInput.placeholder = 'โปรดระบุประเภทเอกสารก่อน';
+            idInput.disabled = true;
+        } else {
+            idTypeSelect.innerHTML = `
+                <option value="">-- เลือกประเภทเอกสาร / Select --</option>
+                <option value="passport">พาสปอร์ต (Passport)</option>
+                <option value="pink_card">บัตรสีชมพู / บัตรต่างด้าว (Pink Card)</option>
+                <option value="work_permit_id">ใบอนุญาตทำงาน (Work Permit)</option>
+            `;
+        }
+        
+        // สั่งให้ตั้งค่า placeholder ทันทีหลังจากเปลี่ยนตัวเลือก
+        toggleIdInput();
+    }
+
     function toggleIdInput() {
         const idType = document.getElementById('idType').value;
         const idInput = document.getElementById('idNumber');
@@ -192,15 +221,22 @@
         if (idType === 'thai_id') {
             idInput.placeholder = 'กรอกเลขบัตร ปชช. 13 หลัก';
             idInput.setAttribute('maxlength', '13');
+            idInput.disabled = false;
         } else if (idType === 'pink_card') {
             idInput.placeholder = 'กรอกเลขบัตรสีชมพู 13 หลัก';
             idInput.setAttribute('maxlength', '13');
+            idInput.disabled = false;
         } else if (idType === 'work_permit_id') {
             idInput.placeholder = 'กรอกเลข Work Permit';
             idInput.removeAttribute('maxlength');
-        } else {
+            idInput.disabled = false;
+        } else if (idType === 'passport') {
             idInput.placeholder = 'กรอกเลขพาสปอร์ต';
             idInput.removeAttribute('maxlength');
+            idInput.disabled = false;
+        } else {
+            idInput.placeholder = 'โปรดระบุประเภทเอกสารก่อน';
+            idInput.disabled = true;
         }
     }
 
@@ -278,6 +314,7 @@
         
         const payload = {
             personalInfo: {
+                nationality: document.getElementById('nationality').value,
                 idType: document.getElementById('idType').value,
                 idNumber: document.getElementById('idNumber').value,
                 mobileNo: document.getElementById('mobileNo').value
@@ -300,9 +337,7 @@
         });
 
         console.log("Supabase Payload (ข้อมูลพร้อมส่ง):", payload);
-        
-        // อัปเดตข้อความแจ้งเตือนตามที่พี่ณัฐธัญแนะนำ
-        alert("บันทึกข้อมูลท่านเรียบร้อย\\nโปรดรอการตรวจสอบเอกสารและอนุมัติจากผู้ตรวจสอบ");
+        alert("บันทึกข้อมูลท่านเรียบร้อย\nโปรดรอการตรวจสอบเอกสารและอนุมัติจากผู้ตรวจสอบ");
     }
 </script>
 
