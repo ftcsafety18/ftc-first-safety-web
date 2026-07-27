@@ -132,6 +132,7 @@
 
                     // 2. นำข้อมูลและ URL ของไฟล์ ไปบันทึกในตาราง
                     const payload = {
+                        role_level: 'Staff',// <--- นายณัฐธัญแนะนำให้เพิ่มบรรทัดนี้เข้าไปครับ (แก้คำว่า Staff เป็นสิทธิ์อื่นได้ตามต้องการครับ)
                         staff_id: idCard,  // <--- นายณัฐธัญเพิ่มบรรทัดนี้เข้าไปครับ
                         id_card_or_employee_id: idCard,
                         full_name: document.getElementById('full_name').value,
