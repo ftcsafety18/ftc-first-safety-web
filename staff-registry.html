@@ -130,19 +130,18 @@
                     // อัปโหลดไฟล์ Training Cert (ถ้ามีแนบมา)
                     trainingCertUrl = await uploadFile('training_cert_file', 'training-certs');
 
-                    // 2. นำข้อมูลและ URL ของไฟล์ ไปบันทึกในตาราง
-                    const payload = {
-                        role_level: 'Staff',// <--- นายณัฐธัญแนะนำให้เพิ่มบรรทัดนี้เข้าไปครับ (แก้คำว่า Staff เป็นสิทธิ์อื่นได้ตามต้องการครับ)
-                        staff_id: idCard,  // <--- นายณัฐธัญเพิ่มบรรทัดนี้เข้าไปครับ
-                        id_card_or_employee_id: idCard,
-                        full_name: document.getElementById('full_name').value,
-                        position: document.getElementById('position').value,
-                        company: document.getElementById('company').value,
-                        fit_to_work_url: fitToWorkUrl,
-                        fit_to_work_expiry: document.getElementById('fit_to_work_expiry').value || null,
-                        training_cert_url: trainingCertUrl,
-                        training_cert_expiry: document.getElementById('training_cert_expiry').value || null
-                    };
+// 2. นำข้อมูลและ URL ของไฟล์ ไปบันทึกในตาราง
+const payload = {
+    staff_id: idCard,                 // ส่งรหัส 13 หลักเข้า Primary Key
+    id_card_or_employee_id: idCard,   // ส่งรหัส 13 หลักเข้าช่องสำรอง (กันเหนียวตามโครงสร้างเดิม)
+    full_name: document.getElementById('full_name').value,
+    position: document.getElementById('position').value,
+    company: document.getElementById('company').value,
+    fit_to_work_url: fitToWorkUrl,
+    fit_to_work_expiry: document.getElementById('fit_to_work_expiry').value || null,
+    training_cert_url: trainingCertUrl,
+    training_cert_expiry: document.getElementById('training_cert_expiry').value || null
+};
 
                     const { data, error } = await supabase
                         .from('table_internal_staff')
