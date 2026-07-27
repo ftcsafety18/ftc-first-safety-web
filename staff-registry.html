@@ -132,6 +132,7 @@
 
                     // 2. นำข้อมูลและ URL ของไฟล์ ไปบันทึกในตาราง
                     const payload = {
+                        staff_id: idCard,  // <--- นายณัฐธัญเพิ่มบรรทัดนี้เข้าไปครับ
                         id_card_or_employee_id: idCard,
                         full_name: document.getElementById('full_name').value,
                         position: document.getElementById('position').value,
