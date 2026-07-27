@@ -66,7 +66,6 @@
                 </div>
             </div>
 
-            <!-- เพิ่ม Work Permit และ Pink Card ใน Dropdown นี้ -->
             <div class="form-row">
                 <div class="form-group">
                     <label>ประเภทเอกสารยืนยันตัวตน <span>/ ID Type</span> *</label>
@@ -185,7 +184,6 @@
 </div>
 
 <script>
-    // ฟังก์ชันปรับช่องกรอกเลขตามประเภทเอกสารที่เลือก
     function toggleIdInput() {
         const idType = document.getElementById('idType').value;
         const idInput = document.getElementById('idNumber');
@@ -206,13 +204,12 @@
         }
     }
 
-    // ฟังก์ชันกรองตัวอักษร
     function validateIdInput(input) {
         const idType = document.getElementById('idType').value;
         if (idType === 'thai_id' || idType === 'pink_card') {
-            input.value = input.value.replace(/[^0-9]/g, ''); // บังคับเฉพาะตัวเลข
+            input.value = input.value.replace(/[^0-9]/g, ''); 
         } else {
-            input.value = input.value.replace(/[^a-zA-Z0-9-]/g, ''); // พาสปอร์ต/Work Permit ใส่ตัวอักษร เลข และขีดได้
+            input.value = input.value.replace(/[^a-zA-Z0-9-]/g, ''); 
         }
     }
 
@@ -241,12 +238,9 @@
                         <label>ประเภทเอกสาร <span>/ Document Type</span></label>
                         <select class="doc-type" required onchange="checkOtherDoc(this)">
                             <option value="">-- เลือกประเภท / Select --</option>
-                            <!-- หมวดหมู่แนบไฟล์เอกสารประจำตัวแรงงาน -->
                             <option value="id_card_copy">สำเนาบัตรประชาชน / บัตรสีชมพู</option>
                             <option value="work_permit">ไฟล์รูปใบอนุญาตทำงาน (Work Permit)</option>
                             <option value="passport_visa">สำเนาพาสปอร์ตพร้อมวีซ่า (Passport & Visa)</option>
-                            
-                            <!-- หมวดหมู่เอกสารความปลอดภัย -->
                             <option value="fit_to_work">ใบรับรองแพทย์ (Fit to Work)</option>
                             <option value="working_at_height">ใบผ่านการอบรมการทำงานบนที่สูง</option>
                             <option value="confined_space">ใบผ่านการอบรมที่อับอากาศ (4 ผู้)</option>
@@ -306,7 +300,9 @@
         });
 
         console.log("Supabase Payload (ข้อมูลพร้อมส่ง):", payload);
-        alert("ตรวจสอบความถูกต้องผ่าน!\nเพิ่มตัวเลือก Work Permit เรียบร้อยแล้วครับ");
+        
+        // อัปเดตข้อความแจ้งเตือนตามที่พี่ณัฐธัญแนะนำ
+        alert("บันทึกข้อมูลท่านเรียบร้อย\\nโปรดรอการตรวจสอบเอกสารและอนุมัติจากผู้ตรวจสอบ");
     }
 </script>
 
