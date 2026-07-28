@@ -9,24 +9,18 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #2d3748; }
         .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        /* ธีมสีเขียวเข้ม สำหรับฝ่ายความปลอดภัย FTC */
         .header { background-color: #276749; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
         .header-left h2 { margin: 0; font-size: 22px; }
         .header-left p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
         .header-right { font-size: 14px; text-align: right; }
         .header-right strong { font-size: 16px; color: #f0fff4; }
-        
         .content-section { padding: 30px; }
         .section-title { font-size: 18px; font-weight: 600; color: #276749; margin-bottom: 15px; border-left: 4px solid #276749; padding-left: 10px; }
-        
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
         th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; vertical-align: middle; }
         th { background-color: #f7fafc; font-weight: 600; color: #4a5568; }
         td.text-center { text-align: center; }
-        
         .badge-pending-ftc { background-color: #feebc8; color: #dd6b20; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-        
-        /* ปุ่ม Action อนุมัติ/ไม่อนุมัติ */
         .btn-action { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; border: none; color: white; transition: 0.2s; margin: 2px;}
         .btn-approve { background-color: #38a169; }
         .btn-approve:hover { background-color: #2f855a; }
@@ -34,9 +28,7 @@
         .btn-reject:hover { background-color: #c53030; }
         .btn-view-doc { background-color: #edf2f7; border: 1px solid #cbd5e0; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-bottom: 4px;}
         .btn-view-doc:hover { background-color: #e2e8f0; }
-
         .loading-text { text-align: center; color: #718096; font-weight: 600; padding: 30px; }
-        
         .vendor-info { font-size: 12px; color: #4a5568; background: #edf2f7; padding: 4px; border-radius: 4px; display: inline-block; margin-top: 4px;}
     </style>
 </head>
@@ -140,7 +132,6 @@
         // ถ้าเลือก "ตีกลับ" ให้บังคับกรอกเหตุผล
         if (newStatus === 'Rejected') {
             rejectReasonMsg = prompt(`⚠️ กรุณาระบุเหตุผลที่ตีกลับลูกจ้างชื่อ ${fullName}\n(เช่น เอกสารหมดอายุ, ไม่ผ่านการอบรมเขตอันตราย):`);
-            // ถ้ากด Cancel กล่องข้อความ ให้ยกเลิกการทำงาน
             if (rejectReasonMsg === null) return; 
         } else {
             // ถ้าเป็นอนุมัติ ให้ถามยืนยันเฉยๆ
@@ -148,7 +139,6 @@
         }
 
         try {
-            // เตรียมข้อมูลอัปเดต
             const updatePayload = { 
                 vendor_verified_status: newStatus,
                 reject_reason: rejectReasonMsg // ถ้า Approved จะส่งค่า null ไป
