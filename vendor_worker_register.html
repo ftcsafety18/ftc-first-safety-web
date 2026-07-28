@@ -196,7 +196,9 @@
     // ==========================================
     const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // แก้ไขชื่อตัวแปรตรงนี้เป็น supabaseClient เพื่อไม่ให้ชนกับระบบหลัก
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ==========================================
     // 2. ฟังก์ชันอำนวยความสะดวกในฟอร์ม
@@ -326,13 +328,14 @@
                 const fileExt = file.name.split('.').pop();
                 const fileName = `profile_${Date.now()}.${fileExt}`; 
                 
-                const { error: uploadError } = await supabase.storage
+                // แก้ไขให้เรียกใช้ supabaseClient
+                const { error: uploadError } = await supabaseClient.storage
                     .from('worker-documents')
                     .upload(`profiles/${fileName}`, file);
                 
                 if (uploadError) throw uploadError;
 
-                const { data } = supabase.storage.from('worker-documents').getPublicUrl(`profiles/${fileName}`);
+                const { data } = supabaseClient.storage.from('worker-documents').getPublicUrl(`profiles/${fileName}`);
                 profileUrl = data.publicUrl;
             }
 
@@ -350,13 +353,13 @@
                     const fileExt = file.name.split('.').pop();
                     const fileName = `cert_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                     
-                    const { error: uploadError } = await supabase.storage
+                    const { error: uploadError } = await supabaseClient.storage
                         .from('worker-documents')
                         .upload(`certificates/${fileName}`, file);
                     
                     if (uploadError) throw uploadError;
 
-                    const { data } = supabase.storage.from('worker-documents').getPublicUrl(`certificates/${fileName}`);
+                    const { data } = supabaseClient.storage.from('worker-documents').getPublicUrl(`certificates/${fileName}`);
                     
                     uploadedCertificates.push({
                         type: actualType,
@@ -371,7 +374,7 @@
             const vendorId = document.getElementById('company').value;
             const isDeclared = document.getElementById('declarationCheck').checked;
 
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseClient
                 .from('table_users')
                 .insert([
                     {
