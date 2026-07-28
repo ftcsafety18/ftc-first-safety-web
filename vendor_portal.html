@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบรับรองการเข้าปฏิบัติงานสำหรับนายจ้าง - FTC Digital Safety</title>
+    <!-- นำเข้าฟอนต์ Sarabun -->
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
-    <!-- 1. นำเข้าไลบรารี Supabase -->
+    <!-- นำเข้าไลบรารี Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #e2e8f0; margin: 0; padding: 20px; color: #2d3748; }
@@ -72,17 +73,17 @@
                     <th width="15%" class="text-center">รับรอง (Verify)</th>
                 </tr>
             </thead>
-            <!-- เพิ่ม ID ให้ tbody เพื่อให้ JavaScript ดึงข้อมูลมาใส่ได้ -->
             <tbody id="workerTableBody">
                 <tr><td colspan="6" class="loading-text">กำลังโหลดข้อมูลจากฐานข้อมูล...</td></tr>
             </tbody>
         </table>
 
+        <!-- กล่องรับรองความปลอดภัยสำหรับนายจ้าง -->
         <div class="consent-box">
             <input type="checkbox" id="vendorSafetyCheck" required onchange="checkApprovalStatus()">
             <label class="consent-text" for="vendorSafetyCheck" style="color: #c53030;">
                 <strong>คำรับรองด้านความปลอดภัยสำหรับผู้รับเหมา (Contractor Safety Declaration):</strong><br><br>
-                ข้าพเจ้าในฐานะตัวแทนผู้รับเหมา/นายจ้าง ขอยืนยันว่าได้ศึกษาและทำความเข้าใจ <strong>"ข้อปฏิบัติความปลอดภัย (Safety Instructions)"</strong> ของ FTC อย่างครบถ้วน ข้าพเจ้ายินยอมและจะควบคุมดูแลให้ลูกจ้างทุกคนที่ได้รับการรับรองข้างต้น ปฏิบัติตามกฎหมายอาชีวอนามัย และระเบียบของพื้นที่อย่างเคร่งครัด โดยเฉพาะการปฏิบัติงานใน <strong>เขตควบคุม (Warm Zone)</strong> และ <strong>เขตอันตราย (Hot Zone)</strong> <br><br>
+                ข้าพเจ้าในฐานะตัวแทนผู้รับเหมา/นายจ้าง ขอยืนยันว่าได้ศึกษาและทำความเข้าใจ <strong>"ข้อปฏิบัติความปลอดภัย (Safety Instructions)"</strong> ของ FTC อย่างครบถ้วน ข้าพเจ้ายินยอมและจะควบคุมดูแลให้ลูกจ้างทุกคนที่ได้รับการรับรองข้างต้น ปฏิบัติตามกฎหมายอาชีวอนามัย และระเบียบของพื้นที่อย่างเคร่งครัด โดยเฉพาะการปฏิบัติงานใน <strong>เขตควบคุม</strong> และ <strong>เขตอันตราย</strong> <br><br>
                 หากเอกสารของลูกจ้างเป็นเท็จ เกิดอุบัติเหตุ หรือมีการละเมิดกฎระเบียบ ข้าพเจ้ายินดีรับผิดชอบความเสียหายและผลทางกฎหมายที่เกิดขึ้นร่วมกับลูกจ้างทุกประการ
             </label>
         </div>
@@ -96,17 +97,17 @@
 
 <script>
     // ==========================================
-    // 2. ตั้งค่าการเชื่อมต่อ Supabase API (พี่ณัฐธัญต้องนำค่าจากโปรเจกต์มาใส่ตรงนี้ครับ)
+    // ตั้งค่าการเชื่อมต่อ Supabase API (ฝัง Key ของ FTC เรียบร้อย)
     // ==========================================
-    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co'; // เปลี่ยนเป็น URL ของ FTC
-    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'; // เปลี่ยนเป็น API Key ของ FTC
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // จำลองการล็อกอิน (ในอนาคตจะผูกกับระบบล็อกอินจริง)
+    // จำลอง Session การล็อกอินของ Vendor ปัจจุบัน (ดึงจากตาราง table_vendors ที่พี่ณัฐธัญเพิ่งป้อนเข้าไป)
     const CURRENT_VENDOR_ID = "VEN001"; 
-    const CURRENT_VERIFIER_NAME = "แอดมิน บริษัท ABC";
+    const CURRENT_VERIFIER_NAME = "TesCompany"; // อ้างอิงจากข้อมูลจำลองที่พี่ใส่ในระบบ
 
-    // ทำงานทันทีเมื่อเปิดหน้าเว็บ
+    // ทำงานทันทีเมื่อโหลดเว็บเสร็จ
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayVendorId').innerText = `รหัส: ${CURRENT_VENDOR_ID}`;
         document.getElementById('displayVendorName').innerText = CURRENT_VERIFIER_NAME;
@@ -114,7 +115,7 @@
     });
 
     // ==========================================
-    // 3. ฟังก์ชันดึงข้อมูลพนักงานที่รอรับรองจาก table_users
+    // ฟังก์ชันดึงข้อมูลพนักงานที่รอรับรองจาก table_users
     // ==========================================
     async function fetchPendingWorkers() {
         const tableBody = document.getElementById('workerTableBody');
@@ -132,21 +133,20 @@
             tableBody.innerHTML = ''; // ล้างข้อความ Loading
 
             if (!workers || workers.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center" style="color: green; padding: 20px;">🎉 ไม่มีพนักงานที่รอการตรวจสอบ</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center" style="color: #38a169; padding: 20px;">🎉 ไม่มีพนักงานที่รอการตรวจสอบ หรือยังไม่มีผู้ลงทะเบียน</td></tr>';
                 return;
             }
 
-            // วนลูปสร้างแถวตารางตามจำนวนคนที่ดึงมาได้
+            // วนลูปสร้างตารางรายชื่อ
             workers.forEach((worker, index) => {
                 let docButtonsHtml = '';
                 
-                // ตรวจสอบว่ามีเอกสารแนบไหม แล้วสร้างปุ่มจำลอง
                 if (worker.safety_documents && Array.isArray(worker.safety_documents)) {
                     worker.safety_documents.forEach(doc => {
-                        docButtonsHtml += `<button type="button" class="btn-view-doc">ดู ${doc.document_type}</button><br>`;
+                        docButtonsHtml += `<button type="button" class="btn-view-doc">ดู ${doc.document_type || 'เอกสารแนบ'}</button><br>`;
                     });
                 } else {
-                    docButtonsHtml = '<span style="color: #a0aec0; font-size: 12px;">ไม่มีเอกสาร</span>';
+                    docButtonsHtml = '<span style="color: #a0aec0; font-size: 12px;">ไม่มีเอกสารแนบ</span>';
                 }
 
                 const rowHtml = `
@@ -166,12 +166,12 @@
 
         } catch (error) {
             console.error('Error fetching workers:', error.message);
-            tableBody.innerHTML = '<tr><td colspan="6" class="text-center" style="color: red;">❌ เกิดข้อผิดพลาดในการดึงข้อมูลจากระบบ</td></tr>';
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center" style="color: red; padding: 20px;">❌ เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล: ${error.message}</td></tr>`;
         }
     }
 
     // ==========================================
-    // 4. ฟังก์ชันควบคุมปุ่ม Submit
+    // ฟังก์ชันควบคุมปุ่ม Submit (ปลดล็อกเมื่อติ๊กถูก)
     // ==========================================
     function checkApprovalStatus() {
         const isSafetyChecked = document.getElementById('vendorSafetyCheck').checked;
@@ -182,7 +182,7 @@
     }
 
     // ==========================================
-    // 5. ฟังก์ชันส่งข้อมูลอัปเดตกลับไปยัง Supabase
+    // ฟังก์ชันส่งข้อมูลการอนุมัติกลับไปยัง Supabase
     // ==========================================
     async function submitVerification(event) {
         event.preventDefault();
@@ -191,11 +191,10 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "กำลังประมวลผล... (Processing)";
 
-        // รวบรวมรหัสบัตรประชาชน/พาสปอร์ต ของคนที่ถูกติ๊กเลือก
         const approvedCitizenIds = Array.from(document.querySelectorAll('.worker-check:checked')).map(cb => cb.value);
 
         try {
-            // อัปเดตสถานะใน table_users (Tier 2)
+            // 1. อัปเดตสถานะลูกจ้างใน table_users
             const { error: userError } = await supabase
                 .from('table_users')
                 .update({ 
@@ -207,7 +206,7 @@
 
             if (userError) throw userError;
 
-            // อัปเดตหลักฐานการยอมรับกฎความปลอดภัยใน table_vendors (Tier 1)
+            // 2. อัปเดตหลักฐานการยอมรับกฎหมายใน table_vendors
             const { error: vendorError } = await supabase
                 .from('table_vendors')
                 .update({
@@ -219,15 +218,15 @@
 
             if (vendorError) throw vendorError;
 
-            alert("✅ บันทึกการรับรองเรียบร้อยแล้ว!\nระบบได้ส่งข้อมูลให้ จป. โครงการดำเนินการต่อ");
+            alert("✅ บันทึกการรับรองเรียบร้อยแล้ว!\nระบบได้ส่งข้อมูลให้ฝ่ายความปลอดภัย FTC ดำเนินการต่อ");
             
-            // รีเซ็ตหน้าจอและดึงข้อมูลใหม่
+            // ล้างหน้าจอและโหลดข้อมูลใหม่
             document.getElementById('vendorSafetyCheck').checked = false;
             fetchPendingWorkers();
 
         } catch (error) {
             console.error('Error updating verification:', error.message);
-            alert("❌ เกิดข้อผิดพลาด: " + error.message);
+            alert("❌ เกิดข้อผิดพลาดในการบันทึก: " + error.message);
         } finally {
             submitBtn.innerText = "ยืนยันการรับรองและส่งให้ FTC ตรวจสอบ (Submit to FTC)";
             checkApprovalStatus();
