@@ -79,40 +79,41 @@
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const CURRENT_VENDOR_ID = "VEN001"; 
-    const CURRENT_VERIFIER_NAME = "TesCompany";
-
-    document.addEventListener('DOMContentLoaded', () => { fetchPendingWorkers(); });
-
     async function fetchPendingWorkers() {
         const tableBody = document.getElementById('workerTableBody');
         try {
+            // ดึงข้อมูลทั้งสถานะ Pending (รอตรวจ) และ Rejected (ถูกตีกลับ)
             const { data: workers, error } = await supabaseClient
                 .from('table_users')
-                .select('citizen_id, full_name')
+                .select('citizen_id, full_name, vendor_verified_status, reject_reason')
                 .eq('vendor_id', CURRENT_VENDOR_ID)
-                .eq('vendor_verified_status', 'Pending');
+                .in('vendor_verified_status', ['Pending', 'Rejected']);
 
             if (error) throw error;
             tableBody.innerHTML = '';
 
             if (!workers || workers.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center" style="color: green;">🎉 ไม่มีพนักงานที่รอการตรวจสอบ</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center" style="color: green;">🎉 ไม่มีพนักงานที่รอการตรวจสอบ หรือถูกตีกลับ</td></tr>';
                 return;
             }
 
             workers.forEach((worker, index) => {
+                // ตรวจสอบว่าถูกตีกลับหรือเปล่า
+                const isRejected = worker.vendor_verified_status === 'Rejected';
+                
+                // ตกแต่งสถานะ
+                const statusBadge = isRejected 
+                    ? `<span style="background-color: #fed7d7; color: #c53030; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">❌ ถูกตีกลับ</span><br><span style="font-size: 11px; color: #e53e3e; display:block; margin-top:4px;">เหตุผล: ${worker.reject_reason || 'ไม่ระบุ'}</span>`
+                    : `<span class="badge-pending">รอตรวจสอบ</span>`;
+
                 const rowHtml = `
-                    <tr>
+                    <tr style="${isRejected ? 'background-color: #fff5f5;' : ''}">
                         <td class="text-center">${index + 1}</td>
                         <td>${worker.full_name}</td>
                         <td><span style="font-size: 12px; color: #718096;">${worker.citizen_id}</span></td>
-                        <td class="text-center"><span class="badge-pending">รอตรวจสอบ</span></td>
+                        <td class="text-center">${statusBadge}</td>
                         <td class="text-center">
+                            <!-- ถ้าถูกตีกลับ ให้เลือกรับรองใหม่ได้ -->
                             <input type="checkbox" class="verify-checkbox worker-check" value="${worker.citizen_id}" onchange="checkApprovalStatus()">
                         </td>
                     </tr>
@@ -121,72 +122,6 @@
             });
         } catch (error) {
             tableBody.innerHTML = `<tr><td colspan="5" class="text-center" style="color: red;">❌ ดึงข้อมูลไม่สำเร็จ: ${error.message}</td></tr>`;
-        }
-    }
-
-    function checkApprovalStatus() {
-        const isSafetyChecked = document.getElementById('vendorSafetyCheck').checked;
-        const workerCheckboxes = document.querySelectorAll('.worker-check:checked');
-        document.getElementById('btnSubmit').disabled = !(isSafetyChecked && workerCheckboxes.length > 0);
-    }
-
-    async function submitVerification(event) {
-        event.preventDefault();
-        const submitBtn = document.getElementById('btnSubmit');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "กำลังประมวลผล... (Processing)";
-
-        // ดึงค่าและตัดช่องว่าง (Space) เผื่อพิมพ์เกิน
-        const approvedCitizenIds = Array.from(document.querySelectorAll('.worker-check:checked')).map(cb => cb.value.trim());
-        
-        alert("🔍 เริ่มการบันทึก: กำลังส่งรหัส " + approvedCitizenIds.join(', ') + " ไปยังฐานข้อมูล...");
-
-        try {
-            // --- ขั้นตอนที่ 1: อัปเดต table_users ---
-            const { data: userData, error: userError } = await supabaseClient
-                .from('table_users')
-                .update({ 
-                    vendor_verified_status: 'Pending_FTC',
-                    vendor_declaration_date: new Date().toISOString(),
-                    vendor_verifier_name: CURRENT_VERIFIER_NAME
-                })
-                .in('citizen_id', approvedCitizenIds)
-                .select(); // บังคับให้ตอบกลับข้อมูลที่อัปเดตสำเร็จ
-
-            if (userError) {
-                alert("❌ พังที่สเต็ป 1 (table_users):\n" + userError.message);
-                throw userError;
-            }
-            if (!userData || userData.length === 0) {
-                alert("⚠️ สเต็ป 1 ทำงาน แต่หา citizen_id ไม่เจอในฐานข้อมูล (อัปเดต 0 แถว)");
-                throw new Error("No rows updated");
-            }
-
-            // --- ขั้นตอนที่ 2: อัปเดต table_vendors ---
-            const { error: vendorError } = await supabaseClient
-                .from('table_vendors')
-                .update({
-                    safety_rules_accepted: true,
-                    safety_rules_accepted_at: new Date().toISOString(),
-                    safety_rules_accepted_by: CURRENT_VERIFIER_NAME
-                })
-                .eq('vendor_id', CURRENT_VENDOR_ID);
-
-            if (vendorError) {
-                alert("❌ พังที่สเต็ป 2 (table_vendors):\n" + vendorError.message + "\n(ลืมรันคำสั่ง SQL สร้างฟิลด์หรือเปล่าครับ?)");
-                throw vendorError;
-            }
-
-            // --- จบการทำงาน ---
-            alert("✅ บันทึกการรับรองเรียบร้อย 100%!");
-            document.getElementById('vendorSafetyCheck').checked = false;
-            fetchPendingWorkers();
-
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-            submitBtn.innerText = "ยืนยันการรับรองและส่งให้ FTC ตรวจสอบ (Submit to FTC)";
-            checkApprovalStatus();
         }
     }
 </script>
