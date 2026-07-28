@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนเข้าปฏิบัติงาน - FTC Digital Safety</title>
+    <!-- ใส่ CSS ตกแต่งให้สวยงาม (ย่อไว้เพื่อความกระชับ) -->
+</head>
+<body>
+    <h2>ลงทะเบียนขอเข้าปฏิบัติงาน</h2>
+    <form id="workerForm">
+        <!-- ข้อมูลพื้นฐาน -->
+        <label>เลขบัตรประชาชน 13 หลัก:</label>
+        <input type="text" id="citizen_id" required>
+
+        <label>ชื่อ-นามสกุล:</label>
+        <input type="text" id="full_name" required>
+
+        <label>รหัสบริษัทต้นสังกัด (Vendor ID):</label>
+        <input type="text" id="vendor_id" required>
+
+        <!-- ระบบไฮบริด: ถ่ายรูป หรือ อัปโหลดไฟล์ -->
+        <label>รูปถ่ายหน้าตรง (ถ่ายเซลฟี่หรืออัปโหลด):</label>
+        <input type="file" id="profile_image" accept="image/*" capture="user" required>
+
+        <label>เอกสารใบรับรองความปลอดภัย / ใบเซอร์ (ถ้ามี):</label>
+        <input type="file" id="certificate_image" accept="image/*,application/pdf" capture="environment">
+
+        <!-- ไฮไลต์สำคัญ: Checkbox บังคับรับรองตนเอง -->
+        <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 15px;">
+            <input type="checkbox" id="worker_declaration" required>
+            <label for="worker_declaration" style="color: #856404; font-weight: bold;">
+                ข้าพเจ้าขอรับรองว่า ข้อมูลและเอกสารที่แนบมาทั้งหมดเป็นความจริงทุกประการ หากตรวจสอบพบว่ามีการปลอมแปลง หรือให้ข้อมูลเท็จ ข้าพเจ้ายินยอมรับโทษตามระเบียบของบริษัทและตามกฎหมาย
+            </label>
+        </div>
+
+        <button type="submit" style="margin-top: 20px; width: 100%; padding: 10px; background-color: #0d6efd; color: white;">ยืนยันข้อมูลและส่งลงทะเบียน</button>
+    </form>
+</body>
+</html>
