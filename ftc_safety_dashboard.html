@@ -86,16 +86,14 @@
 
     document.addEventListener('DOMContentLoaded', () => { fetchPendingFTCWorkers(); });
 
-    // ฟังก์ชันดึงคนที่นายจ้างกด Submit มาแล้ว (สถานะ Pending_FTC)
     async function fetchPendingFTCWorkers() {
         const tableBody = document.getElementById('workerTableBody');
-        
         try {
             const { data: workers, error } = await supabaseClient
                 .from('table_users')
                 .select('citizen_id, full_name, vendor_id, vendor_verifier_name, vendor_declaration_date')
                 .eq('vendor_verified_status', 'Pending_FTC')
-                .order('vendor_declaration_date', { ascending: true }); // เรียงตามคิวที่ส่งมาก่อน
+                .order('vendor_declaration_date', { ascending: true });
 
             if (error) throw error;
             tableBody.innerHTML = '';
@@ -114,7 +112,7 @@
                         <td class="text-center">${index + 1}</td>
                         <td><strong>${worker.full_name}</strong></td>
                         <td><span style="font-size: 12px; color: #718096;">${worker.citizen_id}</span><br>
-                            <button type="button" class="btn-view-doc" onclick="alert('จำลองการเปิดดูไฟล์เอกสารของ ${worker.full_name}')">เปิดดูเอกสารแนบ</button>
+                            <button type="button" class="btn-view-doc" onclick="alert('กำลังเปิดดูเอกสาร...')">เปิดดูเอกสารแนบ</button>
                         </td>
                         <td>
                             <div class="vendor-info">รหัส: ${worker.vendor_id}</div><br>
@@ -135,25 +133,36 @@
         }
     }
 
-    // ฟังก์ชันสำหรับปุ่ม อนุมัติ / ตีกลับ
     async function updateStatus(citizenId, newStatus, fullName) {
         let actionText = newStatus === 'Approved' ? 'อนุมัติ' : 'ตีกลับไม่อนุมัติ';
-        
-        // ให้ จป. กดยืนยันอีกครั้งก่อนอัปเดต เพื่อป้องกันการกดผิด
-        if(!confirm(`คุณต้องการ "${actionText}" คุณ ${fullName} ใช่หรือไม่?`)) {
-            return;
+        let rejectReasonMsg = null;
+
+        // ถ้าเลือก "ตีกลับ" ให้บังคับกรอกเหตุผล
+        if (newStatus === 'Rejected') {
+            rejectReasonMsg = prompt(`⚠️ กรุณาระบุเหตุผลที่ตีกลับลูกจ้างชื่อ ${fullName}\n(เช่น เอกสารหมดอายุ, ไม่ผ่านการอบรมเขตอันตราย):`);
+            // ถ้ากด Cancel กล่องข้อความ ให้ยกเลิกการทำงาน
+            if (rejectReasonMsg === null) return; 
+        } else {
+            // ถ้าเป็นอนุมัติ ให้ถามยืนยันเฉยๆ
+            if(!confirm(`คุณต้องการ "${actionText}" คุณ ${fullName} ใช่หรือไม่?`)) return;
         }
 
         try {
+            // เตรียมข้อมูลอัปเดต
+            const updatePayload = { 
+                vendor_verified_status: newStatus,
+                reject_reason: rejectReasonMsg // ถ้า Approved จะส่งค่า null ไป
+            };
+
             const { error } = await supabaseClient
                 .from('table_users')
-                .update({ vendor_verified_status: newStatus })
+                .update(updatePayload)
                 .eq('citizen_id', citizenId);
 
             if (error) throw error;
 
             alert(`✅ ดำเนินการ ${actionText} เรียบร้อยแล้ว`);
-            fetchPendingFTCWorkers(); // โหลดตารางใหม่เพื่อลบรายชื่อที่ทำรายการแล้วออก
+            fetchPendingFTCWorkers();
 
         } catch (error) {
             console.error('Error updating status:', error.message);
