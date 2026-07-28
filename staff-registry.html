@@ -55,7 +55,6 @@
                 </div>
                 <div class="form-group">
                     <label>สัญชาติ <span>/ Nationality</span> *</label>
-                    <!-- เพิ่มคำสั่ง onchange เพื่อเช็คสัญชาติทันทีที่เลือก -->
                     <select id="nationality" required onchange="filterIdTypes()">
                         <option value="">-- เลือกสัญชาติ / Select --</option>
                         <option value="Thai">ไทย (Thai)</option>
@@ -70,7 +69,6 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>ประเภทเอกสารยืนยันตัวตน <span>/ ID Type</span> *</label>
-                    <!-- ตัวเลือกจะเปลี่ยนไปตามสัญชาติที่เลือกอัตโนมัติ -->
                     <select id="idType" required onchange="toggleIdInput()">
                         <option value="">-- โปรดเลือกสัญชาติก่อน --</option>
                     </select>
@@ -84,11 +82,12 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>สังกัด / บริษัท <span>/ Company or Contractor</span> *</label>
+                    <!-- นำพนักงาน FTC ออก เพื่อสงวนไว้สำหรับผู้รับเหมาเท่านั้น -->
                     <select id="company" required>
                         <option value="">-- เลือกสังกัด / Select --</option>
-                        <option value="FTC">พนักงาน FTC</option>
                         <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
                         <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
+                        <option value="Other">อื่นๆ (โปรดระบุ)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -177,19 +176,25 @@
                 </label>
             </div>
 
+            <!-- เพิ่มกล่องรับรองความถูกต้อง (Declaration) -->
+            <div class="consent-box" style="background: #fff0f2; border-left: 4px solid #e53e3e;">
+                <input type="checkbox" id="declarationCheck" required>
+                <label class="consent-text" for="declarationCheck" style="color: #c53030;">
+                    <strong>การรับรองความถูกต้อง (Declaration):</strong> ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารที่แนบมาทั้งหมดเป็นความจริงทุกประการ หากตรวจสอบพบว่ามีการปลอมแปลงเอกสาร ข้าพเจ้ายินยอมให้บริษัทระงับสิทธิ์การเข้าพื้นที่ และดำเนินคดีตามกฎหมายโดยไม่มีเงื่อนไข
+                </label>
+            </div>
+
             <button type="submit" class="btn-submit">บันทึกข้อมูลและส่งตรวจสอบ <span>/ Submit Data</span></button>
         </div>
     </form>
 </div>
 
 <script>
-    // ฟังก์ชันกรองประเภทเอกสารตามสัญชาติ
     function filterIdTypes() {
         const nationality = document.getElementById('nationality').value;
         const idTypeSelect = document.getElementById('idType');
         const idInput = document.getElementById('idNumber');
         
-        // ล้างค่าปัจจุบัน
         idTypeSelect.innerHTML = '';
         idInput.value = '';
         idInput.disabled = false;
@@ -209,7 +214,6 @@
             `;
         }
         
-        // สั่งให้ตั้งค่า placeholder ทันทีหลังจากเปลี่ยนตัวเลือก
         toggleIdInput();
     }
 
