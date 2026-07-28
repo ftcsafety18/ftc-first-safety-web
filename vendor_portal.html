@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Portal - ระบบตรวจสอบและรับรองบุคลากรผู้รับเหมา</title>
+    <!-- นำเข้าฟอนต์ Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #e2e8f0; margin: 0; padding: 20px; color: #2d3748; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background-color: #2b6cb0; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header-left h2 { margin: 0; font-size: 22px; }
+        .header-left p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+        .header-right { font-size: 14px; text-align: right; }
+        .header-right strong { font-size: 16px; color: #ebf8ff; }
+        
+        .content-section { padding: 30px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 4px solid #2b6cb0; padding-left: 10px; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+        th { background-color: #f7fafc; font-weight: 600; color: #4a5568; }
+        td.text-center { text-align: center; }
+        .badge-pending { background-color: #feebc8; color: #c05621; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        
+        /* Action buttons & Checkboxes */
+        .btn-view-doc { background-color: #edf2f7; border: 1px solid #cbd5e0; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-view-doc:hover { background-color: #e2e8f0; }
+        .verify-checkbox { transform: scale(1.3); cursor: pointer; }
+
+        /* Consent Box */
+        .consent-box { display: flex; gap: 15px; background: #fff5f5; padding: 20px; border-radius: 6px; border-left: 5px solid #e53e3e; margin-top: 30px; margin-bottom: 20px; align-items: flex-start; }
+        .consent-box input { margin-top: 5px; transform: scale(1.5); cursor: pointer; }
+        .consent-text { font-size: 14px; line-height: 1.6; margin: 0; }
+        
+        /* Submit Button */
+        .btn-submit { background-color: #3182ce; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; }
+        .btn-submit:hover { background-color: #2b6cb0; }
+        .btn-submit:disabled { background-color: #a0aec0; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-left">
+            <h2>พอร์ทัลสำหรับนายจ้าง (Vendor Portal)</h2>
+            <p>ระบบตรวจสอบและรับรองบุคลากร - FTC Digital Safety</p>
+        </div>
+        <div class="header-right">
+            <span>เข้าสู่ระบบโดย:</span><br>
+            <strong>บจก. เอบีซี (ABC Corp.)</strong><br>
+            <span>รหัส: VEN001</span>
+        </div>
+    </div>
+
+    <form id="vendorVerifyForm" class="content-section" onsubmit="submitVerification(event)">
+        
+        <div class="section-title">รายชื่อพนักงานที่รอการรับรอง (Pending Verification)</div>
+        <p style="font-size: 14px; color: #718096; margin-top: -10px; margin-bottom: 20px;">
+            กรุณาตรวจสอบความถูกต้องของข้อมูลและเอกสารของลูกจ้างท่าน ก่อนทำเครื่องหมายถูก (✓) ในช่อง "รับรอง"
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%" class="text-center">ลำดับ</th>
+                    <th width="25%">ชื่อ-นามสกุล</th>
+                    <th width="20%">สัญชาติ / เลขบัตร</th>
+                    <th width="20%">เอกสารแนบ</th>
+                    <th width="15%" class="text-center">สถานะ</th>
+                    <th width="15%" class="text-center">รับรอง (Verify)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Mock Data 1 -->
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>นายสมชาย ใจดี</td>
+                    <td>ไทย<br><span style="font-size: 12px; color: #718096;">1-1234-56789-01-2</span></td>
+                    <td>
+                        <button type="button" class="btn-view-doc">ดูสำเนาบัตร ปชช.</button>
+                    </td>
+                    <td class="text-center"><span class="badge-pending">รอตรวจสอบ</span></td>
+                    <td class="text-center">
+                        <input type="checkbox" class="verify-checkbox worker-check" value="1123456789012" onchange="checkApprovalStatus()">
+                    </td>
+                </tr>
+                <!-- Mock Data 2 -->
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>Mr. Aung San (อองซาน)</td>
+                    <td>เมียนมา<br><span style="font-size: 12px; color: #718096;">WP-98765432</span></td>
+                    <td>
+                        <button type="button" class="btn-view-doc">ดู Work Permit</button><br>
+                        <button type="button" class="btn-view-doc" style="margin-top: 5px;">ดูใบผ่านงานที่สูง</button>
+                    </td>
+                    <td class="text-center"><span class="badge-pending">รอตรวจสอบ</span></td>
+                    <td class="text-center">
+                        <input type="checkbox" class="verify-checkbox worker-check" value="WP98765432" onchange="checkApprovalStatus()">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- กล่องรับรองความปลอดภัยสำหรับนายจ้าง (Safety Instruction Declaration) -->
+        <div class="consent-box">
+            <input type="checkbox" id="vendorSafetyCheck" required onchange="checkApprovalStatus()">
+            <label class="consent-text" for="vendorSafetyCheck" style="color: #c53030;">
+                <strong>คำรับรองด้านความปลอดภัยสำหรับผู้รับเหมา (Contractor Safety Declaration):</strong><br><br>
+                ข้าพเจ้าในฐานะตัวแทนผู้รับเหมา/นายจ้าง ขอยืนยันว่าได้ศึกษาและทำความเข้าใจ <strong>"ข้อปฏิบัติความปลอดภัย (Safety Instructions)"</strong> ของ FTC อย่างครบถ้วน ข้าพเจ้ายินยอมและจะควบคุมดูแลให้ลูกจ้างทุกคนที่ได้รับการรับรองข้างต้น ปฏิบัติตามกฎหมายอาชีวอนามัย และระเบียบของพื้นที่อย่างเคร่งครัด โดยเฉพาะการปฏิบัติงานใน <strong>เขตควบคุม (Warm Zone)</strong> และ <strong>เขตอันตราย (Hot Zone)</strong> <br><br>
+                หากเอกสารของลูกจ้างเป็นเท็จ เกิดอุบัติเหตุ หรือมีการละเมิดกฎระเบียบ ข้าพเจ้ายินดีรับผิดชอบความเสียหายและผลทางกฎหมายที่เกิดขึ้นร่วมกับลูกจ้างทุกประการ
+            </label>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-submit" disabled>
+            ยืนยันการรับรองและส่งให้ FTC ตรวจสอบ (Submit to FTC)
+        </button>
+
+    </form>
+</div>
+
+<script>
+    // ฟังก์ชันตรวจสอบว่านายจ้างติ๊กข้อตกลงและเลือกคนงานอย่างน้อย 1 คนหรือยัง
+    function checkApprovalStatus() {
+        const isSafetyChecked = document.getElementById('vendorSafetyCheck').checked;
+        const workerCheckboxes = document.querySelectorAll('.worker-check:checked');
+        const submitBtn = document.getElementById('btnSubmit');
+
+        // ปุ่มจะทำงานได้ก็ต่อเมื่อ ติ๊กยอมรับกฎความปลอดภัย + เลือกรับรองคนงานอย่างน้อย 1 คน
+        if (isSafetyChecked && workerCheckboxes.length > 0) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // ฟังก์ชันจำลองการส่งข้อมูลไปอัปเดตฐานข้อมูล
+    function submitVerification(event) {
+        event.preventDefault();
+        
+        // รวบรวม ID ของลูกจ้างที่นายจ้างติ๊กรับรอง
+        const approvedWorkers = [];
+        document.querySelectorAll('.worker-check:checked').forEach(cb => {
+            approvedWorkers.push(cb.value);
+        });
+
+        const payload = {
+            vendor_id: "VEN001",
+            verifier_name: "แอดมิน บริษัท ABC",
+            safety_rules_accepted: document.getElementById('vendorSafetyCheck').checked,
+            declaration_timestamp: new Date().toISOString(),
+            approved_citizen_ids: approvedWorkers
+        };
+
+        console.log("ข้อมูลที่พร้อมยิง API ไปอัปเดตตาราง table_users และ table_vendors:", payload);
+        
+        alert("บันทึกการรับรองเรียบร้อยแล้ว!\nระบบได้อัปเดตสถานะลูกจ้างเป็น 'Pending_FTC' และส่งข้อมูลให้ จป. โครงการดำเนินการต่อ");
+        
+        // รีเฟรชหน้าจำลองว่าทำรายการเสร็จ
+        window.location.reload();
+    }
+</script>
+
+</body>
+</html>
