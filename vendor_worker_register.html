@@ -78,17 +78,15 @@
                     <input type="text" id="idNumber" required placeholder="โปรดระบุประเภทเอกสารก่อน" oninput="validateIdInput(this)" disabled>
                 </div>
             </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>สังกัด / บริษัท <span>/ Company or Contractor</span> *</label>
-                    <select id="company" required>
-                        <option value="">-- เลือกสังกัด / Select --</option>
-                        <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
-                        <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
-                        <option value="Other">อื่นๆ (โปรดระบุ)</option>
-                    </select>
-                </div>
+<div class="form-group">
+    <label>สังกัด / บริษัท <span>/ Company or Contractor</span> *</label>
+    <select id="company" required>
+        <option value="">-- เลือกสังกัด / Select --</option>
+        <!-- แก้ไข value ตรงนี้ให้เป็นรหัสที่พี่มีอยู่จริงในตาราง table_vendors -->
+        <option value="VEN001">บริษัท เอบีซี จำกัด (VEN001)</option>
+        <option value="VEN002">ทีมผู้รับเหมา ช่างสมปอง (VEN002)</option>
+    </select>
+</div>
                 <div class="form-group">
                     <label>เบอร์โทรศัพท์มือถือ <span>/ Mobile No.</span> *</label>
                     <input type="tel" id="mobileNo" required placeholder="08XXXXXXXX" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
