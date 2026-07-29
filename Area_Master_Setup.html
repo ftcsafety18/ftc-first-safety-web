@@ -3,60 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PM - ระบบบริหารจัดการโครงการแบบบูรณาการ (8T & C3 Framework)</title>
+    <title>PM - ระบบบริหารจัดการโครงการแบบบูรณาการ (Enterprise Level)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
-        .container { max-width: 1150px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { max-width: 1280px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         .header { background-color: #1a365d; color: white; padding: 20px; text-align: center; border-bottom: 4px solid #3182ce; }
-        .header h2 { margin: 0; font-size: 24px; }
+        .header h2 { margin: 0; font-size: 26px; }
         .form-section { padding: 20px 25px; border-bottom: 1px solid #e2e8f0; }
-        .section-title { font-size: 17px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 5px solid #2b6cb0; padding-left: 10px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 5px solid #2b6cb0; padding-left: 10px; background: #ebf8ff; padding: 8px 10px; border-radius: 0 4px 4px 0;}
         .sub-title { font-size: 15px; font-weight: 600; color: #2d3748; margin: 20px 0 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
-        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
-        .form-group { flex: 1; min-width: 150px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: #4a5568; }
-        input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="file"], select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; font-size: 14px; }
         
-        /* C3 Box Styling */
-        .c3-box { padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid; }
-        .c3-command { background-color: #ebf8ff; border-left-color: #3182ce; }
-        .c3-control { background-color: #fffaf0; border-left-color: #dd6b20; }
-        .c3-comm { background-color: #f0fff4; border-left-color: #38a169; }
-        .c3-title { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #2d3748; }
-
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px; }
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
+        
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: 600; font-size: 13px; color: #4a5568; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="file"], select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; font-size: 14px; background: #fff;}
+        input[readonly] { background-color: #f7fafc; color: #718096; cursor: not-allowed; }
+        
+        /* Contact Box Styling */
+        .contact-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .contact-box-title { font-size: 14px; font-weight: bold; color: #2b6cb0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px;}
+        
         /* Buttons */
-        .btn { color: white; border: none; padding: 12px 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s; width: 100%; display: inline-block; text-align: center; margin-top: 10px; }
-        .btn-project { background-color: #2b6cb0; }
-        .btn-project:hover { background-color: #2c5282; }
-        .btn-area { background-color: #38a169; }
-        .btn-area:hover { background-color: #2f855a; }
-        .btn-task { background-color: #d69e2e; }
-        .btn-task:hover { background-color: #b7791f; }
-        .btn-add { background-color: #4a5568; margin-top: 0; padding: 10px; }
-        .btn-add:hover { background-color: #2d3748; }
+        .btn { color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s; width: 100%; display: inline-block; text-align: center; margin-top: 10px; }
+        .btn-project { background-color: #2b6cb0; } .btn-project:hover { background-color: #2c5282; }
+        .btn-area { background-color: #38a169; } .btn-area:hover { background-color: #2f855a; }
+        .btn-task { background-color: #d69e2e; } .btn-task:hover { background-color: #b7791f; }
+        .btn-add { background-color: #4a5568; margin-top: 0; padding: 8px; } .btn-add:hover { background-color: #2d3748; }
         .btn-delete { background-color: #e53e3e; padding: 5px 10px; font-size: 12px; margin-top:0; width: auto;}
         
         /* Table Styles */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; vertical-align: top; }
         th { background-color: #edf2f7; font-weight: 600; color: #4a5568; }
         .project-row { background-color: #ebf8ff; border-top: 2px solid #3182ce; }
         .area-row { background-color: #f0fff4; }
         .task-row { background-color: #fff; }
         
-        /* Badges */
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; color: white; display: inline-block; }
-        .bg-danger { background-color: #e53e3e; } 
-        .bg-warning { background-color: #dd6b20; } 
-        .bg-success { background-color: #38a169; }
+        .bg-danger { background-color: #e53e3e; } .bg-warning { background-color: #dd6b20; } .bg-success { background-color: #38a169; }
         .bg-role { background-color: #cbd5e0; color: #2d3748; }
         
-        /* Org Chart Display in Table */
-        .org-tree { font-size: 12px; line-height: 1.6; color: #4a5568; background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-top: 5px; }
-        .org-tree strong { color: #2d3748; }
-        
-        .team-container { background: #f7fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .team-container { background: #fffaf0; padding: 15px; border-radius: 6px; border: 1px solid #f6e05e; }
+        .help-text { font-size: 12px; color: #718096; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -64,61 +58,137 @@
 <div class="container">
     <div class="header">
         <h2>ระบบบริหารจัดการโครงการแบบบูรณาการ (Enterprise Project Management)</h2>
-        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">บริหารภาพรวม ผังองค์กร (C3) ความปลอดภัย และแผนปฏิบัติการ (8T)</p>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">บริหารภาพรวม ผังองค์กร (C3) ความปลอดภัย และแผนปฏิบัติการ (8T Framework)</p>
     </div>
 
-    <!-- Tier 1: Project Master & Organization -->
+    <!-- ส่วนที่ 1: ข้อมูลระดับโครงการหลัก -->
     <div class="form-section">
-        <div class="section-title">1. ข้อมูลโครงการและผังองค์กรบริหาร (Project Master & Organization Chart)</div>
+        <div class="section-title">1. ข้อมูลหลักของโครงการ (Project Master Data)</div>
         <form id="projectForm" onsubmit="submitProject(event)">
-            <div class="form-row">
-                <div class="form-group"><label>รหัสโครงการ (Project Code) *</label><input type="text" id="projectCode" required placeholder="เช่น PRJ-2026-001"></div>
-                <div class="form-group" style="flex: 2;"><label>ชื่อโครงการ *</label><input type="text" id="projectName" required placeholder="เช่น โครงการก่อสร้างหอระบายความร้อน"></div>
+            
+            <div class="sub-title">1.1 ข้อมูลทั่วไปของโครงการ</div>
+            <div class="grid-4">
+                <div class="form-group"><label>รหัสโครงการ (Code) *</label><input type="text" id="pCode" required placeholder="PRJ-2026-001"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>ชื่อโครงการ (Name) *</label><input type="text" id="pName" required placeholder="ชื่อโครงการก่อสร้าง..."></div>
+                <div class="form-group"><label>ประเภทโครงการ (Type) *</label>
+                    <select id="pType" required>
+                        <option value="">-- เลือกประเภท --</option>
+                        <option value="ก่อสร้าง (Construction)">ก่อสร้าง (Construction)</option>
+                        <option value="ซ่อมบำรุง (Maintenance)">ซ่อมบำรุง (Maintenance)</option>
+                        <option value="ติดตั้งระบบ (System Installation)">ติดตั้งระบบ (System Installation)</option>
+                        <option value="รื้อถอน (Demolition)">รื้อถอน (Demolition)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group"><label>ที่อยู่ติดต่อของโครงการ (Address) *</label><textarea id="pAddress" rows="2" required placeholder="สถานที่ตั้งโครงการ..."></textarea></div>
+                <div class="form-group">
+                    <label>หมายเหตุโครงการ (Remarks)</label><textarea id="pRemarks" rows="2" placeholder="รายละเอียดเพิ่มเติมเผื่อเอาไว้..."></textarea>
+                </div>
+            </div>
+            
+            <div class="grid-4">
+                <div class="form-group"><label>พิกัด (Lat, Lng) *</label><input type="text" id="pGps" required placeholder="12.6712, 101.2465"></div>
+                <div class="form-group"><label>มูลค่าสัญญาโครงการ (บาท) *</label><input type="number" id="pBudget" required min="0"></div>
+                <div class="form-group"><label>บทปรับถ้าล่าช้า (บาท/วัน)</label><input type="number" id="pPenaltyDay" placeholder="ระบุมูลค่า"></div>
+                <div class="form-group"><label>หรือ บทปรับตามมูลค่า (%)</label><input type="number" id="pPenaltyPct" placeholder="% ของมูลค่ารวม"></div>
             </div>
 
-            <div class="sub-title">โครงสร้างการบริหาร (C3 Framework & Coordinator)</div>
+            <div class="sub-title">1.2 ระยะเวลาและเอกสารสัญญา</div>
+            <div class="grid-4">
+                <div class="form-group"><label>วันที่เริ่มต้น (Start Date) *</label><input type="date" id="pStart" required onchange="calcProjectDays()"></div>
+                <div class="form-group"><label>วันที่สิ้นสุด (End Date) *</label><input type="date" id="pEnd" required onchange="calcProjectDays()"></div>
+                <div class="form-group"><label>รวมเวลาดำเนินการ (วัน)</label><input type="text" id="pDuration" readonly placeholder="คำนวณอัตโนมัติ"></div>
+                <div class="form-group"><label>เงื่อนไขพิเศษอื่นๆ</label><input type="text" id="pSpecialCondition" placeholder="ระบุเงื่อนไข..."></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>แนบไฟล์สัญญาโครงการ (PDF)</label><input type="file" id="fContract" accept=".pdf"></div>
+                <div class="form-group"><label>แนบข้อตกลงด้านความปลอดภัย (Safety Agreement)</label><input type="file" id="fSafety" accept=".pdf"></div>
+            </div>
+
+            <div class="sub-title">1.3 โครงสร้างการบริหารโครงการ (C3 - ฝั่งเจ้าของโครงการและที่ปรึกษา)</div>
             
-            <!-- C1: Command & Control (Owner Side) -->
-            <div class="c3-box c3-command">
-                <div class="c3-title">👑 ผู้ว่าจ้าง และ ที่ปรึกษาโครงการ (Owner & Consultant)</div>
-                <div class="form-row">
-                    <div class="form-group"><label>เจ้าของโครงการ (Project Owner) *</label><input type="text" id="orgOwner" required placeholder="ชื่อ - เบอร์โทร"></div>
-                    <div class="form-group"><label>ที่ปรึกษาอาวุโส / ที่ปรึกษาโครงการ *</label><input type="text" id="orgConsultant" required placeholder="ชื่อ - เบอร์โทร"></div>
+            <div class="grid-2">
+                <!-- Owner -->
+                <div class="contact-box">
+                    <div class="contact-box-title">👑 เจ้าของโครงการ (Project Owner)</div>
+                    <div class="grid-2" style="margin-bottom:0;">
+                        <div class="form-group" style="grid-column: span 2;"><label>ชื่อเจ้าของโครงการ *</label><input type="text" id="oName" required></div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="oPhone"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" id="oEmail"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Line ID</label><input type="text" id="oLine"></div>
+                    </div>
+                </div>
+                <!-- Consultant -->
+                <div class="contact-box">
+                    <div class="contact-box-title">🏛️ ที่ปรึกษาโครงการ (Consultant)</div>
+                    <div class="grid-2" style="margin-bottom:0;">
+                        <div class="form-group" style="grid-column: span 2;"><label>ชื่อบริษัท / ชื่อที่ปรึกษา *</label><input type="text" id="cName" required></div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="cPhone"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" id="cEmail"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Line ID</label><input type="text" id="cLine"></div>
+                    </div>
+                </div>
+                <!-- Safety (Owner side) -->
+                <div class="contact-box">
+                    <div class="contact-box-title">🛡️ เจ้าหน้าที่ความปลอดภัย (ฝั่ง Owner/Consultant)</div>
+                    <div class="grid-2" style="margin-bottom:0;">
+                        <div class="form-group" style="grid-column: span 2;"><label>ชื่อเจ้าหน้าที่ความปลอดภัย</label><input type="text" id="osName"></div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="osPhone"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" id="osEmail"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Line ID</label><input type="text" id="osLine"></div>
+                    </div>
+                </div>
+                <!-- Coordinator -->
+                <div class="contact-box">
+                    <div class="contact-box-title">🤝 ผู้ประสานงานโครงการ (Project Coordinator)</div>
+                    <div class="grid-2" style="margin-bottom:0;">
+                        <div class="form-group" style="grid-column: span 2;"><label>ชื่อผู้ประสานงาน *</label><input type="text" id="coName" required></div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="coPhone"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" id="coEmail"></div>
+                        <div class="form-group"><label>Line ID</label><input type="text" id="coLine"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>หมายเหตุผู้ประสานงาน</label><input type="text" id="coRemark"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- C2 & C3: Execution Team (FTC/Contractor Side) -->
-            <div class="sub-title" style="color: #c53030; border-bottom-color: #fc8181;">ทีมงานหลักประจำโครงการ (Core Team)</div>
+            <!-- ส่วนที่ 2: ทีมงานหลักประจำโครงการ (ฝั่งผู้ปฏิบัติงาน) -->
+            <div class="section-title" style="margin-top: 20px; background:#fffaf0; border-left-color:#d69e2e;">2. ทีมงานหลักประจำโครงการ (Core Execution Team)</div>
             <div class="team-container">
-                <p style="margin-top: 0; font-size: 13px; color: #718096;">* เพิ่มรายชื่อทีมงานหลัก เช่น PM, จป.วิชาชีพ, ผู้ควบคุมงบ, วิศวกรประจำโครงการ ฯลฯ เพื่อเป็นฐานข้อมูลในการกำหนดสิทธิ์เข้าพื้นที่และอนุมัติงาน</p>
-                <div class="form-row" style="align-items: flex-end;">
+                <p style="margin-top: 0; font-size: 13px; color: #718096;">* ระบุรายชื่อทีมงานฝั่งปฏิบัติการ เพื่อกำหนดสิทธิ์การเข้าพื้นที่ ควบคุมงาน และการอนุมัติผ่านระบบ</p>
+                <div class="grid-5" style="align-items: flex-end; grid-template-columns: 1.5fr 1.5fr 1fr 2fr 0.5fr;">
                     <div class="form-group">
-                        <label>บทบาทหน้าที่</label>
+                        <label>บทบาท (Role)</label>
                         <select id="tmRole">
-                            <option value="Project Manager (PM)">Project Manager (PM)</option>
-                            <option value="จป.วิชาชีพ">จป.วิชาชีพ</option>
-                            <option value="ผู้ควบคุมงบประมาณ">ผู้ควบคุมงบประมาณ</option>
-                            <option value="วิศวกรประจำโครงการ">วิศวกรประจำโครงการ</option>
-                            <option value="ผู้ประสานงาน (Coordinator)">ผู้ประสานงาน (Coordinator)</option>
+                            <option value="ผู้จัดการโครงการ (PM)">ผู้จัดการโครงการ (PM)</option>
+                            <option value="ที่ปรึกษาโครงการ (Advisor)">ที่ปรึกษาโครงการ (Advisor)</option>
+                            <option value="ที่ปรึกษาด้านความปลอดภัย">ที่ปรึกษาด้านความปลอดภัย</option>
+                            <option value="วิศวกรโครงการ">วิศวกรโครงการ</option>
+                            <option value="โฟร์แมนโครงการ">โฟร์แมนโครงการ</option>
+                            <option value="จป.โครงการ">จป.โครงการ</option>
                             <option value="อื่นๆ">อื่นๆ...</option>
                         </select>
                     </div>
-                    <div class="form-group"><label>รหัสประจำตัว (ID)</label><input type="text" id="tmId" placeholder="เช่น EMP-001"></div>
-                    <div class="form-group" style="flex: 1.5;"><label>ชื่อ-นามสกุล</label><input type="text" id="tmName" placeholder="ระบุชื่อ-นามสกุล"></div>
-                    <div class="form-group"><label>LINE ID / เบอร์โทร</label><input type="text" id="tmContact" placeholder="ข้อมูลติดต่อ"></div>
-                    <div class="form-group" style="flex: 0.5;">
-                        <button type="button" class="btn btn-add" onclick="addTeamMember()">+ เพิ่ม</button>
-                    </div>
+                    <div class="form-group"><label>หน้าที่/ตำแหน่งย่อย</label><input type="text" id="tmDuty" placeholder="เช่น วิศวกรไฟฟ้า, ควบคุมงานยก"></div>
+                    <div class="form-group"><label>รหัสพนักงาน (ID)</label><input type="text" id="tmId" placeholder="EMP-001"></div>
+                    <div class="form-group"><label>ชื่อ-นามสกุล</label><input type="text" id="tmName" placeholder="ระบุชื่อ-นามสกุล"></div>
+                    <div class="form-group"><button type="button" class="btn btn-add" onclick="addTeamMember()">+ เพิ่ม</button></div>
+                </div>
+                <div class="grid-3" style="margin-bottom: 15px;">
+                    <div class="form-group"><label>เบอร์โทร</label><input type="text" id="tmPhone" placeholder="เบอร์โทร"></div>
+                    <div class="form-group"><label>อีเมล</label><input type="email" id="tmEmail" placeholder="อีเมล"></div>
+                    <div class="form-group"><label>Line ID</label><input type="text" id="tmLine" placeholder="Line ID"></div>
                 </div>
                 
                 <table id="teamInputTable">
                     <thead>
                         <tr>
-                            <th style="width: 20%;">บทบาท</th>
-                            <th style="width: 15%;">รหัส (ID)</th>
-                            <th style="width: 30%;">ชื่อ-นามสกุล</th>
-                            <th style="width: 25%;">ข้อมูลติดต่อ</th>
-                            <th style="width: 10%;">ลบ</th>
+                            <th>บทบาท / หน้าที่</th>
+                            <th>รหัส</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ข้อมูลติดต่อ</th>
+                            <th style="width: 5%;">ลบ</th>
                         </tr>
                     </thead>
                     <tbody id="teamInputBody">
@@ -127,75 +197,104 @@
                 </table>
             </div>
 
-            <div class="sub-title">ข้อมูลสัญญาและงบประมาณรวม</div>
-            <div class="form-row">
-                <div class="form-group"><label>แนบไฟล์สัญญา (PDF/Word)</label><input type="file" id="projectContract" accept=".pdf,.doc,.docx"></div>
-                <div class="form-group"><label>งบประมาณโครงการ (บาท) *</label><input type="number" id="projectBudget" required min="0"></div>
-                <div class="form-group"><label>พิกัดแผนที่ (Lat, Lng) *</label><input type="text" id="projectGps" required placeholder="เช่น 12.6712, 101.2465"></div>
-            </div>
-            <button type="submit" class="btn btn-project">+ บันทึกฐานข้อมูลโครงการและทีมงาน</button>
+            <button type="submit" class="btn btn-project" style="margin-top: 20px;">+ บันทึกฐานข้อมูลโครงการทั้งหมด (Project Master)</button>
         </form>
     </div>
 
-    <!-- Tier 2: Area / Zone -->
+    <!-- ส่วนที่ 3: พื้นที่ปฏิบัติงาน -->
     <div class="form-section" style="background-color: #f8fafc;">
-        <div class="section-title" style="border-left-color: #38a169;">2. กำหนดพื้นที่ปฏิบัติงานและการควบคุมความเสี่ยง (Area / Zone)</div>
+        <div class="section-title" style="border-left-color: #38a169;">3. กำหนดพื้นที่ปฏิบัติงาน (Area Master & Zoning)</div>
         <form id="areaForm" onsubmit="submitArea(event)">
-            <div class="form-row">
-                <div class="form-group" style="flex: 2;">
+            <div class="grid-4">
+                <div class="form-group" style="grid-column: span 2;">
                     <label>อ้างอิงโครงการหลัก *</label>
                     <select id="selectProjectForArea" required><option value="">-- โหลดข้อมูลโครงการ... --</option></select>
                 </div>
-                <div class="form-group"><label>รหัสพื้นที่ (Area ID) *</label><input type="text" id="areaId" required placeholder="เช่น AREA-A01"></div>
+                <div class="form-group"><label>รหัสพื้นที่ (Area ID) *</label><input type="text" id="aId" required placeholder="AREA-01"></div>
+                <div class="form-group"><label>ชื่อพื้นที่/โซน *</label><input type="text" id="aName" required placeholder="โซนก่อสร้างอาคาร A"></div>
             </div>
-            <div class="form-row">
-                <div class="form-group" style="flex: 2;"><label>ชื่อพื้นที่ / โซนปฏิบัติงาน *</label><input type="text" id="areaName" required placeholder="เช่น โซนถังเก็บสารเคมี"></div>
+            <div class="grid-2">
                 <div class="form-group">
-                    <label>ระดับเขตพื้นที่ (ตามหลักวิชาการ) *</label>
-                    <select id="workZone" required>
+                    <label>ระดับเขตพื้นที่ (อ้างอิงหลักวิชาการความปลอดภัย) *</label>
+                    <select id="aZone" required>
                         <option value="">-- ประเมินระดับความเสี่ยง --</option>
-                        <option value="เขตอันตราย">เขตอันตราย (พื้นที่เสี่ยงสูงสุด)</option>
-                        <option value="เขตควบคุม">เขตควบคุม (พื้นที่ควบคุมความเสี่ยง)</option>
-                        <option value="เขตปลอดภัย">เขตปลอดภัย (พื้นที่ทั่วไป)</option>
+                        <option value="เขตอันตราย">🔴 เขตอันตราย (พื้นที่เสี่ยงสูงสุด/Hot Zone)</option>
+                        <option value="เขตควบคุม">🟠 เขตควบคุม (พื้นที่ควบคุมความเสี่ยง/Warm Zone)</option>
+                        <option value="เขตปลอดภัย">🟢 เขตปลอดภัย (พื้นที่ทั่วไป/Safe Zone)</option>
                     </select>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-area">+ บันทึกพื้นที่ปฏิบัติงาน</button>
-        </form>
-    </div>
-
-    <!-- Tier 3: Task Execution -->
-    <div class="form-section" style="background-color: #fffff0;">
-        <div class="section-title" style="border-left-color: #d69e2e;">3. แผนดำเนินการและแบ่งงาน (Task Execution - 8T Framework)</div>
-        <form id="taskForm" onsubmit="submitTask(event)">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>อ้างอิงพื้นที่ (Area) *</label>
-                    <select id="selectAreaForTask" required><option value="">-- โหลดข้อมูลพื้นที่... --</option></select>
+                <div class="form-group" style="justify-content: flex-end;">
+                    <button type="submit" class="btn btn-area">+ บันทึกพื้นที่</button>
                 </div>
-                <div class="form-group" style="flex: 2;"><label>ชื่องาน / ภารกิจ (Task) *</label><input type="text" id="taskName" required placeholder="เช่น งานติดตั้งนั่งร้าน 3 ชั้น"></div>
             </div>
-            <div class="form-row">
-                <div class="form-group"><label>ผู้รับผิดชอบ (Team) *</label><input type="text" id="taskOwner" required placeholder="เช่น ผรม. บจก. เอ็นพีซี"></div>
-                <div class="form-group"><label>วันที่เริ่ม (Time: Start) *</label><input type="date" id="taskStart" required></div>
-                <div class="form-group"><label>วันที่เสร็จ (Time: End) *</label><input type="date" id="taskEnd" required></div>
-            </div>
-            <button type="submit" class="btn btn-task">+ บันทึกแผนงาน (Task)</button>
         </form>
     </div>
 
-    <!-- Dashboard: Tree View -->
+    <!-- ส่วนที่ 4: แผนงานโครงการ (Task Execution) -->
+    <div class="form-section" style="background-color: #fffff0;">
+        <div class="section-title" style="border-left-color: #d69e2e;">4. แผนงานและภารกิจโครงการ (Task Execution Master)</div>
+        
+        <div style="margin-bottom: 15px; border: 1px dashed #a0aec0; padding: 15px; background: #fff; border-radius: 4px;">
+            <strong style="color: #2d3748; font-size: 14px;">📥 แนบไฟล์แผนงานรวม (Excel / MS Project)</strong>
+            <div class="grid-2" style="margin-top: 10px; align-items: center; margin-bottom: 0;">
+                <div class="form-group"><input type="file" accept=".xlsx, .xls, .csv, .mpp"></div>
+                <div class="form-group"><button type="button" class="btn" style="background-color: #276749; margin-top:0;">อัปโหลดและประมวลผลข้อมูล (Future Phase)</button></div>
+            </div>
+        </div>
+
+        <form id="taskForm" onsubmit="submitTask(event)">
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>อ้างอิงพื้นที่เปิดงาน *</label>
+                    <select id="tArea" required><option value="">-- โหลดข้อมูลพื้นที่... --</option></select>
+                </div>
+                <div class="form-group"><label>รหัส Task *</label><input type="text" id="tCode" required placeholder="TSK-001"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>ชื่องาน / ภารกิจ (Task Name) *</label><input type="text" id="tName" required placeholder="งานติดตั้งโครงเหล็ก"></div>
+            </div>
+            
+            <div class="grid-4">
+                <div class="form-group"><label>กลุ่มงาน/ประเภทงาน</label><input type="text" id="tGroup" placeholder="เช่น งานโครงสร้าง"></div>
+                <div class="form-group">
+                    <label>ประเภทความเสี่ยง (JSA Required) *</label>
+                    <select id="tRisk" required>
+                        <option value="ไม่มีความเสี่ยงพิเศษ">ไม่มีความเสี่ยงพิเศษ</option>
+                        <option value="งานความร้อน (Hot Work)">🔥 งานความร้อน (Hot Work)</option>
+                        <option value="งานที่สูง (Working at Height)">🪜 งานที่สูง (Working at Height)</option>
+                        <option value="งานอับอากาศ (Confined Space)">🕳️ งานอับอากาศ (Confined Space)</option>
+                        <option value="งานสารเคมีอันตราย">🧪 งานสารเคมีอันตราย</option>
+                        <option value="งานไฟฟ้า">⚡ งานไฟฟ้า</option>
+                        <option value="งานขุดเจาะ">⛏️ งานขุดเจาะ</option>
+                        <option value="งานยกหิ้ว (Lifting)">🏗️ งานยกหิ้ว (Lifting)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>พิกัด/ชั้น/อาคาร ที่เปิดงาน</label><input type="text" id="tLocDetail" placeholder="เช่น ชั้น 2 อาคาร B"></div>
+                <div class="form-group"><label>ผู้ดูแลรับผิดชอบหลัก (PIC) *</label><input type="text" id="tPic" required placeholder="ระบุชื่อ วิศวกร/โฟร์แมน/จป."></div>
+            </div>
+
+            <div class="grid-5">
+                <div class="form-group"><label>จำนวนคน (Manpower) *</label><input type="number" id="tManpower" required min="1" placeholder="คน"></div>
+                <div class="form-group"><label>งบประมาณ (บาท)</label><input type="number" id="tBudget" min="0" placeholder="งบเฉพาะส่วนนี้"></div>
+                <div class="form-group"><label>วันที่เริ่ม (Start) *</label><input type="date" id="tStart" required onchange="calcTaskDays()"></div>
+                <div class="form-group"><label>วันที่เสร็จ (End) *</label><input type="date" id="tEnd" required onchange="calcTaskDays()"></div>
+                <div class="form-group"><label>รวมเวลา (วัน)</label><input type="text" id="tDays" readonly placeholder="คำนวณอัตโนมัติ"></div>
+            </div>
+
+            <button type="submit" class="btn btn-task">+ บันทึกแผนปฏิบัติการ (Task)</button>
+        </form>
+    </div>
+
+    <!-- Dashboard -->
     <div class="form-section">
-        <div class="section-title" style="border-left-color: #805ad5;">4. Dashboard สรุปโครงสร้างโครงการและผังองค์กร</div>
+        <div class="section-title" style="border-left-color: #805ad5; background: #faf5ff;">5. Dashboard สรุปฐานข้อมูลโครงสร้างโครงการ</div>
         <div style="overflow-x: auto;">
             <table id="dashboardTable">
                 <thead>
                     <tr>
-                        <th style="width: 15%;">รหัส (ID)</th>
-                        <th style="width: 25%;">รายละเอียดงาน / พื้นที่</th>
-                        <th style="width: 40%;">ผังองค์กรและทีมงาน (Organization & Core Team)</th>
-                        <th style="width: 12%;">ระยะเวลา</th>
-                        <th style="width: 8%;">สถานะ</th>
+                        <th style="width: 15%;">รหัส (ID) / ประเภท</th>
+                        <th style="width: 25%;">รายละเอียด / งบประมาณ</th>
+                        <th style="width: 35%;">C3 Org / ทีมงาน / ผู้รับผิดชอบ</th>
+                        <th style="width: 15%;">ระยะเวลา / สถานที่</th>
+                        <th style="width: 10%;">ข้อมูลจำเพาะ</th>
                     </tr>
                 </thead>
                 <tbody id="dashboardBody">
@@ -210,28 +309,42 @@
     let projects = [];
     let areas = [];
     let tasks = [];
-    let currentTeamList = []; // เก็บรายชื่อทีมงานชั่วคราวก่อนกดบันทึกโปรเจกต์
+    let currentTeamList = []; 
 
-    // จัดการ List ทีมงานหลัก (Core Team)
+    function calcProjectDays() {
+        const start = document.getElementById('pStart').value;
+        const end = document.getElementById('pEnd').value;
+        if(start && end) {
+            const diffTime = Math.abs(new Date(end) - new Date(start));
+            document.getElementById('pDuration').value = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        }
+    }
+
+    function calcTaskDays() {
+        const start = document.getElementById('tStart').value;
+        const end = document.getElementById('tEnd').value;
+        if(start && end) {
+            const diffTime = Math.abs(new Date(end) - new Date(start));
+            document.getElementById('tDays').value = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        }
+    }
+
     function addTeamMember() {
         const role = document.getElementById('tmRole').value;
+        const duty = document.getElementById('tmDuty').value;
         const id = document.getElementById('tmId').value;
         const name = document.getElementById('tmName').value;
-        const contact = document.getElementById('tmContact').value;
+        const phone = document.getElementById('tmPhone').value;
+        const email = document.getElementById('tmEmail').value;
+        const line = document.getElementById('tmLine').value;
 
-        if(!name) {
-            alert('กรุณาระบุ ชื่อ-นามสกุล ของทีมงาน');
-            return;
-        }
+        if(!name) { alert('กรุณาระบุ ชื่อ-นามสกุล ของทีมงาน'); return; }
 
-        currentTeamList.push({ role, id, name, contact });
+        currentTeamList.push({ role, duty, id, name, phone, email, line });
         renderTeamInputTable();
         
         // Clear inputs
-        document.getElementById('tmId').value = '';
-        document.getElementById('tmName').value = '';
-        document.getElementById('tmContact').value = '';
-        document.getElementById('tmId').focus();
+        ['tmDuty', 'tmId', 'tmName', 'tmPhone', 'tmEmail', 'tmLine'].forEach(el => document.getElementById(el).value = '');
     }
 
     function removeTeamMember(index) {
@@ -242,19 +355,17 @@
     function renderTeamInputTable() {
         const tbody = document.getElementById('teamInputBody');
         tbody.innerHTML = '';
-        
         if(currentTeamList.length === 0) {
             tbody.innerHTML = '<tr id="emptyTeamRow"><td colspan="5" style="text-align: center; color: #a0aec0;">ยังไม่ได้เพิ่มรายชื่อทีมงาน</td></tr>';
             return;
         }
-
         currentTeamList.forEach((member, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span class="badge bg-role">${member.role}</span></td>
+                <td><span class="badge bg-role">${member.role}</span><br><span style="font-size:11px; color:#718096;">${member.duty||'-'}</span></td>
                 <td>${member.id || '-'}</td>
                 <td><strong>${member.name}</strong></td>
-                <td>${member.contact || '-'}</td>
+                <td style="font-size:11px;">📞 ${member.phone||'-'}<br>✉️ ${member.email||'-'}<br>💬 ${member.line||'-'}</td>
                 <td><button type="button" class="btn btn-delete" onclick="removeTeamMember(${index})">ลบ</button></td>
             `;
             tbody.appendChild(tr);
@@ -266,7 +377,7 @@
         pSelect.innerHTML = '<option value="">-- เลือกโครงการหลัก --</option>';
         projects.forEach(p => pSelect.innerHTML += `<option value="${p.id}">[${p.id}] ${p.name}</option>`);
 
-        const aSelect = document.getElementById('selectAreaForTask');
+        const aSelect = document.getElementById('tArea');
         aSelect.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
         areas.forEach(a => aSelect.innerHTML += `<option value="${a.id}">[${a.projectId}] -> [${a.id}] ${a.name}</option>`);
     }
@@ -277,63 +388,60 @@
         if (projects.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">ยังไม่มีข้อมูล</td></tr>'; return; }
 
         projects.forEach(p => {
-            // สร้าง HTML สำหรับแสดงผลทีมงานใน Dashboard
             let teamHtml = '';
-            if(p.coreTeam && p.coreTeam.length > 0) {
+            if(p.coreTeam.length > 0) {
                 p.coreTeam.forEach(m => {
-                    teamHtml += `<div style="margin-bottom: 3px;">• <span style="color:#4a5568;">[${m.role}]</span> <strong>${m.name}</strong> ${m.id ? `(ID: ${m.id})` : ''} ${m.contact ? `📞 ${m.contact}` : ''}</div>`;
+                    teamHtml += `<div style="font-size:11px; margin-bottom:2px;">• <strong>${m.name}</strong> [${m.role}] ${m.id ? `(ID:${m.id})` : ''} 📞${m.phone}</div>`;
                 });
-            } else {
-                teamHtml = '<div style="color:#a0aec0;">ไม่ได้ระบุทีมงาน</div>';
-            }
+            } else { teamHtml = '<div style="color:#a0aec0;">-</div>'; }
 
-            // Tier 1: Project with Org Chart
             tbody.innerHTML += `
                 <tr class="project-row">
-                    <td><strong>📦 ${p.id}</strong></td>
+                    <td><strong>📦 ${p.id}</strong><br><span style="font-size:11px; color:#4a5568;">${p.type}</span></td>
                     <td>
-                        <strong style="color:#2b6cb0; font-size:14px;">${p.name}</strong><br>
-                        <span style="font-size:11px;">📍 ${p.gps} | 💰 ฿${parseFloat(p.budget).toLocaleString()}</span>
+                        <strong style="color:#2b6cb0;">${p.name}</strong><br>
+                        <span style="font-size:11px;">💰 สัญญา: ฿${parseFloat(p.budget).toLocaleString()}<br>📍 พิกัด: ${p.gps}</span>
                     </td>
                     <td>
-                        <div class="org-tree">
-                            <div style="color:#3182ce; margin-bottom:8px; border-bottom:1px dashed #cbd5e0; padding-bottom:5px;">
-                                <strong>👑 [Owner & Consultant]</strong><br>
-                                Owner: ${p.owner} | Consultant: ${p.consultant}
-                            </div>
-                            <div style="color:#2d3748;">
-                                <strong>👥 ทีมงานหลักประจำโครงการ (Core Team)</strong><br>
-                                ${teamHtml}
-                            </div>
+                        <div style="font-size:11px; color:#2d3748; background:#fff; padding:5px; border-radius:4px; border:1px solid #e2e8f0;">
+                            <strong style="color:#3182ce;">👑 Owner:</strong> ${p.owner.name} <br>
+                            <strong style="color:#dd6b20;">🏛️ Consult:</strong> ${p.consult.name} <br>
+                            <strong style="color:#38a169;">🤝 Coord:</strong> ${p.coord.name} <br>
+                            <hr style="margin:4px 0;">
+                            <strong>👥 Core Team:</strong><br>${teamHtml}
                         </div>
                     </td>
-                    <td>-</td>
-                    <td style="color:#3182ce; font-weight:bold;">Active</td>
+                    <td style="font-size:11px;">
+                        เริ่ม: ${p.start}<br>จบ: ${p.end}<br>รวม: <strong>${p.duration} วัน</strong>
+                    </td>
+                    <td style="font-size:11px; color:#718096;">
+                        ปรับ: ${p.penDay ? p.penDay+'บ./วัน' : '-'}<br>
+                        ปรับ: ${p.penPct ? p.penPct+'%' : '-'}
+                    </td>
                 </tr>`;
 
             const childAreas = areas.filter(a => a.projectId === p.id);
             childAreas.forEach(a => {
-                // Tier 2: Area
                 let badge = a.zone === 'เขตอันตราย' ? 'bg-danger' : (a.zone === 'เขตควบคุม' ? 'bg-warning' : 'bg-success');
                 tbody.innerHTML += `
                     <tr class="area-row">
                         <td style="padding-left: 20px;">↳ 🚩 ${a.id}</td>
-                        <td><strong>${a.name}</strong> <span class="badge ${badge}">${a.zone}</span></td>
-                        <td><span style="font-size:11px; color:#4a5568;">[ผูกพันตามโครงสร้างโครงการหลัก]</span></td>
+                        <td><strong>${a.name}</strong></td>
                         <td>-</td>
-                        <td style="color:#38a169;">Opened</td>
+                        <td>-</td>
+                        <td><span class="badge ${badge}">${a.zone}</span></td>
                     </tr>`;
 
                 const childTasks = tasks.filter(t => t.areaId === a.id);
                 childTasks.forEach(t => {
-                    // Tier 3: Task
+                    let riskBadge = t.risk !== 'ไม่มีความเสี่ยงพิเศษ' ? `<span class="badge bg-danger">⚠️ JSA Required</span>` : '';
                     tbody.innerHTML += `
                         <tr class="task-row">
-                            <td style="padding-left: 40px;">- 📝 Task</td>
-                            <td>${t.name}</td>
-                            <td>👤 Team: ${t.owner}</td>
-                            <td style="font-size:11px;">${t.start}<br>ถึง<br>${t.end}</td>
-                            <td style="color:#d69e2e;">Pending</td>
+                            <td style="padding-left: 40px;">- 📝 ${t.code}</td>
+                            <td>${t.name}<br><span style="font-size:11px; color:#718096;">กลุ่ม: ${t.group} | งบ: ${t.budget ? '฿'+t.budget : '-'}</span></td>
+                            <td><span style="font-size:11px;">👤 <strong>PIC:</strong> ${t.pic}<br>👥 <strong>คนงาน:</strong> ${t.manpower} คน</span></td>
+                            <td style="font-size:11px;">${t.start} ถึง ${t.end}<br>(${t.days} วัน)<br>📍 ${t.loc}</td>
+                            <td>${riskBadge} <br><span style="font-size:10px;">${t.risk}</span></td>
                         </tr>`;
                 });
             });
@@ -342,53 +450,66 @@
 
     function submitProject(e) {
         e.preventDefault();
-        
-        if(currentTeamList.length === 0) {
-            const confirmNoTeam = confirm("คุณยังไม่ได้เพิ่มรายชื่อ 'ทีมงานหลักประจำโครงการ' ต้องการบันทึกโดยไม่มีทีมงานหรือไม่?");
-            if(!confirmNoTeam) return;
-        }
-
         projects.push({
-            id: document.getElementById('projectCode').value,
-            name: document.getElementById('projectName').value,
-            owner: document.getElementById('orgOwner').value,
-            consultant: document.getElementById('orgConsultant').value,
-            coreTeam: [...currentTeamList], // Copy array
-            budget: document.getElementById('projectBudget').value,
-            gps: document.getElementById('projectGps').value
+            id: document.getElementById('pCode').value,
+            name: document.getElementById('pName').value,
+            type: document.getElementById('pType').value,
+            address: document.getElementById('pAddress').value,
+            gps: document.getElementById('pGps').value,
+            budget: document.getElementById('pBudget').value,
+            penDay: document.getElementById('pPenaltyDay').value,
+            penPct: document.getElementById('pPenaltyPct').value,
+            start: document.getElementById('pStart').value,
+            end: document.getElementById('pEnd').value,
+            duration: document.getElementById('pDuration').value,
+            special: document.getElementById('pSpecialCondition').value,
+            remarks: document.getElementById('pRemarks').value,
+            
+            owner: { name: document.getElementById('oName').value, phone: document.getElementById('oPhone').value, email: document.getElementById('oEmail').value, line: document.getElementById('oLine').value },
+            consult: { name: document.getElementById('cName').value, phone: document.getElementById('cPhone').value, email: document.getElementById('cEmail').value, line: document.getElementById('cLine').value },
+            safetyOwner: { name: document.getElementById('osName').value, phone: document.getElementById('osPhone').value, email: document.getElementById('osEmail').value, line: document.getElementById('osLine').value },
+            coord: { name: document.getElementById('coName').value, phone: document.getElementById('coPhone').value, email: document.getElementById('coEmail').value, line: document.getElementById('coLine').value, remark: document.getElementById('coRemark').value },
+            
+            coreTeam: [...currentTeamList]
         });
         
-        alert('✅ บันทึกโครงการหลักและทีมงานสำเร็จ'); 
+        alert('✅ บันทึก Project Master Data สำเร็จ'); 
         document.getElementById('projectForm').reset();
-        currentTeamList = []; // Reset team list
-        renderTeamInputTable(); // Clear table UI
-        
-        updateDropdowns(); 
-        renderDashboard();
+        currentTeamList = []; renderTeamInputTable();
+        updateDropdowns(); renderDashboard();
     }
 
     function submitArea(e) {
         e.preventDefault();
         areas.push({
             projectId: document.getElementById('selectProjectForArea').value,
-            id: document.getElementById('areaId').value,
-            name: document.getElementById('areaName').value,
-            zone: document.getElementById('workZone').value
+            id: document.getElementById('aId').value,
+            name: document.getElementById('aName').value,
+            zone: document.getElementById('aZone').value
         });
-        alert('✅ บันทึกพื้นที่สำเร็จ'); document.getElementById('areaForm').reset();
+        alert('✅ บันทึก Area Master สำเร็จ'); 
+        document.getElementById('areaForm').reset();
         updateDropdowns(); renderDashboard();
     }
 
     function submitTask(e) {
         e.preventDefault();
         tasks.push({
-            areaId: document.getElementById('selectAreaForTask').value,
-            name: document.getElementById('taskName').value,
-            owner: document.getElementById('taskOwner').value,
-            start: document.getElementById('taskStart').value,
-            end: document.getElementById('taskEnd').value
+            areaId: document.getElementById('tArea').value,
+            code: document.getElementById('tCode').value,
+            name: document.getElementById('tName').value,
+            group: document.getElementById('tGroup').value,
+            risk: document.getElementById('tRisk').value,
+            loc: document.getElementById('tLocDetail').value,
+            pic: document.getElementById('tPic').value,
+            manpower: document.getElementById('tManpower').value,
+            budget: document.getElementById('tBudget').value,
+            start: document.getElementById('tStart').value,
+            end: document.getElementById('tEnd').value,
+            days: document.getElementById('tDays').value
         });
-        alert('✅ บันทึกแผนงานสำเร็จ'); document.getElementById('taskForm').reset();
+        alert('✅ บันทึก Task Master สำเร็จ'); 
+        document.getElementById('taskForm').reset();
         renderDashboard();
     }
 </script>
