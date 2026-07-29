@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฝ่ายบริหารงบประมาณ - ตั้งต้นข้อมูลสัญญา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background-color: #2c5282; color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 22px; }
+        .form-section { padding: 25px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 250px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
+        input[type="text"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; }
+        .upload-box { background: #f7fafc; border: 1px dashed #a0aec0; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .btn-submit { background-color: #3182ce; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; }
+        .btn-submit:hover { background-color: #2b6cb0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>ระบบบันทึกข้อมูลสัญญาจ้าง (สำหรับฝ่ายบริหารงบประมาณ)</h2>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.8;">FTC Digital Safety Transformation</p>
+    </div>
+
+    <form id="budgetForm" class="form-section" onsubmit="submitBudgetForm(event)">
+        <div class="form-row">
+            <div class="form-group">
+                <label>เลขที่สัญญา / ใบสั่งจ้าง (PO) *</label>
+                <input type="text" id="contractNo" required placeholder="เช่น PO-2026-001">
+            </div>
+            <div class="form-group">
+                <label>พื้นที่ปฏิบัติงาน (Area) *</label>
+                <input type="text" id="projectName" required placeholder="เช่น พื้นที่ก่อสร้างโซน A">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+                <label>ชื่อ-นามสกุล เถ้าแก่ / ผู้รับจ้าง *</label>
+                <input type="text" id="companyName" required placeholder="นายสมชาย รักความปลอดภัย">
+            </div>
+            <div class="form-group">
+                <label>เลขประจำตัวประชาชน (เถ้าแก่) *</label>
+                <input type="text" id="taxId" required maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+        </div>
+
+        <div class="upload-box">
+            <label style="color: #2d3748;">แนบสำเนาสัญญาจ้าง / ใบสั่งจ้าง (PO) *</label>
+            <p style="font-size: 12px; color: #718096; margin-top: 0;">อัปโหลดเป็นไฟล์ PDF หรือรูปภาพ เพื่อเป็นหลักฐานอ้างอิง</p>
+            <input type="file" id="fileContract" accept=".pdf,image/*" required>
+        </div>
+
+        <button type="submit" class="btn-submit">บันทึกข้อมูลสัญญา และสร้างรหัสผู้รับเหมา</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function submitBudgetForm(event) {
+        event.preventDefault();
+        const btn = document.querySelector('.btn-submit');
+        btn.disabled = true; btn.innerHTML = '⏳ กำลังอัปโหลดเอกสารและบันทึกข้อมูล...';
+
+        try {
+            const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
+            const file = document.getElementById('fileContract').files[0];
+            let contractUrl = null;
+
+            if (file) {
+                const fileName = `${generatedVendorId}_PO_${Date.now()}.${file.name.split('.').pop()}`;
+                const { error: uploadErr } = await supabaseClient.storage.from('vendor-documents').upload(`contracts/${fileName}`, file);
+                if (uploadErr) throw uploadErr;
+                
+                const { data } = supabaseClient.storage.from('vendor-documents').getPublicUrl(`contracts/${fileName}`);
+                contractUrl = data.publicUrl;
+            }
+
+            const documentData = { contract_url: contractUrl, insurance_url: null, safety_agreement_url: null };
+
+            const { error: insertError } = await supabaseClient.from('table_vendors').insert([{
+                vendor_id: generatedVendorId,
+                vendor_name: document.getElementById('companyName').value,
+                tax_id: document.getElementById('taxId').value,
+                entity_type: 'Individual', 
+                contract_no: document.getElementById('contractNo').value,
+                project_name: document.getElementById('projectName').value,
+                verification_status: 'Waiting_Vendor', // สถานะรอให้เถ้าแก่มาลงทะเบียนต่อ
+                vendor_documents: documentData
+            }]);
+
+            if (insertError) throw insertError;
+            alert(`✅ บันทึกข้อมูลสำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสอ้างอิง: ${generatedVendorId}\n\nแจ้งให้ผู้รับเหมานำเลข PO ไปลงทะเบียนต่อได้เลยครับ`);
+            window.location.reload();
+
+        } catch (error) {
+            alert("❌ เกิดข้อผิดพลาด: " + error.message);
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'บันทึกข้อมูลสัญญา และสร้างรหัสผู้รับเหมา';
+        }
+    }
+</script>
+</body>
+</html>
