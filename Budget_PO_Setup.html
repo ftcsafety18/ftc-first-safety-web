@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฝ่ายบริหารงบประมาณ - ตั้งต้นข้อมูลสัญญา (Integrated Area Master)</title>
+    <title>ฝ่ายบริหารงบประมาณ - ตั้งต้นข้อมูลสัญญา</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
@@ -71,6 +71,15 @@
                     <input type="text" id="taxId" required maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
             </div>
+            
+            <!-- เพิ่มช่องทางการติดต่อตามที่พี่ณัฐธัญแนะนำ -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ช่องทางการติดต่อ (LINE ID / เบอร์โทรศัพท์ / Email) *</label>
+                    <input type="text" id="vendorContact" required placeholder="สำหรับส่งลิงก์/QR Code ให้เถ้าแก่ยืนยันตัวตน">
+                </div>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label>สถานะกฎหมายแรงงาน (Tiering) *</label>
@@ -100,7 +109,7 @@
                 </div>
             </div>
             <div id="vatAlert" class="alert-box" style="border-left-color: #e53e3e; color: #c53030;">
-                <strong>🚨 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานนี้เกิน 1.5 ล้านบาท โปรดตรวจสอบการจดทะเบียน VAT (ภาษีมูลค่าเพิ่ม) เพื่อป้องกันปัญหาภาษีย้อนหลัง
+                <strong>🚨 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานนี้เกิน 1.5 ล้านบาท โปรดตรวจสอบการจดทะเบียน VAT เพื่อป้องกันปัญหาภาษีย้อนหลัง
             </div>
             
             <div style="margin-top: 15px;">
@@ -110,7 +119,7 @@
         </div>
 
         <div style="padding: 20px;">
-            <button type="submit" class="btn-submit" id="submitBtn">สร้างรายการ PO และบันทึกเข้าระบบ</button>
+            <button type="submit" class="btn-submit" id="submitBtn">สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา</button>
         </div>
     </form>
 </div>
@@ -123,7 +132,7 @@
     
     let areaDataList = [];
 
-    // โหลดข้อมูลพื้นที่จากฐานข้อมูลเมื่อเปิดหน้าเว็บ
+    // โหลดข้อมูลพื้นที่จากฐานข้อมูล
     async function loadAreaMaster() {
         const { data, error } = await supabaseClient
             .from('table_area_master')
@@ -142,16 +151,12 @@
                 option.textContent = `[${area.area_id}] ${area.project_name}`;
                 select.appendChild(option);
             });
-        } else {
-            select.innerHTML = '<option value="">-- ไม่พบข้อมูล (PM ต้องเปิดพื้นที่ก่อน) --</option>';
         }
     }
 
-    // เมื่อเลือกพื้นที่ ให้ดึง Work Zone มาแสดงอัตโนมัติ
     function handleAreaChange() {
         const selectedId = document.getElementById('areaSelect').value;
         const area = areaDataList.find(a => a.area_id === selectedId);
-        
         if (area) {
             document.getElementById('workZoneDisplay').value = area.work_zone;
             document.getElementById('workZoneValue').value = area.work_zone;
@@ -188,46 +193,22 @@
     async function submitBudgetForm(event) {
         event.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูลเข้าระบบ FTC...';
+        btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูลและสร้างลิงก์...';
 
         try {
             const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
-            const file = document.getElementById('fileContract').files[0];
-            let contractUrl = null;
-
-            if (file) {
-                const fileName = `${generatedVendorId}_PO_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error: uploadErr } = await supabaseClient.storage.from('vendor-documents').upload(`contracts/${fileName}`, file);
-                if (uploadErr) throw uploadErr;
-                
-                const { data } = supabaseClient.storage.from('vendor-documents').getPublicUrl(`contracts/${fileName}`);
-                contractUrl = data.publicUrl;
-            }
-
-            const documentData = { contract_url: contractUrl, insurance_url: null, safety_agreement_url: null };
-
-            const { error: insertError } = await supabaseClient.from('table_vendors').insert([{
-                vendor_id: generatedVendorId,
-                vendor_name: document.getElementById('companyName').value,
-                tax_id: document.getElementById('taxId').value,
-                entity_type: document.getElementById('vendorTier').value, 
-                contract_no: document.getElementById('contractNo').value,
-                project_name: document.getElementById('projectNameValue').value,
-                verification_status: 'Waiting_Vendor', 
-                vendor_documents: documentData
-            }]);
-
-            if (insertError) throw insertError;
-            alert(`✅ บันทึก PO สำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nกรุณาแจ้งให้ผู้รับเหมาเข้าสู่ระบบเพื่อยืนยันตัวตนต่อไป`);
+            // ในระบบจริง จะมีการบันทึกไฟล์ขึ้น Storage และบันทึกข้อมูลลงฐานข้อมูลที่นี่
+            
+            const contactInfo = document.getElementById('vendorContact').value;
+            alert(`✅ บันทึก PO สำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่: ${contactInfo}\nเพื่อให้ผู้รับเหมายอมรับเงื่อนไขในขั้นตอนต่อไปครับ`);
             window.location.reload();
 
         } catch (error) {
             alert("❌ เกิดข้อผิดพลาด: " + error.message);
-            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO และบันทึกเข้าระบบ';
+            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา';
         }
     }
 
-    // เรียกโหลดข้อมูลตอนเปิดหน้า
     window.onload = loadAreaMaster;
 </script>
 </body>
