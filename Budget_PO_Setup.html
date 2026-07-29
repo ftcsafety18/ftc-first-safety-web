@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฝ่ายบริหารงบประมาณ - ตั้งต้นข้อมูลสัญญา (Smart Tiering)</title>
+    <title>ฝ่ายบริหารงบประมาณ - ตั้งต้นข้อมูลสัญญา (Integrated Area Master)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
@@ -16,6 +16,7 @@
         .form-group { flex: 1; min-width: 250px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
         input[type="text"], input[type="number"], input[type="date"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        .readonly-field { background-color: #e2e8f0; color: #4a5568; cursor: not-allowed; font-weight: bold; }
         .alert-box { display: none; background-color: #fffaf0; border-left: 4px solid #dd6b20; padding: 15px; margin-bottom: 15px; font-size: 14px; color: #c05621; }
         .btn-submit { background-color: #3182ce; color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 10px; }
         .btn-submit:hover { background-color: #2b6cb0; }
@@ -26,8 +27,8 @@
 
 <div class="container">
     <div class="header">
-        <h2>ระบบบันทึกข้อมูลสัญญาจ้างและประเมินความเสี่ยง</h2>
-        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.8;">FTC Digital Safety Transformation (Budget Dept.)</p>
+        <h2>ระบบบันทึกข้อมูลสัญญาจ้าง (Budget Dept.)</h2>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.8;">เชื่อมโยงฐานข้อมูลพื้นที่ Area Master Data</p>
     </div>
 
     <form id="budgetForm" onsubmit="submitBudgetForm(event)">
@@ -36,24 +37,23 @@
         <div class="form-section">
             <div class="section-title">1. ข้อมูลสัญญาและพื้นที่ปฏิบัติงาน</div>
             <div class="form-row">
-                <div class="form-group">
+                <div class="form-group" style="flex: 1;">
                     <label>เลขที่สัญญา / ใบสั่งจ้าง (PO) *</label>
                     <input type="text" id="contractNo" required placeholder="เช่น PO-2026-001">
                 </div>
-                <div class="form-group">
-                    <label>พื้นที่ปฏิบัติงาน (Location) *</label>
-                    <input type="text" id="projectName" required placeholder="ระบุสถานที่ทำงาน">
+                <div class="form-group" style="flex: 2;">
+                    <label>พื้นที่ปฏิบัติงาน (ดึงจากระบบ PM) *</label>
+                    <select id="areaSelect" required onchange="handleAreaChange()">
+                        <option value="">-- กำลังโหลดข้อมูลพื้นที่... --</option>
+                    </select>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>ระดับเขตพื้นที่ (Work Zone) *</label>
-                    <select id="workZone" required onchange="validateSafetyRules()">
-                        <option value="">-- เลือกระดับพื้นที่ --</option>
-                        <option value="เขตอันตราย">เขตอันตราย (Hot Zone / พื้นที่เสี่ยงสูง)</option>
-                        <option value="เขตควบคุม">เขตควบคุม (Warm Zone / พื้นที่ควบคุมความเสี่ยง)</option>
-                        <option value="เขตปลอดภัย">เขตปลอดภัย (Cold Zone / พื้นที่ทั่วไป)</option>
-                    </select>
+                    <label>ระดับเขตพื้นที่ (ล็อกอัตโนมัติโดยระบบความปลอดภัย) *</label>
+                    <input type="text" id="workZoneDisplay" class="readonly-field" readonly placeholder="ระบบจะแสดงเขตพื้นที่อัตโนมัติเมื่อเลือกโครงการ">
+                    <input type="hidden" id="workZoneValue">
+                    <input type="hidden" id="projectNameValue">
                 </div>
             </div>
         </div>
@@ -75,20 +75,20 @@
                 <div class="form-group">
                     <label>สถานะกฎหมายแรงงาน (Tiering) *</label>
                     <select id="vendorTier" required onchange="validateSafetyRules()">
-                        <option value="">-- เลือกสถานะ --</option>
+                        <option value="">-- เลือกสถานะผู้รับเหมา --</option>
                         <option value="Tier_A">Tier A: มีสถานะนายจ้างและส่งประกันสังคม (รับได้ทุกงาน)</option>
                         <option value="Tier_B">Tier B: ไม่มีลูกจ้าง/ทำเอง/ไม่เข้าระบบประกันสังคม (เฉพาะงานเขตปลอดภัย)</option>
                     </select>
                 </div>
             </div>
             <div id="safetyAlert" class="alert-box">
-                <strong>⚠️ ผิดเงื่อนไขความปลอดภัย:</strong> ผู้รับเหมา Tier B (ไม่มีประกันสังคม) ไม่อนุญาตให้เข้าทำงานใน "เขตอันตราย" หรือ "เขตควบคุม" โดยเด็ดขาด โปรดปรับเปลี่ยนเถ้าแก่หรือพื้นที่ทำงาน
+                <strong>⚠️ ผิดเงื่อนไขความปลอดภัย:</strong> ผู้รับเหมา Tier B ไม่อนุญาตให้เข้าทำงานใน "เขตอันตราย" หรือ "เขตควบคุม" โดยเด็ดขาด โปรดปรับเปลี่ยนเถ้าแก่หรือให้ PM ประเมินพื้นที่ใหม่
             </div>
         </div>
 
         <!-- Section 3: การควบคุมงบประมาณและระยะเวลา -->
         <div class="form-section">
-            <div class="section-title" style="border-left-color: #d69e2e;">3. การควบคุมมูลค่างาน (Monitor 1.8M) และระยะเวลา</div>
+            <div class="section-title" style="border-left-color: #d69e2e;">3. การควบคุมมูลค่างานและสัญญา</div>
             <div class="form-row">
                 <div class="form-group">
                     <label>มูลค่างานครั้งนี้ (บาท - ไม่รวม VAT) *</label>
@@ -100,7 +100,7 @@
                 </div>
             </div>
             <div id="vatAlert" class="alert-box" style="border-left-color: #e53e3e; color: #c53030;">
-                <strong>🚨 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานนี้เกิน 1.5 ล้านบาท โปรดตรวจสอบการจดทะเบียน VAT (ภาษีมูลค่าเพิ่ม) ของเถ้าแก่รายนี้ เพื่อป้องกันปัญหาทางภาษีของบริษัท
+                <strong>🚨 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานนี้เกิน 1.5 ล้านบาท โปรดตรวจสอบการจดทะเบียน VAT (ภาษีมูลค่าเพิ่ม) เพื่อป้องกันปัญหาภาษีย้อนหลัง
             </div>
             
             <div style="margin-top: 15px;">
@@ -110,21 +110,62 @@
         </div>
 
         <div style="padding: 20px;">
-            <button type="submit" class="btn-submit" id="submitBtn">สร้างรายการ PO รอให้ผู้รับเหมาลงทะเบียน</button>
+            <button type="submit" class="btn-submit" id="submitBtn">สร้างรายการ PO และบันทึกเข้าระบบ</button>
         </div>
     </form>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ตั้งค่า Supabase (ยังใช้ Key เดิมของพี่ครับ)
     const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let areaDataList = [];
 
-    // ฟังก์ชันตรวจสอบ Tier และ Work Zone
+    // โหลดข้อมูลพื้นที่จากฐานข้อมูลเมื่อเปิดหน้าเว็บ
+    async function loadAreaMaster() {
+        const { data, error } = await supabaseClient
+            .from('table_area_master')
+            .select('*')
+            .eq('status', 'Active')
+            .order('created_at', { ascending: false });
+
+        const select = document.getElementById('areaSelect');
+        select.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
+
+        if (data && data.length > 0) {
+            areaDataList = data;
+            data.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area.area_id;
+                option.textContent = `[${area.area_id}] ${area.project_name}`;
+                select.appendChild(option);
+            });
+        } else {
+            select.innerHTML = '<option value="">-- ไม่พบข้อมูล (PM ต้องเปิดพื้นที่ก่อน) --</option>';
+        }
+    }
+
+    // เมื่อเลือกพื้นที่ ให้ดึง Work Zone มาแสดงอัตโนมัติ
+    function handleAreaChange() {
+        const selectedId = document.getElementById('areaSelect').value;
+        const area = areaDataList.find(a => a.area_id === selectedId);
+        
+        if (area) {
+            document.getElementById('workZoneDisplay').value = area.work_zone;
+            document.getElementById('workZoneValue').value = area.work_zone;
+            document.getElementById('projectNameValue').value = area.project_name;
+        } else {
+            document.getElementById('workZoneDisplay').value = '';
+            document.getElementById('workZoneValue').value = '';
+            document.getElementById('projectNameValue').value = '';
+        }
+        validateSafetyRules();
+    }
+
     function validateSafetyRules() {
-        const zone = document.getElementById('workZone').value;
+        const zone = document.getElementById('workZoneValue').value;
         const tier = document.getElementById('vendorTier').value;
         const alertBox = document.getElementById('safetyAlert');
         const submitBtn = document.getElementById('submitBtn');
@@ -138,15 +179,10 @@
         }
     }
 
-    // ฟังก์ชันตรวจสอบยอด 1.5 ล้าน (VAT Check)
     function checkVATLimit() {
         const val = parseFloat(document.getElementById('contractValue').value) || 0;
         const vatAlert = document.getElementById('vatAlert');
-        if (val >= 1500000) {
-            vatAlert.style.display = 'block';
-        } else {
-            vatAlert.style.display = 'none';
-        }
+        vatAlert.style.display = val >= 1500000 ? 'block' : 'none';
     }
 
     async function submitBudgetForm(event) {
@@ -168,33 +204,31 @@
                 contractUrl = data.publicUrl;
             }
 
-            const documentData = { 
-                contract_url: contractUrl, 
-                insurance_url: null, 
-                safety_agreement_url: null 
-            };
+            const documentData = { contract_url: contractUrl, insurance_url: null, safety_agreement_url: null };
 
             const { error: insertError } = await supabaseClient.from('table_vendors').insert([{
                 vendor_id: generatedVendorId,
                 vendor_name: document.getElementById('companyName').value,
                 tax_id: document.getElementById('taxId').value,
-                entity_type: document.getElementById('vendorTier').value, // เก็บ Tier_A หรือ Tier_B
+                entity_type: document.getElementById('vendorTier').value, 
                 contract_no: document.getElementById('contractNo').value,
-                project_name: document.getElementById('projectName').value,
-                // ในชีวิตจริงเราจะเพิ่มคอลัมน์ contract_value และ contract_end_date เข้าไปในตารางด้วยครับ
+                project_name: document.getElementById('projectNameValue').value,
                 verification_status: 'Waiting_Vendor', 
                 vendor_documents: documentData
             }]);
 
             if (insertError) throw insertError;
-            alert(`✅ บันทึก PO สำเร็จ!\nเลขที่: ${document.getElementById('contractNo').value}\nรหัสอ้างอิง: ${generatedVendorId}\n\nกรุณาแจ้งให้ผู้รับเหมานำเลข PO ไปค้นหาและลงทะเบียนต่อครับ`);
+            alert(`✅ บันทึก PO สำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nกรุณาแจ้งให้ผู้รับเหมาเข้าสู่ระบบเพื่อยืนยันตัวตนต่อไป`);
             window.location.reload();
 
         } catch (error) {
             alert("❌ เกิดข้อผิดพลาด: " + error.message);
-            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO รอให้ผู้รับเหมาลงทะเบียน';
+            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO และบันทึกเข้าระบบ';
         }
     }
+
+    // เรียกโหลดข้อมูลตอนเปิดหน้า
+    window.onload = loadAreaMaster;
 </script>
 </body>
 </html>
