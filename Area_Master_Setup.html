@@ -15,11 +15,12 @@
         .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .form-group { flex: 1; min-width: 200px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
-        input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="file"], select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        .help-text { font-size: 12px; color: #718096; margin-top: 4px; display: block; }
         .btn-submit { color: white; border: none; padding: 12px 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: 0.3s; }
-        .btn-project { background-color: #2b6cb0; width: 100%; }
+        .btn-project { background-color: #2b6cb0; width: 100%; margin-top: 10px; }
         .btn-project:hover { background-color: #2c5282; }
-        .btn-area { background-color: #38a169; width: 100%; }
+        .btn-area { background-color: #38a169; width: 100%; margin-top: 10px; }
         .btn-area:hover { background-color: #2f855a; }
         
         /* สไตล์ตาราง */
@@ -32,7 +33,6 @@
         .bg-warning { background-color: #dd6b20; } /* เขตควบคุม */
         .bg-success { background-color: #38a169; } /* เขตปลอดภัย */
         .status-active { color: #38a169; font-weight: bold; }
-        .status-closed { color: #a0aec0; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -40,7 +40,7 @@
 <div class="container">
     <div class="header">
         <h2>ระบบบริหารจัดการโครงการและพื้นที่ปฏิบัติงาน (Project & Area Master)</h2>
-        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">สำหรับ PM เพื่อกำหนดโครงสร้างงาน งบประมาณ และระดับความปลอดภัย (WBS)</p>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">สำหรับ PM เพื่อกำหนดโครงสร้างงาน เงื่อนไขสัญญา และระดับความปลอดภัย</p>
     </div>
 
     <!-- ส่วนที่ 1: การตั้งต้นโครงการแม่ (Project Master) -->
@@ -57,17 +57,48 @@
                     <input type="text" id="projectName" required placeholder="เช่น โครงการปรับปรุงระบบท่อส่งก๊าซ">
                 </div>
             </div>
+            
             <div class="form-row">
-                <div class="form-group">
+                <div class="form-group" style="flex: 2;">
                     <label>ขอบเขตสัญญาจ้าง (Scope of Work)</label>
-                    <textarea id="projectScope" rows="2" placeholder="อธิบายลักษณะงานโดยสังเขป"></textarea>
+                    <textarea id="projectScope" rows="2" placeholder="อธิบายลักษณะงานและขอบเขตโดยสังเขป"></textarea>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>แนบไฟล์เอกสารสัญญา (PDF/Word) *</label>
+                    <input type="file" id="projectContract" accept=".pdf,.doc,.docx" required>
+                    <span class="help-text">ใช้สำหรับตรวจสอบเงื่อนไขและป้องกันค่าปรับ</span>
                 </div>
             </div>
+
+            <!-- เพิ่มส่วนผู้ประสานงานและสถานที่ตั้ง -->
             <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label>ผู้ประสานงานโครงการ *</label>
+                    <input type="text" id="projectCoordinator" required placeholder="ชื่อ - เบอร์โทรศัพท์">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>ที่ตั้งโครงการ / ไซต์งาน *</label>
+                    <input type="text" id="projectLocation" required placeholder="ระบุที่อยู่หรือจุดสังเกต">
+                </div>
+            </div>
+
+            <!-- เพิ่มส่วนพิกัด GPS -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>พิกัด Latitude *</label>
+                    <input type="text" id="projectLat" required placeholder="เช่น 12.6712">
+                </div>
+                <div class="form-group">
+                    <label>พิกัด Longitude *</label>
+                    <input type="text" id="projectLng" required placeholder="เช่น 101.2465">
+                </div>
                 <div class="form-group">
                     <label>งบประมาณโครงการ (บาท) *</label>
                     <input type="number" id="projectBudget" required min="0" placeholder="0">
                 </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label>วันที่เริ่มต้น *</label>
                     <input type="date" id="projectStart" required>
@@ -77,7 +108,7 @@
                     <input type="date" id="projectEnd" required>
                 </div>
             </div>
-            <button type="submit" class="btn-submit btn-project" id="btnSaveProject">+ บันทึกโครงการหลัก (ระดับบนสุด)</button>
+            <button type="submit" class="btn-submit btn-project" id="btnSaveProject">+ บันทึกฐานข้อมูลโครงการหลัก</button>
         </form>
     </div>
 
@@ -112,9 +143,9 @@
                     <label>ระดับเขตพื้นที่ (ตามหลักวิชาการ) *</label>
                     <select id="workZone" required>
                         <option value="">-- ประเมินระดับความเสี่ยง --</option>
-                        <option value="เขตอันตราย">เขตอันตราย (พื้นที่เสี่ยงสูงสุด / Hot Zone)</option>
-                        <option value="เขตควบคุม">เขตควบคุม (พื้นที่ควบคุมความเสี่ยง / Warm Zone)</option>
-                        <option value="เขตปลอดภัย">เขตปลอดภัย (พื้นที่ทั่วไป / Cold Zone)</option>
+                        <option value="เขตอันตราย">เขตอันตราย (พื้นที่เสี่ยงสูงสุด)</option>
+                        <option value="เขตควบคุม">เขตควบคุม (พื้นที่ควบคุมความเสี่ยง)</option>
+                        <option value="เขตปลอดภัย">เขตปลอดภัย (พื้นที่ทั่วไป)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -137,10 +168,10 @@
             <table id="dashboardTable">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">รหัส (Code/ID)</th>
-                        <th style="width: 35%;">ชื่อโครงการ / พื้นที่ปฏิบัติงาน</th>
+                        <th style="width: 20%;">รหัส (Code/ID)</th>
+                        <th style="width: 45%;">รายละเอียดโครงการ / พื้นที่ปฏิบัติงาน</th>
                         <th style="width: 15%;">ความเสี่ยง / ผู้คุมงาน</th>
-                        <th style="width: 15%;">ระยะเวลา</th>
+                        <th style="width: 10%;">ระยะเวลา</th>
                         <th style="width: 10%;">สถานะ</th>
                     </tr>
                 </thead>
@@ -154,14 +185,8 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // การเชื่อมต่อ Supabase
-    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // 1. จำลองข้อมูล (Mock Data) สำหรับการแสดงผลหน้า UI ไปก่อน (ระหว่างรอสร้าง Table จริง)
+    // 1. จำลองข้อมูล (Mock Data) สำหรับทดสอบ UI
     let projects = [];
     let areas = [];
 
@@ -177,7 +202,7 @@
         });
     }
 
-    // 3. ฟังก์ชันเรนเดอร์ตารางภาพรวม (ทำแบบ Tree View: โครงการแม่ -> พื้นที่ลูก)
+    // 3. ฟังก์ชันเรนเดอร์ตารางภาพรวม (Tree View)
     function renderDashboard() {
         const tbody = document.getElementById('dashboardBody');
         tbody.innerHTML = '';
@@ -188,19 +213,26 @@
         }
 
         projects.forEach(p => {
-            // วาดแถวโครงการแม่ (สีฟ้า)
+            // วาดแถวโครงการแม่ (แสดงข้อมูลสถานที่, พิกัด, ผู้ประสานงาน และไอคอนไฟล์สัญญา)
             const pRow = `
                 <tr class="project-row">
                     <td>📦 ${p.projectCode}</td>
-                    <td>${p.projectName}<br><span style="font-size:12px; color:#4a5568; font-weight:normal;">งบประมาณ: ฿${parseFloat(p.budget).toLocaleString()}</span></td>
+                    <td>
+                        <strong>${p.projectName}</strong>
+                        <div style="font-size:12px; color:#4a5568; margin-top:4px;">
+                            📍 ${p.location} (Lat: ${p.lat}, Lng: ${p.lng})<br>
+                            👤 ผู้ประสานงาน: ${p.coordinator} | 📎 <span style="color:#2b6cb0; text-decoration:underline; cursor:pointer;">ดูเอกสารสัญญา</span><br>
+                            💰 งบประมาณ: ฿${parseFloat(p.budget).toLocaleString()}
+                        </div>
+                    </td>
                     <td>-</td>
-                    <td>${p.start} ถึง ${p.end}</td>
+                    <td>${p.start}<br>ถึง<br>${p.end}</td>
                     <td class="status-active">In-Progress</td>
                 </tr>
             `;
             tbody.insertAdjacentHTML('beforeend', pRow);
 
-            // ค้นหาพื้นที่ (Area) ที่ผูกกับโครงการนี้
+            // ค้นหาพื้นที่ลูก
             const childAreas = areas.filter(a => a.projectCode === p.projectCode);
             if(childAreas.length === 0) {
                 tbody.insertAdjacentHTML('beforeend', '<tr><td colspan="5" style="text-align:center; color:#a0aec0; font-size:13px;">-- ยังไม่มีการเปิดพื้นที่ปฏิบัติงานย่อย --</td></tr>');
@@ -220,7 +252,7 @@
                             <span class="badge ${badgeClass}">${a.zone}</span><br>
                             <span style="font-size:12px; color:#718096;">PM: ${a.pmName}</span>
                         </td>
-                        <td>${a.start} ถึง ${a.end}</td>
+                        <td>${a.start}<br>ถึง<br>${a.end}</td>
                         <td class="status-active">Active</td>
                     </tr>
                 `;
@@ -232,10 +264,20 @@
     // 4. บันทึกโครงการหลัก
     function submitProject(event) {
         event.preventDefault();
+        
+        // ตรวจสอบไฟล์สัญญา
+        const contractFile = document.getElementById('projectContract').files[0];
+        const contractName = contractFile ? contractFile.name : "ไม่ได้แนบไฟล์";
+
         const newProject = {
             projectCode: document.getElementById('projectCode').value,
             projectName: document.getElementById('projectName').value,
             scope: document.getElementById('projectScope').value,
+            contractName: contractName,
+            coordinator: document.getElementById('projectCoordinator').value,
+            location: document.getElementById('projectLocation').value,
+            lat: document.getElementById('projectLat').value,
+            lng: document.getElementById('projectLng').value,
             budget: document.getElementById('projectBudget').value,
             start: document.getElementById('projectStart').value,
             end: document.getElementById('projectEnd').value
@@ -243,7 +285,7 @@
         
         projects.push(newProject);
         
-        alert(`✅ สร้างโครงการ ${newProject.projectCode} สำเร็จ!\nต่อไปคุณสามารถเปิดพื้นที่ย่อยภายใต้โครงการนี้ได้`);
+        alert(`✅ สร้างโครงการ ${newProject.projectCode} สำเร็จ!\nระบบได้บันทึกเอกสารสัญญาและพิกัดเรียบร้อยแล้ว`);
         document.getElementById('projectForm').reset();
         
         renderProjectDropdown();
@@ -265,13 +307,12 @@
 
         areas.push(newArea);
 
-        alert(`✅ เปิดพื้นที่ ${newArea.areaId} สำเร็จ!\nฝ่ายงบประมาณสามารถเลือกพื้นที่นี้เพื่อออก PO ได้แล้ว`);
+        alert(`✅ เปิดพื้นที่ ${newArea.areaId} สำเร็จ!`);
         document.getElementById('areaForm').reset();
         
         renderDashboard();
     }
 
-    // โหลดหน้าจอครั้งแรก
     window.onload = () => {
         renderProjectDropdown();
         renderDashboard();
