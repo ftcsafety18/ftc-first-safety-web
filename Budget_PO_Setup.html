@@ -124,36 +124,32 @@
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
+    // สมมติว่ามีฐานข้อมูล Supabase (แต่เราจะข้ามไปใช้ Dummy Data ก่อนเพื่อการทดสอบ)
     let areaDataList = [];
 
-    // โหลดข้อมูลพื้นที่จากฐานข้อมูล
-    async function loadAreaMaster() {
-        const { data, error } = await supabaseClient
-            .from('table_area_master')
-            .select('*')
-            .eq('status', 'Active')
-            .order('created_at', { ascending: false });
-
+    // 1. ฟังก์ชันโหลดข้อมูลพื้นที่ (ปรับมาใช้ ข้อมูลจำลอง Dummy Data)
+    function loadAreaMaster() {
         const select = document.getElementById('areaSelect');
         select.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
 
-        if (data && data.length > 0) {
-            areaDataList = data;
-            data.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area.area_id;
-                option.textContent = `[${area.area_id}] ${area.project_name}`;
-                select.appendChild(option);
-            });
-        }
+        // สร้างพื้นที่จำลองให้พี่ณัฐธัญทดสอบครบทั้ง 3 ระดับ
+        areaDataList = [
+            { area_id: 'AREA-TEST-01', project_name: 'พื้นที่ซ่อมบำรุงหอระบายความร้อน (Cooling Tower)', work_zone: 'เขตอันตราย' },
+            { area_id: 'AREA-TEST-02', project_name: 'โกดังเก็บสารเคมีและวัตถุไวไฟ (Chemical Storage)', work_zone: 'เขตควบคุม' },
+            { area_id: 'AREA-TEST-03', project_name: 'อาคารสำนักงานและโรงอาหาร (Office & Canteen)', work_zone: 'เขตปลอดภัย' }
+        ];
+
+        // นำข้อมูลจำลองใส่ลงใน Dropdown
+        areaDataList.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.area_id;
+            option.textContent = `[${area.area_id}] ${area.project_name}`;
+            select.appendChild(option);
+        });
     }
 
+    // 2. ดึงระดับความเสี่ยงมาแสดงเมื่อเลือกพื้นที่
     function handleAreaChange() {
         const selectedId = document.getElementById('areaSelect').value;
         const area = areaDataList.find(a => a.area_id === selectedId);
@@ -169,6 +165,7 @@
         validateSafetyRules();
     }
 
+    // 3. ตรวจสอบเงื่อนไขความปลอดภัย (ห้าม Tier B เข้าเขตอันตราย/ควบคุม)
     function validateSafetyRules() {
         const zone = document.getElementById('workZoneValue').value;
         const tier = document.getElementById('vendorTier').value;
@@ -184,31 +181,30 @@
         }
     }
 
+    // 4. ตรวจสอบเงื่อนไขภาษี (เกิน 1.5 ล้าน)
     function checkVATLimit() {
         const val = parseFloat(document.getElementById('contractValue').value) || 0;
         const vatAlert = document.getElementById('vatAlert');
         vatAlert.style.display = val >= 1500000 ? 'block' : 'none';
     }
 
-    async function submitBudgetForm(event) {
+    // 5. จำลองการกดบันทึกข้อมูล (Bypass ฐานข้อมูลจริงไปก่อน)
+    function submitBudgetForm(event) {
         event.preventDefault();
         const btn = document.getElementById('submitBtn');
         btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูลและสร้างลิงก์...';
 
-        try {
+        setTimeout(() => {
             const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
-            // ในระบบจริง จะมีการบันทึกไฟล์ขึ้น Storage และบันทึกข้อมูลลงฐานข้อมูลที่นี่
-            
             const contactInfo = document.getElementById('vendorContact').value;
-            alert(`✅ บันทึก PO สำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่: ${contactInfo}\nเพื่อให้ผู้รับเหมายอมรับเงื่อนไขในขั้นตอนต่อไปครับ`);
+            
+            alert(`✅ บันทึก PO สำเร็จ (โหมดทดสอบ)!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจำลองการส่งลิงก์ลงทะเบียนไปที่: ${contactInfo}`);
+            
             window.location.reload();
-
-        } catch (error) {
-            alert("❌ เกิดข้อผิดพลาด: " + error.message);
-            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา';
-        }
+        }, 1500);
     }
 
+    // เรียกทำงานทันทีที่เปิดหน้าเว็บ
     window.onload = loadAreaMaster;
 </script>
 </body>
