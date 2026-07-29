@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PM - ระบบบริหารจัดการโครงการและพื้นที่</title>
+    <title>PM - ระบบบริหารจัดการโครงการและพื้นที่แบบบูรณาการ</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { max-width: 1050px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         .header { background-color: #2b6cb0; color: white; padding: 20px; text-align: center; }
         .header h2 { margin: 0; font-size: 22px; }
         .form-section { padding: 20px 25px; border-bottom: 1px solid #e2e8f0; }
         .section-title { font-size: 16px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 4px solid #2b6cb0; padding-left: 10px; }
+        .sub-title { font-size: 14px; font-weight: 600; color: #4a5568; margin: 15px 0 10px; border-bottom: 1px dashed #cbd5e0; padding-bottom: 5px; }
         .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .form-group { flex: 1; min-width: 200px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
@@ -25,14 +26,15 @@
         
         /* สไตล์ตาราง */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; vertical-align: top; }
         th { background-color: #edf2f7; font-weight: 600; color: #4a5568; }
-        .project-row { background-color: #ebf8ff; font-weight: bold; }
+        .project-row { background-color: #ebf8ff; }
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; color: white; display: inline-block; }
         .bg-danger { background-color: #e53e3e; } /* เขตอันตราย */
         .bg-warning { background-color: #dd6b20; } /* เขตควบคุม */
         .bg-success { background-color: #38a169; } /* เขตปลอดภัย */
         .status-active { color: #38a169; font-weight: bold; }
+        .stakeholder-box { background-color: #f7fafc; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -40,13 +42,16 @@
 <div class="container">
     <div class="header">
         <h2>ระบบบริหารจัดการโครงการและพื้นที่ปฏิบัติงาน (Project & Area Master)</h2>
-        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">สำหรับ PM เพื่อกำหนดโครงสร้างงาน เงื่อนไขสัญญา และระดับความปลอดภัย</p>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">สำหรับ PM เพื่อกำหนดโครงสร้างงาน สัญญา และผู้มีส่วนได้ส่วนเสีย (Stakeholders)</p>
     </div>
 
     <!-- ส่วนที่ 1: การตั้งต้นโครงการแม่ (Project Master) -->
     <div class="form-section">
         <div class="section-title">1. ตั้งต้นโครงการหลัก (Project Master Data)</div>
         <form id="projectForm" onsubmit="submitProject(event)">
+            
+            <!-- ข้อมูลพื้นฐานและสัญญา -->
+            <div class="sub-title">1.1 ข้อมูลพื้นฐานโครงการและเอกสารสัญญา</div>
             <div class="form-row">
                 <div class="form-group" style="flex: 1;">
                     <label>รหัสโครงการ (Project Code) *</label>
@@ -66,48 +71,66 @@
                 <div class="form-group" style="flex: 1;">
                     <label>แนบไฟล์เอกสารสัญญา (PDF/Word) *</label>
                     <input type="file" id="projectContract" accept=".pdf,.doc,.docx" required>
-                    <span class="help-text">ใช้สำหรับตรวจสอบเงื่อนไขและป้องกันค่าปรับ</span>
                 </div>
             </div>
 
-            <!-- เพิ่มส่วนผู้ประสานงานและสถานที่ตั้ง -->
+            <!-- ข้อมูลผู้มีส่วนได้ส่วนเสีย (เพิ่มใหม่ตามแนวทางสากล) -->
+            <div class="sub-title" style="color: #d69e2e; border-bottom-color: #f6e05e;">1.2 ข้อมูลผู้มีส่วนได้ส่วนเสียและผู้เกี่ยวข้อง (Stakeholder Management)</div>
             <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                    <label>ผู้ประสานงานโครงการ *</label>
+                <div class="form-group">
+                    <label>เจ้าของโครงการ (Project Owner) *</label>
+                    <input type="text" id="ownerName" required placeholder="เช่น บมจ. ปตท. (คุณ...)">
+                </div>
+                <div class="form-group">
+                    <label>ที่ปรึกษาโครงการ / PMC *</label>
+                    <input type="text" id="consultantInfo" required placeholder="ชื่อบริษัทที่ปรึกษา - ชื่อผู้ติดต่อ - เบอร์โทร">
+                    <span class="help-text">สำหรับการประชุมติดตามงานและควบคุมความปลอดภัย</span>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ผู้รับเหมาร่วม / บริษัทร่วมทุน (Joint Venture / Co-contractors)</label>
+                    <input type="text" id="coContractors" placeholder="ระบุชื่อบริษัทที่ทำงานร่วมกัน หรือทำงานในพื้นที่ระนาบเดียวกัน (ถ้ามี)">
+                    <span class="help-text">เพื่อป้องกันปัญหาพื้นที่ทับซ้อน (Interface Management)</span>
+                </div>
+                <div class="form-group">
+                    <label>ผู้ประสานงานหลักของเรา (Internal Coordinator) *</label>
                     <input type="text" id="projectCoordinator" required placeholder="ชื่อ - เบอร์โทรศัพท์">
                 </div>
+            </div>
+
+            <!-- สถานที่ตั้ง งบประมาณ และเวลา -->
+            <div class="sub-title">1.3 ข้อมูลสถานที่ งบประมาณ และระยะเวลา</div>
+            <div class="form-row">
                 <div class="form-group" style="flex: 2;">
                     <label>ที่ตั้งโครงการ / ไซต์งาน *</label>
                     <input type="text" id="projectLocation" required placeholder="ระบุที่อยู่หรือจุดสังเกต">
                 </div>
-            </div>
-
-            <!-- เพิ่มส่วนพิกัด GPS -->
-            <div class="form-row">
-                <div class="form-group">
+                <div class="form-group" style="flex: 1;">
                     <label>พิกัด Latitude *</label>
                     <input type="text" id="projectLat" required placeholder="เช่น 12.6712">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="flex: 1;">
                     <label>พิกัด Longitude *</label>
                     <input type="text" id="projectLng" required placeholder="เช่น 101.2465">
                 </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label>งบประมาณโครงการ (บาท) *</label>
                     <input type="number" id="projectBudget" required min="0" placeholder="0">
                 </div>
-            </div>
-
-            <div class="form-row">
                 <div class="form-group">
-                    <label>วันที่เริ่มต้น *</label>
+                    <label>วันที่เริ่มต้นสัญญา *</label>
                     <input type="date" id="projectStart" required>
                 </div>
                 <div class="form-group">
-                    <label>วันที่สิ้นสุด *</label>
+                    <label>วันที่สิ้นสุดสัญญา *</label>
                     <input type="date" id="projectEnd" required>
                 </div>
             </div>
+
             <button type="submit" class="btn-submit btn-project" id="btnSaveProject">+ บันทึกฐานข้อมูลโครงการหลัก</button>
         </form>
     </div>
@@ -134,7 +157,7 @@
                     <input type="text" id="areaName" required placeholder="เช่น งานประกอบนั่งร้านโซน A">
                 </div>
                 <div class="form-group" style="flex: 1;">
-                    <label>PM / ผู้ควบคุมงาน *</label>
+                    <label>PM / ผู้ควบคุมงานประจำพื้นที่ *</label>
                     <input type="text" id="pmName" required placeholder="ระบุชื่อ PM">
                 </div>
             </div>
@@ -168,9 +191,9 @@
             <table id="dashboardTable">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">รหัส (Code/ID)</th>
-                        <th style="width: 45%;">รายละเอียดโครงการ / พื้นที่ปฏิบัติงาน</th>
-                        <th style="width: 15%;">ความเสี่ยง / ผู้คุมงาน</th>
+                        <th style="width: 15%;">รหัส (ID)</th>
+                        <th style="width: 40%;">รายละเอียดโครงการ / พื้นที่ปฏิบัติงาน</th>
+                        <th style="width: 25%;">ผู้มีส่วนเกี่ยวข้อง (Stakeholders)</th>
                         <th style="width: 10%;">ระยะเวลา</th>
                         <th style="width: 10%;">สถานะ</th>
                     </tr>
@@ -186,11 +209,11 @@
 </div>
 
 <script>
-    // 1. จำลองข้อมูล (Mock Data) สำหรับทดสอบ UI
+    // Mock Data
     let projects = [];
     let areas = [];
 
-    // 2. ฟังก์ชันเรนเดอร์ Dropdown โครงการ
+    // เรนเดอร์ Dropdown โครงการ
     function renderProjectDropdown() {
         const select = document.getElementById('selectProject');
         select.innerHTML = '<option value="">-- เลือกโครงการหลัก --</option>';
@@ -202,7 +225,7 @@
         });
     }
 
-    // 3. ฟังก์ชันเรนเดอร์ตารางภาพรวม (Tree View)
+    // เรนเดอร์ตารางภาพรวม (Tree View)
     function renderDashboard() {
         const tbody = document.getElementById('dashboardBody');
         tbody.innerHTML = '';
@@ -213,20 +236,27 @@
         }
 
         projects.forEach(p => {
-            // วาดแถวโครงการแม่ (แสดงข้อมูลสถานที่, พิกัด, ผู้ประสานงาน และไอคอนไฟล์สัญญา)
+            // แถวโครงการแม่
             const pRow = `
                 <tr class="project-row">
-                    <td>📦 ${p.projectCode}</td>
+                    <td><strong>📦 ${p.projectCode}</strong></td>
                     <td>
-                        <strong>${p.projectName}</strong>
+                        <strong style="font-size:15px; color:#2b6cb0;">${p.projectName}</strong>
                         <div style="font-size:12px; color:#4a5568; margin-top:4px;">
                             📍 ${p.location} (Lat: ${p.lat}, Lng: ${p.lng})<br>
-                            👤 ผู้ประสานงาน: ${p.coordinator} | 📎 <span style="color:#2b6cb0; text-decoration:underline; cursor:pointer;">ดูเอกสารสัญญา</span><br>
+                            📎 <span style="color:#2b6cb0; text-decoration:underline; cursor:pointer;">ดูเอกสารสัญญา: ${p.contractName}</span><br>
                             💰 งบประมาณ: ฿${parseFloat(p.budget).toLocaleString()}
                         </div>
                     </td>
-                    <td>-</td>
-                    <td>${p.start}<br>ถึง<br>${p.end}</td>
+                    <td>
+                        <div class="stakeholder-box">
+                            <strong>👑 Owner:</strong> ${p.owner}<br>
+                            <strong>🔍 ที่ปรึกษา:</strong> ${p.consultant}<br>
+                            <strong>🤝 ผรม.ร่วม:</strong> ${p.coContractors || '-'}<br>
+                            <strong>📞 ผู้ประสานงาน:</strong> ${p.coordinator}
+                        </div>
+                    </td>
+                    <td style="font-size:12px;">${p.start}<br>ถึง<br>${p.end}</td>
                     <td class="status-active">In-Progress</td>
                 </tr>
             `;
@@ -238,7 +268,7 @@
                 tbody.insertAdjacentHTML('beforeend', '<tr><td colspan="5" style="text-align:center; color:#a0aec0; font-size:13px;">-- ยังไม่มีการเปิดพื้นที่ปฏิบัติงานย่อย --</td></tr>');
             }
 
-            // วาดแถวพื้นที่ลูก
+            // แถวพื้นที่ลูก
             childAreas.forEach(a => {
                 let badgeClass = 'bg-success';
                 if (a.zone === 'เขตอันตราย') badgeClass = 'bg-danger';
@@ -247,12 +277,12 @@
                 const aRow = `
                     <tr>
                         <td style="padding-left: 30px;">↳ 🚩 ${a.areaId}</td>
-                        <td>${a.areaName}</td>
+                        <td><strong>${a.areaName}</strong></td>
                         <td>
                             <span class="badge ${badgeClass}">${a.zone}</span><br>
-                            <span style="font-size:12px; color:#718096;">PM: ${a.pmName}</span>
+                            <span style="font-size:12px; color:#718096;">PM พื้นที่: ${a.pmName}</span>
                         </td>
-                        <td>${a.start}<br>ถึง<br>${a.end}</td>
+                        <td style="font-size:12px;">${a.start}<br>ถึง<br>${a.end}</td>
                         <td class="status-active">Active</td>
                     </tr>
                 `;
@@ -261,11 +291,10 @@
         });
     }
 
-    // 4. บันทึกโครงการหลัก
+    // บันทึกโครงการหลัก
     function submitProject(event) {
         event.preventDefault();
         
-        // ตรวจสอบไฟล์สัญญา
         const contractFile = document.getElementById('projectContract').files[0];
         const contractName = contractFile ? contractFile.name : "ไม่ได้แนบไฟล์";
 
@@ -274,7 +303,14 @@
             projectName: document.getElementById('projectName').value,
             scope: document.getElementById('projectScope').value,
             contractName: contractName,
+            
+            // ข้อมูล Stakeholders
+            owner: document.getElementById('ownerName').value,
+            consultant: document.getElementById('consultantInfo').value,
+            coContractors: document.getElementById('coContractors').value,
             coordinator: document.getElementById('projectCoordinator').value,
+            
+            // ข้อมูลสถานที่และเวลา
             location: document.getElementById('projectLocation').value,
             lat: document.getElementById('projectLat').value,
             lng: document.getElementById('projectLng').value,
@@ -285,14 +321,14 @@
         
         projects.push(newProject);
         
-        alert(`✅ สร้างโครงการ ${newProject.projectCode} สำเร็จ!\nระบบได้บันทึกเอกสารสัญญาและพิกัดเรียบร้อยแล้ว`);
+        alert(`✅ สร้างโครงการ ${newProject.projectCode} สำเร็จ!\nบันทึกข้อมูลผู้มีส่วนได้ส่วนเสียครบถ้วน`);
         document.getElementById('projectForm').reset();
         
         renderProjectDropdown();
         renderDashboard();
     }
 
-    // 5. บันทึกพื้นที่ย่อย
+    // บันทึกพื้นที่ย่อย
     function submitArea(event) {
         event.preventDefault();
         const newArea = {
@@ -306,10 +342,8 @@
         };
 
         areas.push(newArea);
-
         alert(`✅ เปิดพื้นที่ ${newArea.areaId} สำเร็จ!`);
         document.getElementById('areaForm').reset();
-        
         renderDashboard();
     }
 
