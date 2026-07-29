@@ -3,125 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ฝ่ายบริหารงบประมาณ - ตั้งต้นข้อมูลสัญญา</title>
+    <title>ระบบขึ้นทะเบียนและยืนยันตัวตนผู้รับจ้าง (Vendor Portal)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
-        .container { max-width: 850px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background-color: #2c5282; color: white; padding: 20px; text-align: center; }
-        .header h2 { margin: 0; font-size: 22px; }
-        .form-section { padding: 20px 25px; border-bottom: 1px solid #e2e8f0; }
-        .section-title { font-size: 16px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 4px solid #2b6cb0; padding-left: 10px; }
-        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
-        .form-group { flex: 1; min-width: 250px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
-        input[type="text"], input[type="number"], input[type="date"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
-        .readonly-field { background-color: #e2e8f0; color: #4a5568; cursor: not-allowed; font-weight: bold; }
-        .alert-box { display: none; background-color: #fffaf0; border-left: 4px solid #dd6b20; padding: 15px; margin-bottom: 15px; font-size: 14px; color: #c05621; }
-        .btn-submit { background-color: #3182ce; color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 10px; }
-        .btn-submit:hover { background-color: #2b6cb0; }
-        .btn-submit:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); overflow: hidden; }
+        .header { background-color: #1a365d; color: white; padding: 25px 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 20px; }
+        .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.9; }
+        
+        .content { padding: 20px; }
+        
+        /* กล่องค้นหาข้อมูล (ในของจริงจะใช้ URL Parameter ดึงข้อมูลมาเลย) */
+        .search-box { background: #edf2f7; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; }
+        .search-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-family: 'Sarabun'; }
+        .search-box button { padding: 10px 15px; background: #2b6cb0; color: white; border: none; border-radius: 6px; cursor: pointer; font-family: 'Sarabun'; font-weight: bold; }
+        
+        /* ข้อมูลสรุป Read-only */
+        .info-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: none; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 5px; }
+        .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .info-label { color: #718096; }
+        .info-value { font-weight: 600; color: #2d3748; text-align: right; }
+        .tier-badge { background: #ebf4ff; color: #3182ce; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+
+        /* ส่วนอัปโหลดเอกสารที่จะเปลี่ยนไปตาม Tier */
+        .upload-section { background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: none; }
+        .upload-title { font-weight: 600; color: #276749; margin-bottom: 10px; font-size: 15px; }
+        .upload-desc { font-size: 13px; color: #4a5568; margin-bottom: 15px; }
+        input[type="file"] { width: 100%; padding: 10px; background: #fff; border: 1px dashed #38a169; border-radius: 6px; box-sizing: border-box; }
+
+        /* Click-wrap Agreement */
+        .agreement-section { background: #fffaf0; border: 1px solid #feebc8; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: none; }
+        .agreement-title { font-weight: 600; color: #c05621; margin-bottom: 10px; font-size: 15px; }
+        .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+        .checkbox-row input[type="checkbox"] { margin-top: 3px; width: 18px; height: 18px; }
+        .checkbox-row label { font-size: 13px; color: #4a5568; line-height: 1.5; }
+
+        .btn-submit { background-color: #38a169; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; display: none; }
+        .btn-submit:disabled { background-color: #cbd5e0; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>ระบบบันทึกข้อมูลสัญญาจ้าง (Budget Dept.)</h2>
-        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.8;">เชื่อมโยงฐานข้อมูลพื้นที่ Area Master Data</p>
+        <h2>FTC Digital Safety 🔒</h2>
+        <p>ระบบลงทะเบียนและยืนยันสถานะผู้รับจ้าง</p>
     </div>
 
-    <form id="budgetForm" onsubmit="submitBudgetForm(event)">
-        
-        <!-- Section 1: ข้อมูลสัญญา -->
-        <div class="form-section">
-            <div class="section-title">1. ข้อมูลสัญญาและพื้นที่ปฏิบัติงาน</div>
-            <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                    <label>เลขที่สัญญา / ใบสั่งจ้าง (PO) *</label>
-                    <input type="text" id="contractNo" required placeholder="เช่น PO-2026-001">
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>พื้นที่ปฏิบัติงาน (ดึงจากระบบ PM) *</label>
-                    <select id="areaSelect" required onchange="handleAreaChange()">
-                        <option value="">-- กำลังโหลดข้อมูลพื้นที่... --</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ระดับเขตพื้นที่ (ล็อกอัตโนมัติโดยระบบความปลอดภัย) *</label>
-                    <input type="text" id="workZoneDisplay" class="readonly-field" readonly placeholder="ระบบจะแสดงเขตพื้นที่อัตโนมัติเมื่อเลือกโครงการ">
-                    <input type="hidden" id="workZoneValue">
-                    <input type="hidden" id="projectNameValue">
-                </div>
-            </div>
+    <div class="content">
+        <!-- สมมติว่าเถ้าแก่กรอกเลข PO เพื่อดึงข้อมูล (ในระบบจริงจะรับค่าจาก QR Code) -->
+        <div class="search-box" id="searchBox">
+            <input type="text" id="poInput" placeholder="กรอกเลขที่สัญญา (PO) หรือ Vendor ID...">
+            <button onclick="fetchVendorData()">ดึงข้อมูล</button>
         </div>
 
-        <!-- Section 2: ข้อมูลผู้รับเหมา & Tiering -->
-        <div class="form-section" style="background-color: #f8fafc;">
-            <div class="section-title" style="border-left-color: #38a169;">2. ข้อมูลเถ้าแก่ และการจัดระดับ (Vendor Tier)</div>
-            <div class="form-row">
-                <div class="form-group" style="flex: 2;">
-                    <label>ชื่อ-นามสกุล เถ้าแก่ / ผู้รับจ้าง *</label>
-                    <input type="text" id="companyName" required placeholder="นายสมชาย รักความปลอดภัย">
+        <form id="vendorForm" onsubmit="submitVendorForm(event)">
+            <input type="hidden" id="hiddenVendorId">
+            <input type="hidden" id="hiddenTier">
+
+            <!-- ข้อมูลสรุป (แสดงเมื่อค้นหาเจอ) -->
+            <div class="info-card" id="infoCard">
+                <div class="info-row">
+                    <span class="info-label">ชื่อผู้รับจ้าง:</span>
+                    <span class="info-value" id="dispVendorName">-</span>
                 </div>
-                <div class="form-group">
-                    <label>เลขประจำตัวประชาชน (13 หลัก) *</label>
-                    <input type="text" id="taxId" required maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <div class="info-row">
+                    <span class="info-label">เลขที่สัญญา (PO):</span>
+                    <span class="info-value" id="dispPoNo">-</span>
                 </div>
-            </div>
-            
-            <!-- เพิ่มช่องทางการติดต่อตามที่พี่ณัฐธัญแนะนำ -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ช่องทางการติดต่อ (LINE ID / เบอร์โทรศัพท์ / Email) *</label>
-                    <input type="text" id="vendorContact" required placeholder="สำหรับส่งลิงก์/QR Code ให้เถ้าแก่ยืนยันตัวตน">
+                <div class="info-row">
+                    <span class="info-label">พื้นที่ปฏิบัติงาน:</span>
+                    <span class="info-value" id="dispProject">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">สถานะผู้รับเหมา:</span>
+                    <span class="info-value"><span class="tier-badge" id="dispTier">-</span></span>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>สถานะกฎหมายแรงงาน (Tiering) *</label>
-                    <select id="vendorTier" required onchange="validateSafetyRules()">
-                        <option value="">-- เลือกสถานะผู้รับเหมา --</option>
-                        <option value="Tier_A">Tier A: มีสถานะนายจ้างและส่งประกันสังคม (รับได้ทุกงาน)</option>
-                        <option value="Tier_B">Tier B: ไม่มีลูกจ้าง/ทำเอง/ไม่เข้าระบบประกันสังคม (เฉพาะงานเขตปลอดภัย)</option>
-                    </select>
-                </div>
+            <!-- ส่วนอัปโหลดเอกสาร (Dynamic เปลี่ยนตาม Tier) -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-title" id="uploadTitle">อัปโหลดเอกสารบังคับ</div>
+                <div class="upload-desc" id="uploadDesc">...</div>
+                <input type="file" id="mandatoryFile" accept=".pdf,image/*" required>
             </div>
-            <div id="safetyAlert" class="alert-box">
-                <strong>⚠️ ผิดเงื่อนไขความปลอดภัย:</strong> ผู้รับเหมา Tier B ไม่อนุญาตให้เข้าทำงานใน "เขตอันตราย" หรือ "เขตควบคุม" โดยเด็ดขาด โปรดปรับเปลี่ยนเถ้าแก่หรือให้ PM ประเมินพื้นที่ใหม่
-            </div>
-        </div>
 
-        <!-- Section 3: การควบคุมงบประมาณและระยะเวลา -->
-        <div class="form-section">
-            <div class="section-title" style="border-left-color: #d69e2e;">3. การควบคุมมูลค่างานและสัญญา</div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>มูลค่างานครั้งนี้ (บาท - ไม่รวม VAT) *</label>
-                    <input type="number" id="contractValue" required min="1" oninput="checkVATLimit()">
+            <!-- ข้อตกลง Click-wrap Agreement -->
+            <div class="agreement-section" id="agreementSection">
+                <div class="agreement-title">การยืนยันสถานะและข้อตกลงความปลอดภัย</div>
+                
+                <div class="checkbox-row">
+                    <input type="checkbox" id="chkLegal" required>
+                    <label for="chkLegal"><strong>สถานะผู้รับจ้างอิสระ:</strong> ข้าพเจ้ายืนยันว่าการรับงานครั้งนี้เป็น "สัญญาจ้างทำของ" ข้าพเจ้ามีสถานะเป็นผู้รับจ้างอิสระ ไม่ใช่พนักงานหรือลูกจ้างของบริษัท และจะเป็นผู้รับผิดชอบต่อลูกจ้างของข้าพเจ้าเอง (หากมี)</label>
                 </div>
-                <div class="form-group">
-                    <label>วันที่สิ้นสุดสัญญา / วันส่งมอบงาน *</label>
-                    <input type="date" id="contractEndDate" required>
+                
+                <div class="checkbox-row">
+                    <input type="checkbox" id="chkSafety" required>
+                    <label for="chkSafety"><strong>No Safety, No Pay:</strong> ข้าพเจ้ารับทราบและจะปฏิบัติตามกฎความปลอดภัยของบริษัทอย่างเคร่งครัด หากฝ่าฝืน บริษัทย่อมมีสิทธิ์สั่งระงับงาน และปฏิเสธการจ่ายค่าจ้างจนกว่าจะแก้ไขให้ปลอดภัย</label>
                 </div>
             </div>
-            <div id="vatAlert" class="alert-box" style="border-left-color: #e53e3e; color: #c53030;">
-                <strong>🚨 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานนี้เกิน 1.5 ล้านบาท โปรดตรวจสอบการจดทะเบียน VAT เพื่อป้องกันปัญหาภาษีย้อนหลัง
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <label style="color: #2d3748;">แนบสำเนาสัญญาจ้าง / ใบสั่งจ้าง (PO) ต้นฉบับ *</label>
-                <input type="file" id="fileContract" accept=".pdf,image/*" required style="background: white;">
-            </div>
-        </div>
 
-        <div style="padding: 20px;">
-            <button type="submit" class="btn-submit" id="submitBtn">สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา</button>
-        </div>
-    </form>
+            <button type="submit" class="btn-submit" id="submitBtn">ลงลายมือชื่อดิจิทัล และส่งข้อมูลให้ จป.</button>
+        </form>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,87 +115,112 @@
     const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    let areaDataList = [];
 
-    // โหลดข้อมูลพื้นที่จากฐานข้อมูล
-    async function loadAreaMaster() {
+    // เช็คว่ามี Parameter PO แนบมากับ URL ไหม (จำลองการแสกน QR)
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const po = urlParams.get('po');
+        if(po) {
+            document.getElementById('poInput').value = po;
+            fetchVendorData();
+        }
+    };
+
+    // ฟังก์ชันดึงข้อมูลจาก Supabase ตามที่ฝ่าย Budget บันทึกไว้
+    async function fetchVendorData() {
+        const poNo = document.getElementById('poInput').value;
+        if(!poNo) return alert('กรุณากรอกเลขที่ PO');
+
         const { data, error } = await supabaseClient
-            .from('table_area_master')
+            .from('table_vendors')
             .select('*')
-            .eq('status', 'Active')
-            .order('created_at', { ascending: false });
+            .eq('contract_no', poNo)
+            .single();
 
-        const select = document.getElementById('areaSelect');
-        select.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
-
-        if (data && data.length > 0) {
-            areaDataList = data;
-            data.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area.area_id;
-                option.textContent = `[${area.area_id}] ${area.project_name}`;
-                select.appendChild(option);
-            });
+        if (error || !data) {
+            alert('ไม่พบข้อมูลสัญญา หรือยังไม่ได้รับการอนุมัติจากฝ่ายงบประมาณ');
+            return;
         }
-    }
 
-    function handleAreaChange() {
-        const selectedId = document.getElementById('areaSelect').value;
-        const area = areaDataList.find(a => a.area_id === selectedId);
-        if (area) {
-            document.getElementById('workZoneDisplay').value = area.work_zone;
-            document.getElementById('workZoneValue').value = area.work_zone;
-            document.getElementById('projectNameValue').value = area.project_name;
+        // ซ่อนช่องค้นหา แสดงข้อมูล
+        document.getElementById('searchBox').style.display = 'none';
+        document.getElementById('infoCard').style.display = 'block';
+        document.getElementById('uploadSection').style.display = 'block';
+        document.getElementById('agreementSection').style.display = 'block';
+        document.getElementById('submitBtn').style.display = 'block';
+
+        // เติมข้อมูลลงหน้าจอ
+        document.getElementById('dispVendorName').innerText = data.vendor_name;
+        document.getElementById('dispPoNo').innerText = data.contract_no;
+        document.getElementById('dispProject').innerText = data.project_name;
+        document.getElementById('hiddenVendorId').value = data.vendor_id;
+        document.getElementById('hiddenTier').value = data.entity_type;
+
+        // **จุดสำคัญ: เปลี่ยนข้อความและเอกสารที่ต้องอัปโหลดตาม Tier**
+        const tierTitle = document.getElementById('uploadTitle');
+        const tierDesc = document.getElementById('uploadDesc');
+        const badge = document.getElementById('dispTier');
+
+        if (data.entity_type === 'Tier_A') {
+            badge.innerText = 'Tier A (สถานะนายจ้าง)';
+            tierTitle.innerText = 'อัปโหลดหลักฐานการเป็นนายจ้าง / ประกันสังคม';
+            tierDesc.innerText = 'กรุณาแนบ "แบบรายการแสดงการส่งเงินสมทบ (สปส. 1-10)" หรือ "ใบเสร็จรับเงินกองทุนทดแทน" เดือนล่าสุด เพื่อรับรองสถานะนายจ้างของท่าน';
         } else {
-            document.getElementById('workZoneDisplay').value = '';
-            document.getElementById('workZoneValue').value = '';
-            document.getElementById('projectNameValue').value = '';
-        }
-        validateSafetyRules();
-    }
-
-    function validateSafetyRules() {
-        const zone = document.getElementById('workZoneValue').value;
-        const tier = document.getElementById('vendorTier').value;
-        const alertBox = document.getElementById('safetyAlert');
-        const submitBtn = document.getElementById('submitBtn');
-
-        if (tier === 'Tier_B' && (zone === 'เขตอันตราย' || zone === 'เขตควบคุม')) {
-            alertBox.style.display = 'block';
-            submitBtn.disabled = true;
-        } else {
-            alertBox.style.display = 'none';
-            submitBtn.disabled = false;
+            badge.innerText = 'Tier B (ไม่มีลูกจ้าง/ทำเอง)';
+            badge.style.background = '#feebc8'; badge.style.color = '#c05621';
+            tierTitle.innerText = 'อัปโหลดกรมธรรม์ประกันอุบัติเหตุส่วนบุคคล (PA)';
+            tierDesc.innerText = 'เนื่องจากท่านเป็นผู้รับจ้างอิสระที่ไม่มีประกันสังคมคุ้มครอง กรุณาแนบ "สำเนากรมธรรม์อุบัติเหตุส่วนบุคคล (PA)" ที่ยังไม่หมดอายุ เพื่อความปลอดภัยเบื้องต้นของท่านเอง';
         }
     }
 
-    function checkVATLimit() {
-        const val = parseFloat(document.getElementById('contractValue').value) || 0;
-        const vatAlert = document.getElementById('vatAlert');
-        vatAlert.style.display = val >= 1500000 ? 'block' : 'none';
-    }
-
-    async function submitBudgetForm(event) {
+    // ฟังก์ชันบันทึกข้อมูลเมื่อเถ้าแก่กดยอมรับ
+    async function submitVendorForm(event) {
         event.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูลและสร้างลิงก์...';
+        const vendorId = document.getElementById('hiddenVendorId').value;
+        const file = document.getElementById('mandatoryFile').files[0];
+
+        if (!document.getElementById('chkLegal').checked || !document.getElementById('chkSafety').checked) {
+            return alert('กรุณายอมรับเงื่อนไขทางกฎหมายและความปลอดภัยให้ครบถ้วน');
+        }
+
+        btn.disabled = true; btn.innerHTML = '⏳ กำลังส่งข้อมูล...';
 
         try {
-            const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
-            // ในระบบจริง จะมีการบันทึกไฟล์ขึ้น Storage และบันทึกข้อมูลลงฐานข้อมูลที่นี่
+            let docUrl = null;
+            if (file) {
+                const fileName = `${vendorId}_SafetyDoc_${Date.now()}.${file.name.split('.').pop()}`;
+                const { error: uploadErr } = await supabaseClient.storage.from('vendor-documents').upload(`safety_docs/${fileName}`, file);
+                if (uploadErr) throw uploadErr;
+                
+                const { data } = supabaseClient.storage.from('vendor-documents').getPublicUrl(`safety_docs/${fileName}`);
+                docUrl = data.publicUrl;
+            }
+
+            // อัปเดตสถานะในฐานข้อมูล เป็น "รอ จป. ตรวจสอบ"
+            const { error: updateError } = await supabaseClient.from('table_vendors')
+                .update({ 
+                    verification_status: 'Waiting_Safety_Approval',
+                    vendor_documents: { safety_document_url: docUrl } // เก็บ URL ไฟล์
+                })
+                .eq('vendor_id', vendorId);
+
+            if (updateError) throw updateError;
             
-            const contactInfo = document.getElementById('vendorContact').value;
-            alert(`✅ บันทึก PO สำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่: ${contactInfo}\nเพื่อให้ผู้รับเหมายอมรับเงื่อนไขในขั้นตอนต่อไปครับ`);
-            window.location.reload();
+            // หน้าจอแสดงผลสำเร็จ
+            document.body.innerHTML = `
+                <div class="container" style="text-align:center; padding: 40px 20px; margin-top: 50px;">
+                    <div style="font-size: 50px; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #276749;">ส่งข้อมูลสำเร็จ!</h2>
+                    <p style="color: #4a5568; font-size: 15px;">ระบบได้รับการลงนามทางอิเล็กทรอนิกส์ และเอกสารของท่านแล้ว<br><br>ขณะนี้เรื่องถูกส่งให้ <strong>เจ้าหน้าที่ความปลอดภัย (จป.)</strong> ตรวจสอบ<br>หากผ่านการอนุมัติ ท่านจะสามารถเข้าพื้นที่ทำงานได้ทันทีครับ</p>
+                </div>
+            `;
 
         } catch (error) {
             alert("❌ เกิดข้อผิดพลาด: " + error.message);
-            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา';
+            btn.disabled = false; btn.innerHTML = 'ลงลายมือชื่อดิจิทัล และส่งข้อมูลให้ จป.';
         }
     }
-
-    window.onload = loadAreaMaster;
 </script>
 </body>
 </html>
