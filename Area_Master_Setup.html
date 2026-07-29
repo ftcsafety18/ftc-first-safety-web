@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าพื้นที่โครงการ (Area Master Setup)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #2d3748; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        .header { background-color: #234e52; color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 22px; }
+        .form-section { padding: 25px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .form-group { flex: 1; min-width: 250px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #4a5568; }
+        input[type="text"], textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; font-size: 15px; }
+        textarea { resize: vertical; height: 80px; }
+        .zone-hint { font-size: 13px; margin-top: 5px; color: #718096; }
+        .btn-submit { background-color: #319795; color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 10px; }
+        .btn-submit:hover { background-color: #2c7a7b; }
+        .btn-submit:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+        .badge-hot { background-color: #fed7d7; color: #c53030; }
+        .badge-warm { background-color: #feebc8; color: #c05621; }
+        .badge-cold { background-color: #c6f6d5; color: #276749; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>ระบบขึ้นทะเบียนพื้นที่ปฏิบัติงาน (Area Master)</h2>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.8;">สำหรับ Project Manager และเจ้าหน้าที่ความปลอดภัย (จป.)</p>
+    </div>
+
+    <form id="areaMasterForm" class="form-section" onsubmit="submitAreaForm(event)">
+        
+        <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+                <label>ชื่อโครงการ / ไซต์งาน (Project/Site Name) *</label>
+                <input type="text" id="projectName" required placeholder="เช่น โครงการก่อสร้างคลังสินค้า A">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>รายละเอียดจุดปฏิบัติงาน (Location Details)</label>
+                <textarea id="locationDetail" placeholder="ระบุพิกัด หรือจุดสังเกตที่ชัดเจน..."></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="background-color: #f7fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <label>ประเมินระดับเขตพื้นที่ (Work Zone Risk Level) *</label>
+                <div style="margin-bottom: 10px;">
+                    <span class="badge badge-hot">เขตอันตราย</span>
+                    <span class="badge badge-warm">เขตควบคุม</span>
+                    <span class="badge badge-cold">เขตปลอดภัย</span>
+                </div>
+                <select id="workZone" required>
+                    <option value="">-- กรุณาประเมินและเลือกระดับพื้นที่ --</option>
+                    <option value="เขตอันตราย">เขตอันตราย (Hot Zone - พื้นที่เสี่ยงสูง/ต้องควบคุมพิเศษ)</option>
+                    <option value="เขตควบคุม">เขตควบคุม (Warm Zone - พื้นที่ควบคุมความเสี่ยง)</option>
+                    <option value="เขตปลอดภัย">เขตปลอดภัย (Cold Zone - พื้นที่ทำงานทั่วไป/ความเสี่ยงต่ำ)</option>
+                </select>
+                <div class="zone-hint">
+                    * ข้อมูลนี้จะถูกล็อกไว้เพื่อให้ฝ่ายบริหารงบประมาณใช้ตอนเปิด PO ป้องกันการเลือกพื้นที่ผิดพลาด
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>ชื่อผู้รับผิดชอบพื้นที่ / PM / จป. *</label>
+                <input type="text" id="managerName" required placeholder="ระบุชื่อผู้ควบคุมดูแล">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">บันทึกข้อมูลและเปิดพื้นที่ (Create Area)</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function submitAreaForm(event) {
+        event.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูลพื้นที่...';
+
+        try {
+            // สร้างรหัสพื้นที่อัตโนมัติ (เช่น AREA-2607-XXXX)
+            const date = new Date();
+            const yy = date.getFullYear().toString().slice(-2);
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const random = Math.floor(1000 + Math.random() * 9000);
+            const areaId = `AREA-${yy}${mm}-${random}`;
+
+            const { error: insertError } = await supabaseClient.from('table_area_master').insert([{
+                area_id: areaId,
+                project_name: document.getElementById('projectName').value,
+                location_detail: document.getElementById('locationDetail').value,
+                work_zone: document.getElementById('workZone').value.split(' ')[0], // เก็บเฉพาะคำว่า เขตอันตราย/ควบคุม/ปลอดภัย
+                manager_name: document.getElementById('managerName').value,
+                status: 'Active'
+            }]);
+
+            if (insertError) throw insertError;
+            
+            alert(`✅ เปิดพื้นที่โครงการสำเร็จ!\nรหัสพื้นที่: ${areaId}\n\nระบบได้ส่งข้อมูลนี้ไปยังฐานข้อมูลกลางแล้ว ฝ่ายบริหารงบประมาณสามารถดึงพื้นที่นี้ไปใช้เปิด PO ได้ทันทีครับ`);
+            document.getElementById('areaMasterForm').reset();
+
+        } catch (error) {
+            alert("❌ เกิดข้อผิดพลาด: " + error.message);
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'บันทึกข้อมูลและเปิดพื้นที่ (Create Area)';
+        }
+    }
+</script>
+</body>
+</html>
