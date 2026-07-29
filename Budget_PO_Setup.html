@@ -72,18 +72,18 @@
                 </div>
             </div>
             
-            <!-- เพิ่มช่องทางการติดต่อตามที่พี่ณัฐธัญแนะนำ -->
-
-           <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-    <div style="flex: 1;">
-        <label>LINE ID / เบอร์โทรศัพท์ (ช่องทางหลัก) *</label>
-        <input type="text" id="vendorLineId" class="form-control" placeholder="เช่น @vendor_line หรือเบอร์โทร" required>
-    </div>
-    <div style="flex: 1;">
-        <label>Email (ช่องทางสำรอง)</label>
-        <input type="email" id="vendorEmail" class="form-control" placeholder="เช่น vendor@email.com">
-    </div>
-</div> 
+            <!-- เพิ่มช่องทางการติดต่อ -->
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>LINE ID / เบอร์โทรศัพท์ (ช่องทางหลัก) *</label>
+                    <input type="text" id="vendorLineId" class="form-control" placeholder="เช่น @vendor_line หรือเบอร์โทร" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Email (ช่องทางสำรอง)</label>
+                    <input type="email" id="vendorEmail" class="form-control" placeholder="เช่น vendor@email.com">
+                </div>
+            </div> 
+            
             <div class="form-row">
                 <div class="form-group">
                     <label>สถานะกฎหมายแรงงาน (Tiering) *</label>
@@ -205,7 +205,7 @@
         try {
             const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
             
-            // หมายเหตุ: โค้ดส่วนนี้คือการส่งเข้าตาราง table_vendors จริงๆ
+            // ส่งข้อมูลเข้าตาราง table_vendors
             const { error: insertError } = await supabaseClient.from('table_vendors').insert([{
                 vendor_id: generatedVendorId,
                 vendor_name: document.getElementById('companyName').value,
@@ -218,8 +218,11 @@
 
             if (insertError) throw insertError;
             
-            const contactInfo = document.getElementById('vendorContact').value;
-            alert(`✅ บันทึกข้อมูลลงฐานข้อมูลจริงสำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่: ${contactInfo}`);
+            // ดึงค่าการติดต่อมาแสดงผลใน Alert
+            const lineInfo = document.getElementById('vendorLineId').value;
+            const emailInfo = document.getElementById('vendorEmail').value || 'ไม่ได้ระบุ';
+            
+            alert(`✅ บันทึกข้อมูลลงฐานข้อมูลจริงสำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่:\n📱 LINE: ${lineInfo}\n📧 Email: ${emailInfo}`);
             
             window.location.reload();
 
