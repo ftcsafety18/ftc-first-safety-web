@@ -7,60 +7,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #edf2f7; margin: 0; padding: 20px; color: #2d3748; }
-        .container { max-width: 850px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         .header { background-color: #2c5282; color: white; padding: 20px; text-align: center; }
         .header h2 { margin: 0; font-size: 22px; }
         .form-section { padding: 20px 25px; border-bottom: 1px solid #e2e8f0; }
         .section-title { font-size: 16px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 4px solid #2b6cb0; padding-left: 10px; }
         .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
-        .form-group { flex: 1; min-width: 250px; }
+        .form-group { flex: 1; min-width: 200px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
-        input[type="text"], input[type="number"], input[type="date"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
         .readonly-field { background-color: #e2e8f0; color: #4a5568; cursor: not-allowed; font-weight: bold; }
-        .alert-box { display: none; background-color: #fffaf0; border-left: 4px solid #dd6b20; padding: 15px; margin-bottom: 15px; font-size: 14px; color: #c05621; }
-        .btn-submit { background-color: #3182ce; color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 10px; }
+        .alert-box { display: none; padding: 15px; margin-bottom: 15px; font-size: 14px; border-radius: 4px; }
+        .alert-warning { background-color: #fffaf0; border-left: 4px solid #dd6b20; color: #c05621; }
+        .alert-danger { background-color: #fff5f5; border-left: 4px solid #e53e3e; color: #c53030; }
+        .btn-submit { background-color: #3182ce; color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; }
         .btn-submit:hover { background-color: #2b6cb0; }
         .btn-submit:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        .btn-add-po { background-color: #38a169; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 10px; }
+        .po-row { border: 1px dashed #cbd5e0; padding: 15px; border-radius: 6px; background-color: #f7fafc; margin-bottom: 10px; position: relative; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>ระบบบันทึกข้อมูลสัญญาจ้าง (Budget Dept.)</h2>
-        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.8;">เชื่อมโยงฐานข้อมูลพื้นที่ Area Master Data</p>
+        <h2>ระบบบันทึกฐานข้อมูลผู้รับเหมากลุ่มบุคคล (Budget Dept.)</h2>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">ข้อมูลจะเชื่อมโยงกับพื้นที่ทำงานซึ่งกำหนดโดย PM หรือโครงการแต่ละพื้นที่</p>
     </div>
 
     <form id="budgetForm" onsubmit="submitBudgetForm(event)">
         
-        <!-- Section 1: ข้อมูลสัญญา -->
+        <!-- Section 1: ข้อมูลสัญญาหลัก -->
         <div class="form-section">
-            <div class="section-title">1. ข้อมูลสัญญาและพื้นที่ปฏิบัติงาน</div>
+            <div class="section-title">1. ข้อมูลสัญญาหลัก (Main Contract)</div>
             <div class="form-row">
                 <div class="form-group" style="flex: 1;">
-                    <label>เลขที่สัญญา / ใบสั่งจ้าง (PO) *</label>
-                    <input type="text" id="contractNo" required placeholder="เช่น PO-2026-001">
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>พื้นที่ปฏิบัติงาน (ดึงจากระบบ PM) *</label>
-                    <select id="areaSelect" required onchange="handleAreaChange()">
-                        <option value="">-- กำลังโหลดข้อมูลพื้นที่... --</option>
+                    <label>ประเภทสัญญา *</label>
+                    <select id="contractType" required>
+                        <option value="">-- เลือกประเภทสัญญา --</option>
+                        <option value="สัญญาจ้างทำของ">สัญญาจ้างทำของ (รับเหมางาน)</option>
+                        <option value="สัญญาจ้างแรงงาน">สัญญาจ้างแรงงาน (รายวัน/รายเดือน)</option>
                     </select>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ระดับเขตพื้นที่ (ล็อกอัตโนมัติโดยระบบความปลอดภัย) *</label>
-                    <input type="text" id="workZoneDisplay" class="readonly-field" readonly placeholder="ระบบจะแสดงเขตพื้นที่อัตโนมัติเมื่อเลือกโครงการ">
-                    <input type="hidden" id="workZoneValue">
-                    <input type="hidden" id="projectNameValue">
+                <div class="form-group" style="flex: 2;">
+                    <label>เลขที่สัญญาหลัก *</label>
+                    <input type="text" id="mainContractNo" required placeholder="เช่น CTR-2026-001">
                 </div>
             </div>
         </div>
 
-        <!-- Section 2: ข้อมูลผู้รับเหมา & Tiering -->
+        <!-- Section 2: ข้อมูลใบสั่งจ้าง (PO) แบบ Dynamic เพิ่มได้หลายรายการ -->
         <div class="form-section" style="background-color: #f8fafc;">
-            <div class="section-title" style="border-left-color: #38a169;">2. ข้อมูลเถ้าแก่ และการจัดระดับ (Vendor Tier)</div>
+            <div class="section-title" style="border-left-color: #805ad5; color: #6b46c1;">2. ข้อมูลใบสั่งจ้าง (PO) และพื้นที่ปฏิบัติงานย่อย</div>
+            
+            <div id="poContainer">
+                <!-- แถว PO จะถูกเพิ่มด้วย Javascript ที่นี่ -->
+            </div>
+            
+            <button type="button" class="btn-add-po" onclick="addPORow()">+ เพิ่มใบสั่งจ้าง (PO) สำหรับสัญญานี้</button>
+        </div>
+
+        <!-- Section 3: ข้อมูลเถ้าแก่ -->
+        <div class="form-section">
+            <div class="section-title" style="border-left-color: #38a169;">3. ข้อมูลเถ้าแก่ และการจัดระดับ (Vendor Tier)</div>
             <div class="form-row">
                 <div class="form-group" style="flex: 2;">
                     <label>ชื่อ-นามสกุล เถ้าแก่ / ผู้รับจ้าง *</label>
@@ -72,48 +81,53 @@
                 </div>
             </div>
             
-            <!-- เพิ่มช่องทางการติดต่อ -->
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
-                    <label>LINE ID / เบอร์โทรศัพท์ (ช่องทางหลัก) *</label>
-                    <input type="text" id="vendorLineId" class="form-control" placeholder="เช่น @vendor_line หรือเบอร์โทร" required>
+                    <label>LINE ID *</label>
+                    <input type="text" id="vendorLineId" required placeholder="เช่น @vendor_line">
                 </div>
                 <div style="flex: 1;">
-                    <label>Email (ช่องทางสำรอง)</label>
-                    <input type="email" id="vendorEmail" class="form-control" placeholder="เช่น vendor@email.com">
+                    <label>Email *</label>
+                    <input type="email" id="vendorEmail" required placeholder="เช่น vendor@email.com">
                 </div>
             </div> 
             
             <div class="form-row">
                 <div class="form-group">
                     <label>สถานะกฎหมายแรงงาน (Tiering) *</label>
-                    <select id="vendorTier" required onchange="validateSafetyRules()">
+                    <select id="vendorTier" required onchange="validateAllRules()">
                         <option value="">-- เลือกสถานะผู้รับเหมา --</option>
-                        <option value="Tier_A">Tier A: มีสถานะนายจ้างและส่งประกันสังคม (รับได้ทุกงาน)</option>
-                        <option value="Tier_B">Tier B: ไม่มีลูกจ้าง/ทำเอง/ไม่เข้าระบบประกันสังคม (เฉพาะงานเขตปลอดภัย)</option>
+                        <option value="Tier_A">Tier A: มีสถานะนายจ้างและส่งประกันสังคม (เข้าได้ทุกพื้นที่)</option>
+                        <option value="Tier_B">Tier B: ผู้รับจ้างอิสระ/ไม่มีลูกจ้าง (เฉพาะเขตปลอดภัย)</option>
                     </select>
                 </div>
             </div>
-            <div id="safetyAlert" class="alert-box">
-                <strong>⚠️ ผิดเงื่อนไขความปลอดภัย:</strong> ผู้รับเหมา Tier B ไม่อนุญาตให้เข้าทำงานใน "เขตอันตราย" หรือ "เขตควบคุม" โดยเด็ดขาด โปรดปรับเปลี่ยนเถ้าแก่หรือให้ PM ประเมินพื้นที่ใหม่
+            <div id="safetyAlert" class="alert-box alert-danger">
+                <strong>⚠️ ผิดเงื่อนไขความปลอดภัย:</strong> ผู้รับเหมา Tier B มีบาง PO ที่ระบุให้เข้าทำงานใน "เขตอันตราย" หรือ "เขตควบคุม" ระบบไม่อนุญาตให้ดำเนินการต่อ
             </div>
         </div>
 
-        <!-- Section 3: การควบคุมงบประมาณและระยะเวลา -->
+        <!-- Section 4: สรุปมูลค่ารวม -->
         <div class="form-section">
-            <div class="section-title" style="border-left-color: #d69e2e;">3. การควบคุมมูลค่างานและสัญญา</div>
+            <div class="section-title" style="border-left-color: #d69e2e;">4. สรุปมูลค่างานรวมและเอกสารสัญญา</div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>มูลค่างานครั้งนี้ (บาท - ไม่รวม VAT) *</label>
-                    <input type="number" id="contractValue" required min="1" oninput="checkVATLimit()">
+                    <label>มูลค่างานรวมทุก PO (บาท) - ระบบคำนวณอัตโนมัติ</label>
+                    <input type="text" id="totalContractValueDisplay" class="readonly-field" readonly value="0.00">
+                    <input type="hidden" id="totalContractValue" value="0">
                 </div>
                 <div class="form-group">
                     <label>วันที่สิ้นสุดสัญญา / วันส่งมอบงาน *</label>
                     <input type="date" id="contractEndDate" required>
                 </div>
             </div>
-            <div id="vatAlert" class="alert-box" style="border-left-color: #e53e3e; color: #c53030;">
-                <strong>🚨 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานนี้เกิน 1.5 ล้านบาท โปรดตรวจสอบการจดทะเบียน VAT เพื่อป้องกันปัญหาภาษีย้อนหลัง
+
+            <!-- แจ้งเตือน VAT (สีเหลือง/สีแดง) -->
+            <div id="vatAlert15" class="alert-box alert-warning">
+                <strong>💡 แจ้งเตือนความเสี่ยงภาษี:</strong> มูลค่างานรวมเกิน 1.5 ล้านบาท โปรดเตรียมตรวจสอบการจดทะเบียน VAT ของผู้รับเหมา
+            </div>
+            <div id="vatAlert18" class="alert-box alert-danger">
+                <strong>🚨 ไม่อนุญาตให้ทำรายการ:</strong> มูลค่างานรวมเกิน 1.8 ล้านบาท (ถึงเกณฑ์บังคับจด VAT) กรุณาตรวจสอบสถานะบริษัทหรือแตกสัญญา
             </div>
             
             <div style="margin-top: 15px;">
@@ -123,7 +137,7 @@
         </div>
 
         <div style="padding: 20px;">
-            <button type="submit" class="btn-submit" id="submitBtn">สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา</button>
+            <button type="submit" class="btn-submit" id="submitBtn">บันทึกข้อมูลสัญญา และสร้างลิงก์สำหรับผู้รับเหมา</button>
         </div>
     </form>
 </div>
@@ -135,8 +149,9 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let areaDataList = [];
+    let safetyViolation = false;
 
-    // 1. ดึงข้อมูลพื้นที่จาก "ฐานข้อมูลจริง" ที่ PM สร้างไว้
+    // 1. โหลดข้อมูลพื้นที่จาก Database
     async function loadAreaMaster() {
         const { data, error } = await supabaseClient
             .from('table_area_master')
@@ -144,59 +159,127 @@
             .eq('status', 'Active')
             .order('created_at', { ascending: false });
 
-        const select = document.getElementById('areaSelect');
-        select.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
-
         if (data && data.length > 0) {
             areaDataList = data;
-            data.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area.area_id;
-                option.textContent = `[${area.area_id}] ${area.project_name}`;
-                select.appendChild(option);
-            });
-        } else {
-            select.innerHTML = '<option value="">-- ไม่พบข้อมูล (PM ต้องเปิดพื้นที่ก่อน) --</option>';
         }
+        
+        // โหลดเสร็จแล้ว สร้างช่อง PO แถวแรกทันที
+        addPORow();
     }
 
-    function handleAreaChange() {
-        const selectedId = document.getElementById('areaSelect').value;
+    // 2. ฟังก์ชันเพิ่มช่องกรอก PO (รองรับหลายไซต์งาน)
+    function addPORow() {
+        const container = document.getElementById('poContainer');
+        const rowId = 'po_' + Date.now();
+        
+        // สร้าง Options สำหรับพื้นที่
+        let areaOptions = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
+        areaDataList.forEach(area => {
+            areaOptions += `<option value="${area.area_id}">[${area.area_id}] ${area.project_name}</option>`;
+        });
+
+        const rowHTML = `
+            <div class="po-row" id="${rowId}">
+                <div class="form-row" style="margin-bottom:0;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>เลขที่ PO *</label>
+                        <input type="text" class="po-input-no" required placeholder="เช่น PO-001">
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>พื้นที่ปฏิบัติงาน (ไซต์งาน) *</label>
+                        <select class="po-input-area" required onchange="handleRowAreaChange(this)">
+                            ${areaOptions || '<option value="">-- ไม่พบข้อมูลพื้นที่ --</option>'}
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>ระดับความเสี่ยงพื้นที่</label>
+                        <input type="text" class="po-input-zone-display readonly-field" readonly placeholder="ออโต้">
+                        <input type="hidden" class="po-input-zone-value">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>มูลค่างาน (บาท) *</label>
+                        <input type="number" class="po-input-value" required min="1" value="0" oninput="calculateTotal()">
+                    </div>
+                    <div class="form-group" style="flex: 0 0 50px; display:flex; align-items:flex-end;">
+                        <button type="button" onclick="removePORow('${rowId}')" style="background:#e53e3e; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer; width:100%;">ลบ</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', rowHTML);
+    }
+
+    function removePORow(rowId) {
+        document.getElementById(rowId).remove();
+        calculateTotal();
+        validateAllRules();
+    }
+
+    // 3. จัดการเมื่อเลือกพื้นที่ในแต่ละแถว PO
+    function handleRowAreaChange(selectElement) {
+        const row = selectElement.closest('.po-row');
+        const selectedId = selectElement.value;
         const area = areaDataList.find(a => a.area_id === selectedId);
+        
+        const display = row.querySelector('.po-input-zone-display');
+        const val = row.querySelector('.po-input-zone-value');
+        
         if (area) {
-            document.getElementById('workZoneDisplay').value = area.work_zone;
-            document.getElementById('workZoneValue').value = area.work_zone;
-            document.getElementById('projectNameValue').value = area.project_name;
+            display.value = area.work_zone;
+            val.value = area.work_zone;
         } else {
-            document.getElementById('workZoneDisplay').value = '';
-            document.getElementById('workZoneValue').value = '';
-            document.getElementById('projectNameValue').value = '';
+            display.value = '';
+            val.value = '';
         }
-        validateSafetyRules();
+        validateAllRules();
     }
 
-    function validateSafetyRules() {
-        const zone = document.getElementById('workZoneValue').value;
+    // 4. คำนวณมูลค่ารวมทั้งหมด (และตรวจเช็ก VAT Limit 1.5M / 1.8M)
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.po-input-value').forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+
+        document.getElementById('totalContractValueDisplay').value = total.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('totalContractValue').value = total;
+
+        const vatAlert15 = document.getElementById('vatAlert15');
+        const vatAlert18 = document.getElementById('vatAlert18');
+
+        // แสดงผลแจ้งเตือน VAT
+        vatAlert15.style.display = (total >= 1500000 && total <= 1800000) ? 'block' : 'none';
+        vatAlert18.style.display = (total > 1800000) ? 'block' : 'none';
+
+        validateAllRules();
+    }
+
+    // 5. ตรวจสอบกฎความปลอดภัย และกฎหมายพร้อมกัน
+    function validateAllRules() {
         const tier = document.getElementById('vendorTier').value;
-        const alertBox = document.getElementById('safetyAlert');
-        const submitBtn = document.getElementById('submitBtn');
+        const total = parseFloat(document.getElementById('totalContractValue').value) || 0;
+        safetyViolation = false;
 
-        if (tier === 'Tier_B' && (zone === 'เขตอันตราย' || zone === 'เขตควบคุม')) {
-            alertBox.style.display = 'block';
-            submitBtn.disabled = true;
+        // เช็กกฎความปลอดภัย: Tier B ห้ามเข้าพื้นที่เสี่ยงในทุกๆ PO
+        document.querySelectorAll('.po-input-zone-value').forEach(input => {
+            const zone = input.value;
+            if (tier === 'Tier_B' && (zone === 'เขตอันตราย' || zone === 'เขตควบคุม')) {
+                safetyViolation = true;
+            }
+        });
+
+        document.getElementById('safetyAlert').style.display = safetyViolation ? 'block' : 'none';
+        
+        // ล็อกปุ่ม Submit หากผิดกฎความปลอดภัย หรือ มูลค่าเกิน 1.8 ล้าน
+        const btn = document.getElementById('submitBtn');
+        if (safetyViolation || total > 1800000) {
+            btn.disabled = true;
         } else {
-            alertBox.style.display = 'none';
-            submitBtn.disabled = false;
+            btn.disabled = false;
         }
     }
 
-    function checkVATLimit() {
-        const val = parseFloat(document.getElementById('contractValue').value) || 0;
-        const vatAlert = document.getElementById('vatAlert');
-        vatAlert.style.display = val >= 1500000 ? 'block' : 'none';
-    }
-
-    // 2. บันทึกข้อมูลเข้า "ฐานข้อมูลจริง (Supabase)"
+    // 6. บันทึกข้อมูล
     async function submitBudgetForm(event) {
         event.preventDefault();
         const btn = document.getElementById('submitBtn');
@@ -204,31 +287,30 @@
 
         try {
             const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
+            const mainContract = document.getElementById('mainContractNo').value;
+            const lineInfo = document.getElementById('vendorLineId').value;
+            const emailInfo = document.getElementById('vendorEmail').value;
             
-            // ส่งข้อมูลเข้าตาราง table_vendors
+            // หมายเหตุ: ปัจจุบันฐานข้อมูลเรารองรับ 1 สัญญาต่อ 1 เถ้าแก่ หากในอนาคตต้องการแยกตาราง PO ค่อยขยายเพิ่มได้ค่ะ
+            // เจนนี่ตั้งค่าให้ส่งเลขที่สัญญาหลัก (Contract No) เป็นตัวเชื่อมไปก่อน
             const { error: insertError } = await supabaseClient.from('table_vendors').insert([{
                 vendor_id: generatedVendorId,
                 vendor_name: document.getElementById('companyName').value,
                 tax_id: document.getElementById('taxId').value,
                 entity_type: document.getElementById('vendorTier').value, 
-                contract_no: document.getElementById('contractNo').value,
-                project_name: document.getElementById('projectNameValue').value,
+                contract_no: mainContract, // ใช้เลขสัญญาหลัก เพื่อให้ผู้รับเหมาพิมพ์ค้นหาได้ง่าย
                 verification_status: 'Waiting_Vendor'
             }]);
 
             if (insertError) throw insertError;
             
-            // ดึงค่าการติดต่อมาแสดงผลใน Alert
-            const lineInfo = document.getElementById('vendorLineId').value;
-            const emailInfo = document.getElementById('vendorEmail').value || 'ไม่ได้ระบุ';
-            
-            alert(`✅ บันทึกข้อมูลลงฐานข้อมูลจริงสำเร็จ!\nเลขที่ PO: ${document.getElementById('contractNo').value}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่:\n📱 LINE: ${lineInfo}\n📧 Email: ${emailInfo}`);
+            alert(`✅ บันทึกข้อมูลลงฐานข้อมูลจริงสำเร็จ!\nเลขที่สัญญาหลัก: ${mainContract}\nรหัสเถ้าแก่: ${generatedVendorId}\n\nระบบจะส่งลิงก์ลงทะเบียนไปที่:\n📱 LINE ID: ${lineInfo}\n📧 Email: ${emailInfo}`);
             
             window.location.reload();
 
         } catch (error) {
             alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล: " + error.message);
-            btn.disabled = false; btn.innerHTML = 'สร้างรายการ PO และสร้างลิงก์สำหรับผู้รับเหมา';
+            btn.disabled = false; btn.innerHTML = 'บันทึกข้อมูลสัญญา และสร้างลิงก์สำหรับผู้รับเหมา';
         }
     }
 
