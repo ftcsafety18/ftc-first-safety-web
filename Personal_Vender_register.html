@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบขึ้นทะเบียนผู้รับเหมา - FTC Digital Safety</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #e2e8f0; margin: 0; padding: 20px; color: #2d3748; }
+        .container { max-width: 850px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background-color: #2b6cb0; color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0; font-size: 15px; opacity: 0.9; }
+        .form-section { padding: 25px; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2b6cb0; margin-bottom: 15px; border-left: 4px solid #2b6cb0; padding-left: 10px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 250px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        label span { font-weight: 400; color: #718096; font-size: 13px; }
+        input[type="text"], input[type="tel"], input[type="email"], input[type="date"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; transition: 0.3s; }
+        input:focus, select:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
+        
+        .upload-box { background: #f7fafc; border: 1px dashed #a0aec0; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
+        .upload-label { font-weight: 600; color: #2d3748; margin-bottom: 5px; display: block; }
+        .upload-desc { font-size: 13px; color: #718096; margin-bottom: 10px; }
+        
+        .consent-box { background: #fffaf0; padding: 15px; border-radius: 4px; border-left: 4px solid #dd6b20; margin-bottom: 15px; display: flex; gap: 10px; }
+        .consent-box.legal { background: #fff0f2; border-left-color: #e53e3e; }
+        .consent-box input { margin-top: 4px; transform: scale(1.2); cursor: pointer; }
+        .consent-text { font-size: 14px; line-height: 1.6; margin-bottom: 0; }
+        
+        .btn-submit { background-color: #3182ce; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 10px; }
+        .btn-submit:hover { background-color: #2b6cb0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>ระบบขึ้นทะเบียนบริษัทผู้รับเหมา (Vendor Portal)</h2>
+        <p>FTC Digital Safety Transformation</p>
+    </div>
+
+    <form id="vendorRegistryForm" onsubmit="submitVendorForm(event)">
+        
+        <!-- ส่วนที่ 1: ข้อมูลบริษัท -->
+        <div class="form-section">
+            <div class="section-title">1. ข้อมูลผู้รับจ้าง / บริษัท (Vendor Information)</div>
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>ชื่อบริษัท / ห้างหุ้นส่วน / ชื่อผู้รับจ้าง <span>*</span></label>
+                    <input type="text" id="companyName" required placeholder="เช่น บจก. เอบีซี หรือ นายสมชาย รับเหมาก่อสร้าง">
+                </div>
+                <div class="form-group">
+                    <label>เลขประจำตัวผู้เสียภาษี / เลขบัตรประชาชน <span>*</span></label>
+                    <input type="text" id="taxId" required maxlength="13" placeholder="กรอกเลข 13 หลัก" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนที่ 2: ข้อมูลสัญญาและการติดต่อ -->
+        <div class="form-section" style="background-color: #f8fafc;">
+            <div class="section-title" style="border-left-color: #38a169; color: #38a169;">2. ข้อมูลสัญญา และผู้ประสานงาน (Contract & Contact)</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>เลขที่สัญญา / เลขที่ PO <span>*</span></label>
+                    <input type="text" id="contractNo" required placeholder="ระบุเลขที่สัญญาจ้าง หรือ PO">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อโครงการ / พื้นที่ปฏิบัติงาน <span>*</span></label>
+                    <input type="text" id="projectName" required placeholder="ระบุพื้นที่ที่เข้าทำงาน">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ชื่อผู้ประสานงานหลัก (จป. / ผู้ควบคุมงาน) <span>*</span></label>
+                    <input type="text" id="contactName" required placeholder="ชื่อ-นามสกุล">
+                </div>
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์ <span>*</span></label>
+                    <input type="tel" id="contactPhone" required maxlength="10" placeholder="08XXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนที่ 3: เอกสารบังคับทางกฎหมาย -->
+        <div class="form-section">
+            <div class="section-title" style="border-left-color: #d69e2e; color: #d69e2e;">3. เอกสารประกอบการขึ้นทะเบียน (Required Legal Documents)</div>
+            
+            <div class="upload-box">
+                <span class="upload-label">1. สำเนาสัญญาจ้าง / ใบสั่งจ้าง (PO) *</span>
+                <span class="upload-desc">แนบไฟล์ PDF หรือรูปถ่ายหน้าแรกของสัญญาจ้าง</span>
+                <input type="file" id="fileContract" accept=".pdf,image/*" required>
+            </div>
+
+            <div class="upload-box">
+                <span class="upload-label">2. กรมธรรม์ประกันอุบัติเหตุ (Group PA Insurance) *</span>
+                <span class="upload-desc">แนบสำเนากรมธรรม์ที่คุ้มครองลูกจ้างที่เข้าปฏิบัติงานในพื้นที่ (ต้องครอบคลุมระยะเวลาสัญญา)</span>
+                <input type="file" id="fileInsurance" accept=".pdf,image/*" required>
+            </div>
+
+            <div class="upload-box">
+                <span class="upload-label">3. หนังสือข้อตกลงด้านความปลอดภัย (Safety Agreement) *</span>
+                <span class="upload-desc">แนบไฟล์หนังสือข้อตกลงที่ลงนามโดยผู้มีอำนาจ</span>
+                <input type="file" id="fileSafetyAgreement" accept=".pdf,image/*" required>
+            </div>
+        </div>
+
+        <!-- ส่วนที่ 4: ข้อตกลงความรับผิดชอบ (Legal Declaration) -->
+        <div class="form-section" style="border-bottom: none;">
+            <div class="consent-box legal">
+                <input type="checkbox" id="legalConsent1" required>
+                <label class="consent-text" for="legalConsent1">
+                    <strong>การรับสภาพการเป็นผู้รับจ้างทำของ:</strong> ข้าพเจ้ารับทราบและตกลงว่า การเข้าปฏิบัติงานในพื้นที่ของบริษัทฯ เป็นไปในลักษณะ <strong>"สัญญาจ้างทำของ"</strong> ข้าพเจ้ามีหน้าที่บริหารจัดการ ควบคุม และดูแลความปลอดภัยของลูกจ้างหรือผู้ใต้บังคับบัญชาของข้าพเจ้าให้เป็นไปตามมาตรฐานความปลอดภัยของบริษัทฯ ทุกประการ
+                </label>
+            </div>
+
+            <div class="consent-box legal">
+                <input type="checkbox" id="legalConsent2" required>
+                <label class="consent-text" for="legalConsent2">
+                    <strong>ความรับผิดชอบทางกฎหมาย (Hold Harmless):</strong> หากเกิดอุบัติเหตุ การบาดเจ็บ หรือการเสียชีวิตแก่ลูกจ้างของข้าพเจ้า ข้าพเจ้าจะเป็นผู้รับผิดชอบค่ารักษาพยาบาล ค่าสินไหมทดแทน และความรับผิดทางกฎหมายแต่เพียงผู้เดียว โดยบริษัทฯ ผู้ว่าจ้างไม่มีส่วนร่วมรับผิดชอบใดๆ ทั้งสิ้น
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit">ลงทะเบียนบริษัท และส่งเอกสารให้ FTC ตรวจสอบ</button>
+        </div>
+    </form>
+</div>
+
+<!-- นำเข้า Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // ตั้งค่า Supabase (ใช้ URL และ Key ชุดเดิม)
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function submitVendorForm(event) {
+        event.preventDefault();
+        
+        const submitBtn = document.querySelector('.btn-submit');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ กำลังอัปโหลดเอกสารกฎหมายและบันทึกข้อมูล...';
+
+        try {
+            // สร้าง Vendor ID อัตโนมัติ (เช่น VEN-1689345201)
+            const generatedVendorId = 'VEN-' + Date.now().toString().slice(-6);
+            
+            // เตรียมการอัปโหลดไฟล์ (ต้องสร้าง Bucket ชื่อ 'vendor-documents' ใน Supabase)
+            const filesToUpload = [
+                { elementId: 'fileContract', folder: 'contracts' },
+                { elementId: 'fileInsurance', folder: 'insurance' },
+                { elementId: 'fileSafetyAgreement', folder: 'safety_agreements' }
+            ];
+
+            let documentUrls = {};
+
+            for (let fileInfo of filesToUpload) {
+                const fileInput = document.getElementById(fileInfo.elementId);
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${generatedVendorId}_${Date.now()}.${fileExt}`;
+                    
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('vendor-documents')
+                        .upload(`${fileInfo.folder}/${fileName}`, file);
+                    
+                    if (uploadError) throw uploadError;
+
+                    const { data } = supabaseClient.storage.from('vendor-documents').getPublicUrl(`${fileInfo.folder}/${fileName}`);
+                    documentUrls[fileInfo.folder] = data.publicUrl;
+                }
+            }
+
+            // บันทึกข้อมูลลงฐานข้อมูล (ต้องสร้าง Table ชื่อ 'table_vendors' ใน Supabase)
+            const { error: insertError } = await supabaseClient
+                .from('table_vendors')
+                .insert([
+                    {
+                        vendor_id: generatedVendorId,
+                        company_name: document.getElementById('companyName').value,
+                        tax_id: document.getElementById('taxId').value,
+                        contract_no: document.getElementById('contractNo').value,
+                        project_name: document.getElementById('projectName').value,
+                        contact_name: document.getElementById('contactName').value,
+                        contact_phone: document.getElementById('contactPhone').value,
+                        contract_url: documentUrls['contracts'] || null,
+                        insurance_url: documentUrls['insurance'] || null,
+                        safety_agreement_url: documentUrls['safety_agreements'] || null,
+                        status: 'Pending', // รอแอดมินอนุมัติ
+                        legal_consent_accepted: true
+                    }
+                ]);
+
+            if (insertError) throw insertError;
+
+            alert(`✅ ส่งข้อมูลขึ้นทะเบียนสำเร็จ!\n\nระบบได้รับข้อมูลของท่านแล้ว\nรหัสอ้างอิงของท่านคือ: ${generatedVendorId}\n\nกรุณารอเจ้าหน้าที่ FTC ตรวจสอบเอกสาร เมื่อผ่านการอนุมัติ ท่านจะได้รับ QR Code สำหรับให้ทีมงานลงทะเบียนต่อไป`);
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    }
+</script>
+
+</body>
+</html>
