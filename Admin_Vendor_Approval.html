@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - ตรวจสอบและอนุมัติผู้รับเหมา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f7fafc; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #e2e8f0; text-align: left; }
+        th { background-color: #2b6cb0; color: white; }
+        .btn-approve { background-color: #38a169; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-view { background-color: #3182ce; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .status-badge { background: #ecc94b; color: #744210; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📋 รายการรอตรวจสอบและอนุมัติ (Vendor Pending Approval)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Vendor ID</th>
+                <th>ชื่อผู้รับเหมา</th>
+                <th>ประเภท</th>
+                <th>โครงการ</th>
+                <th>ผู้ติดต่อ</th>
+                <th>เอกสาร</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+            </tr>
+        </thead>
+        <tbody id="vendorTableBody">
+            <tr><td colspan="8" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function loadPendingVendors() {
+        const { data, error } = await supabaseClient
+            .from('table_vendors')
+            .select('*')
+            .eq('verification_status', 'Pending')
+            .order('created_at', { ascending: false });
+
+        const tbody = document.getElementById('vendorTableBody');
+        tbody.innerHTML = '';
+
+        if (error) {
+            tbody.innerHTML = `<tr><td colspan="8">Error: ${error.message}</td></tr>`;
+            return;
+        }
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">ไม่มีรายการรออนุมัติ</td></tr>';
+            return;
+        }
+
+        data.forEach(vendor => {
+            // ดึงลิงก์จาก JSONB
+            const docs = vendor.vendor_documents || {};
+            const paLink = docs.insurance_url ? `<a href="${docs.insurance_url}" target="_blank" class="btn-view">ประกัน PA</a>` : '-';
+            const safetyLink = docs.safety_agreement_url ? `<a href="${docs.safety_agreement_url}" target="_blank" class="btn-view">Agreement</a>` : '-';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${vendor.vendor_id}</td>
+                <td>${vendor.vendor_name}</td>
+                <td>${vendor.entity_type}</td>
+                <td>${vendor.project_name || '-'}</td>
+                <td>${vendor.contact_name || '-'}<br><small>${vendor.contact_phone || '-'}</small></td>
+                <td>${paLink} ${safetyLink}</td>
+                <td><span class="status-badge">${vendor.verification_status}</span></td>
+                <td>
+                    <button class="btn-approve" onclick="approveVendor('${vendor.vendor_id}')">✅ อนุมัติ</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function approveVendor(vendorId) {
+        if(!confirm(`ยืนยันการอนุมัติผู้รับเหมา: ${vendorId} ใช่หรือไม่?`)) return;
+
+        const { error } = await supabaseClient
+            .from('table_vendors')
+            .update({ verification_status: 'Approved' }) // อัปเดตสถานะ
+            .eq('vendor_id', vendorId);
+
+        if(error) {
+            alert('เกิดข้อผิดพลาด: ' + error.message);
+        } else {
+            alert('✅ อนุมัติเรียบร้อยแล้ว');
+            loadPendingVendors(); // รีโหลดตาราง
+        }
+    }
+
+    // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
+    window.onload = loadPendingVendors;
+</script>
+</body>
+</html>
