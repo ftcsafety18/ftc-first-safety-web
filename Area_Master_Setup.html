@@ -115,7 +115,7 @@
                     <div class="contact-box-title">👑 เจ้าของโครงการ (Project Owner)</div>
                     <div class="grid-2" style="margin-bottom:0;">
                         <div class="form-group" style="grid-column: span 2;"><label>ชื่อเจ้าของโครงการ *</label><input type="text" id="oName" required></div>
-                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="oPhone"></div>
+                        <div class="form-group"><label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label><input type="text" id="oPhone" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
                         <div class="form-group"><label>อีเมล</label><input type="email" id="oEmail"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Line ID</label><input type="text" id="oLine"></div>
                     </div>
@@ -125,7 +125,7 @@
                     <div class="contact-box-title">🏛️ ที่ปรึกษาโครงการ (Consultant)</div>
                     <div class="grid-2" style="margin-bottom:0;">
                         <div class="form-group" style="grid-column: span 2;"><label>ชื่อบริษัท / ชื่อที่ปรึกษา *</label><input type="text" id="cName" required></div>
-                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="cPhone"></div>
+                        <div class="form-group"><label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label><input type="text" id="cPhone" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
                         <div class="form-group"><label>อีเมล</label><input type="email" id="cEmail"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Line ID</label><input type="text" id="cLine"></div>
                     </div>
@@ -135,7 +135,7 @@
                     <div class="contact-box-title">🛡️ เจ้าหน้าที่ความปลอดภัย (ฝั่ง Owner/Consultant)</div>
                     <div class="grid-2" style="margin-bottom:0;">
                         <div class="form-group" style="grid-column: span 2;"><label>ชื่อเจ้าหน้าที่ความปลอดภัย</label><input type="text" id="osName"></div>
-                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="osPhone"></div>
+                        <div class="form-group"><label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label><input type="text" id="osPhone" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
                         <div class="form-group"><label>อีเมล</label><input type="email" id="osEmail"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Line ID</label><input type="text" id="osLine"></div>
                     </div>
@@ -145,7 +145,7 @@
                     <div class="contact-box-title">🤝 ผู้ประสานงานโครงการ (Project Coordinator)</div>
                     <div class="grid-2" style="margin-bottom:0;">
                         <div class="form-group" style="grid-column: span 2;"><label>ชื่อผู้ประสานงาน *</label><input type="text" id="coName" required></div>
-                        <div class="form-group"><label>เบอร์โทร</label><input type="text" id="coPhone"></div>
+                        <div class="form-group"><label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label><input type="text" id="coPhone" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
                         <div class="form-group"><label>อีเมล</label><input type="email" id="coEmail"></div>
                         <div class="form-group"><label>Line ID</label><input type="text" id="coLine"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>หมายเหตุผู้ประสานงาน</label><input type="text" id="coRemark"></div>
@@ -176,7 +176,7 @@
                     <div class="form-group"><button type="button" class="btn btn-add" onclick="addTeamMember()">+ เพิ่ม</button></div>
                 </div>
                 <div class="grid-3" style="margin-bottom: 15px;">
-                    <div class="form-group"><label>เบอร์โทร</label><input type="text" id="tmPhone" placeholder="เบอร์โทร"></div>
+                    <div class="form-group"><label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label><input type="text" id="tmPhone" placeholder="เบอร์โทร" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
                     <div class="form-group"><label>อีเมล</label><input type="email" id="tmEmail" placeholder="อีเมล"></div>
                     <div class="form-group"><label>Line ID</label><input type="text" id="tmLine" placeholder="Line ID"></div>
                 </div>
@@ -208,7 +208,7 @@
             <div class="grid-4">
                 <div class="form-group" style="grid-column: span 2;">
                     <label>อ้างอิงโครงการหลัก *</label>
-                    <select id="selectProjectForArea" required><option value="">-- โหลดข้อมูลโครงการ... --</option></select>
+                    <select id="selectProjectForArea" required><option value="">-- กรุณาสร้างโครงการหลักก่อน --</option></select>
                 </div>
                 <div class="form-group"><label>รหัสพื้นที่ (Area ID) *</label><input type="text" id="aId" required placeholder="AREA-01"></div>
                 <div class="form-group"><label>ชื่อพื้นที่/โซน *</label><input type="text" id="aName" required placeholder="โซนก่อสร้างอาคาร A"></div>
@@ -218,9 +218,9 @@
                     <label>ระดับเขตพื้นที่ (อ้างอิงหลักวิชาการความปลอดภัย) *</label>
                     <select id="aZone" required>
                         <option value="">-- ประเมินระดับความเสี่ยง --</option>
-                        <option value="เขตอันตราย">🔴 เขตอันตราย (พื้นที่เสี่ยงสูงสุด/Hot Zone)</option>
-                        <option value="เขตควบคุม">🟠 เขตควบคุม (พื้นที่ควบคุมความเสี่ยง/Warm Zone)</option>
-                        <option value="เขตปลอดภัย">🟢 เขตปลอดภัย (พื้นที่ทั่วไป/Safe Zone)</option>
+                        <option value="เขตอันตราย">🔴 เขตอันตราย</option>
+                        <option value="เขตควบคุม">🟠 เขตควบคุม</option>
+                        <option value="เขตปลอดภัย">🟢 เขตปลอดภัย</option>
                     </select>
                 </div>
                 <div class="form-group" style="justify-content: flex-end;">
@@ -246,7 +246,7 @@
             <div class="grid-4">
                 <div class="form-group">
                     <label>อ้างอิงพื้นที่เปิดงาน *</label>
-                    <select id="tArea" required><option value="">-- โหลดข้อมูลพื้นที่... --</option></select>
+                    <select id="tArea" required><option value="">-- กรุณาสร้างพื้นที่ก่อน --</option></select>
                 </div>
                 <div class="form-group"><label>รหัส Task *</label><input type="text" id="tCode" required placeholder="TSK-001"></div>
                 <div class="form-group" style="grid-column: span 2;"><label>ชื่องาน / ภารกิจ (Task Name) *</label><input type="text" id="tName" required placeholder="งานติดตั้งโครงเหล็ก"></div>
@@ -374,12 +374,20 @@
 
     function updateDropdowns() {
         const pSelect = document.getElementById('selectProjectForArea');
-        pSelect.innerHTML = '<option value="">-- เลือกโครงการหลัก --</option>';
-        projects.forEach(p => pSelect.innerHTML += `<option value="${p.id}">[${p.id}] ${p.name}</option>`);
+        if (projects.length === 0) {
+            pSelect.innerHTML = '<option value="">-- กรุณาสร้างโครงการหลักก่อน --</option>';
+        } else {
+            pSelect.innerHTML = '<option value="">-- เลือกโครงการหลัก --</option>';
+            projects.forEach(p => pSelect.innerHTML += `<option value="${p.id}">[${p.id}] ${p.name}</option>`);
+        }
 
         const aSelect = document.getElementById('tArea');
-        aSelect.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
-        areas.forEach(a => aSelect.innerHTML += `<option value="${a.id}">[${a.projectId}] -> [${a.id}] ${a.name}</option>`);
+        if (areas.length === 0) {
+            aSelect.innerHTML = '<option value="">-- กรุณาสร้างพื้นที่ก่อน --</option>';
+        } else {
+            aSelect.innerHTML = '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>';
+            areas.forEach(a => aSelect.innerHTML += `<option value="${a.id}">[${a.projectId}] -> [${a.id}] ${a.name}</option>`);
+        }
     }
 
     function renderDashboard() {
