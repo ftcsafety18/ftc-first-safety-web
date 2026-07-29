@@ -73,13 +73,17 @@
             </div>
             
             <!-- เพิ่มช่องทางการติดต่อตามที่พี่ณัฐธัญแนะนำ -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ช่องทางการติดต่อ (LINE ID / เบอร์โทรศัพท์ / Email) *</label>
-                    <input type="text" id="vendorContact" required placeholder="สำหรับส่งลิงก์/QR Code ให้เถ้าแก่ยืนยันตัวตน">
-                </div>
-            </div>
 
+           <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+    <div style="flex: 1;">
+        <label>LINE ID / เบอร์โทรศัพท์ (ช่องทางหลัก) *</label>
+        <input type="text" id="vendorLineId" class="form-control" placeholder="เช่น @vendor_line หรือเบอร์โทร" required>
+    </div>
+    <div style="flex: 1;">
+        <label>Email (ช่องทางสำรอง)</label>
+        <input type="email" id="vendorEmail" class="form-control" placeholder="เช่น vendor@email.com">
+    </div>
+</div> 
             <div class="form-row">
                 <div class="form-group">
                     <label>สถานะกฎหมายแรงงาน (Tiering) *</label>
