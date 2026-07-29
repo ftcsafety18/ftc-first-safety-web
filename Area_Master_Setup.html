@@ -16,7 +16,7 @@
         .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .form-group { flex: 1; min-width: 200px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #4a5568; }
-        input[type="text"], input[type="number"], input[type="date"], input[type="file"], select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="file"], select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
         .help-text { font-size: 12px; color: #718096; margin-top: 4px; display: block; }
         
         /* Buttons */
@@ -61,9 +61,21 @@
                 <div class="form-group"><label>รหัสโครงการ (Project Code) *</label><input type="text" id="projectCode" required placeholder="เช่น PRJ-2026-001"></div>
                 <div class="form-group" style="flex: 2;"><label>ชื่อโครงการ *</label><input type="text" id="projectName" required placeholder="เช่น โครงการก่อสร้างหอระบายความร้อน"></div>
             </div>
+
+            <!-- เพิ่มใหม่: ข้อมูลผู้ว่าจ้างและที่ปรึกษาโครงการ (Owner & Consultant) -->
+            <div class="sub-title" style="color: #d69e2e; border-bottom-color: #f6e05e;">ผู้ว่าจ้าง และ ที่ปรึกษาโครงการ (Owner & Consultant)</div>
+            <div class="form-row">
+                <div class="form-group"><label>เจ้าของโครงการ (Project Owner) *</label><input type="text" id="ownerName" required placeholder="ชื่อบริษัท / ชื่อผู้ติดต่อ"></div>
+                <div class="form-group"><label>เบอร์ติดต่อเจ้าของโครงการ *</label><input type="text" id="ownerPhone" required placeholder="เบอร์โทรศัพท์"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>ที่ปรึกษาโครงการ (Consultant) *</label><input type="text" id="consultantName" required placeholder="ชื่อบริษัท / ชื่อผู้ติดต่อ"></div>
+                <div class="form-group"><label>เบอร์ติดต่อที่ปรึกษา *</label><input type="text" id="consultantPhone" required placeholder="เบอร์โทรศัพท์"></div>
+                <div class="form-group"><label>อีเมลที่ปรึกษา *</label><input type="email" id="consultantEmail" required placeholder="อีเมล"></div>
+            </div>
             
             <!-- โครงสร้างทีมงานหลัก (Team) -->
-            <div class="sub-title" style="color: #c53030; border-bottom-color: #fc8181;">ทีมงานหลักประจำโครงการ (Core Team)</div>
+            <div class="sub-title" style="color: #c53030; border-bottom-color: #fc8181;">ทีมงานหลักประจำโครงการฝั่งผู้รับเหมา (Core Team)</div>
             <div class="form-row">
                 <div class="form-group"><label>Project Manager (PM) *</label><input type="text" id="teamPM" required placeholder="ชื่อ PM"></div>
                 <div class="form-group"><label>เจ้าหน้าที่ความปลอดภัย (จป.วิชาชีพ) *</label><input type="text" id="teamSafety" required placeholder="ชื่อ จป. ประจำโครงการ"></div>
@@ -146,9 +158,9 @@
                     <tr>
                         <th style="width: 15%;">รหัส (ID)</th>
                         <th style="width: 35%;">รายละเอียดโครงการ / พื้นที่ / ภารกิจ</th>
-                        <th style="width: 25%;">ทีมงาน / ผู้รับผิดชอบ (Team)</th>
-                        <th style="width: 15%;">ระยะเวลา (Time)</th>
-                        <th style="width: 10%;">สถานะ</th>
+                        <th style="width: 30%;">ทีมงาน และ ผู้ติดต่อ (Stakeholders)</th>
+                        <th style="width: 12%;">ระยะเวลา (Time)</th>
+                        <th style="width: 8%;">สถานะ</th>
                     </tr>
                 </thead>
                 <tbody id="dashboardBody">
@@ -188,7 +200,16 @@
                 <tr class="project-row">
                     <td><strong>📦 ${p.id}</strong></td>
                     <td><strong style="color:#2b6cb0;">${p.name}</strong><br><span style="font-size:11px;">📍 พิกัด: ${p.gps} | 💰 งบ: ฿${parseFloat(p.budget).toLocaleString()}</span></td>
-                    <td><div class="team-box"><strong>PM:</strong> ${p.pm}<br><strong>จป.วิชาชีพ:</strong> ${p.safety}<br><strong>Cost:</strong> ${p.cost}</div></td>
+                    <td>
+                        <div class="team-box">
+                            <span style="color:#d69e2e;">[ข้อมูลผู้ว่าจ้าง/ที่ปรึกษา]</span><br>
+                            <strong>👑 Owner:</strong> ${p.ownerName} 📞 ${p.ownerPhone}<br>
+                            <strong>🔍 Consultant:</strong> ${p.consultantName} <br>&nbsp;&nbsp;&nbsp;&nbsp;📞 ${p.consultantPhone} | ✉️ ${p.consultantEmail}<br>
+                            <hr style="border: 0; border-top: 1px dashed #cbd5e0; margin: 5px 0;">
+                            <span style="color:#c53030;">[ทีมผู้รับเหมาหลัก]</span><br>
+                            <strong>PM:</strong> ${p.pm} | <strong>จป.วิชาชีพ:</strong> ${p.safety}<br><strong>Cost:</strong> ${p.cost}
+                        </div>
+                    </td>
                     <td>-</td>
                     <td style="color:#3182ce; font-weight:bold;">Active</td>
                 </tr>`;
@@ -228,13 +249,21 @@
         projects.push({
             id: document.getElementById('projectCode').value,
             name: document.getElementById('projectName').value,
+            // Owner & Consultant
+            ownerName: document.getElementById('ownerName').value,
+            ownerPhone: document.getElementById('ownerPhone').value,
+            consultantName: document.getElementById('consultantName').value,
+            consultantPhone: document.getElementById('consultantPhone').value,
+            consultantEmail: document.getElementById('consultantEmail').value,
+            // Core Team
             pm: document.getElementById('teamPM').value,
             safety: document.getElementById('teamSafety').value,
             cost: document.getElementById('teamCost').value,
+            // General
             budget: document.getElementById('projectBudget').value,
             gps: document.getElementById('projectGps').value
         });
-        alert('✅ บันทึกโครงการหลักสำเร็จ'); document.getElementById('projectForm').reset();
+        alert('✅ บันทึกโครงการหลักและผู้มีส่วนได้ส่วนเสียสำเร็จ'); document.getElementById('projectForm').reset();
         updateDropdowns(); renderDashboard();
     }
 
