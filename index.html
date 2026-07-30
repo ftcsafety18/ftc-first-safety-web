@@ -288,24 +288,20 @@
     // ฟังก์ชันจำลองการกดส่งฟอร์ม (ยิงไป Supabase)
     function submitPermit(e) {
         e.preventDefault(); // ป้องกันหน้าเว็บโหลดซ้ำ
-        
+
         const risk = document.getElementById('riskLevel').value;
         const vendorType = "Individual"; // สมมติว่าดึงมาจากระบบหลังบ้านว่าเป็นบุคคลธรรมดา
-        
+
         document.getElementById('loader').style.display = 'flex';
 
         setTimeout(() => {
             document.getElementById('loader').style.display = 'none';
-            
+
             // จำลอง Logic ของ Supabase Edge Functions (Entity-Risk Lock)
             if (risk === "High_Risk" && vendorType === "Individual") {
-                alert("❌ ถูกระงับการอนุมัติ (HTTP 403)
-
-ระบบไม่อนุญาตให้ผู้รับเหมาประเภท 'บุคคลธรรมดา' เปิดขอใบอนุญาต 'งานเสี่ยงสูง' เด็ดขาด ตามกฎความปลอดภัยขององค์กร");
+                alert("❌ ถูกระงับการอนุมัติ (HTTP 403)\n\nระบบไม่อนุญาตให้ผู้รับเหมาประเภท 'บุคคลธรรมดา' เปิดขอใบอนุญาต 'งานเสี่ยงสูง' เด็ดขาด ตามกฎความปลอดภัยขององค์กร");
             } else {
-                alert("✅ ส่งคำขอสำเร็จ!
-
-ข้อมูลของคุณถูกส่งเข้าสู่ฐานข้อมูล Supabase เพื่อรอ จป. อนุมัติเรียบร้อยแล้ว");
+                alert("✅ ส่งคำขอสำเร็จ!\n\nข้อมูลของคุณถูกส่งเข้าสู่ฐานข้อมูล Supabase เพื่อรอ จป. อนุมัติเรียบร้อยแล้ว");
                 document.getElementById('permitForm').reset();
                 openScreen('screen-menu');
             }
