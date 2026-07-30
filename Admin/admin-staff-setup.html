@@ -1,51 +1,250 @@
-<!-- ส่วนที่ 1: เลือกโครงการที่เป็นแกนหลัก -->
-<div class="section-box">
-    <div class="section-title">1. เลือกรหัส / ชื่อโครงการ</div>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบขึ้นทะเบียนพนักงาน FTC ประจำโครงการ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     
-    <div class="form-group">
-        <label for="project_select">โครงการที่ต้องการขึ้นทะเบียนพนักงาน *</label>
-        <select id="project_select" onchange="toggleNewProject(this)" required>
-            <option value="">-- กรุณาเลือกโครงการ --</option>
-            
-            <!-- รายชื่อโครงการที่ดึงมาจากฐานข้อมูลเดิม (อ้างอิงจากไฟล์ Excel) -->
-            <optgroup label="รายชื่อโครงการปัจจุบัน">
-                <option value="PRJ-AMC">โครงการ AMC</option>
-                <option value="PRJ-LUF">โครงการ LUF</option>
-                <option value="PRJ-PCK">โครงการ PCK</option>
-                <option value="PRJ-PHT">โครงการ PHT</option>
-                <option value="PRJ-VEJTHANI">โครงการ เวชธานี</option>
-                <option value="PRJ-CENTRAL-BANGNA">โครงการ เซ็นทรัลบางนา</option>
-            </optgroup>
-
-            <!-- ตัวเลือกสำหรับเพิ่มโครงการใหม่ นอกเหนือจากลิสต์ -->
-            <option value="อื่นๆ" style="font-weight: bold; color: #38a169;">+ อื่นๆ (สร้างโครงการใหม่)</option>
-        </select>
-    </div>
-
-    <!-- ช่องสำหรับพิมพ์ชื่อโครงการใหม่ จะแสดงเมื่อเลือก "อื่นๆ" -->
-    <div class="form-group" id="new_project_div" style="display: none; margin-top: 15px; padding: 15px; border-left: 4px solid #38a169; background-color: #f0fff4;">
-        <label for="new_project_input" style="color: #276749;">ระบุชื่อโครงการใหม่เพื่อบันทึกลงระบบ *</label>
-        <input type="text" id="new_project_input" placeholder="ตัวอย่าง: โครงการ ก่อสร้าง Plant B (ระยอง)">
-        <p style="font-size: 13px; color: #718096; margin-top: 5px;">* โครงการใหม่ที่ถูกสร้าง จะถูกผูกกับบุคลากรและพร้อมใช้สำหรับจัดสรรงบประมาณทันที</p>
-    </div>
-</div>
-
-<script>
-    // ฟังก์ชันตรวจสอบการเลือก Dropdown เพื่อซ่อน/แสดง ช่อง "เพิ่มโครงการใหม่"
-    function toggleNewProject(selectElement) {
-        const newProjectDiv = document.getElementById('new_project_div');
-        const newProjectInput = document.getElementById('new_project_input');
-        
-        if (selectElement.value === 'อื่นๆ') {
-            // แสดงกล่องข้อความ และบังคับให้ต้องพิมพ์ข้อมูล
-            newProjectDiv.style.display = 'block';
-            newProjectInput.setAttribute('required', 'true');
-            newProjectInput.focus();
-        } else {
-            // ซ่อนกล่องข้อความ และล้างค่าทิ้งเพื่อไม่ให้ส่งข้อมูลขยะเข้า Database
-            newProjectDiv.style.display = 'none';
-            newProjectInput.removeAttribute('required');
-            newProjectInput.value = ''; 
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 20px;
+            color: #2d3748;
         }
-    }
-</script>
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1a365d;
+            border-bottom: 3px solid #3182ce;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .section-card {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2b6cb0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 5px;
+            height: 20px;
+            background-color: #3182ce;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid #a0aec0;
+            border-radius: 5px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 15px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49,130,206,0.2);
+        }
+        .btn-submit {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: 'Sarabun', sans-serif;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-submit:hover {
+            background-color: #2b6cb0;
+        }
+        .dynamic-box {
+            background-color: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 5px 5px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>ระบบจัดการฐานข้อมูล: ขึ้นทะเบียนพนักงาน FTC ประจำโครงการ</h2>
+
+        <form id="staffSetupForm">
+            
+            <!-- ส่วนที่ 1: ข้อมูลโครงการ (Project Context) -->
+            <div class="section-card">
+                <div class="section-title">1. เลือกโครงการ (Project Context)</div>
+                
+                <div class="form-group">
+                    <label for="project_select">รหัส / ชื่อโครงการ *</label>
+                    <select id="project_select" onchange="handleProjectChange(this)" required>
+                        <option value="">-- กรุณาเลือกโครงการ --</option>
+                        <optgroup label="โครงการปัจจุบัน">
+                            <option value="PRJ-AMC">PRJ-AMC : โครงการ AMC</option>
+                            <option value="PRJ-LUF">PRJ-LUF : โครงการ LUF</option>
+                            <option value="PRJ-PCK">PRJ-PCK : โครงการ PCK</option>
+                            <option value="PRJ-PHT">PRJ-PHT : โครงการ PHT</option>
+                            <option value="PRJ-VEJ">PRJ-VEJ : โครงการ เวชธานี</option>
+                            <option value="PRJ-CEN">PRJ-CEN : โครงการ เซ็นทรัลบางนา</option>
+                        </optgroup>
+                        <option value="other" style="font-weight: bold; color: #2b6cb0;">+ สร้างโครงการใหม่</option>
+                    </select>
+                </div>
+
+                <!-- กล่องข้อความสำหรับสร้างโครงการใหม่ (ซ่อนไว้) -->
+                <div class="dynamic-box" id="new_project_box">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="new_project_code" style="color: #2b6cb0;">รหัสโครงการใหม่ *</label>
+                            <input type="text" id="new_project_code" placeholder="เช่น PRJ-NEW">
+                        </div>
+                        <div class="form-group">
+                            <label for="new_project_name" style="color: #2b6cb0;">ชื่อโครงการใหม่ *</label>
+                            <input type="text" id="new_project_name" placeholder="ระบุชื่อโครงการ">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ส่วนที่ 2: ข้อมูลพนักงาน (Staff Details) -->
+            <div class="section-card">
+                <div class="section-title">2. ข้อมูลพนักงาน (Staff Details)</div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="staff_id">รหัสพนักงาน *</label>
+                        <input type="text" id="staff_id" placeholder="ระบุรหัสพนักงาน" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="staff_position">บทบาท / ตำแหน่งในโครงการ *</label>
+                        <select id="staff_position" onchange="handlePositionChange(this)" required>
+                            <option value="">-- กรุณาเลือกตำแหน่ง --</option>
+                            <optgroup label="ฝ่ายบริหารและควบคุมโครงการ">
+                                <option value="PM">ผู้จัดการโครงการ (PM)</option>
+                                <option value="PE">วิศวกรโครงการ / วิศวกรหน่วยงาน</option>
+                                <option value="Foreman">ผู้ควบคุมงาน / โฟร์แมน</option>
+                            </optgroup>
+                            <optgroup label="ฝ่ายความปลอดภัย (SHE)">
+                                <option value="Safety_Pro">เจ้าหน้าที่ความปลอดภัยระดับวิชาชีพ</option>
+                                <option value="Safety_Admin">เจ้าหน้าที่ความปลอดภัยระดับบริหาร</option>
+                            </optgroup>
+                            <optgroup label="ระบบใบอนุญาตทำงาน (E-Permit)">
+                                <option value="Permit_Issuer">ผู้ออกใบอนุญาต (Permit Issuer)</option>
+                                <option value="Permit_Approver">ผู้อนุมัติ (Permit Approver)</option>
+                            </optgroup>
+                            <option value="other" style="font-weight: bold; color: #2b6cb0;">+ อื่นๆ (ระบุตำแหน่งใหม่)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- กล่องข้อความสำหรับระบุตำแหน่งใหม่ (ซ่อนไว้) -->
+                <div class="dynamic-box" id="new_position_box" style="background-color: #fffaf0; border-left-color: #dd6b20;">
+                    <div class="form-group">
+                        <label for="new_position_name" style="color: #c05621;">ระบุตำแหน่งใหม่ *</label>
+                        <input type="text" id="new_position_name" placeholder="พิมพ์ชื่อตำแหน่งหน้าที่">
+                    </div>
+                </div>
+
+                <div class="grid-2" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="staff_firstname">ชื่อจริง *</label>
+                        <input type="text" id="staff_firstname" placeholder="ชื่อจริง" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="staff_lastname">นามสกุล *</label>
+                        <input type="text" id="staff_lastname" placeholder="นามสกุล" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">บันทึกข้อมูลบุคลากรเข้าโครงการ</button>
+        </form>
+    </div>
+
+    <script>
+        // ฟังก์ชันจัดการการเลือกโครงการ
+        function handleProjectChange(select) {
+            const box = document.getElementById('new_project_box');
+            const codeInput = document.getElementById('new_project_code');
+            const nameInput = document.getElementById('new_project_name');
+            
+            if (select.value === 'other') {
+                box.style.display = 'block';
+                codeInput.required = true;
+                nameInput.required = true;
+            } else {
+                box.style.display = 'none';
+                codeInput.required = false;
+                nameInput.required = false;
+                codeInput.value = '';
+                nameInput.value = '';
+            }
+        }
+
+        // ฟังก์ชันจัดการการเลือกตำแหน่ง
+        function handlePositionChange(select) {
+            const box = document.getElementById('new_position_box');
+            const input = document.getElementById('new_position_name');
+            
+            if (select.value === 'other') {
+                box.style.display = 'block';
+                input.required = true;
+            } else {
+                box.style.display = 'none';
+                input.required = false;
+                input.value = '';
+            }
+        }
+
+        // ป้องกันการ Submit หน้าเว็บแบบปกติ (เตรียมไว้สำหรับต่อ API)
+        document.getElementById('staffSetupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('ตรวจสอบข้อมูลถูกต้อง เตรียมส่งขึ้นฐานข้อมูล Supabase ครับ');
+            // ในอนาคตเราจะเขียนคำสั่ง Supabase Insert ตรงนี้
+        });
+    </script>
+</body>
+</html>
