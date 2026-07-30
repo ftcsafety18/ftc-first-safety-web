@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ขึ้นทะเบียนพนักงาน FTC ประจำโครงการ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <!-- เรียกใช้ไลบรารี SheetJS สำหรับอ่านไฟล์ Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #1a365d; border-bottom: 2px solid #3182ce; padding-bottom: 10px; }
+        
+        .section-box { border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 20px; border-radius: 6px; background-color: #f8fafc; }
+        .section-title { font-weight: 600; color: #2d3748; margin-bottom: 15px; font-size: 18px; }
+        
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: 600; color: #4a5568; }
+        input, select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: 'Sarabun', sans-serif; }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; color: white; font-family: 'Sarabun', sans-serif; }
+        .btn-primary { background-color: #3182ce; }
+        .btn-success { background-color: #38a169; }
+        .btn:hover { opacity: 0.9; }
+
+        /* ตารางแสดงผลพรีวิว Excel */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { border: 1px solid #cbd5e0; padding: 8px; text-align: left; }
+        th { background-color: #edf2f7; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>ระบบจัดการโครงการ: ขึ้นทะเบียนพนักงาน FTC</h2>
+
+        <!-- ส่วนที่ 1: เลือกโครงการที่เป็นแกนหลัก -->
+        <div class="form-group">
+            <label for="project_select">1. เลือกโครงการที่ต้องการเพิ่มรายชื่อ *</label>
+            <select id="project_select">
+                <option value="">-- กรุณาเลือกโครงการ --</option>
+                <option value="PRJ-001">โครงการ ก่อสร้าง Plant A (ระยอง)</option>
+                <option value="PRJ-002">โครงการ ซ่อมบำรุงประจำปี Site B</option>
+            </select>
+        </div>
+
+        <!-- ส่วนที่ 2: อัปโหลดผ่าน Excel (เพื่อความรวดเร็ว) -->
+        <div class="section-box">
+            <div class="section-title">2. นำเข้ารายชื่อผ่านไฟล์ Excel (Bulk Upload)</div>
+            <p style="font-size: 14px; color: #718096; margin-top: 0;">* รองรับไฟล์ .xlsx หรือ .xls (คอลัมน์: รหัสพนักงาน, ชื่อจริง, นามสกุล, ตำแหน่ง, เบอร์โทร)</p>
+            
+            <input type="file" id="excel_file" accept=".xlsx, .xls" style="margin-bottom: 10px;">
+            <button class="btn btn-success" onclick="handleExcelUpload()">อ่านข้อมูลจาก Excel</button>
+            
+            <!-- พื้นที่สำหรับแสดงพรีวิวข้อมูลตาราง -->
+            <div id="excel_preview"></div>
+        </div>
+
+        <!-- ส่วนที่ 3: แบบฟอร์มเพิ่มรายบุคคล (Manual) -->
+        <div class="section-box">
+            <div class="section-title">หรือ เพิ่มรายบุคคล (Manual Input)</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>รหัสพนักงาน</label>
+                    <input type="text" placeholder="ระบุรหัสพนักงาน">
+                </div>
+                <div class="form-group">
+                    <label>ตำแหน่งในโครงการ</label>
+                    <select>
+                        <option>Project Manager</option>
+                        <option>จป.วิชาชีพ (Safety Officer)</option>
+                        <option>วิศวกรควบคุมงาน (Engineer)</option>
+                        <option>หัวหน้างาน (Foreman)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อจริง</label>
+                    <input type="text" placeholder="ชื่อจริง">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล</label>
+                    <input type="text" placeholder="นามสกุล">
+                </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 10px;">บันทึกข้อมูลรายบุคคล</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ฟังก์ชันสำหรับอ่านไฟล์ Excel
+        function handleExcelUpload() {
+            const fileInput = document.getElementById('excel_file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert("กรุณาเลือกไฟล์ Excel ก่อนครับพี่ณัฐธัญ");
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                // ใช้ไลบรารี SheetJS อ่านไฟล์
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                // ดึงข้อมูลจากชีทแรก
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // แปลงข้อมูลในชีทให้กลายเป็น JSON Object (สำหรับส่งเข้าฐานข้อมูล)
+                const excelDataJSON = XLSX.utils.sheet_to_json(worksheet);
+                
+                console.log("ข้อมูลที่อ่านได้เตรียมส่งเข้า Supabase:", excelDataJSON);
+                
+                // สร้างตารางพรีวิวให้เห็นบนหน้าจอ
+                displayPreviewTable(excelDataJSON);
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ฟังก์ชันสำหรับสร้างตารางพรีวิวให้แอดมินดูก่อนกดยืนยันบันทึก
+        function displayPreviewTable(data) {
+            if(data.length === 0) {
+                document.getElementById('excel_preview').innerHTML = "<p style='color:red;'>ไม่พบข้อมูลในไฟล์ Excel ครับ</p>";
+                return;
+            }
+
+            // สร้างหัวตารางจากคีย์ของ JSON ตัวแรก
+            let tableHTML = '<table><thead><tr>';
+            const headers = Object.keys(data[0]);
+            headers.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+
+            // นำข้อมูลแต่ละแถวมาใส่ในตาราง
+            data.forEach(row => {
+                tableHTML += '<tr>';
+                headers.forEach(header => {
+                    tableHTML += `<td>${row[header] || '-'}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            tableHTML += '</tbody></table>';
+            
+            tableHTML += `<br><button class="btn btn-primary" onclick="alert('เตรียมส่งข้อมูล ${data.length} รายการ เข้าฐานข้อมูล Supabase')">ยืนยันบันทึกเข้าระบบทั้งหมด</button>`;
+
+            document.getElementById('excel_preview').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>
