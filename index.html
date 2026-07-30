@@ -258,12 +258,30 @@
         document.getElementById('loader').style.display = 'flex';
         
         // จำลองเวลาเชื่อมต่อ LIFF
-        setTimeout(() => {
-            // Mockup Data แทนการเรียก liff.getProfile() ของจริง
-            document.getElementById('profile-name').innerText = "นาย ช่างใหญ่ ใจดี";
-            document.getElementById('profile-img').src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-            document.getElementById('loader').style.display = 'none';
-        }, 1000);
+        // เริ่มต้นเชื่อมต่อ LINE LIFF ของจริง
+    window.onload = function() {
+        document.getElementById('loader').style.display = 'flex';
+        
+        // ใช้ LIFF ID ของช่องทาง FTC Safety Login
+        liff.init({ liffId: "2010907761-KrJ8PgNN" })
+            .then(() => {
+                if (liff.isLoggedIn()) {
+                    // ดึงรูปและชื่อจาก LINE มาแสดงผลแบบอัตโนมัติ
+                    liff.getProfile().then(profile => {
+                        document.getElementById('profile-name').innerText = profile.displayName;
+                        document.getElementById('profile-img').src = profile.pictureUrl;
+                        document.getElementById('loader').style.display = 'none';
+                    });
+                } else {
+                    // ถ้ายังไม่ได้ล็อกอิน ให้เด้งหน้าล็อกอินอัตโนมัติ
+                    liff.login();
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+                document.getElementById('profile-name').innerText = "เชื่อมต่อ LINE ไม่สำเร็จ";
+                document.getElementById('loader').style.display = 'none';
+            });
     }
 
     // ฟังก์ชันจำลองการกดส่งฟอร์ม (ยิงไป Supabase)
