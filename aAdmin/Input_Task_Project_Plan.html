@@ -95,30 +95,57 @@
                 </div>
                 <div class="form-group">
                     <label>หมวดหมู่งานหลัก (Item Category) *</label>
-                    <select id="itemCat">
+                    <select id="itemCat" onchange="toggleCategoryOther()">
                         <option value="">-- เลือกหมวดหมู่หลัก --</option>
                         <option value="1. Preliminary (งานเตรียมการ)">1. Preliminary (งานเตรียมการ)</option>
                         <option value="2. Structure (งานโครงสร้าง)">2. Structure (งานโครงสร้าง)</option>
                         <option value="3. Architect (งานสถาปัตย์)">3. Architect (งานสถาปัตย์)</option>
+                        <option value="4. External (งานภายนอก)">4. External (งานภายนอก)</option>
+                        <option value="5. Civil Works for M&E">5. Civil Works for M&E</option>
                         <option value="6. Electrical Work (EE)">6. Electrical Work (EE)</option>
                         <option value="7. Mechanical Work (AC/SAN/FP)">7. Mechanical Work (AC/SAN/FP)</option>
+                        <option value="8. Land Clearing and Land Fill">8. Land Clearing and Land Fill</option>
+                        <option value="OTHER">หมวดหมู่อื่นๆ (ระบุ)</option>
                     </select>
+                    <input type="text" id="itemCatOther" placeholder="โปรดระบุหมวดหมู่งาน..." style="display:none; margin-top:8px;">
                 </div>
                 <div class="form-group">
                     <label>รายละเอียดงานย่อย (Description) *</label>
-                    <select id="itemDesc">
+                    <select id="itemDesc" onchange="toggleDescOther()">
                         <option value="">-- เลือกรายละเอียดงาน --</option>
-                        <optgroup label="งานโครงสร้างและสถาปัตย์">
+                        <optgroup label="งานโครงสร้างและสถาปัตย์ (Structure & Architect)">
                             <option value="งานเสาเข็ม (Piling Work)">งานเสาเข็ม (Piling Work)</option>
                             <option value="งานฐานรากและโครงสร้างใต้ดิน">งานฐานรากและโครงสร้างใต้ดิน (Foundation)</option>
+                            <option value="งานโครงสร้างคอนกรีตเสริมเหล็ก (RC)">งานโครงสร้างคอนกรีตเสริมเหล็ก (RC)</option>
+                            <option value="งานโครงสร้างเหล็กรูปพรรณ">งานโครงสร้างเหล็กรูปพรรณ (Steel Structure)</option>
+                            <option value="งานก่ออิฐและฉาบปูน">งานก่ออิฐและฉาบปูน (Masonry/Plastering)</option>
+                            <option value="งานผนังเบาและพาร์ทิชัน">งานผนังเบาและพาร์ทิชัน (Drywall/Partition)</option>
+                            <option value="งานฝ้าเพดาน (Ceiling)">งานฝ้าเพดาน (Ceiling)</option>
                         </optgroup>
                         <optgroup label="งานระบบปรับอากาศ (AC)">
                             <option value="งานติดตั้งท่อลมระบายอากาศ (Duct)">งานติดตั้งท่อลมระบายอากาศ (Duct)</option>
+                            <option value="งานเดินท่อน้ำเย็น (Chilled Water)">งานเดินท่อน้ำเย็น (Chilled Water)</option>
+                            <option value="งานหุ้มฉนวน (Insulation)">งานหุ้มฉนวน (Insulation)</option>
+                            <option value="งานติดตั้งเครื่องปรับอากาศ">งานติดตั้งเครื่องปรับอากาศ (AC Unit Installation)</option>
                         </optgroup>
                         <optgroup label="งานระบบไฟฟ้า (EE)">
                             <option value="งานเดินท่อร้อยสายไฟ (Conduit)">งานเดินท่อร้อยสายไฟ (Conduit)</option>
+                            <option value="งานติดตั้งรางสายไฟ (Cable Tray/Ladder)">งานติดตั้งรางสายไฟ (Cable Tray/Ladder)</option>
+                            <option value="งานดึงสายไฟและเข้าหัว (Wiring)">งานดึงสายไฟและเข้าหัว (Wiring)</option>
+                            <option value="งานติดตั้งตู้สวิตช์บอร์ด (MDB/Panel)">งานติดตั้งตู้สวิตช์บอร์ด (MDB/Panel)</option>
+                            <option value="งานระบบแจ้งเหตุเพลิงไหม้ (Fire Alarm)">งานระบบแจ้งเหตุเพลิงไหม้ (Fire Alarm)</option>
+                        </optgroup>
+                        <optgroup label="งานระบบสุขาภิบาลและดับเพลิง (SAN / SPK)">
+                            <option value="งานเดินท่อน้ำดีและท่อน้ำทิ้ง (Plumbing)">งานเดินท่อน้ำดีและท่อน้ำทิ้ง (Plumbing)</option>
+                            <option value="งานติดตั้งสุขภัณฑ์ (Sanitary Ware)">งานติดตั้งสุขภัณฑ์ (Sanitary Ware)</option>
+                            <option value="งานเดินท่อดับเพลิง (Fire Pipe)">งานเดินท่อดับเพลิง (Fire Pipe)</option>
+                            <option value="งานติดตั้งสปริงเกลอร์ (Sprinkler)">งานติดตั้งสปริงเกลอร์ (Sprinkler)</option>
+                        </optgroup>
+                        <optgroup label="อื่นๆ">
+                            <option value="OTHER">รายละเอียดอื่นๆ (โปรดระบุ)</option>
                         </optgroup>
                     </select>
+                    <input type="text" id="itemDescOther" placeholder="โปรดระบุรายละเอียดงาน..." style="display:none; margin-top:8px;">
                 </div>
             </div>
 
@@ -191,6 +218,20 @@
         }, 1000);
     }
 
+    function toggleCategoryOther() {
+        const catSelect = document.getElementById("itemCat");
+        const catOther = document.getElementById("itemCatOther");
+        if (catSelect.value === "OTHER") { catOther.style.display = "block"; catOther.focus(); } 
+        else { catOther.style.display = "none"; catOther.value = ""; }
+    }
+
+    function toggleDescOther() {
+        const descSelect = document.getElementById("itemDesc");
+        const descOther = document.getElementById("itemDescOther");
+        if (descSelect.value === "OTHER") { descOther.style.display = "block"; descOther.focus(); } 
+        else { descOther.style.display = "none"; descOther.value = ""; }
+    }
+
     let masterTasks = [];
     let editingIndex = -1;
 
@@ -200,8 +241,10 @@
         const currentTimestamp = document.getElementById("currentTime").value;
 
         const taskNo = document.getElementById("taskNo").value;
-        const cat = document.getElementById("itemCat").value;
-        const desc = document.getElementById("itemDesc").value;
+        let cat = document.getElementById("itemCat").value;
+        if (cat === "OTHER") cat = document.getElementById("itemCatOther").value;
+        let desc = document.getElementById("itemDesc").value;
+        if (desc === "OTHER") desc = document.getElementById("itemDescOther").value;
         const bldg = document.getElementById("itemBldg").value;
         const floor = document.getElementById("itemFloor").value;
         const zone = document.getElementById("itemZone").value;
@@ -240,8 +283,27 @@
         const task = masterTasks[index];
 
         document.getElementById("taskNo").value = task.taskNo;
-        document.getElementById("itemCat").value = task.cat;
-        document.getElementById("itemDesc").value = task.desc;
+        
+        const catSelect = document.getElementById("itemCat");
+        if (Array.from(catSelect.options).some(opt => opt.value === task.cat)) {
+            catSelect.value = task.cat;
+            document.getElementById("itemCatOther").style.display = "none";
+        } else {
+            catSelect.value = "OTHER";
+            document.getElementById("itemCatOther").style.display = "block";
+            document.getElementById("itemCatOther").value = task.cat;
+        }
+
+        const descSelect = document.getElementById("itemDesc");
+        if (Array.from(descSelect.options).some(opt => opt.value === task.desc)) {
+            descSelect.value = task.desc;
+            document.getElementById("itemDescOther").style.display = "none";
+        } else {
+            descSelect.value = "OTHER";
+            document.getElementById("itemDescOther").style.display = "block";
+            document.getElementById("itemDescOther").value = task.desc;
+        }
+
         document.getElementById("itemBldg").value = task.bldg;
         document.getElementById("itemFloor").value = task.floor;
         document.getElementById("itemZone").value = task.zone;
@@ -296,7 +358,9 @@
     function clearForm() {
         document.getElementById("taskNo").value = "";
         document.getElementById("itemCat").value = "";
+        document.getElementById("itemCatOther").style.display = "none";
         document.getElementById("itemDesc").value = "";
+        document.getElementById("itemDescOther").style.display = "none";
         document.getElementById("itemBldg").value = "";
         document.getElementById("itemFloor").value = "";
         document.getElementById("itemZone").value = "";
