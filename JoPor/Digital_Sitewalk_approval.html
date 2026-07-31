@@ -64,6 +64,7 @@
         .form-group { margin-bottom: 15px; }
         .form-label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 5px; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Sarabun'; font-size: 14px; box-sizing: border-box; }
+        .form-control.error { border-color: #ef4444; background-color: #fef2f2; }
         
         /* Action Buttons */
         .action-box { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 15px; }
@@ -124,14 +125,16 @@
             <div class="action-box">
                 <div class="form-group">
                     <label class="form-label">ความเห็น / ข้อสังเกต (Comments & Remark):</label>
-                    <textarea class="form-control" rows="2" placeholder="ระบุข้อความสั่งการเพิ่มเติม..."></textarea>
+                    <!-- เพิ่ม ID ให้กล่องข้อความเพื่อใช้ตรวจสอบ -->
+                    <textarea id="pmComment" class="form-control" rows="2" placeholder="ระบุข้อความสั่งการหรือเหตุผลที่ตีกลับ..."></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ลงชื่อ (PM Name):</label>
                     <input type="text" class="form-control" value="นายสมศักดิ์ วิศวกรโครงการ" readonly>
                 </div>
                 <div class="btn-group">
-                    <button class="btn btn-reject" onclick="alert('ตีกลับให้ผู้รับเหมาแก้ไขใหม่ ระบบได้ส่งแจ้งเตือนแล้ว!')">❌ ตีกลับ (Reject)</button>
+                    <!-- เปลี่ยนมาเรียกใช้ฟังก์ชันเช็กเงื่อนไข -->
+                    <button class="btn btn-reject" onclick="rejectReport()">❌ ตีกลับ (Reject)</button>
                     <button class="btn btn-accept" onclick="promptPin('PM')">✅ ยอมรับ (Accept By PM)</button>
                 </div>
             </div>
@@ -151,6 +154,24 @@
     </div>
 
     <script>
+        // ฟังก์ชันสำหรับตรวจจับการกดปุ่ม "ตีกลับ"
+        function rejectReport() {
+            const commentBox = document.getElementById('pmComment');
+            const commentValue = commentBox.value.trim(); // ลบช่องว่างหัวท้ายออก
+
+            // ตรวจสอบว่ากล่องข้อความว่างเปล่าหรือไม่
+            if (commentValue === "") {
+                alert("⚠️ ไม่อนุญาตให้ตีกลับเอกสาร!\n\nกรุณาระบุเหตุผลในช่อง 'ความเห็น / ข้อสังเกต' เพื่อให้ผู้รับเหมาทราบจุดที่ต้องแก้ไขครับ");
+                commentBox.classList.add('error'); // เปลี่ยนสีกรอบเป็นสีแดง
+                commentBox.focus(); // เลื่อนเคอร์เซอร์ไปที่กล่อง
+            } else {
+                commentBox.classList.remove('error'); // เอาสีแดงออก
+                alert("❌ ตีกลับเรียบร้อย!\nระบบได้ส่งแจ้งเตือนให้ผู้รับเหมาแก้ไขใหม่ พร้อมเหตุผล: " + commentValue);
+                // ในระบบจริงตรงนี้จะส่งข้อมูลเข้าฐานข้อมูลและแจ้งเตือนผ่าน LINE OA ครับ
+            }
+        }
+
+        // ฟังก์ชันยืนยันตัวตนด้วย PIN
         function promptPin(role) {
             let pin = prompt("กรุณากรอกรหัส PIN 6 หลัก เพื่อยืนยันลายมือชื่ออิเล็กทรอนิกส์ในฐานะ " + role + ":");
             if(pin) {
