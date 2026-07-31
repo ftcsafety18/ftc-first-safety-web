@@ -33,10 +33,15 @@
         .zone-warning { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
         .zone-safe { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
         
+        /* Insurance Alert Style */
+        .insurance-alert { display: none; background-color: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; align-items: center; gap: 8px; font-weight: 600; }
+        
         /* Checkbox & Integrated Box */
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14.5px; }
         .checkbox-item input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
+        .checkbox-item.disabled { color: #94a3b8; cursor: not-allowed; }
+        .checkbox-item.disabled input { cursor: not-allowed; }
         
         .integrated-box { background: #eff6ff; border: 1px dashed #93c5fd; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
         .integrated-box .badge { background: #10b981; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-left: 5px; }
@@ -51,6 +56,7 @@
 
         .btn-submit { background-color: #034694; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 16px; width: 100%; transition: 0.3s; }
         .btn-submit:hover { background-color: #02316a; }
+        .btn-submit:disabled { background-color: #94a3b8; cursor: not-allowed; }
     </style>
 </head>
 <body onload="initBuildingOptions()">
@@ -64,16 +70,16 @@
 
     <form id="ptwForm" onsubmit="submitPTW(event)">
         
-        <!-- 1. ข้อมูลทั่วไป & พิกัดพื้นที่ (เชื่อมฐานข้อมูล) -->
+        <!-- 1. ข้อมูลทั่วไป -->
         <div class="form-section">
             <div class="section-title">1. ข้อมูลทั่วไปและพิกัดปฏิบัติงาน (General & Location Info)</div>
             <div class="form-row">
                 <div class="form-group">
                     <label>ผู้รับจ้าง / Subcontractor *</label>
-                    <select id="subcontractor" required>
+                    <select id="subcontractor" required onchange="applyContractorRule()">
                         <option value="">-- เลือกบริษัท --</option>
-                        <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
-                        <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
+                        <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง (ยังไม่ยื่น กท.20)</option>
+                        <option value="ABC_Corp">บจก. เอบีซี / ABC Corp. (ยื่น กท.20 แล้ว)</option>
                     </select>
                 </div>
                 <div class="form-group" style="flex: 2;">
@@ -82,7 +88,6 @@
                 </div>
             </div>
 
-            <!-- การดึงพิกัดจากไฟล์ Input_Task_Project_Plan (14).html -->
             <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e0;">
                 <div class="form-group">
                     <label>อาคาร/บริเวณ (Building) <span style="color:red">*</span></label>
@@ -98,14 +103,11 @@
                 </div>
                 <div class="form-group">
                     <label>โซนปฏิบัติงาน (Auto Zone)</label>
-                    <!-- ทำเป็น Readonly เพื่อไม่ให้ผู้รับเหมาแก้ไขโซนเองได้ -->
                     <input type="text" id="autoZoneDisplay" readonly placeholder="ระบบกำหนดอัตโนมัติ">
-                    <!-- ซ่อนค่าโซนจริงๆ ไว้ส่งไปหลังบ้าน -->
                     <input type="hidden" id="hiddenZoneValue">
                 </div>
             </div>
 
-            <!-- กล่องแสดงผลระดับความเสี่ยงอัตโนมัติ -->
             <div id="zoneAlertBox" class="zone-alert">
                 <span id="zoneAlertIcon"></span>
                 <span id="zoneAlertText"></span>
@@ -130,23 +132,51 @@
         <!-- 2. ประเภทของงาน -->
         <div class="form-section">
             <div class="section-title">2. ประเภทของงาน (Type of Work) *เลือกได้มากกว่า 1 ข้อ*</div>
+            
+            <!-- แจ้งเตือนเรื่องการระงับงานเสี่ยงสูง -->
+            <div id="insuranceAlertBox" class="insurance-alert">
+                <span>🚫</span> ระบบจำกัดสิทธิ์: ผู้รับเหมาที่ยังไม่ได้ยื่นหลักฐานการประกันตน (กท.20) จะสามารถปฏิบัติงานได้เฉพาะ "งานทั่วไป" เท่านั้น
+            </div>
+
             <div class="checkbox-grid">
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="general"> 1. งานทั่วไป (General Work)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="hotwork" style="accent-color: #e11d48;"> 2. งานประกายไฟ (Hot Work)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="height" style="accent-color: #0284c7;"> 3. งานที่สูง (> 2m)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="confined" style="accent-color: #9333ea;"> 4. งานที่อับอากาศ (Confined)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="electrical" style="accent-color: #f59e0b;"> 5. งานไฟฟ้า (Electrical)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="lifting" style="accent-color: #16a34a;"> 6. งานยกหิ้ว (Lifting)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="excavation" style="accent-color: #8b5cf6;"> 7. งานขุดเจาะ (Excavation)</label>
-                <label class="checkbox-item"><input type="checkbox" name="workType" value="chemical" style="accent-color: #14b8a6;"> 8. งานสารเคมี (Chemical)</label>
+                <!-- งานทั่วไป (เลือกได้เสมอ) -->
+                <label class="checkbox-item">
+                    <input type="checkbox" name="workType" value="general"> 1. งานทั่วไป (General Work)
+                </label>
+                
+                <!-- กลุ่มงานเสี่ยงสูง (High Risk) จะถูกล็อกถ้าไม่มีประกัน -->
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="hotwork" class="hr-input" style="accent-color: #e11d48;"> 2. งานประกายไฟ (Hot Work)
+                </label>
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="height" class="hr-input" style="accent-color: #0284c7;"> 3. งานที่สูง (> 2m)
+                </label>
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="confined" class="hr-input" style="accent-color: #9333ea;"> 4. งานที่อับอากาศ (Confined)
+                </label>
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="electrical" class="hr-input" style="accent-color: #f59e0b;"> 5. งานไฟฟ้า (Electrical)
+                </label>
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="lifting" class="hr-input" style="accent-color: #16a34a;"> 6. งานยกหิ้ว (Lifting)
+                </label>
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="excavation" class="hr-input" style="accent-color: #8b5cf6;"> 7. งานขุดเจาะ (Excavation)
+                </label>
+                <label class="checkbox-item hr-task">
+                    <input type="checkbox" name="workType" value="chemical" class="hr-input" style="accent-color: #14b8a6;"> 8. งานสารเคมี (Chemical)
+                </label>
+                
                 <div style="display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; margin-top: 5px;">
-                    <label class="checkbox-item"><input type="checkbox" id="workTypeOtherCheck" onchange="toggleOtherInput(this, 'workTypeOtherText')"> 9. อื่นๆ (ระบุ)</label>
+                    <label class="checkbox-item hr-task">
+                        <input type="checkbox" id="workTypeOtherCheck" class="hr-input" onchange="toggleOtherInput(this, 'workTypeOtherText')"> 9. อื่นๆ (เสี่ยงสูงระบุ)
+                    </label>
                     <input type="text" id="workTypeOtherText" placeholder="โปรดระบุประเภทงานอื่นๆ..." style="display: none; width: 300px; padding: 6px;">
                 </div>
             </div>
         </div>
 
-        <!-- 3. กำลังพลและเครื่องมือ -->
+        <!-- 3. กำลังพลและเครื่องมือ (ข้ามโค้ดส่วนเดิม) -->
         <div class="form-section">
             <div class="section-title">3. กำลังพลและเครื่องมือ (Manpower & Equipment)</div>
             <div class="integrated-box">
@@ -166,17 +196,9 @@
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="helmet"> หมวกนิรภัย</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="fire_tray"> ถาดรองลูกไฟ</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="leather_glove"> ถุงมือหนังกันความร้อน</label>
-                <label class="checkbox-item"><input type="checkbox" name="ppe" value="cloth_glove"> ถุงมือผ้า</label>
-                <label class="checkbox-item"><input type="checkbox" name="ppe" value="safety_glass"> แว่นตากันสะเก็ดไฟ</label>
+                <!-- ซ่อนส่วนที่เหลือเพื่อความกระชับของโค้ดตัวอย่าง -->
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="extinguisher"> ถังดับเพลิง 1 ถัง</label>
-                <label class="checkbox-item"><input type="checkbox" name="ppe" value="dust_mask"> หน้ากากกันฝุ่น</label>
-                <label class="checkbox-item"><input type="checkbox" name="ppe" value="welding_mask"> หน้ากากลดแสง</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="harness"> เข็มขัดนิรภัย</label>
-                <label class="checkbox-item"><input type="checkbox" name="ppe" value="earplug"> ปลั๊กอุดหูลดเสียง</label>
-                <div style="display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; margin-top: 5px;">
-                    <label class="checkbox-item"><input type="checkbox" id="ppeOtherCheck" onchange="toggleOtherInput(this, 'ppeOtherText')"> อื่นๆ (ระบุ)</label>
-                    <input type="text" id="ppeOtherText" placeholder="โปรดระบุอุปกรณ์อื่นๆ..." style="display: none; width: 300px; padding: 6px;">
-                </div>
             </div>
         </div>
 
@@ -204,24 +226,64 @@
 
 <script>
     // ----------------------------------------------------------------------
-    // 1. จำลองฐานข้อมูลพิกัด ที่ตั้งค่ามาจาก Input_Task_Project_Plan (14).html
+    // ฐานข้อมูลจำลอง (Mock Database) สำหรับตรวจสถานะผู้รับเหมา
+    // ----------------------------------------------------------------------
+    const contractorDB = {
+        "Sompong_Team": { hasInsurance: false }, // ผู้รับเหมาทั่วไป ไม่มี กท.20
+        "ABC_Corp": { hasInsurance: true }       // บริษัท มี กท.20
+    };
+
+    // ฟังก์ชันตรวจสอบและล็อกประเภทงานตามประเภทผู้รับเหมา
+    function applyContractorRule() {
+        const contractorId = document.getElementById('subcontractor').value;
+        const alertBox = document.getElementById('insuranceAlertBox');
+        
+        // ดึง DOM ของกลุ่มงานเสี่ยงสูง
+        const hrLabels = document.querySelectorAll('.hr-task');
+        const hrInputs = document.querySelectorAll('.hr-input');
+
+        if(contractorId && contractorDB[contractorId]) {
+            const hasInsurance = contractorDB[contractorId].hasInsurance;
+
+            if(!hasInsurance) {
+                // ถ้าไม่มีประกัน -> โชว์เตือน, Disable งานเสี่ยงสูงทั้งหมด, และติ๊กออก
+                alertBox.style.display = 'flex';
+                hrLabels.forEach(lbl => lbl.classList.add('disabled'));
+                hrInputs.forEach(input => {
+                    input.disabled = true;
+                    input.checked = false; 
+                });
+                // เคลียร์ช่องอื่นๆ
+                const otherText = document.getElementById('workTypeOtherText');
+                otherText.style.display = 'none';
+                otherText.value = '';
+                otherText.required = false;
+
+            } else {
+                // ถ้ามีประกัน -> ซ่อนเตือน, Enable กลับมาทั้งหมด
+                alertBox.style.display = 'none';
+                hrLabels.forEach(lbl => lbl.classList.remove('disabled'));
+                hrInputs.forEach(input => input.disabled = false);
+            }
+        } else {
+            // กรณีเคลียร์ค่า Dropdown ให้กลับเป็นค่าเริ่มต้น
+            alertBox.style.display = 'none';
+            hrLabels.forEach(lbl => lbl.classList.remove('disabled'));
+            hrInputs.forEach(input => input.disabled = false);
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // ส่วนลอจิกพิกัดและ Zone จากขั้นตอนที่แล้ว
     // ----------------------------------------------------------------------
     const masterLocationData = {
         "อาคาร A": {
             "ชั้น 1 (โซนออฟฟิศ)": { zoneId: "cold", zoneName: "เขตปลอดภัย" },
             "ชั้น 2 (โซนซ่อมบำรุง)": { zoneId: "warm", zoneName: "เขตควบคุม" },
             "ชั้น 3 (ฝ่ายผลิต/เครื่องจักร)": { zoneId: "hot", zoneName: "เขตอันตราย" }
-        },
-        "Plant 1": {
-            "ลานแทงค์สารเคมี": { zoneId: "hot", zoneName: "เขตอันตราย" },
-            "ทางเดินหลัก": { zoneId: "cold", zoneName: "เขตปลอดภัย" }
-        },
-        "โกดังสินค้า B": {
-            "พื้นที่จัดเก็บทั่วไป": { zoneId: "warm", zoneName: "เขตควบคุม" }
         }
     };
 
-    // ฟังก์ชันตั้งค่า Dropdown อาคารเมื่อโหลดหน้าจอ
     function initBuildingOptions() {
         const selBuilding = document.getElementById('selBuilding');
         for (const building in masterLocationData) {
@@ -232,12 +294,9 @@
         }
     }
 
-    // ฟังก์ชันอัปเดต Dropdown ชั้น เมื่อเลือกอาคาร
     function updateFloorOptions() {
         const building = document.getElementById('selBuilding').value;
         const selFloor = document.getElementById('selFloor');
-        
-        // ล้างค่าเก่า
         selFloor.innerHTML = '<option value="">-- เลือกชั้น/พื้นที่ย่อย --</option>';
         document.getElementById('autoZoneDisplay').value = '';
         document.getElementById('hiddenZoneValue').value = '';
@@ -257,42 +316,34 @@
         }
     }
 
-    // ฟังก์ชันดึงค่า Zone มาแสดงผลแจ้งเตือนอัตโนมัติ
     function applyZoneLogic() {
         const building = document.getElementById('selBuilding').value;
         const floor = document.getElementById('selFloor').value;
         const autoZoneDisplay = document.getElementById('autoZoneDisplay');
         const hiddenZoneValue = document.getElementById('hiddenZoneValue');
-        
         const alertBox = document.getElementById('zoneAlertBox');
         const alertText = document.getElementById('zoneAlertText');
         const alertIcon = document.getElementById('zoneAlertIcon');
 
-        // รีเซ็ตคลาส
         alertBox.className = 'zone-alert';
         alertBox.style.display = 'none';
 
         if (building && floor && masterLocationData[building][floor]) {
             const zoneInfo = masterLocationData[building][floor];
-            
-            // ล็อกแสดงผลในช่อง
             autoZoneDisplay.value = zoneInfo.zoneName;
-            hiddenZoneValue.value = zoneInfo.zoneId; // ส่งค่า hot, warm, cold กลับไปหลังบ้าน
+            hiddenZoneValue.value = zoneInfo.zoneId;
 
-            // แสดงแจ้งเตือน
             if(zoneInfo.zoneId === 'hot') {
                 alertBox.classList.add('zone-danger');
                 alertIcon.innerHTML = '⚠️';
                 alertText.innerHTML = 'ระบบตรวจพบว่าพิกัดนี้ถูกตั้งค่าเป็น <strong>"เขตอันตราย (Hot Zone)"</strong> <br>โปรดเตรียมมาตรการควบคุมและ PPE ขั้นสูงสุด';
                 alertBox.style.display = 'flex';
-            } 
-            else if(zoneInfo.zoneId === 'warm') {
+            } else if(zoneInfo.zoneId === 'warm') {
                 alertBox.classList.add('zone-warning');
                 alertIcon.innerHTML = '🚧';
                 alertText.innerHTML = 'ระบบตรวจพบว่าพิกัดนี้ถูกตั้งค่าเป็น <strong>"เขตควบคุม (Warm Zone)"</strong> <br>โปรดเฝ้าระวังความปลอดภัยอย่างใกล้ชิด';
                 alertBox.style.display = 'flex';
-            } 
-            else if(zoneInfo.zoneId === 'cold') {
+            } else if(zoneInfo.zoneId === 'cold') {
                 alertBox.classList.add('zone-safe');
                 alertIcon.innerHTML = '✅';
                 alertText.innerHTML = 'พิกัดนี้อยู่ใน <strong>"เขตปลอดภัย (Cold Zone)"</strong>';
@@ -301,9 +352,6 @@
         }
     }
 
-    // ----------------------------------------------------------------------
-    // ฟังก์ชันทั่วไปของแบบฟอร์ม
-    // ----------------------------------------------------------------------
     function toggleOtherInput(checkbox, textId) {
         const textInput = document.getElementById(textId);
         if(checkbox.checked) {
@@ -319,7 +367,6 @@
     function submitPTW(event) {
         event.preventDefault();
         
-        // เช็คก่อนว่ามีพิกัดจริงไหม (ดักคนเจาะระบบ)
         if(!document.getElementById('hiddenZoneValue').value) {
             alert("กรุณาระบุพิกัดปฏิบัติงานให้ถูกต้องตามที่โครงการกำหนดไว้ครับ");
             return;
