@@ -84,29 +84,17 @@
             display: none;
             padding: 15px 20px 0;
         }
-        
-        /* Scan QR Button */
-        .scan-qr-btn {
+        .select-input {
             width: 100%;
             padding: 12px;
-            background-color: #3b82f6;
-            color: white;
-            border: none;
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-family: 'Sarabun';
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #f8fafc;
         }
-        .scan-qr-btn:hover {
-            background-color: #2563eb;
-        }
-        
+
         .content { padding: 20px; }
 
         /* Card Style */
@@ -155,51 +143,14 @@
         }
         .btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        /* QR Scanner Modal (Simulated) */
-        .qr-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .qr-frame {
-            width: 250px;
-            height: 250px;
-            border: 2px solid #10b981;
-            position: relative;
-        }
-        .qr-line {
-            width: 100%;
-            height: 2px;
-            background: red;
-            position: absolute;
-            top: 50%;
-            animation: scan 2s infinite;
-        }
-        @keyframes scan {
-            0% { top: 0; }
-            50% { top: 100%; }
-            100% { top: 0; }
-        }
-        .qr-text {
-            color: white;
-            margin-top: 20px;
-            font-size: 16px;
-        }
-
     </style>
 </head>
 <body>
 
     <div class="mobile-container">
-        <!-- Logo Header - FIXED -->
+        <!-- Logo Header -->
         <div class="header">
-            <!-- Using base64 for logo to ensure it always loads in the prototype -->
-            <img id="logo-img" src="image_226a10.png" alt="First Technology Co., Ltd." onerror="this.src='https://via.placeholder.com/200x50/ffffff/0000ff?text=FIRST+TECHNOLOGY';">
+            <img src="image_226a10.png" alt="First Technology Co., Ltd.">
         </div>
 
         <!-- Mode Switcher -->
@@ -210,10 +161,11 @@
 
         <!-- Select Worker (Show only in Reverse Scan) -->
         <div class="select-worker-box" id="selectWorkerBox">
-            <button class="scan-qr-btn" onclick="openScanner()">
-                <span style="font-size: 20px;">📷</span> สแกน QR Code (ที่หมวก / บัตร)
-            </button>
-            <div style="text-align: center; margin: 10px 0; color: #64748b; font-size: 14px;">--- หรือ ---</div>
+            <select class="select-input" id="workerSelect" onchange="updateUserInfo()">
+                <option value="" disabled selected>-- ค้นหารหัสพนักงาน หรือ ชื่อลูกน้อง --</option>
+                <option value="VND-102">VND-102 : นายสมชาย รักความปลอดภัย (ช่างเชื่อม)</option>
+                <option value="VND-103">VND-103 : นายสมเกียรติ ขยันทำงาน (ช่างไฟ)</option>
+            </select>
         </div>
 
         <!-- User Information -->
@@ -222,7 +174,6 @@
             <div class="user-details">
                 <h3 id="display-name">นายสมชาย รักความปลอดภัย</h3>
                 <p id="display-role">รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม</p>
-                <p id="display-status" style="display:none; color:#10b981; font-weight:bold;">✅ สแกน QR Code จากหมวกสำเร็จ</p>
             </div>
         </div>
 
@@ -255,34 +206,13 @@
         <div class="bottom-bar">
             <button class="btn-submit" id="btnSubmit" onclick="submitClockIn()" disabled>🔒 กรุณาถ่ายรูปเพื่อเข้างาน</button>
         </div>
-        
-        <!-- QR Scanner Modal -->
-        <div class="qr-modal" id="qrModal" onclick="closeScanner()">
-            <div class="qr-frame">
-                <div class="qr-line"></div>
-            </div>
-            <div class="qr-text">กำลังสแกน QR Code ที่หมวก...<br><span style="font-size:12px;color:#94a3b8;">(แตะหน้าจอเพื่อจำลองการสแกนสำเร็จ)</span></div>
-        </div>
 
     </div>
 
     <script>
         let hasGps = false;
         let hasPhoto = false;
-        let hasQRScanned = true; // Default true for self mode
         let currentMode = 'self';
-
-        // Fix Logo Loading
-        document.addEventListener("DOMContentLoaded", function() {
-            // Check if logo is loaded, if not use a base64 version
-            const img = document.getElementById('logo-img');
-            img.onload = function() {
-                console.log("Logo loaded successfully");
-            };
-            img.onerror = function() {
-                console.log("Logo load failed, fallback applied");
-            }
-        });
 
         // Auto-Run GPS Fetching when page loads
         window.onload = function() {
@@ -307,13 +237,13 @@
         // Switch between Self Clock-in and Reverse Scan
         function switchMode(mode) {
             currentMode = mode;
-            hasPhoto = false;
+            hasPhoto = false; // Reset รูปถ่าย
             document.getElementById('previewPhoto').style.display = 'none';
             document.getElementById('cameraPrompt').style.display = 'block';
             document.getElementById('cameraBox').style.border = '2px dashed #94a3b8';
-            
+            checkUnlock();
+
             if(mode === 'self') {
-                hasQRScanned = true; // Self mode doesn't need QR scan
                 document.getElementById('btnSelfMode').classList.add('active');
                 document.getElementById('btnReverseMode').classList.remove('active');
                 document.getElementById('selectWorkerBox').style.display = 'none';
@@ -322,41 +252,31 @@
                 // คืนค่าชื่อผู้ใช้งานปัจจุบัน
                 document.getElementById('display-name').innerText = 'นายสมชาย รักความปลอดภัย';
                 document.getElementById('display-role').innerText = 'รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม';
-                document.getElementById('display-status').style.display = 'none';
             } else {
-                hasQRScanned = false; // Reverse mode needs QR scan
                 document.getElementById('btnReverseMode').classList.add('active');
                 document.getElementById('btnSelfMode').classList.remove('active');
                 document.getElementById('selectWorkerBox').style.display = 'block';
                 document.getElementById('cameraTitle').innerText = '📸 ถ่ายรูปลูกน้องเพื่อยืนยันการเข้าพื้นที่';
                 
-                // เคลียร์ชื่อรอการสแกน QR
-                document.getElementById('display-name').innerText = 'รอการสแกน QR Code...';
+                // เคลียร์ชื่อรอการเลือก
+                document.getElementById('workerSelect').value = "";
+                document.getElementById('display-name').innerText = 'กรุณาเลือกรายชื่อพนักงาน...';
                 document.getElementById('display-role').innerText = '-';
-                document.getElementById('display-status').style.display = 'none';
             }
-            checkUnlock();
         }
 
-        // QR Scanner Logic
-        function openScanner() {
-            document.getElementById('qrModal').style.display = 'flex';
-        }
-        
-        function closeScanner() {
-            document.getElementById('qrModal').style.display = 'none';
-            // จำลองว่าสแกน QR ที่หมวกสำเร็จ
-            hasQRScanned = true;
-            document.getElementById('display-name').innerText = 'นายสมเกียรติ ขยันทำงาน';
-            document.getElementById('display-role').innerText = 'รหัส: VND-103 | ตำแหน่ง: ช่างไฟ';
-            document.getElementById('display-status').style.display = 'block';
-            checkUnlock();
+        function updateUserInfo() {
+            const select = document.getElementById('workerSelect');
+            const text = select.options[select.selectedIndex].text;
+            const details = text.split(' : ');
+            document.getElementById('display-name').innerText = details[1].split(' (')[0];
+            document.getElementById('display-role').innerText = 'รหัส: ' + details[0] + ' | ตำแหน่ง: ' + details[1].split('(')[1].replace(')','');
         }
 
         // จำลองการถ่ายรูป
         function takePhoto() {
-            if(currentMode === 'reverse' && !hasQRScanned) {
-                alert("⚠️ กรุณาสแกน QR Code ที่หมวกหรือบัตรลูกน้องก่อนครับ");
+            if(currentMode === 'reverse' && document.getElementById('workerSelect').value === "") {
+                alert("⚠️ กรุณาเลือกลูกน้องที่ต้องการสแกนแทนก่อนครับ");
                 return;
             }
             document.getElementById('cameraPrompt').style.display = 'none';
@@ -369,14 +289,10 @@
         // ปลดล็อกปุ่ม Submit
         function checkUnlock() {
             const btnSubmit = document.getElementById('btnSubmit');
-            if(hasGps && hasPhoto && hasQRScanned) {
+            if(hasGps && hasPhoto) {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "✅ บันทึกเวลาเข้างาน";
                 btnSubmit.style.boxShadow = "0 4px 15px rgba(16, 185, 129, 0.4)";
-            } else if (!hasQRScanned && currentMode === 'reverse') {
-                btnSubmit.disabled = true;
-                btnSubmit.innerText = "🔒 กรุณาสแกน QR Code ลูกน้อง";
-                btnSubmit.style.boxShadow = "none";
             } else {
                 btnSubmit.disabled = true;
                 btnSubmit.innerText = "🔒 กรุณาถ่ายรูปเพื่อเข้างาน";
@@ -386,13 +302,10 @@
 
         function submitClockIn() {
             if(currentMode === 'self') {
-                alert("🎉 ลงเวลาเข้างานสำเร็จ!
-ระบบบันทึกเวลา 08:00 น. เรียบร้อยแล้ว");
+                alert("🎉 ลงเวลาเข้างานสำเร็จ!\nระบบบันทึกเวลา 08:00 น. เรียบร้อยแล้ว");
             } else {
                 const name = document.getElementById('display-name').innerText;
-                alert(`🎉 บันทึก Reverse Scan สำเร็จ!
-คุณได้ลงเวลาเข้าพื้นที่ให้กับ:
-${name} เรียบร้อยแล้ว`);
+                alert(`🎉 บันทึก Reverse Scan สำเร็จ!\nคุณได้ลงเวลาเข้าพื้นที่ให้กับ:\n${name} เรียบร้อยแล้ว`);
                 // รีเซ็ตเพื่อสแกนคนต่อไป
                 switchMode('reverse'); 
             }
