@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ขออนุญาตทำงาน (Permit to Work) - FTC Digital Safety</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        .header { background-color: #034694; color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 24px; text-transform: uppercase; }
+        .header p { margin: 5px 0 0; font-size: 15px; opacity: 0.9; }
+        
+        .form-section { padding: 25px; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 18px; font-weight: 700; color: #034694; margin-bottom: 15px; border-left: 4px solid #034694; padding-left: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 250px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3748; }
+        
+        input[type="text"], input[type="date"], input[type="time"], select, textarea { 
+            width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun'; 
+        }
+        input:focus, select:focus, textarea:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
+        
+        /* Checkbox Types */
+        .work-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .work-types label { font-weight: 400; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 0; }
+        .work-types input[type="checkbox"] { transform: scale(1.2); }
+
+        /* Integrated Data Box (คน & ของ) */
+        .integrated-box { background: #eff6ff; border: 1px dashed #93c5fd; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
+        .integrated-box .badge { background: #10b981; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-left: 5px; }
+        .multi-select-mock { min-height: 80px; background: white; border: 1px solid #cbd5e0; border-radius: 4px; padding: 10px; font-size: 14px; color: #64748b; }
+
+        .btn-submit { background-color: #034694; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 16px; width: 100%; transition: 0.3s; margin-top: 20px; }
+        .btn-submit:hover { background-color: #02316a; }
+
+        .note { font-size: 13px; color: #e11d48; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Permit to Work (PTW) Request</h2>
+        <p>แบบฟอร์มขออนุญาตเข้าทำงานพื้นที่โครงการ (FTC Digital Safety)</p>
+    </div>
+
+    <form id="ptwForm" onsubmit="submitPTW(event)">
+        
+        <!-- 1. ข้อมูลทั่วไป -->
+        <div class="form-section">
+            <div class="section-title">1. ข้อมูลทั่วไป (General Information)</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ผู้รับจ้าง / Subcontractor *</label>
+                    <select id="subcontractor" required>
+                        <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
+                        <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ผู้ควบคุมงาน (Supervisor) *</label>
+                    <input type="text" required placeholder="ชื่อ-นามสกุล หัวหน้างาน">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>พื้นที่ปฏิบัติงาน (Location) *</label>
+                    <input type="text" required placeholder="เช่น อาคาร A ชั้น 2, โซนคลังสินค้า">
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียดงาน (Job Description) *</label>
+                    <input type="text" required placeholder="เช่น งานติดตั้งท่อดับเพลิง, งานเชื่อมโครงเหล็ก">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>วันที่ปฏิบัติงาน (Date) *</label>
+                    <input type="date" required>
+                </div>
+                <div class="form-group">
+                    <label>เวลาเริ่ม (Start) *</label>
+                    <input type="time" required>
+                </div>
+                <div class="form-group">
+                    <label>เวลาสิ้นสุด (End) *</label>
+                    <input type="time" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ประเภทของงาน -->
+        <div class="form-section">
+            <div class="section-title">2. ประเภทของงาน (Type of Work) *เลือกได้มากกว่า 1 ข้อ*</div>
+            <div class="work-types">
+                <label><input type="checkbox" name="workType" value="general"> งานทั่วไป (General Work)</label>
+                <label><input type="checkbox" name="workType" value="hotwork" style="accent-color: #e11d48;"> งานประกายไฟ (Hot Work)</label>
+                <label><input type="checkbox" name="workType" value="height" style="accent-color: #0284c7;"> งานที่สูง (Working at Height > 2m)</label>
+                <label><input type="checkbox" name="workType" value="confined" style="accent-color: #9333ea;"> งานที่อับอากาศ (Confined Space)</label>
+                <label><input type="checkbox" name="workType" value="electrical" style="accent-color: #f59e0b;"> งานไฟฟ้า (Electrical Work)</label>
+                <label><input type="checkbox" name="workType" value="lifting" style="accent-color: #16a34a;"> งานยกหิ้ว (Lifting Work)</label>
+            </div>
+        </div>
+
+        <!-- 3. กำลังพลและเครื่องมือ (ดึงข้อมูลจากระบบ) -->
+        <div class="form-section">
+            <div class="section-title">
+                3. กำลังพลและเครื่องมือ (Manpower & Equipment)
+            </div>
+            <p class="note">* ระบบจะอนุญาตให้เลือกเฉพาะพนักงานที่ผ่านการอบรม และเครื่องมือที่ผ่านการตรวจสภาพแล้วเท่านั้น</p>
+            
+            <div class="integrated-box">
+                <label>รายชื่อผู้ปฏิบัติงาน (Authorized Workers) <span class="badge">ดึงจาก Worker_Regis</span></label>
+                <!-- ในระบบจริงตรงนี้จะเป็น Dropdown แบบ Multi-select ให้ค้นหาและเลือกชื่อช่าง -->
+                <div class="multi-select-mock">
+                    <p style="margin: 0 0 5px 0;">+ คลิกเพื่อเลือกรายชื่อช่าง...</p>
+                    <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 13px; color: #0f172a;">1. นายสมชาย ใจดี (เชื่อม)</span>
+                    <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 13px; color: #0f172a;">2. นายสมหมาย สายแข็ง (ผู้ช่วย)</span>
+                </div>
+            </div>
+
+            <div class="integrated-box">
+                <label>รายการเครื่องมือ/อุปกรณ์ (Inspected Equipment) <span class="badge">ดึงจาก Equipment_Approval</span></label>
+                <!-- ในระบบจริงตรงนี้จะเป็น Dropdown แบบ Multi-select ให้ค้นหาและเลือกอุปกรณ์ -->
+                <div class="multi-select-mock">
+                    <p style="margin: 0 0 5px 0;">+ คลิกเพื่อเลือกเครื่องมือ...</p>
+                    <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 13px; color: #0f172a;">1. ตู้เชื่อมอินเวอร์เตอร์ (EQ-REQ-001)</span>
+                    <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 13px; color: #0f172a;">2. สว่านไฟฟ้า (EQ-REQ-001)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section" style="border-bottom: none;">
+            <button type="submit" class="btn-submit">ส่งใบคำขอ PTW ให้ Safety ประเมินความเสี่ยง</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function submitPTW(event) {
+        event.preventDefault();
+        
+        // เช็คว่ามีการเลือกประเภทงานอย่างน้อย 1 อย่างหรือไม่
+        const checkboxes = document.querySelectorAll('input[name="workType"]:checked');
+        if(checkboxes.length === 0) {
+            alert("กรุณาเลือกประเภทของงานอย่างน้อย 1 ประเภทครับ");
+            return;
+        }
+
+        alert("ส่งใบคำขอ Permit to Work เรียบร้อยแล้วครับ!\nสถานะ: รอเจ้าหน้าที่ จป. ประเมินความเสี่ยง (JSA) และอนุมัติใบงาน");
+    }
+</script>
+
+</body>
+</html>
