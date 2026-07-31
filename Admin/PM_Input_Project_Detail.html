@@ -34,8 +34,10 @@
             width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px; color: #334155; background-color: #ffffff;
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 1px #3b82f6; }
-        input[readonly] { background-color: #f8fafc; color: #94a3b8; }
-        input[type="file"] { font-size: 13px; color: #64748b; padding: 4px 0; }
+        input[readonly] { background-color: #f8fafc; color: #64748b; font-weight: 600; }
+        
+        /* Placeholder Styling */
+        ::placeholder { color: #94a3b8; opacity: 1; font-size: 13px; }
         
         /* C3 Box Styling */
         .c3-box { border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; background-color: #ffffff; }
@@ -43,11 +45,14 @@
         
         /* Yellow Team Box */
         .team-box { border: 1px solid #fde047; border-radius: 6px; padding: 20px; margin-bottom: 25px; background-color: #ffffff; }
-        .help-text { font-size: 13px; color: #a16207; font-weight: 600; margin: 0 0 15px 0; }
+        .help-text { font-size: 13px; color: #a16207; font-weight: 600; margin: 0 0 15px 0; line-height: 1.5; }
         .team-grid-top { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1.5fr 0.5fr; gap: 15px; align-items: end; margin-bottom: 15px; }
         .team-grid-bot { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 15px; }
         
         .btn-add { background-color: #334155; color: white; border: none; border-radius: 4px; padding: 10px; height: 39px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 600; }
+        .btn-add:hover { background-color: #1e293b; }
+        .btn-del { background-color: #ef4444; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 12px; }
+        
         table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; margin-top: 10px;}
         th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; vertical-align: middle; }
         th { background-color: #f8fafc; color: #475569; font-weight: 600; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
@@ -66,7 +71,7 @@
         <!-- Section 1 -->
         <div class="section-title">1. ข้อมูลหลักของโครงการ (Project Master Data)</div>
         
-        <form>
+        <form id="masterForm">
             <div class="sub-title" style="margin-top: 0;">1.1 ข้อมูลทั่วไปของโครงการ</div>
             
             <div class="grid-1-2-1">
@@ -80,17 +85,11 @@
                 </div>
                 <div class="form-group">
                     <label>ประเภทโครงการ (Type) *</label>
-                    <select id="pType" onchange="toggleOtherProjectType()" required>
+                    <select required>
                         <option value="">-- เลือกประเภท --</option>
-                        <option value="ก่อสร้าง (Construction)">ก่อสร้าง (Construction)</option>
-                        <option value="ซ่อมบำรุงประจำปี (Turnaround)">ซ่อมบำรุงใหญ่ (Turnaround)</option>
-                        <option value="ซ่อมบำรุงย่อย (Routine Maintenance)">ซ่อมบำรุงย่อย (Routine Maintenance)</option>
-                        <option value="ติดตั้งระบบ (System Installation)">ติดตั้งระบบ (System Installation)</option>
-                        <option value="รื้อถอน (Demolition)">รื้อถอน (Demolition)</option>
-                        <option value="OTHER">อื่นๆ (โปรดระบุ)</option>
+                        <option value="ก่อสร้าง">ก่อสร้าง (Construction)</option>
+                        <option value="ซ่อมบำรุง">ซ่อมบำรุง (Maintenance)</option>
                     </select>
-                    <!-- ช่องกรอกเพิ่มเติม จะแสดงเมื่อเลือก "อื่นๆ" -->
-                    <input type="text" id="pTypeOther" placeholder="ระบุประเภทโครงการ..." style="display: none; margin-top: 8px;">
                 </div>
             </div>
             
@@ -108,19 +107,19 @@
             <div class="grid-4">
                 <div class="form-group">
                     <label>พิกัด (Lat, Lng) *</label>
-                    <input type="text" placeholder="เช่น 12.6712, 101.2465" pattern="^[-+]?[0-9]*\.?[0-9]+,\s*[-+]?[0-9]*\.?[0-9]+$" required>
+                    <input type="text" placeholder="ตัวอย่างเช่น 12.67123, 101.24650" required>
                 </div>
                 <div class="form-group">
                     <label>มูลค่าสัญญาโครงการ (บาท) *</label>
-                    <input type="number" min="0" step="0.01" placeholder="ระบุมูลค่าสัญญา">
+                    <input type="number" min="0" placeholder="ระบุมูลค่าสัญญา">
                 </div>
                 <div class="form-group">
                     <label>บทปรับถ้าล่าช้า (บาท/วัน)</label>
-                    <input type="number" min="0" step="0.01" placeholder="ระบุมูลค่า">
+                    <input type="number" min="0" placeholder="ระบุมูลค่า">
                 </div>
                 <div class="form-group">
                     <label>หรือ บทปรับตามมูลค่า (%)</label>
-                    <input type="number" min="0" max="100" step="0.01" placeholder="% ของมูลค่ารวม">
+                    <input type="number" min="0" max="100" placeholder="% ของมูลค่ารวม">
                 </div>
             </div>
 
@@ -128,15 +127,15 @@
             <div class="grid-4">
                 <div class="form-group">
                     <label>วันที่เริ่มต้น (Start Date) *</label>
-                    <input type="date" required>
+                    <input type="date" id="pStart" onchange="calculateDuration()" required>
                 </div>
                 <div class="form-group">
                     <label>วันที่สิ้นสุด (End Date) *</label>
-                    <input type="date" required>
+                    <input type="date" id="pEnd" onchange="calculateDuration()" required>
                 </div>
                 <div class="form-group">
                     <label>รวมเวลาดำเนินการ (วัน)</label>
-                    <input type="text" readonly placeholder="คำนวณอัตโนมัติ">
+                    <input type="text" id="pDuration" readonly placeholder="คำนวณอัตโนมัติ">
                 </div>
                 <div class="form-group">
                     <label>เงื่อนไขพิเศษอื่นๆ</label>
@@ -146,11 +145,11 @@
             <div class="grid-2">
                 <div class="form-group">
                     <label>แนบไฟล์สัญญาโครงการ (PDF)</label>
-                    <input type="file" accept=".pdf">
+                    <input type="file" accept=".pdf" style="padding: 5px;">
                 </div>
                 <div class="form-group">
                     <label>แนบข้อตกลงด้านความปลอดภัย (Safety Agreement)</label>
-                    <input type="file" accept=".pdf">
+                    <input type="file" accept=".pdf" style="padding: 5px;">
                 </div>
             </div>
 
@@ -161,22 +160,13 @@
                     <div class="c3-title">👑 เจ้าของโครงการ (Project Owner)</div>
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label>ชื่อเจ้าของโครงการ *</label>
-                        <input type="text" required>
+                        <input type="text" placeholder="ทดสอบชื่อเจ้าของโครงการหรือบริษัท" required>
                     </div>
                     <div class="grid-2" style="margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label>
-                            <input type="tel" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="08XXXXXXXX">
-                        </div>
-                        <div class="form-group">
-                            <label>อีเมล</label>
-                            <input type="email" placeholder="example@email.com">
-                        </div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="tel" placeholder="08XXXXXXXX"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" placeholder="example@email.com"></div>
                     </div>
-                    <div class="form-group">
-                        <label>Line ID</label>
-                        <input type="text" placeholder="@lineid">
-                    </div>
+                    <div class="form-group"><label>Line ID</label><input type="text" placeholder="@lineid"></div>
                 </div>
                 
                 <!-- Box 2 -->
@@ -184,22 +174,13 @@
                     <div class="c3-title">🏛️ ที่ปรึกษาโครงการ (Consultant)</div>
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label>ชื่อบริษัท / ชื่อที่ปรึกษา *</label>
-                        <input type="text" required>
+                        <input type="text" placeholder="โปรดป้อนข้อมูลชื่อบริษัทหรือที่ปรึกษา" required>
                     </div>
                     <div class="grid-2" style="margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label>
-                            <input type="tel" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="08XXXXXXXX">
-                        </div>
-                        <div class="form-group">
-                            <label>อีเมล</label>
-                            <input type="email" placeholder="example@email.com">
-                        </div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="tel" placeholder="08XXXXXXXX"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" placeholder="example@email.com"></div>
                     </div>
-                    <div class="form-group">
-                        <label>Line ID</label>
-                        <input type="text" placeholder="@lineid">
-                    </div>
+                    <div class="form-group"><label>Line ID</label><input type="text" placeholder="@lineid"></div>
                 </div>
 
                 <!-- Box 3 -->
@@ -207,22 +188,13 @@
                     <div class="c3-title">🛡️ เจ้าหน้าที่ความปลอดภัย (ฝั่ง Owner/Consultant)</div>
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label>ชื่อเจ้าหน้าที่ความปลอดภัย</label>
-                        <input type="text">
+                        <input type="text" placeholder="โปรดใส่ชื่อ เจ้าหน้าที่ความปลอดภัยผู้รับผิดชอบโครงการ">
                     </div>
                     <div class="grid-2" style="margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label>
-                            <input type="tel" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="08XXXXXXXX">
-                        </div>
-                        <div class="form-group">
-                            <label>อีเมล</label>
-                            <input type="email" placeholder="example@email.com">
-                        </div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="tel" placeholder="08XXXXXXXX"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" placeholder="example@email.com"></div>
                     </div>
-                    <div class="form-group">
-                        <label>Line ID</label>
-                        <input type="text" placeholder="@lineid">
-                    </div>
+                    <div class="form-group"><label>Line ID</label><input type="text" placeholder="@lineid"></div>
                 </div>
 
                 <!-- Box 4 -->
@@ -230,26 +202,14 @@
                     <div class="c3-title">🤝 ผู้ประสานงานโครงการ (Project Coordinator)</div>
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label>ชื่อผู้ประสานงาน *</label>
-                        <input type="text" required>
+                        <input type="text" placeholder="โปรดใส่ชื่อ ผู้ประสานงานโครงการ" required>
                     </div>
                     <div class="grid-2" style="margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label>
-                            <input type="tel" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="08XXXXXXXX">
-                        </div>
-                        <div class="form-group">
-                            <label>อีเมล</label>
-                            <input type="email" placeholder="example@email.com">
-                        </div>
+                        <div class="form-group"><label>เบอร์โทร</label><input type="tel" placeholder="08XXXXXXXX"></div>
+                        <div class="form-group"><label>อีเมล</label><input type="email" placeholder="example@email.com"></div>
                     </div>
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label>Line ID</label>
-                        <input type="text" placeholder="@lineid">
-                    </div>
-                    <div class="form-group">
-                        <label>หมายเหตุผู้ประสานงาน</label>
-                        <input type="text">
-                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;"><label>Line ID</label><input type="text" placeholder="@lineid"></div>
+                    <div class="form-group"><label>หมายเหตุผู้ประสานงาน</label><input type="text"></div>
                 </div>
             </div>
 
@@ -257,45 +217,53 @@
             <div class="section-title yellow-border">2. ทีมงานหลักประจำโครงการ (Core Execution Team)</div>
             
             <div class="team-box">
-                <p class="help-text">* ระบุรายชื่อทีมงานฝั่งปฏิบัติการ เพื่อกำหนดสิทธิ์การเข้าพื้นที่ ควบคุมงาน และการอนุมัติผ่านระบบ (e-Permit)</p>
+                <p class="help-text">
+                    * ระบุรายชื่อบุคลากรประจำโครงการ (Core Team) ซึ่งเป็นกลุ่มบุคคล <strong>ฝั่งเจ้าของโครงการ / ผู้ควบคุมโครงการ (Owner/Consultant)</strong><br> 
+                    ที่จะทำหน้าที่ควบคุม ตรวจสอบ และมีสิทธิ์อนุมัติผ่านระบบ (e-Permit)
+                </p>
                 
                 <div class="team-grid-top">
                     <div class="form-group">
-                        <label>บทบาท (Role)</label>
-                        <select>
-                            <option>ผู้จัดการโครงการ (PM)</option>
-                            <option>วิศวกรโครงการ (Project Engineer)</option>
-                            <option>เจ้าหน้าที่ความปลอดภัย (Safety Officer)</option>
-                            <option>หัวหน้างาน (Foreman/Supervisor)</option>
+                        <label>บทบาท (Role) *</label>
+                        <select id="tmRole" onchange="toggleTeamRoleOther()">
+                            <option value="">-- เลือกบทบาท --</option>
+                            <option value="ผู้อำนวยการโครงการ (Project Director)">ผู้อำนวยการโครงการ (Project Director)</option>
+                            <option value="ผู้จัดการโครงการ (Project Manager)">ผู้จัดการโครงการ (Project Manager)</option>
+                            <option value="วิศวกรโครงการ (Project Engineer)">วิศวกรโครงการ (Project Engineer)</option>
+                            <option value="ผู้ควบคุมงาน (Site Inspector/Supervisor)">ผู้ควบคุมงาน (Site Inspector/Supervisor)</option>
+                            <option value="จป.วิชาชีพ / ผู้จัดการความปลอดภัย">จป.วิชาชีพ / ผู้จัดการความปลอดภัย (Safety Manager)</option>
+                            <option value="ผู้ประสานงานโครงการ (Project Coordinator)">ผู้ประสานงานโครงการ (Project Coordinator)</option>
+                            <option value="OTHER">อื่นๆ (โปรดระบุ)</option>
                         </select>
+                        <input type="text" id="tmRoleOther" placeholder="โปรดระบุบทบาท..." style="display:none; margin-top:8px;">
                     </div>
                     <div class="form-group">
                         <label>หน้าที่/ตำแหน่งย่อย</label>
-                        <input type="text" placeholder="เช่น วิศวกรไฟฟ้า, ผู้ควบคุมงานยก">
+                        <input type="text" id="tmDuty" placeholder="เช่น วิศวกรไฟฟ้า">
                     </div>
                     <div class="form-group">
-                        <label>รหัสพนักงาน (ID) *สำคัญ</label>
-                        <input type="text" placeholder="EMP-XXX (ใช้อ้างอิง e-Permit)">
+                        <label>รหัสพนักงาน (ID) *</label>
+                        <input type="text" id="tmId" placeholder="EMP-XXX">
                     </div>
                     <div class="form-group">
-                        <label>ชื่อ-นามสกุล</label>
-                        <input type="text" placeholder="ระบุชื่อ-นามสกุล">
+                        <label>ชื่อ-นามสกุล *</label>
+                        <input type="text" id="tmName" placeholder="ระบุชื่อ-นามสกุล">
                     </div>
-                    <button type="button" class="btn-add">+ เพิ่ม</button>
+                    <button type="button" class="btn-add" onclick="addTeamMember()">+ เพิ่ม</button>
                 </div>
 
                 <div class="team-grid-bot">
                     <div class="form-group">
-                        <label>เบอร์โทร (กรอกเฉพาะตัวเลข)</label>
-                        <input type="tel" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="08XXXXXXXX">
+                        <label>เบอร์โทร</label>
+                        <input type="tel" id="tmPhone" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="08XXXXXXXX">
                     </div>
                     <div class="form-group">
                         <label>อีเมล</label>
-                        <input type="email" placeholder="example@email.com">
+                        <input type="email" id="tmEmail" placeholder="example@email.com">
                     </div>
                     <div class="form-group">
                         <label>Line ID</label>
-                        <input type="text" placeholder="@lineid">
+                        <input type="text" id="tmLine" placeholder="@lineid">
                     </div>
                 </div>
                 
@@ -309,8 +277,8 @@
                             <th style="width: 10%; text-align: center;">ลบ</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr><td colspan="5" class="empty-row">ยังไม่ได้เพิ่มรายชื่อทีมงาน</td></tr>
+                    <tbody id="teamTableBody">
+                        <tr id="emptyRow"><td colspan="5" class="empty-row">ยังไม่ได้เพิ่มรายชื่อทีมงาน</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -319,18 +287,112 @@
 </div>
 
 <script>
-    // ฟังก์ชันสำหรับเปิดช่อง "อื่นๆ (โปรดระบุ)" ในหมวดประเภทโครงการ
-    function toggleOtherProjectType() {
-        const select = document.getElementById("pType");
-        const otherInput = document.getElementById("pTypeOther");
-        if (select.value === "OTHER") {
-            otherInput.style.display = "block";
-            otherInput.required = true;
+    // 1. ฟังก์ชันคำนวณระยะเวลา (วัน)
+    function calculateDuration() {
+        const start = document.getElementById("pStart").value;
+        const end = document.getElementById("pEnd").value;
+        const durationInput = document.getElementById("pDuration");
+
+        if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            
+            // คำนวณความต่างของเวลา (มิลลิวินาที -> วัน)
+            const diffTime = endDate.getTime() - startDate.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // บวก 1 เพื่อรวมวันเริ่มต้นด้วย
+
+            if (diffDays > 0) {
+                durationInput.value = diffDays + " วัน";
+                durationInput.style.color = "#2563eb"; // ตัวหนังสือสีน้ำเงิน
+            } else {
+                durationInput.value = "วันที่สิ้นสุดต้องมากกว่าวันที่เริ่ม";
+                durationInput.style.color = "#ef4444"; // ตัวหนังสือสีแดงแจ้งเตือน
+            }
         } else {
-            otherInput.style.display = "none";
-            otherInput.required = false;
-            otherInput.value = "";
+            durationInput.value = "";
         }
+    }
+
+    // 2. ฟังก์ชันแสดง/ซ่อน กล่องระบุบทบาทอื่นๆ
+    function toggleTeamRoleOther() {
+        const roleSelect = document.getElementById("tmRole");
+        const roleOther = document.getElementById("tmRoleOther");
+        
+        if (roleSelect.value === "OTHER") {
+            roleOther.style.display = "block";
+            roleOther.focus();
+        } else {
+            roleOther.style.display = "none";
+            roleOther.value = "";
+        }
+    }
+
+    // 3. ฟังก์ชันเพิ่มทีมงานลงตาราง
+    let teamMembers = [];
+    
+    function addTeamMember() {
+        let role = document.getElementById("tmRole").value;
+        if (role === "OTHER") role = document.getElementById("tmRoleOther").value;
+        
+        const duty = document.getElementById("tmDuty").value;
+        const id = document.getElementById("tmId").value;
+        const name = document.getElementById("tmName").value;
+        const phone = document.getElementById("tmPhone").value;
+        const email = document.getElementById("tmEmail").value;
+        const line = document.getElementById("tmLine").value;
+
+        // ตรวจสอบข้อมูลบังคับกรอก (Validation แบบง่ายๆ)
+        if (!role || !id || !name) {
+            alert("กรุณาระบุ บทบาท, รหัสพนักงาน และ ชื่อ-นามสกุล ให้ครบถ้วนค่ะ");
+            return;
+        }
+
+        // เก็บข้อมูลลง Array
+        teamMembers.push({ role, duty, id, name, phone, email, line });
+        
+        // วาดตารางใหม่
+        renderTable();
+        
+        // ล้างข้อมูลในช่องกรอก
+        document.getElementById("tmRole").value = "";
+        document.getElementById("tmRoleOther").style.display = "none";
+        document.getElementById("tmRoleOther").value = "";
+        document.getElementById("tmDuty").value = "";
+        document.getElementById("tmId").value = "";
+        document.getElementById("tmName").value = "";
+        document.getElementById("tmPhone").value = "";
+        document.getElementById("tmEmail").value = "";
+        document.getElementById("tmLine").value = "";
+    }
+
+    // 4. ฟังก์ชันวาดตารางและลบข้อมูล
+    function renderTable() {
+        const tbody = document.getElementById("teamTableBody");
+        tbody.innerHTML = ""; // ล้างข้อมูลเก่า
+        
+        if (teamMembers.length === 0) {
+            tbody.innerHTML = '<tr id="emptyRow"><td colspan="5" class="empty-row">ยังไม่ได้เพิ่มรายชื่อทีมงาน</td></tr>';
+            return;
+        }
+
+        teamMembers.forEach((member, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${member.role}</strong><br><span style="font-size:11px; color:#64748b;">${member.duty || '-'}</span></td>
+                <td>${member.id}</td>
+                <td>${member.name}</td>
+                <td style="font-size: 12px;">📞 ${member.phone || '-'}<br>✉️ ${member.email || '-'}<br>💬 ${member.line || '-'}</td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn-del" onclick="deleteMember(${index})">ลบ</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteMember(index) {
+        teamMembers.splice(index, 1); // ลบออกจาก Array ตามลำดับ (index)
+        renderTable(); // วาดตารางใหม่
     }
 </script>
 </body>
