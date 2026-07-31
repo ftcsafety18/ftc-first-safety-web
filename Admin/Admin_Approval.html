@@ -320,23 +320,23 @@
     function approvePTW() {
         // เช็คการติ๊กรับรองของ Engineer
         if(!document.getElementById('chkEngScope').checked || !document.getElementById('chkEngConflict').checked) {
-            alert("วิศวกรโครงการ: กรุณาทำเครื่องหมายรับรองขอบเขตงานให้ครบถ้วนค่ะ");
+            alert("วิศวกรโครงการ: กรุณาทำเครื่องหมายรับรองขอบเขตงานให้ครบถ้วนครับ");
             return;
         }
         const engName = document.getElementById('engName').value;
         if(!engName.trim()) {
-            alert("วิศวกรโครงการ: กรุณาลงนาม (พิมพ์ชื่อ) ค่ะ");
+            alert("วิศวกรโครงการ: กรุณาลงนาม (พิมพ์ชื่อ) ครับ");
             return;
         }
 
         // เช็คการติ๊กรับรองของ จป.
         if(!document.getElementById('chkSafPPE').checked || !document.getElementById('chkSafZone').checked) {
-            alert("เจ้าหน้าที่ความปลอดภัย: กรุณาทำเครื่องหมายรับรองความปลอดภัยให้ครบถ้วนค่ะ");
+            alert("เจ้าหน้าที่ความปลอดภัย: กรุณาทำเครื่องหมายรับรองความปลอดภัยให้ครบถ้วนครับ");
             return;
         }
         const safName = document.getElementById('safName').value;
         if(!safName.trim()) {
-            alert("เจ้าหน้าที่ความปลอดภัย: กรุณาลงนาม (พิมพ์ชื่อ) ค่ะ");
+            alert("เจ้าหน้าที่ความปลอดภัย: กรุณาลงนาม (พิมพ์ชื่อ) ครับ");
             return;
         }
 
@@ -355,7 +355,7 @@
             pendingRequests[index].ptwNo = generatedPTWNo;
         }
 
-        alert(`อนุมัติสำเร็จ!\nแบบฟอร์มนี้ได้รับการลงนามครบทั้ง 4 ส่วนแล้ว\n(ผู้รับเหมา -> โฟร์แมน -> วิศวกร -> จป.)\n\nระบบได้สร้างเลขที่เอกสาร: ${generatedPTWNo} เรียบร้อยค่ะ`);
+        alert(`อนุมัติสำเร็จ!\nแบบฟอร์มนี้ได้รับการลงนามครบทั้ง 4 ส่วนแล้ว\n(ผู้รับเหมา -> โฟร์แมน -> วิศวกร -> จป.)\n\nระบบได้สร้างเลขที่เอกสาร: ${generatedPTWNo} เรียบร้อยครับ`);
         closeModal();
         renderTable();
     }
@@ -365,7 +365,7 @@
         const safName = document.getElementById('safName').value;
         
         if(!engName.trim() && !safName.trim()) {
-            alert("กรุณาระบุชื่อผู้ทำการไม่อนุมัติ (วิศวกร หรือ จป. ท่านใดท่านหนึ่ง) ค่ะ");
+            alert("กรุณาระบุชื่อผู้ทำการไม่อนุมัติ (วิศวกร หรือ จป. ท่านใดท่านหนึ่ง) ครับ");
             return;
         }
 
@@ -377,7 +377,7 @@
             pendingRequests[index].status = 'rejected';
         }
 
-        alert("บันทึกสถานะ 'ไม่อนุมัติ' เรียบร้อย ระบบจะส่งแจ้งเตือนให้ผู้รับเหมาแก้ไขข้อมูลค่ะ");
+        alert("บันทึกสถานะ 'ไม่อนุมัติ' เรียบร้อย ระบบจะส่งแจ้งเตือนให้ผู้รับเหมาแก้ไขข้อมูลครับ");
         closeModal();
         renderTable();
     }
