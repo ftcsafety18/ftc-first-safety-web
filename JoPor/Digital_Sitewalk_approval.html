@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM/PD Approval - Site Walk Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #e2e8f0; 
+            margin: 0; 
+            padding: 20px; 
+            color: #334155;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .dashboard-container { 
+            background: white; 
+            width: 100%; 
+            max-width: 600px; 
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header { 
+            background-color: #0f172a; 
+            color: white; 
+            padding: 20px; 
+            position: relative;
+        }
+        .form-no {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2); padding: 4px 10px;
+            border-radius: 4px; font-size: 12px; font-weight: 700;
+        }
+        .header h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
+        .header p { margin: 5px 0 0; font-size: 14px; color: #94a3b8; }
+
+        /* Report Info */
+        .report-info { padding: 15px 20px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 14px; }
+        .info-label { color: #64748b; font-weight: 600; }
+        .info-value { font-weight: 700; color: #0f172a; }
+
+        /* Content Section */
+        .section { padding: 20px; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 16px; color: #034694; margin: 0 0 15px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+
+        /* Problem Details */
+        .problem-desc { background: #fef2f2; border-left: 4px solid #dc2626; padding: 12px; margin-bottom: 15px; border-radius: 4px; }
+        .zone-badge { background: #dc2626; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 10px; }
+
+        /* 4 Photos Grid */
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .photo-box { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; text-align: center; }
+        .photo-box img { width: 100%; height: 120px; object-fit: cover; }
+        .photo-label { padding: 8px; font-size: 12px; font-weight: 600; background: #e2e8f0; color: #475569; }
+        .photo-label.after { background: #d1fae5; color: #065f46; }
+
+        /* Approval Form */
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Sarabun'; font-size: 14px; box-sizing: border-box; }
+        
+        /* Action Buttons */
+        .action-box { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 15px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-family: 'Sarabun'; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn-reject { background-color: #ef4444; color: white; }
+        .btn-accept { background-color: #10b981; color: white; }
+        .btn-pd { background-color: #034694; color: white; width: 100%; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="form-no">FM-SAF-09</div>
+            <h1>Safety Audit Review</h1>
+            <p>ระบบพิจารณาและอนุมัติรายงาน Site Walk</p>
+        </div>
+
+        <div class="report-info">
+            <div><span class="info-label">วันที่:</span> <span class="info-value">31 ก.ค. 2026</span></div>
+            <div><span class="info-label">ผู้ตรวจสอบ (จป.):</span> <span class="info-value">นายณัฐธัญ</span></div>
+        </div>
+
+        <div class="section">
+            <h3 class="section-title">รายละเอียดการแก้ไข (Item #1)</h3>
+            
+            <div class="problem-desc">
+                <strong>ปัญหาที่พบ:</strong> พบสายไฟวางพาดกับพื้นเปียกน้ำ เสี่ยงต่อไฟฟ้ารั่ว
+                <span class="zone-badge">เขตอันตราย (Hot Zone)</span>
+            </div>
+
+            <!-- ระบบ 4 รูปภาพ -->
+            <div class="photo-grid">
+                <div class="photo-box">
+                    <img src="https://via.placeholder.com/300x200/ef4444/FFFFFF?text=Before+(Wide)" alt="Before 1">
+                    <div class="photo-label">📸 รูปก่อนแก้ไข (มุมกว้าง)</div>
+                </div>
+                <div class="photo-box">
+                    <img src="https://via.placeholder.com/300x200/ef4444/FFFFFF?text=Before+(Zoom)" alt="Before 2">
+                    <div class="photo-label">📸 รูปก่อนแก้ไข (จุดเกิดเหตุ)</div>
+                </div>
+                <div class="photo-box">
+                    <img src="https://via.placeholder.com/300x200/10b981/FFFFFF?text=After+(Zoom)" alt="After 1">
+                    <div class="photo-label after">✅ รูปหลังแก้ไข (จุดเกิดเหตุ)</div>
+                </div>
+                <div class="photo-box">
+                    <img src="https://via.placeholder.com/300x200/10b981/FFFFFF?text=After+(Wide)" alt="After 2">
+                    <div class="photo-label after">✅ รูปหลังแก้ไข (มุมกว้าง)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนของ Project Manager -->
+        <div class="section">
+            <h3 class="section-title">ส่วนที่ 1: สำหรับ Project Manager (PM)</h3>
+            <div class="action-box">
+                <div class="form-group">
+                    <label class="form-label">ความเห็น / ข้อสังเกต (Comments & Remark):</label>
+                    <textarea class="form-control" rows="2" placeholder="ระบุข้อความสั่งการเพิ่มเติม..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ลงชื่อ (PM Name):</label>
+                    <input type="text" class="form-control" value="นายสมศักดิ์ วิศวกรโครงการ" readonly>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-reject" onclick="alert('ตีกลับให้ผู้รับเหมาแก้ไขใหม่ ระบบได้ส่งแจ้งเตือนแล้ว!')">❌ ตีกลับ (Reject)</button>
+                    <button class="btn btn-accept" onclick="promptPin('PM')">✅ ยอมรับ (Accept By PM)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนของ Project Director -->
+        <div class="section">
+            <h3 class="section-title">ส่วนที่ 2: สำหรับ Project Director (PD)</h3>
+            <div class="action-box">
+                <div class="form-group">
+                    <label class="form-label">ความเห็นระดับบริหาร (Executive Comments):</label>
+                    <textarea class="form-control" rows="2" placeholder="ข้อเสนอแนะเพิ่มเติม (ถ้ามี)..."></textarea>
+                </div>
+                <button class="btn btn-pd" onclick="promptPin('PD')">📝 รับทราบและปิดรายงาน (Accept By PD)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function promptPin(role) {
+            let pin = prompt("กรุณากรอกรหัส PIN 6 หลัก เพื่อยืนยันลายมือชื่ออิเล็กทรอนิกส์ในฐานะ " + role + ":");
+            if(pin) {
+                alert("ยืนยันลายเซ็นดิจิทัลเรียบร้อย!\nระบบได้บันทึกสถานะ Accept By " + role + " และเก็บ Log เวลา " + new Date().toLocaleTimeString() + " เรียบร้อยแล้วครับ");
+            }
+        }
+    </script>
+
+</body>
+</html>
