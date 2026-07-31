@@ -18,27 +18,24 @@
         
         .section-title { background-color: #d1fae5; color: #047857; font-size: 18px; font-weight: 700; padding: 10px 15px; border-left: 5px solid #10b981; margin: 0 0 20px 0; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Audit Box */
         .audit-box { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 15px; }
         
         .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 15px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 15px; margin-bottom: 15px; }
+        .grid-3-eq { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
         input[type="text"], input[type="number"], input[type="date"], select {
-            width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px; color: #334155; background-color: #fff;
+            width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px; background-color: #fff;
         }
         input:focus, select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
         ::placeholder { color: #94a3b8; font-size: 13px; }
-        
         input[readonly] { background-color: #e2e8f0; color: #475569; font-weight: 700; cursor: not-allowed; border-color: #cbd5e1; }
         
         .btn-add { background-color: #10b981; color: white; border: none; border-radius: 4px; padding: 12px 20px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700; width: 100%; font-size: 15px; margin-top: 10px; transition: background 0.3s; }
         .btn-add:hover { background-color: #059669; }
         .btn-edit-mode { background-color: #f59e0b; }
-        .btn-edit-mode:hover { background-color: #d97706; }
         
         .btn-action { border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600; color: white; margin: 2px; width: 45px; }
         .btn-edit { background-color: #3b82f6; }
@@ -47,15 +44,14 @@
         table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; margin-top: 20px;}
         th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; vertical-align: middle; }
         th { background-color: #f8fafc; color: #334155; font-weight: 700; border-bottom: 2px solid #cbd5e1; }
-        .col-right { text-align: right; }
         .col-center { text-align: center; }
         
         optgroup { font-family: 'Sarabun', sans-serif; font-weight: 700; color: #047857; }
-        option { font-weight: 400; color: #334155; }
         
         .audit-stamp { font-size: 11px; background-color: #f8fafc; padding: 4px; border-radius: 4px; border: 1px dotted #cbd5e1; margin-bottom: 4px; }
         .audit-create { color: #059669; }
         .audit-update { color: #d97706; }
+        .task-badge { background-color: #1e293b; color: white; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
     </style>
 </head>
 <body onload="startClock()">
@@ -67,20 +63,16 @@
     </div>
 
     <div class="content">
-        <!-- Audit Box (จำลองการ Login และ Document Control) -->
         <div class="audit-box">
             <div class="form-group">
                 <label>ผู้เข้าสู่ระบบ (Logged in as) 🔒</label>
-                <!-- ล็อคให้อ่านอย่างเดียว ป้องกันการสวมรอย -->
                 <input type="text" id="currentUser" value="ณัฐธัญ (Project Admin)" readonly>
             </div>
             <div class="form-group">
                 <label>เอกสารอ้างอิงส่วนกลาง (Document Ref.) 📄</label>
-                <!-- เปลี่ยนจากการแนบไฟล์ เป็นการเลือกเอกสารที่มีในระบบ -->
                 <select id="refDoc">
                     <option value="DOC-26-001 (Master Plan Rev.0)">DOC-26-001 (Master Plan Rev.0)</option>
                     <option value="DOC-26-002 (BOQ Update)">DOC-26-002 (BOQ M&E Update)</option>
-                    <option value="DOC-26-003 (Addendum 1)">DOC-26-003 (Addendum 1)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -95,55 +87,42 @@
         </div>
 
         <form id="masterForm">
-            <!-- Row 1: Category & Description -->
-            <div class="grid-2">
+            <!-- Row 1: Task No, Category & Description -->
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>รหัสงาน (Task No.) *</label>
+                    <input type="text" id="taskNo" placeholder="เช่น T-01, 1.1">
+                </div>
                 <div class="form-group">
                     <label>หมวดหมู่งานหลัก (Item Category) *</label>
-                    <select id="itemCat" onchange="toggleCategoryOther()">
+                    <select id="itemCat">
                         <option value="">-- เลือกหมวดหมู่หลัก --</option>
                         <option value="1. Preliminary (งานเตรียมการ)">1. Preliminary (งานเตรียมการ)</option>
                         <option value="2. Structure (งานโครงสร้าง)">2. Structure (งานโครงสร้าง)</option>
                         <option value="3. Architect (งานสถาปัตย์)">3. Architect (งานสถาปัตย์)</option>
-                        <option value="4. External (งานภายนอก)">4. External (งานภายนอก)</option>
-                        <option value="5. Civil Works for M&E">5. Civil Works for M&E</option>
                         <option value="6. Electrical Work (EE)">6. Electrical Work (EE)</option>
                         <option value="7. Mechanical Work (AC/SAN/FP)">7. Mechanical Work (AC/SAN/FP)</option>
-                        <option value="8. Land Clearing and Land Fill">8. Land Clearing and Land Fill</option>
-                        <option value="OTHER">หมวดหมู่อื่นๆ (ระบุ)</option>
                     </select>
-                    <input type="text" id="itemCatOther" placeholder="โปรดระบุหมวดหมู่งาน..." style="display:none; margin-top:8px;">
                 </div>
                 <div class="form-group">
                     <label>รายละเอียดงานย่อย (Description) *</label>
-                    <select id="itemDesc" onchange="toggleDescOther()">
+                    <select id="itemDesc">
                         <option value="">-- เลือกรายละเอียดงาน --</option>
-                        <optgroup label="งานโครงสร้างและสถาปัตย์ (Structure & Architect)">
+                        <optgroup label="งานโครงสร้างและสถาปัตย์">
                             <option value="งานเสาเข็ม (Piling Work)">งานเสาเข็ม (Piling Work)</option>
                             <option value="งานฐานรากและโครงสร้างใต้ดิน">งานฐานรากและโครงสร้างใต้ดิน (Foundation)</option>
-                            <option value="งานโครงสร้างคอนกรีตเสริมเหล็ก (RC)">งานโครงสร้างคอนกรีตเสริมเหล็ก (RC)</option>
                         </optgroup>
                         <optgroup label="งานระบบปรับอากาศ (AC)">
                             <option value="งานติดตั้งท่อลมระบายอากาศ (Duct)">งานติดตั้งท่อลมระบายอากาศ (Duct)</option>
-                            <option value="งานเดินท่อน้ำเย็น (Chilled Water)">งานเดินท่อน้ำเย็น (Chilled Water)</option>
                         </optgroup>
                         <optgroup label="งานระบบไฟฟ้า (EE)">
                             <option value="งานเดินท่อร้อยสายไฟ (Conduit)">งานเดินท่อร้อยสายไฟ (Conduit)</option>
-                            <option value="งานติดตั้งรางสายไฟ (Cable Tray/Ladder)">งานติดตั้งรางสายไฟ (Cable Tray/Ladder)</option>
-                            <option value="งานดึงสายไฟและเข้าหัว (Wiring)">งานดึงสายไฟและเข้าหัว (Wiring)</option>
-                        </optgroup>
-                        <optgroup label="งานระบบสุขาภิบาลและดับเพลิง (SAN / SPK)">
-                            <option value="งานเดินท่อน้ำดีและท่อน้ำทิ้ง (Plumbing)">งานเดินท่อน้ำดีและท่อน้ำทิ้ง (Plumbing)</option>
-                            <option value="งานเดินท่อดับเพลิง (Fire Pipe)">งานเดินท่อดับเพลิง (Fire Pipe)</option>
-                        </optgroup>
-                        <optgroup label="อื่นๆ">
-                            <option value="OTHER">รายละเอียดอื่นๆ (โปรดระบุ)</option>
                         </optgroup>
                     </select>
-                    <input type="text" id="itemDescOther" placeholder="โปรดระบุรายละเอียดงาน..." style="display:none; margin-top:8px;">
                 </div>
             </div>
 
-            <!-- Row 3: Area (Building, Floor, Zone, Remark) -->
+            <!-- Row 2: Area (Building, Floor, Zone, Remark) -->
             <div class="grid-4">
                 <div class="form-group">
                     <label>ชื่ออาคาร (Building) *</label>
@@ -163,8 +142,8 @@
                 </div>
             </div>
 
-            <!-- Row 4: Cost & Timeline -->
-            <div class="grid-3">
+            <!-- Row 3: Cost & Timeline -->
+            <div class="grid-3-eq">
                 <div class="form-group">
                     <label>มูลค่างาน (Cost Value)</label>
                     <input type="number" id="itemCost" placeholder="ระบุตัวเลข (ถ้ามี)">
@@ -186,10 +165,10 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 14%;">หมวดหมู่</th>
+                    <th style="width: 10%; text-align: center;">รหัสงาน<br>(Task No.)</th>
+                    <th style="width: 13%;">หมวดหมู่</th>
                     <th style="width: 15%;">รายละเอียดงาน</th>
-                    <th style="width: 12%;">พื้นที่ (อาคาร/ชั้น/โซน)</th>
-                    <th style="width: 10%;">หมายเหตุ</th>
+                    <th style="width: 13%;">พื้นที่ (อาคาร/ชั้น/โซน)</th>
                     <th style="width: 12%; text-align: center;">ระยะเวลา</th>
                     <th style="width: 25%;">ร่องรอยการบันทึก (Audit Trail)</th>
                     <th style="width: 12%; text-align: center;">จัดการ</th>
@@ -203,7 +182,6 @@
 </div>
 
 <script>
-    // ฟังก์ชันนาฬิกา Real-time สำหรับ Timestamp
     function startClock() {
         setInterval(() => {
             const now = new Date();
@@ -213,34 +191,17 @@
         }, 1000);
     }
 
-    function toggleCategoryOther() {
-        const catSelect = document.getElementById("itemCat");
-        const catOther = document.getElementById("itemCatOther");
-        if (catSelect.value === "OTHER") { catOther.style.display = "block"; catOther.focus(); } 
-        else { catOther.style.display = "none"; catOther.value = ""; }
-    }
-
-    function toggleDescOther() {
-        const descSelect = document.getElementById("itemDesc");
-        const descOther = document.getElementById("itemDescOther");
-        if (descSelect.value === "OTHER") { descOther.style.display = "block"; descOther.focus(); } 
-        else { descOther.style.display = "none"; descOther.value = ""; }
-    }
-
     let masterTasks = [];
-    let editingIndex = -1; // ตัวแปรเก็บสถานะว่ากำลังแก้ไขแถวไหนอยู่
+    let editingIndex = -1;
 
     function saveMasterTask() {
         const currentUser = document.getElementById("currentUser").value;
         const refDoc = document.getElementById("refDoc").value;
         const currentTimestamp = document.getElementById("currentTime").value;
 
-        let cat = document.getElementById("itemCat").value;
-        if (cat === "OTHER") cat = document.getElementById("itemCatOther").value;
-
-        let desc = document.getElementById("itemDesc").value;
-        if (desc === "OTHER") desc = document.getElementById("itemDescOther").value;
-
+        const taskNo = document.getElementById("taskNo").value;
+        const cat = document.getElementById("itemCat").value;
+        const desc = document.getElementById("itemDesc").value;
         const bldg = document.getElementById("itemBldg").value;
         const floor = document.getElementById("itemFloor").value;
         const zone = document.getElementById("itemZone").value;
@@ -249,42 +210,19 @@
         const start = document.getElementById("itemStart").value;
         const end = document.getElementById("itemEnd").value;
 
-        if(!cat || !desc || !bldg || !floor || !zone || !start || !end) {
-            alert("กรุณากรอกข้อมูลที่จำเป็น (*) ให้ครบถ้วนครับ");
+        if(!taskNo || !cat || !desc || !bldg || !floor || !zone || !start || !end) {
+            alert("กรุณากรอกข้อมูลที่จำเป็น (*) ให้ครบถ้วนค่ะ");
             return;
         }
 
         const duration = Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        if(duration <= 0) { alert("วันที่สิ้นสุด ต้องมากกว่าหรือเท่ากับ วันที่เริ่มต้นครับ"); return; }
+        if(duration <= 0) { alert("วันที่สิ้นสุด ต้องมากกว่าหรือเท่ากับ วันที่เริ่มต้นค่ะ"); return; }
 
         if (editingIndex === -1) {
-            // โหมด: เพิ่มข้อมูลใหม่ (Create)
-            masterTasks.push({ 
-                cat, desc, bldg, floor, zone, remark, cost, start, end, duration, 
-                refDoc, 
-                createdBy: currentUser, 
-                createdAt: currentTimestamp,
-                updatedBy: null, // ยังไม่มีการแก้ไข
-                updatedAt: null
-            });
+            masterTasks.push({ taskNo, cat, desc, bldg, floor, zone, remark, cost, start, end, duration, refDoc, createdBy: currentUser, createdAt: currentTimestamp, updatedBy: null, updatedAt: null });
         } else {
-            // โหมด: แก้ไขข้อมูล (Update) - จะอัปเดตข้อมูลงาน และเก็บร่องรอยคนแก้ไข
-            masterTasks[editingIndex].cat = cat;
-            masterTasks[editingIndex].desc = desc;
-            masterTasks[editingIndex].bldg = bldg;
-            masterTasks[editingIndex].floor = floor;
-            masterTasks[editingIndex].zone = zone;
-            masterTasks[editingIndex].remark = remark;
-            masterTasks[editingIndex].cost = cost;
-            masterTasks[editingIndex].start = start;
-            masterTasks[editingIndex].end = end;
-            masterTasks[editingIndex].duration = duration;
-            masterTasks[editingIndex].refDoc = refDoc;
-            // ประทับตราผู้แก้ไขล่าสุด
-            masterTasks[editingIndex].updatedBy = currentUser;
-            masterTasks[editingIndex].updatedAt = currentTimestamp;
+            masterTasks[editingIndex] = { ...masterTasks[editingIndex], taskNo, cat, desc, bldg, floor, zone, remark, cost, start, end, duration, refDoc, updatedBy: currentUser, updatedAt: currentTimestamp };
             
-            // คืนค่าปุ่มกลับเป็นโหมดปกติ
             const btn = document.getElementById("btnSubmit");
             btn.innerHTML = "+ เพิ่มลงแผนงานแม่บท (Add to Masterplan)";
             btn.classList.remove("btn-edit-mode");
@@ -301,27 +239,9 @@
         editingIndex = index;
         const task = masterTasks[index];
 
-        // ดึงข้อมูลกลับไปใส่ Form
-        const catSelect = document.getElementById("itemCat");
-        if (Array.from(catSelect.options).some(opt => opt.value === task.cat)) {
-            catSelect.value = task.cat;
-            document.getElementById("itemCatOther").style.display = "none";
-        } else {
-            catSelect.value = "OTHER";
-            document.getElementById("itemCatOther").style.display = "block";
-            document.getElementById("itemCatOther").value = task.cat;
-        }
-
-        const descSelect = document.getElementById("itemDesc");
-        if (Array.from(descSelect.options).some(opt => opt.value === task.desc)) {
-            descSelect.value = task.desc;
-            document.getElementById("itemDescOther").style.display = "none";
-        } else {
-            descSelect.value = "OTHER";
-            document.getElementById("itemDescOther").style.display = "block";
-            document.getElementById("itemDescOther").value = task.desc;
-        }
-
+        document.getElementById("taskNo").value = task.taskNo;
+        document.getElementById("itemCat").value = task.cat;
+        document.getElementById("itemDesc").value = task.desc;
         document.getElementById("itemBldg").value = task.bldg;
         document.getElementById("itemFloor").value = task.floor;
         document.getElementById("itemZone").value = task.zone;
@@ -331,15 +251,13 @@
         document.getElementById("itemEnd").value = task.end;
         document.getElementById("refDoc").value = task.refDoc;
 
-        // เปลี่ยนหน้าตาปุ่มเพื่อให้รู้ว่าอยู่ในโหมดแก้ไข
         const btn = document.getElementById("btnSubmit");
         btn.innerHTML = "💾 บันทึกการแก้ไข (Save Changes)";
         btn.classList.add("btn-edit-mode");
-        
         document.getElementById("formModeBadge").innerText = "โหมด: แก้ไขข้อมูล";
         document.getElementById("formModeBadge").style.background = "#d97706";
         
-        window.scrollTo(0, 0); // เลื่อนจอขึ้นบนสุด
+        window.scrollTo(0, 0);
     }
 
     function renderTable() {
@@ -352,37 +270,19 @@
         }
 
         masterTasks.forEach((task, index) => {
-            // เช็คว่ามีการ Edit ไหม ถ้ามีให้โชว์คู่กัน
-            let auditHTML = `
-                <div class="audit-stamp audit-create">
-                    <strong>สร้าง:</strong> ${task.createdBy}<br>
-                    <span>⏱ ${task.createdAt}</span>
-                </div>
-            `;
+            let auditHTML = `<div class="audit-stamp audit-create"><strong>สร้าง:</strong> ${task.createdBy}<br><span>⏱ ${task.createdAt}</span></div>`;
             if (task.updatedBy) {
-                auditHTML += `
-                    <div class="audit-stamp audit-update">
-                        <strong>อัปเดต:</strong> ${task.updatedBy}<br>
-                        <span>⏱ ${task.updatedAt}</span>
-                    </div>
-                `;
+                auditHTML += `<div class="audit-stamp audit-update"><strong>อัปเดต:</strong> ${task.updatedBy}<br><span>⏱ ${task.updatedAt}</span></div>`;
             }
             auditHTML += `<div style="font-size:10px; color:#3b82f6; margin-top:4px;">📄 ${task.refDoc}</div>`;
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
+                <td class="col-center"><span class="task-badge">${task.taskNo}</span></td>
                 <td><strong>${task.cat}</strong></td>
                 <td>${task.desc}</td>
-                <td style="font-size: 13.5px;">
-                    <span style="color:#0284c7; font-weight:700;">อาคาร:</span> ${task.bldg}<br>
-                    <span style="color:#047857; font-weight:700;">ชั้น:</span> ${task.floor} | <span style="color:#d97706; font-weight:700;">โซน:</span> ${task.zone}
-                </td>
-                <td><span style="font-size: 11px; color:#64748b;">${task.remark || '-'}</span></td>
-                <td class="col-center" style="font-size: 11px;">
-                    <span style="color:#059669;">เริ่ม:</span> ${formatDate(task.start)}<br>
-                    <span style="color:#ef4444;">จบ:</span> ${formatDate(task.end)}<br>
-                    <strong>(${task.duration} วัน)</strong>
-                </td>
+                <td style="font-size: 13.5px;"><span style="color:#0284c7; font-weight:700;">อาคาร:</span> ${task.bldg}<br><span style="color:#047857; font-weight:700;">ชั้น:</span> ${task.floor} | <span style="color:#d97706; font-weight:700;">โซน:</span> ${task.zone}</td>
+                <td class="col-center" style="font-size: 11px;"><span style="color:#059669;">เริ่ม:</span> ${formatDate(task.start)}<br><span style="color:#ef4444;">จบ:</span> ${formatDate(task.end)}<br><strong>(${task.duration} วัน)</strong></td>
                 <td>${auditHTML}</td>
                 <td class="col-center">
                     <button type="button" class="btn-action btn-edit" onclick="editTask(${index})">แก้ไข</button>
@@ -394,12 +294,9 @@
     }
 
     function clearForm() {
+        document.getElementById("taskNo").value = "";
         document.getElementById("itemCat").value = "";
-        document.getElementById("itemCatOther").style.display = "none";
-        document.getElementById("itemCatOther").value = "";
         document.getElementById("itemDesc").value = "";
-        document.getElementById("itemDescOther").style.display = "none";
-        document.getElementById("itemDescOther").value = "";
         document.getElementById("itemBldg").value = "";
         document.getElementById("itemFloor").value = "";
         document.getElementById("itemZone").value = "";
