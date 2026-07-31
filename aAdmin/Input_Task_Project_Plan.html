@@ -18,9 +18,11 @@
         
         .section-title { background-color: #d1fae5; color: #047857; font-size: 18px; font-weight: 700; padding: 10px 15px; border-left: 5px solid #10b981; margin: 0 0 20px 0; }
         
+        /* Audit Box */
+        .audit-box { background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 15px; }
+        
         .grid-4 { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 15px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
@@ -29,6 +31,8 @@
         }
         input:focus, select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
         ::placeholder { color: #94a3b8; font-size: 13px; }
+        
+        input[readonly] { background-color: #e2e8f0; color: #475569; font-weight: 600; cursor: not-allowed; }
         
         .btn-add { background-color: #10b981; color: white; border: none; border-radius: 4px; padding: 12px 20px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700; width: 100%; font-size: 15px; margin-top: 10px; transition: background 0.3s; }
         .btn-add:hover { background-color: #059669; }
@@ -41,7 +45,7 @@
         .col-center { text-align: center; }
     </style>
 </head>
-<body>
+<body onload="setTodayDate()">
 
 <div class="container">
     <div class="header">
@@ -57,6 +61,22 @@
         </div>
 
         <form id="masterForm">
+            <!-- Audit & Reference Section -->
+            <div class="audit-box">
+                <div class="form-group">
+                    <label>ผู้บันทึก/แก้ไขข้อมูล (Recorded By) *</label>
+                    <input type="text" id="recordBy" placeholder="ระบุชื่อผู้ดำเนินการ" style="border-color: #3b82f6;">
+                </div>
+                <div class="form-group">
+                    <label>แนบไฟล์ Master Plan / BOQ อ้างอิง (PDF)</label>
+                    <input type="file" id="masterPdf" accept=".pdf" style="padding: 6px; background-color: #ffffff;">
+                </div>
+                <div class="form-group">
+                    <label>วันที่ทำการบันทึก (Date)</label>
+                    <input type="text" id="recordDate" readonly>
+                </div>
+            </div>
+
             <!-- Row 1: Category -->
             <div class="form-group" style="margin-bottom: 15px;">
                 <label>หมวดหมู่งาน (Item Category) *</label>
@@ -118,13 +138,13 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 15%;">หมวดหมู่ (Category)</th>
-                    <th style="width: 18%;">รายละเอียดงาน (Description)</th>
-                    <th style="width: 12%;">พื้นที่ (ชั้น/โซน)</th>
-                    <th style="width: 15%;">หมายเหตุ (Remarks)</th>
+                    <th style="width: 13%;">หมวดหมู่ (Category)</th>
+                    <th style="width: 17%;">รายละเอียดงาน (Description)</th>
+                    <th style="width: 11%;">พื้นที่ (ชั้น/โซน)</th>
+                    <th style="width: 14%;">หมายเหตุ (Remarks)</th>
                     <th style="width: 12%; text-align: right;">มูลค่า (Cost)</th>
-                    <th style="width: 10%; text-align: center;">Timeline</th>
-                    <th style="width: 8%; text-align: center;">ระยะเวลา</th>
+                    <th style="width: 13%; text-align: center;">Timeline</th>
+                    <th style="width: 15%; text-align: center;">ข้อมูลการบันทึก</th>
                     <th style="width: 5%; text-align: center;">ลบ</th>
                 </tr>
             </thead>
@@ -136,6 +156,13 @@
 </div>
 
 <script>
+    // ดึงวันที่ปัจจุบันมาแสดงในช่อง วันที่ทำการบันทึก
+    function setTodayDate() {
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
+        document.getElementById("recordDate").value = dateStr;
+    }
+
     // ฟังก์ชันเปิด/ปิด ช่องระบุหมวดหมู่อื่นๆ
     function toggleCategoryOther() {
         const catSelect = document.getElementById("itemCat");
@@ -152,6 +179,17 @@
     let masterTasks = [];
 
     function addMasterTask() {
+        // ตรวจสอบข้อมูลผู้บันทึก
+        const recorder = document.getElementById("recordBy").value;
+        const recordDate = document.getElementById("recordDate").value;
+        const pdfFile = document.getElementById("masterPdf").files.length > 0 ? "มีไฟล์แนบ (PDF)" : "ไม่มีไฟล์แนบ";
+
+        if(!recorder) {
+            alert("กรุณาระบุ 'ผู้บันทึก/แก้ไขข้อมูล' ก่อนทำการเพิ่มแผนงานครับ เพื่อเก็บประวัติการทำงาน");
+            document.getElementById("recordBy").focus();
+            return;
+        }
+
         // รับค่า Category
         let cat = document.getElementById("itemCat").value;
         if (cat === "OTHER") {
@@ -182,10 +220,11 @@
             return;
         }
 
-        masterTasks.push({ cat, desc, floor, zone, remark, cost, start, end, duration });
+        // เพิ่มข้อมูลผู้บันทึกลงไปใน Array ด้วย
+        masterTasks.push({ cat, desc, floor, zone, remark, cost, start, end, duration, recorder, recordDate, pdfFile });
         renderTable();
 
-        // เคลียร์ฟอร์ม
+        // เคลียร์ฟอร์มส่วนข้อมูลงาน (แต่เก็บชื่อผู้บันทึกไว้เผื่อบันทึกต่อ)
         document.getElementById("itemCat").value = "";
         document.getElementById("itemCatOther").style.display = "none";
         document.getElementById("itemCatOther").value = "";
@@ -208,21 +247,25 @@
         }
 
         masterTasks.forEach((task, index) => {
-            // เช็คว่าใส่มูลค่ามาหรือไม่
             const costDisplay = task.cost > 0 ? `฿ ${task.cost.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-';
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td><strong>${task.cat}</strong></td>
                 <td>${task.desc}</td>
-                <td><span style="color:#047857; font-weight:600;">ช.</span> ${task.floor} / <span style="color:#047857; font-weight:600;">Z.</span> ${task.zone}</td>
+                <td><span style="color:#047857; font-weight:600;">ช.</span> ${task.floor}<br><span style="color:#047857; font-weight:600;">Z.</span> ${task.zone}</td>
                 <td><span style="font-size: 11px; color:#64748b;">${task.remark || '-'}</span></td>
                 <td class="col-right">${costDisplay}</td>
                 <td class="col-center" style="font-size: 11px;">
                     <span style="color:#059669;">เริ่ม:</span> ${formatDate(task.start)}<br>
-                    <span style="color:#ef4444;">จบ:</span> ${formatDate(task.end)}
+                    <span style="color:#ef4444;">จบ:</span> ${formatDate(task.end)}<br>
+                    <strong>(${task.duration} วัน)</strong>
                 </td>
-                <td class="col-center" style="color: #0369a1; font-weight: bold;">${task.duration} วัน</td>
+                <td class="col-center" style="font-size: 11px; background-color: #f8fafc;">
+                    <strong>โดย:</strong> ${task.recorder}<br>
+                    <span style="color:#64748b;">${task.recordDate}</span><br>
+                    <span style="color:#3b82f6; font-size: 10px;">${task.pdfFile}</span>
+                </td>
                 <td class="col-center">
                     <button type="button" class="btn-del" onclick="deleteTask(${index})">ลบ</button>
                 </td>
