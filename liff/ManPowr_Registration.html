@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Safety - Manpower Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); }
+        
+        .header { background-color: #1e293b; color: white; text-align: center; padding: 25px 20px; border-bottom: 4px solid #3b82f6; position: relative; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+        .header p { margin: 8px 0 0 0; font-size: 15px; color: #94a3b8; }
+        
+        .content { padding: 30px; }
+        .section-title { background-color: #eff6ff; color: #1d4ed8; font-size: 18px; font-weight: 700; padding: 12px 15px; border-left: 5px solid #3b82f6; margin: 0 0 20px 0; border-radius: 0 4px 4px 0; }
+        
+        .form-card { background-color: #ffffff; border: 1px solid #cbd5e1; padding: 20px; border-radius: 6px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+        input[type="text"], input[type="date"], select, input[type="file"] {
+            width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px; background-color: #f8fafc; transition: all 0.3s;
+        }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); background-color: #ffffff; }
+        input[type="file"] { background-color: #ffffff; padding: 7px; }
+        
+        .btn-submit { background-color: #3b82f6; color: white; border: none; border-radius: 4px; padding: 12px 20px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700; font-size: 15px; transition: background 0.3s; width: 100%; margin-top: 10px; }
+        .btn-submit:hover { background-color: #2563eb; }
+
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; margin-top: 10px; border-radius: 6px; overflow: hidden; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px 15px; text-align: left; vertical-align: middle; }
+        th { background-color: #f8fafc; color: #334155; font-weight: 700; border-bottom: 2px solid #cbd5e1; text-align: center; }
+        .col-center { text-align: center; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; }
+        .status-approved { background-color: #d1fae5; color: #047857; border: 1px solid #34d399; }
+        .status-pending { background-color: #fef3c7; color: #b45309; border: 1px solid #fbbf24; }
+        .status-rejected { background-color: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+
+        .btn-delete { background-color: #ef4444; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 12px; }
+        .btn-delete:hover { background-color: #dc2626; }
+        
+        .profile-pic-preview { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; }
+    </style>
+</head>
+<body onload="renderTable()">
+
+<div class="container">
+    <div class="header">
+        <h1>ระบบขึ้นทะเบียนบุคลากรและประวัติการอบรม (Manpower Registration)</h1>
+        <p>ยื่นประวัติผู้ปฏิบัติงานและผลการอบรมความปลอดภัย เพื่อขออนุมัติเข้าพื้นที่โครงการ (อ้างอิง FM-SAF-01, 02)</p>
+    </div>
+
+    <div class="content">
+        <!-- Form Section -->
+        <div class="section-title">➕ แบบฟอร์มขึ้นทะเบียนพนักงานใหม่ (สำหรับผู้รับเหมา)</div>
+        <div class="form-card">
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>บริษัทผู้รับเหมา (Company) *</label>
+                    <select id="empCompany">
+                        <option value="">-- เลือกบริษัท --</option>
+                        <option value="บจก. เอ บิลดิ้ง คอนสตรัคชั่น">บจก. เอ บิลดิ้ง คอนสตรัคชั่น</option>
+                        <option value="บจก. ระบบไฟฟ้าสมบูรณ์แบบ">บจก. ระบบไฟฟ้าสมบูรณ์แบบ</option>
+                        <option value="บจก. เจริญวิศวกรรม">บจก. เจริญวิศวกรรม</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>รหัสบัตรประชาชน (ID Card No.) *</label>
+                    <input type="text" id="empIdCard" placeholder="เลข 13 หลัก" maxlength="13">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อ (First Name) *</label>
+                    <input type="text" id="empFName" placeholder="ระบุชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>นามสกุล (Last Name) *</label>
+                    <input type="text" id="empLName" placeholder="ระบุนามสกุล">
+                </div>
+            </div>
+
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>ตำแหน่งหน้าที่ (Position) *</label>
+                    <select id="empPosition">
+                        <option value="">-- เลือกตำแหน่ง --</option>
+                        <option value="วิศวกร (Engineer)">วิศวกร (Engineer)</option>
+                        <option value="หัวหน้างาน (Supervisor)">หัวหน้างาน (Supervisor)</option>
+                        <option value="ช่างเชื่อม (Welder)">ช่างเชื่อม (Welder)</option>
+                        <option value="ช่างไฟฟ้า (Electrician)">ช่างไฟฟ้า (Electrician)</option>
+                        <option value="กรรมกร/ผู้ช่วยช่าง (General Worker)">กรรมกร/ผู้ช่วยช่าง (General Worker)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>วันที่ผ่านการอบรมความปลอดภัย *</label>
+                    <input type="date" id="empTrainingDate">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>แนบรูปถ่ายหน้าตรง (Profile Photo) 📷</label>
+                    <input type="file" id="empPhoto" accept="image/*">
+                </div>
+            </div>
+            
+            <button class="btn-submit" onclick="registerManpower()">💾 บันทึกรายชื่อเพื่อรออนุมัติ (Submit for Approval)</button>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="section-title">📋 ฐานข้อมูลบุคลากรในโครงการ (Project Manpower Database)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">รูป</th>
+                    <th style="width: 20%;">ชื่อ-นามสกุล</th>
+                    <th style="width: 15%;">รหัสบัตรประชาชน</th>
+                    <th style="width: 15%;">ตำแหน่ง</th>
+                    <th style="width: 15%;">บริษัทผู้รับเหมา</th>
+                    <th style="width: 12%;">วันที่อบรม Safety</th>
+                    <th style="width: 10%;">สถานะ</th>
+                    <th style="width: 8%;">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="manpowerTableBody">
+                <!-- Data renders here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // ฐานข้อมูลจำลอง (Dummy Data)
+    let manpowerList = [
+        { 
+            id: 1, 
+            company: "บจก. เอ บิลดิ้ง คอนสตรัคชั่น", 
+            idCard: "1100200300400", 
+            fName: "สมชาย", 
+            lName: "ใจสู้", 
+            position: "หัวหน้างาน (Supervisor)", 
+            trainingDate: "2026-07-25", 
+            status: "approved" 
+        },
+        { 
+            id: 2, 
+            company: "บจก. ระบบไฟฟ้าสมบูรณ์แบบ", 
+            idCard: "3100500600700", 
+            fName: "วิชัย", 
+            lName: "สายไฟ", 
+            position: "ช่างไฟฟ้า (Electrician)", 
+            trainingDate: "2026-07-30", 
+            status: "pending" 
+        }
+    ];
+
+    function registerManpower() {
+        const company = document.getElementById('empCompany').value;
+        const idCard = document.getElementById('empIdCard').value;
+        const fName = document.getElementById('empFName').value;
+        const lName = document.getElementById('empLName').value;
+        const position = document.getElementById('empPosition').value;
+        const trainingDate = document.getElementById('empTrainingDate').value;
+
+        if (!company || !idCard || !fName || !lName || !position || !trainingDate) {
+            alert("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วนครับ");
+            return;
+        }
+
+        if (idCard.length !== 13 || isNaN(idCard)) {
+            alert("กรุณาระบุเลขบัตรประชาชน 13 หลักให้ถูกต้องครับ");
+            return;
+        }
+
+        const newEmp = {
+            id: Date.now(),
+            company: company,
+            idCard: idCard,
+            fName: fName,
+            lName: lName,
+            position: position,
+            trainingDate: trainingDate,
+            status: "pending" // Default เป็นรออนุมัติเสมอ
+        };
+
+        manpowerList.push(newEmp);
+        alert("บันทึกข้อมูลสำเร็จ! สถานะปัจจุบันคือ 'รอตรวจสอบ'");
+        clearForm();
+        renderTable();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('manpowerTableBody');
+        tbody.innerHTML = '';
+
+        if (manpowerList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="col-center" style="color: #94a3b8; padding: 20px;">ยังไม่มีข้อมูลบุคลากร</td></tr>';
+            return;
+        }
+
+        manpowerList.forEach((emp, index) => {
+            // แปลงรูปแบบวันที่
+            const d = new Date(emp.trainingDate);
+            const dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+            
+            // ซ่อนเลขบัตรประชาชนบางส่วนเพื่อความปลอดภัย (PDPA)
+            const maskedId = emp.idCard.substring(0, 3) + "XXXXXXX" + emp.idCard.substring(10, 13);
+
+            // จัดการป้ายสถานะ
+            let statusBadge = '';
+            if (emp.status === 'approved') {
+                statusBadge = '<span class="status-badge status-approved">✅ ผ่านอบรม/อนุมัติ</span>';
+            } else if (emp.status === 'pending') {
+                statusBadge = '<span class="status-badge status-pending">⏳ รอตรวจสอบ</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-center">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto;">👤</div>
+                </td>
+                <td><strong>${emp.fName} ${emp.lName}</strong></td>
+                <td class="col-center">${maskedId}</td>
+                <td>${emp.position}</td>
+                <td style="font-size: 12px; color: #475569;">${emp.company}</td>
+                <td class="col-center">${dateStr}</td>
+                <td class="col-center">${statusBadge}</td>
+                <td class="col-center">
+                    <button class="btn-delete" onclick="deleteManpower(${index})">ลบ</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteManpower(index) {
+        if (confirm("ต้องการลบรายชื่อบุคลากรนี้ใช่หรือไม่?")) {
+            manpowerList.splice(index, 1);
+            renderTable();
+        }
+    }
+
+    function clearForm() {
+        document.getElementById('empCompany').value = '';
+        document.getElementById('empIdCard').value = '';
+        document.getElementById('empFName').value = '';
+        document.getElementById('empLName').value = '';
+        document.getElementById('empPosition').value = '';
+        document.getElementById('empTrainingDate').value = '';
+        document.getElementById('empPhoto').value = '';
+    }
+</script>
+</body>
+</html>
