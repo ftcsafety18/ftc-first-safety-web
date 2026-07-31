@@ -57,6 +57,10 @@
         th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; vertical-align: middle; }
         th { background-color: #f8fafc; color: #475569; font-weight: 600; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
         .empty-row { text-align: center; color: #94a3b8; }
+        
+        /* Dropdown Optgroup */
+        optgroup { font-family: 'Sarabun', sans-serif; font-weight: 700; color: #1e3a8a; }
+        option { font-weight: 400; color: #334155; }
     </style>
 </head>
 <body>
@@ -85,11 +89,24 @@
                 </div>
                 <div class="form-group">
                     <label>ประเภทโครงการ (Type) *</label>
-                    <select required>
+                    <select id="pType" onchange="toggleProjectTypeOther()" required>
                         <option value="">-- เลือกประเภท --</option>
-                        <option value="ก่อสร้าง">ก่อสร้าง (Construction)</option>
-                        <option value="ซ่อมบำรุง">ซ่อมบำรุง (Maintenance)</option>
+                        <optgroup label="งานก่อสร้าง (Construction)">
+                            <option value="ก่อสร้างอาคาร (Building Construction)">ก่อสร้างอาคาร (Building Construction)</option>
+                            <option value="ก่อสร้างโรงงาน (Industrial Construction)">ก่อสร้างโรงงาน (Industrial Construction)</option>
+                            <option value="ก่อสร้างโยธา/โครงสร้างพื้นฐาน (Civil/Infrastructure)">ก่อสร้างโยธา/โครงสร้างพื้นฐาน (Civil/Infrastructure)</option>
+                        </optgroup>
+                        <optgroup label="งานระบบและซ่อมบำรุง (System & Maintenance)">
+                            <option value="ติดตั้งระบบและเครื่องจักร (System Installation)">ติดตั้งระบบและเครื่องจักร (System & Machinery Installation)</option>
+                            <option value="ซ่อมบำรุงใหญ่ (Turnaround / Shutdown)">ซ่อมบำรุงใหญ่ (Turnaround / Shutdown)</option>
+                            <option value="ซ่อมบำรุงย่อย (Routine Maintenance)">ซ่อมบำรุงย่อย (Routine Maintenance)</option>
+                        </optgroup>
+                        <optgroup label="งานเฉพาะทางอื่นๆ">
+                            <option value="รื้อถอน (Demolition)">รื้อถอน (Demolition)</option>
+                            <option value="OTHER">อื่นๆ (โปรดระบุ)</option>
+                        </optgroup>
                     </select>
+                    <input type="text" id="pTypeOther" placeholder="โปรดระบุประเภทโครงการ..." style="display:none; margin-top:8px;">
                 </div>
             </div>
             
@@ -287,7 +304,23 @@
 </div>
 
 <script>
-    // 1. ฟังก์ชันคำนวณระยะเวลา (วัน)
+    // ฟังก์ชันเปิดช่อง "อื่นๆ" สำหรับประเภทโครงการ
+    function toggleProjectTypeOther() {
+        const select = document.getElementById("pType");
+        const otherInput = document.getElementById("pTypeOther");
+        
+        if (select.value === "OTHER") {
+            otherInput.style.display = "block";
+            otherInput.required = true;
+            otherInput.focus();
+        } else {
+            otherInput.style.display = "none";
+            otherInput.required = false;
+            otherInput.value = "";
+        }
+    }
+
+    // ฟังก์ชันคำนวณระยะเวลา (วัน)
     function calculateDuration() {
         const start = document.getElementById("pStart").value;
         const end = document.getElementById("pEnd").value;
@@ -297,23 +330,22 @@
             const startDate = new Date(start);
             const endDate = new Date(end);
             
-            // คำนวณความต่างของเวลา (มิลลิวินาที -> วัน)
             const diffTime = endDate.getTime() - startDate.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // บวก 1 เพื่อรวมวันเริ่มต้นด้วย
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
 
             if (diffDays > 0) {
                 durationInput.value = diffDays + " วัน";
-                durationInput.style.color = "#2563eb"; // ตัวหนังสือสีน้ำเงิน
+                durationInput.style.color = "#2563eb"; 
             } else {
                 durationInput.value = "วันที่สิ้นสุดต้องมากกว่าวันที่เริ่ม";
-                durationInput.style.color = "#ef4444"; // ตัวหนังสือสีแดงแจ้งเตือน
+                durationInput.style.color = "#ef4444"; 
             }
         } else {
             durationInput.value = "";
         }
     }
 
-    // 2. ฟังก์ชันแสดง/ซ่อน กล่องระบุบทบาทอื่นๆ
+    // ฟังก์ชันแสดง/ซ่อน กล่องระบุบทบาทอื่นๆ
     function toggleTeamRoleOther() {
         const roleSelect = document.getElementById("tmRole");
         const roleOther = document.getElementById("tmRoleOther");
@@ -327,7 +359,7 @@
         }
     }
 
-    // 3. ฟังก์ชันเพิ่มทีมงานลงตาราง
+    // ฟังก์ชันเพิ่มทีมงานลงตาราง
     let teamMembers = [];
     
     function addTeamMember() {
@@ -341,19 +373,14 @@
         const email = document.getElementById("tmEmail").value;
         const line = document.getElementById("tmLine").value;
 
-        // ตรวจสอบข้อมูลบังคับกรอก (Validation แบบง่ายๆ)
         if (!role || !id || !name) {
             alert("กรุณาระบุ บทบาท, รหัสพนักงาน และ ชื่อ-นามสกุล ให้ครบถ้วนค่ะ");
             return;
         }
 
-        // เก็บข้อมูลลง Array
         teamMembers.push({ role, duty, id, name, phone, email, line });
-        
-        // วาดตารางใหม่
         renderTable();
         
-        // ล้างข้อมูลในช่องกรอก
         document.getElementById("tmRole").value = "";
         document.getElementById("tmRoleOther").style.display = "none";
         document.getElementById("tmRoleOther").value = "";
@@ -365,10 +392,10 @@
         document.getElementById("tmLine").value = "";
     }
 
-    // 4. ฟังก์ชันวาดตารางและลบข้อมูล
+    // ฟังก์ชันวาดตารางและลบข้อมูล
     function renderTable() {
         const tbody = document.getElementById("teamTableBody");
-        tbody.innerHTML = ""; // ล้างข้อมูลเก่า
+        tbody.innerHTML = ""; 
         
         if (teamMembers.length === 0) {
             tbody.innerHTML = '<tr id="emptyRow"><td colspan="5" class="empty-row">ยังไม่ได้เพิ่มรายชื่อทีมงาน</td></tr>';
@@ -391,8 +418,8 @@
     }
 
     function deleteMember(index) {
-        teamMembers.splice(index, 1); // ลบออกจาก Array ตามลำดับ (index)
-        renderTable(); // วาดตารางใหม่
+        teamMembers.splice(index, 1); 
+        renderTable(); 
     }
 </script>
 </body>
