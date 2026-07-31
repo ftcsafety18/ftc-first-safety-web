@@ -231,19 +231,18 @@
             </div>
 
             <!-- Section 2: Team -->
-            <div class="section-title yellow-border">2. ทีมงานหลักประจำโครงการ (Core Execution Team)</div>
+            <div class="section-title yellow-border">2. บุคลากรหลักประจำโครงการ (Core Execution Team)</div>
             
             <div class="team-box">
                 <p class="help-text">
-                    * ระบุรายชื่อบุคลากรประจำโครงการ (Core Team) ซึ่งเป็นกลุ่มบุคคล <strong>ฝั่งเจ้าของโครงการ / ผู้ควบคุมโครงการ (Owner/Consultant)</strong><br> 
-                    ที่จะทำหน้าที่ควบคุม ตรวจสอบ และมีสิทธิ์อนุมัติผ่านระบบ (e-Permit)
+                    * โปรดใส่ข้อมูลบุคลากรหลัก ประจำโครงการ เพื่อจะได้นำไปผูกกับหน้าที่และความรับผิดชอบอื่นๆ ในโปรแกรมของโครงการ
                 </p>
                 
                 <div class="team-grid-top">
                     <div class="form-group">
-                        <label>บทบาท (Role) *</label>
+                        <label>ตำแหน่ง/หน้าที่ *</label>
                         <select id="tmRole" onchange="toggleTeamRoleOther()">
-                            <option value="">-- เลือกบทบาท --</option>
+                            <option value="">-- เลือกตำแหน่ง/หน้าที่ --</option>
                             <option value="ผู้อำนวยการโครงการ (Project Director)">ผู้อำนวยการโครงการ (Project Director)</option>
                             <option value="ผู้จัดการโครงการ (Project Manager)">ผู้จัดการโครงการ (Project Manager)</option>
                             <option value="วิศวกรโครงการ (Project Engineer)">วิศวกรโครงการ (Project Engineer)</option>
@@ -252,10 +251,10 @@
                             <option value="ผู้ประสานงานโครงการ (Project Coordinator)">ผู้ประสานงานโครงการ (Project Coordinator)</option>
                             <option value="OTHER">อื่นๆ (โปรดระบุ)</option>
                         </select>
-                        <input type="text" id="tmRoleOther" placeholder="โปรดระบุบทบาท..." style="display:none; margin-top:8px;">
+                        <input type="text" id="tmRoleOther" placeholder="โปรดระบุตำแหน่ง/หน้าที่..." style="display:none; margin-top:8px;">
                     </div>
                     <div class="form-group">
-                        <label>หน้าที่/ตำแหน่งย่อย</label>
+                        <label>บทบาทความรับผิดชอบต่อโครงการ</label>
                         <input type="text" id="tmDuty" placeholder="เช่น วิศวกรไฟฟ้า">
                     </div>
                     <div class="form-group">
@@ -287,7 +286,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 25%;">บทบาท / หน้าที่</th>
+                            <th style="width: 25%;">ตำแหน่ง/หน้าที่</th>
                             <th style="width: 15%;">รหัส (ID)</th>
                             <th style="width: 25%;">ชื่อ-นามสกุล</th>
                             <th style="width: 25%;">ข้อมูลติดต่อ</th>
@@ -345,7 +344,7 @@
         }
     }
 
-    // ฟังก์ชันแสดง/ซ่อน กล่องระบุบทบาทอื่นๆ
+    // ฟังก์ชันแสดง/ซ่อน กล่องระบุตำแหน่ง/หน้าที่อื่นๆ
     function toggleTeamRoleOther() {
         const roleSelect = document.getElementById("tmRole");
         const roleOther = document.getElementById("tmRoleOther");
@@ -374,7 +373,7 @@
         const line = document.getElementById("tmLine").value;
 
         if (!role || !id || !name) {
-            alert("กรุณาระบุ บทบาท, รหัสพนักงาน และ ชื่อ-นามสกุล ให้ครบถ้วนค่ะ");
+            alert("กรุณาระบุ ตำแหน่ง/หน้าที่, รหัสพนักงาน และ ชื่อ-นามสกุล ให้ครบถ้วนครับ");
             return;
         }
 
