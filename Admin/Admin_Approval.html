@@ -97,6 +97,11 @@
         .big-profile-img { width: 120px; height: 120px; border-radius: 8px; object-fit: cover; border: 3px solid #e2e8f0; margin: 0 auto 15px auto; display: block; background: #f1f5f9; text-align: center; line-height: 120px; font-size: 40px; color: #94a3b8; }
         
         .consent-check-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; padding: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; font-size: 13px; color: #166534; }
+        
+        /* Reject Reason Box */
+        .reject-box { background: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+        .reject-title { color: #b91c1c; font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+        .reject-reason { color: #991b1b; font-size: 14px; }
     </style>
 </head>
 <body onload="renderTable()">
@@ -187,80 +192,53 @@
 </div>
 
 <script>
-    // ฐานข้อมูลจำลอง (ดึงโครงสร้างตรงกับ Payload ที่พี่ตั้งไว้เป๊ะๆ ครับ)
+    // ฐานข้อมูลจำลอง เพิ่มข้อมูลถูกตีกลับ REQ-004
     let registrationData = [
         {
             id: 'REQ-001',
             timestamp: '2026-07-31T09:30:00',
-            personalInfo: {
-                fullName: 'สมชาย ใจดี',
-                nationality: 'Thai',
-                idType: 'thai_id',
-                idNumber: '1100200300400',
-                company: 'ABC_Corp',
-                companyName: 'บจก. เอบีซี (ABC Corp.)',
-                mobileNo: '0812345678',
-                bloodGroup: 'O'
-            },
-            emergencyContact: {
-                name: 'สมหญิง ใจดี',
-                relation: 'Spouse',
-                phone: '0898765432'
-            },
+            personalInfo: { fullName: 'สมชาย ใจดี', nationality: 'Thai', idType: 'thai_id', idNumber: '1100200300400', company: 'ABC_Corp', companyName: 'บจก. เอบีซี (ABC Corp.)', mobileNo: '0812345678', bloodGroup: 'O' },
+            emergencyContact: { name: 'สมหญิง ใจดี', relation: 'Spouse', phone: '0898765432' },
             safetyDocuments: [
                 { type: 'id_card_copy', typeName: 'สำเนาบัตรประชาชน', fileName: 'id_card_somchai.jpg', expiry: '-' },
                 { type: 'hot_work_welding', typeName: 'ใบรับรองช่างเชื่อม', fileName: 'welding_cert_01.pdf', expiry: '2027-12-31' },
                 { type: 'working_at_height', typeName: 'ใบผ่านการอบรมที่สูง', fileName: 'height_cert.pdf', expiry: '2026-10-15' }
             ],
             consents: { induction: true, pdpa: true, declaration: true },
-            status: 'pending' // pending, approved, rejected
+            status: 'pending', rejectReason: null
         },
         {
             id: 'REQ-002',
             timestamp: '2026-07-31T10:15:00',
-            personalInfo: {
-                fullName: 'Aung San',
-                nationality: 'Myanmar',
-                idType: 'work_permit_id',
-                idNumber: 'WP-9988776655',
-                company: 'Sompong_Team',
-                companyName: 'ทีมผู้รับเหมา - ช่างสมปอง',
-                mobileNo: '0611112222',
-                bloodGroup: 'B'
-            },
-            emergencyContact: {
-                name: 'ช่างสมปอง',
-                relation: 'Supervisor',
-                phone: '0822223333'
-            },
+            personalInfo: { fullName: 'Aung San', nationality: 'Myanmar', idType: 'work_permit_id', idNumber: 'WP-9988776655', company: 'Sompong_Team', companyName: 'ทีมผู้รับเหมา - ช่างสมปอง', mobileNo: '0611112222', bloodGroup: 'B' },
+            emergencyContact: { name: 'ช่างสมปอง', relation: 'Supervisor', phone: '0822223333' },
             safetyDocuments: [
                 { type: 'work_permit', typeName: 'ไฟล์รูปใบอนุญาตทำงาน (WP)', fileName: 'wp_aungsan.pdf', expiry: '2026-08-30' },
                 { type: 'passport_visa', typeName: 'สำเนาพาสปอร์ตพร้อมวีซ่า', fileName: 'pp_aungsan.jpg', expiry: '2027-01-15' }
             ],
             consents: { induction: true, pdpa: true, declaration: true },
-            status: 'pending'
+            status: 'pending', rejectReason: null
         },
         {
             id: 'REQ-003',
             timestamp: '2026-07-30T14:20:00',
-            personalInfo: {
-                fullName: 'วิชัย รักงาน',
-                nationality: 'Thai',
-                idType: 'thai_id',
-                idNumber: '3100500600700',
-                company: 'ABC_Corp',
-                companyName: 'บจก. เอบีซี (ABC Corp.)',
-                mobileNo: '0833334444',
-                bloodGroup: 'A'
-            },
-            emergencyContact: {
-                name: 'สมร รักงาน',
-                relation: 'Parent',
-                phone: '0844445555'
-            },
-            safetyDocuments: [], // ไม่มีเอกสารแนบ (ช่างทั่วไป)
+            personalInfo: { fullName: 'วิชัย รักงาน', nationality: 'Thai', idType: 'thai_id', idNumber: '3100500600700', company: 'ABC_Corp', companyName: 'บจก. เอบีซี (ABC Corp.)', mobileNo: '0833334444', bloodGroup: 'A' },
+            emergencyContact: { name: 'สมร รักงาน', relation: 'Parent', phone: '0844445555' },
+            safetyDocuments: [],
             consents: { induction: true, pdpa: true, declaration: true },
-            status: 'approved'
+            status: 'approved', rejectReason: null
+        },
+        {
+            id: 'REQ-004',
+            timestamp: '2026-07-31T11:00:00',
+            personalInfo: { fullName: 'จอห์น สมิธ', nationality: 'Other', idType: 'passport', idNumber: 'A123456789', company: 'Sompong_Team', companyName: 'ทีมผู้รับเหมา - ช่างสมปอง', mobileNo: '0855556666', bloodGroup: 'AB' },
+            emergencyContact: { name: 'Jane Smith', relation: 'Spouse', phone: '0866667777' },
+            safetyDocuments: [
+                { type: 'passport_visa', typeName: 'สำเนาพาสปอร์ตพร้อมวีซ่า', fileName: 'passport_blur.jpg', expiry: '2025-12-31' }
+            ],
+            consents: { induction: true, pdpa: true, declaration: true },
+            status: 'rejected', 
+            rejectReason: 'รูปถ่ายสำเนาพาสปอร์ตเบลอมากจนไม่สามารถอ่านรายละเอียดได้ โปรดสแกนและอัปโหลดไฟล์ให้ชัดเจนกว่านี้ครับ'
         }
     ];
 
@@ -301,24 +279,20 @@
         }
 
         filteredData.forEach(req => {
-            // ซ่อนเลขบัตรสำหรับหน้าตาราง
             let displayId = req.personalInfo.idNumber;
             if (req.personalInfo.idType === 'thai_id') {
                 displayId = displayId.substring(0, 3) + "XXXXXXX" + displayId.substring(10, 13);
             }
 
-            // ป้ายสัญชาติ
             let natBadge = req.personalInfo.nationality === 'Thai' 
                 ? '<span class="badge badge-nat-thai">🇹🇭 ไทย</span>'
                 : `<span class="badge badge-nat-other">🌐 ${req.personalInfo.nationality}</span>`;
 
-            // ป้ายสถานะ
             let statusHtml = '';
             if(req.status === 'pending') statusHtml = '<div class="status-badge status-pending">⏳ รอตรวจสอบ</div>';
             else if(req.status === 'approved') statusHtml = '<div class="status-badge status-approved">✅ อนุมัติแล้ว</div>';
             else statusHtml = '<div class="status-badge status-rejected">❌ ไม่อนุมัติ</div>';
 
-            // นับเอกสาร
             let docCount = req.safetyDocuments.length;
             let docBadge = docCount > 0 
                 ? `<span class="doc-count">📎 ${docCount} ไฟล์</span>` 
@@ -367,7 +341,6 @@
         const modalBody = document.getElementById('modalContent');
         const modalFooter = document.getElementById('modalFooter');
         
-        // สร้างรายการเอกสารแนบ
         let docsHtml = '';
         if(req.safetyDocuments.length > 0) {
             req.safetyDocuments.forEach(doc => {
@@ -385,7 +358,19 @@
             docsHtml = '<div style="color: #64748b; font-size: 13px; font-style: italic;">ไม่มีเอกสารแนบ (ระบุเป็นช่างทั่วไป)</div>';
         }
 
+        // กล่องแจ้งเตือนเหตุผลที่ไม่อนุมัติ (ถ้ามี)
+        let rejectBoxHtml = '';
+        if(req.status === 'rejected' && req.rejectReason) {
+            rejectBoxHtml = `
+                <div class="reject-box">
+                    <div class="reject-title">⚠️ คำร้องนี้ถูกตีกลับด้วยเหตุผล:</div>
+                    <div class="reject-reason">${req.rejectReason}</div>
+                </div>
+            `;
+        }
+
         modalBody.innerHTML = `
+            ${rejectBoxHtml}
             <div class="detail-grid">
                 <!-- ข้อมูลส่วนบุคคล -->
                 <div>
@@ -430,7 +415,6 @@
             </div>
         `;
 
-        // สลับปุ่มกดยืนยันตามสถานะ
         if (req.status === 'pending') {
             modalFooter.innerHTML = `
                 <button class="btn btn-reject" onclick="processAction('rejected')">❌ ไม่อนุมัติ (ตีกลับ)</button>
@@ -456,22 +440,36 @@
     function processAction(newStatus) {
         if(!currentReviewId) return;
         
-        let confirmMsg = newStatus === 'approved' 
-            ? "ยืนยันการ 'อนุมัติ' ให้บุคคลนี้เข้าพื้นที่โครงการ?" 
-            : "ยืนยันการ 'ไม่อนุมัติ/ตีกลับ' คำร้องนี้?";
+        const reqIndex = registrationData.findIndex(r => r.id === currentReviewId);
+        if(reqIndex === -1) return;
+
+        if (newStatus === 'rejected') {
+            // ระบบบังคับให้กรอกเหตุผล
+            let reason = prompt("โปรดระบุเหตุผลที่ไม่อนุมัติ/ตีกลับ เพื่อแจ้งให้ผู้รับเหมาทราบ:");
             
-        if(confirm(confirmMsg)) {
-            // อัปเดตสถานะใน Data
-            const reqIndex = registrationData.findIndex(r => r.id === currentReviewId);
-            if(reqIndex !== -1) {
-                registrationData[reqIndex].status = newStatus;
-                
-                alert(`ดำเนินการเรียบร้อย: ${newStatus.toUpperCase()}`);
-                
-                closeModal();
-                renderTable(); // รีเฟรชตารางใหม่
+            // ถ้ากดยกเลิก หรือปล่อยว่าง
+            if (reason === null) return; 
+            if (reason.trim() === '') {
+                alert("กรุณาระบุเหตุผลการไม่อนุมัติด้วยครับ เพื่อให้ผู้รับเหมาแก้ไขได้ถูกต้อง");
+                return;
             }
+            
+            // บันทึกผล
+            registrationData[reqIndex].status = 'rejected';
+            registrationData[reqIndex].rejectReason = reason;
+            alert("บันทึกการไม่อนุมัติ และระบบได้ส่งข้อมูลกลับไปยังผู้รับเหมาเรียบร้อยแล้วครับ");
+
+        } else if (newStatus === 'approved') {
+            if(!confirm("ยืนยันการ 'อนุมัติ' ให้บุคคลนี้เข้าพื้นที่โครงการ?")) return;
+            
+            // บันทึกผล
+            registrationData[reqIndex].status = 'approved';
+            registrationData[reqIndex].rejectReason = null;
+            alert("อนุมัติเข้าพื้นที่เรียบร้อย ข้อมูลถูกส่งไปยังระบบทำบัตร (e-Badge) และพร้อมสำหรับใช้เปิด PTW แล้วครับ");
         }
+        
+        closeModal();
+        renderTable(); // รีเฟรชตาราง
     }
 </script>
 
