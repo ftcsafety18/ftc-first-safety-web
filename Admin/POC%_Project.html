@@ -10,21 +10,22 @@
         body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
         .container { max-width: 1200px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; padding-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         
-        .header { background-color: #0f172a; color: white; text-align: center; padding: 25px 20px; border-bottom: 4px solid #3b82f6; }
+        .header { background-color: #0f172a; color: white; text-align: center; padding: 20px 20px 25px 20px; border-bottom: 4px solid #3b82f6; position: relative; }
         .header h1 { margin: 0; font-size: 22px; font-weight: 700; }
-        .header p { margin: 8px 0 0 0; font-size: 14px; color: #cbd5e1; }
+        .header p { margin: 8px 0 15px 0; font-size: 14px; color: #cbd5e1; }
+        
+        /* Project ID Badge */
+        .project-badge { display: inline-block; background-color: #1e293b; color: #60a5fa; padding: 6px 20px; border-radius: 20px; font-size: 15px; font-weight: 700; border: 1px solid #3b82f6; letter-spacing: 0.5px; }
+        .project-badge span { color: #f8fafc; font-weight: 400; }
         
         .content { padding: 30px; }
-        
         .section-title { background-color: #e0f2fe; color: #0369a1; font-size: 18px; font-weight: 700; padding: 10px 15px; border-left: 5px solid #0ea5e9; margin: 0 0 20px 0; }
         
-        /* Dashboard Summary */
         .summary-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .stat-card { background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; text-align: center; }
         .stat-card label { font-size: 12px; color: #64748b; font-weight: 700; }
         .stat-card .value { font-size: 22px; font-weight: 700; margin-top: 5px; color: #0f172a; }
         
-        /* Form Grid */
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
         .form-group { display: flex; flex-direction: column; }
@@ -36,7 +37,6 @@
         input[readonly] { background-color: #e2e8f0; font-weight: 600; color: #475569; cursor: not-allowed; }
         
         .update-box { background-color: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-        
         .btn-update { background-color: #3b82f6; color: white; border: none; border-radius: 4px; padding: 12px 20px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700; width: 100%; font-size: 15px; margin-top: 10px; transition: background 0.3s; }
         .btn-update:hover { background-color: #2563eb; }
 
@@ -44,11 +44,11 @@
         th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; vertical-align: middle; }
         th { background-color: #f8fafc; color: #334155; font-weight: 700; border-bottom: 2px solid #cbd5e1; text-align: center; }
         .col-right { text-align: right; }
-        .col-center { text-align: center; }
         
         .progress-bar-bg { background-color: #e2e8f0; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin-top: 5px; position: relative; }
         .progress-bar-fill { background-color: #10b981; height: 100%; transition: width 0.5s; }
-        .progress-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; color: #fff; top: 0; left: 0; line-height: 12px; mix-blend-mode: difference;}
+        
+        .task-badge-sm { background-color: #334155; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body onload="initPage()">
@@ -57,6 +57,10 @@
     <div class="header">
         <h1>ระบบอัปเดตความก้าวหน้าโครงการ (Progress & POC Tracking)</h1>
         <p>บันทึกเปอร์เซ็นต์ผลงาน (POC) พร้อมคำนวณมูลค่าที่ทำได้จริง (Earned Value) ควบคุมโดยระบบ Audit Trail</p>
+        <!-- Project ID Badge added here -->
+        <div class="project-badge">
+            PROJECT: <span>PRJ-26-045 (FTC Digital Safety Transformation)</span>
+        </div>
     </div>
 
     <div class="content">
@@ -86,13 +90,13 @@
                     <input type="text" id="updaterName" value="ณัฐธัญ (Project Manager)" readonly>
                 </div>
                 <div class="form-group" style="grid-column: span 2;">
-                    <label>เลือกรายการงาน (Select Task from Master Plan) *</label>
+                    <label>เลือกรหัสงานและรายการ (Select Task No. / Description) *</label>
                     <select id="taskSelect" onchange="loadTaskDetails()">
-                        <option value="">-- โปรดเลือกงานที่ต้องการอัปเดต --</option>
-                        <!-- จำลองข้อมูลที่ดึงมาจากหน้า Master Plan -->
-                        <option value="0" data-cost="1500000" data-poc="0">งานเสาเข็ม (Piling Work) - อาคาร WH2 [฿1,500,000]</option>
-                        <option value="1" data-cost="800000" data-poc="25">งานติดตั้งท่อลมระบายอากาศ - อาคาร WH5 [฿800,000]</option>
-                        <option value="2" data-cost="500000" data-poc="100">งานเดินท่อร้อยสายไฟ - Main Office [฿500,000]</option>
+                        <option value="">-- โปรดเลือกรหัสงานที่ต้องการอัปเดต --</option>
+                        <!-- แสดง Task Number นำหน้าใน Dropdown -->
+                        <option value="0" data-cost="1500000" data-poc="0">[T-01] งานเสาเข็ม (Piling Work) - อาคาร WH2</option>
+                        <option value="1" data-cost="800000" data-poc="25">[T-02] งานติดตั้งท่อลมระบายอากาศ - อาคาร WH5</option>
+                        <option value="2" data-cost="500000" data-poc="100">[EE-01] งานเดินท่อร้อยสายไฟ - Main Office</option>
                     </select>
                 </div>
             </div>
@@ -125,7 +129,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 25%;">รายการงาน (Task Description)</th>
+                    <th style="width: 25%;">รหัสงานและรายการ (Task No. & Description)</th>
                     <th style="width: 15%; text-align: right;">มูลค่าตามแผน (Cost)</th>
                     <th style="width: 20%;">ความก้าวหน้า (POC %)</th>
                     <th style="width: 15%; text-align: right;">มูลค่าที่ทำได้ (EV)</th>
@@ -140,11 +144,11 @@
 </div>
 
 <script>
-    // จำลองฐานข้อมูลงาน (ดึงมาจากระบบหลังบ้านที่บันทึกไว้ในหน้า Master Plan)
+    // ฐานข้อมูลงานที่ถูกแก้ไขเพิ่ม taskNo เข้าไป
     let projectTasks = [
-        { id: 0, name: "งานเสาเข็ม (Piling Work) - อาคาร WH2", cost: 1500000, poc: 0, ev: 0, lastUpdate: "-", updatedBy: "-", remark: "-", evidence: "-" },
-        { id: 1, name: "งานติดตั้งท่อลมระบายอากาศ - อาคาร WH5", cost: 800000, poc: 25, ev: 200000, lastUpdate: "24 ก.ค. 2569", updatedBy: "ทีมวิศวกร A", remark: "ติดตั้งชั้น 1 เสร็จสิ้น", evidence: "มีรูปถ่าย" },
-        { id: 2, name: "งานเดินท่อร้อยสายไฟ - Main Office", cost: 500000, poc: 100, ev: 500000, lastUpdate: "10 ก.ค. 2569", updatedBy: "ทีมไฟฟ้า B", remark: "ส่งมอบงานเรียบร้อย", evidence: "มีรูปถ่าย" }
+        { id: 0, taskNo: "T-01", name: "งานเสาเข็ม (Piling Work) - อาคาร WH2", cost: 1500000, poc: 0, ev: 0, lastUpdate: "-", updatedBy: "-", remark: "-", evidence: "-" },
+        { id: 1, taskNo: "T-02", name: "งานติดตั้งท่อลมระบายอากาศ - อาคาร WH5", cost: 800000, poc: 25, ev: 200000, lastUpdate: "24 ก.ค. 2569", updatedBy: "ทีมวิศวกร A", remark: "ติดตั้งชั้น 1 เสร็จสิ้น", evidence: "มีรูปถ่าย" },
+        { id: 2, taskNo: "EE-01", name: "งานเดินท่อร้อยสายไฟ - Main Office", cost: 500000, poc: 100, ev: 500000, lastUpdate: "10 ก.ค. 2569", updatedBy: "ทีมไฟฟ้า B", remark: "ส่งมอบงานเรียบร้อย", evidence: "มีรูปถ่าย" }
     ];
 
     function initPage() {
@@ -155,17 +159,13 @@
     function loadTaskDetails() {
         const select = document.getElementById("taskSelect");
         const pocInput = document.getElementById("inputPoc");
-        
         if(select.value === "") {
             pocInput.value = "";
             document.getElementById("previewEvBox").value = "฿ 0.00";
             return;
         }
-
-        // โหลดค่า POC เดิมมาแสดง
         const selectedOption = select.options[select.selectedIndex];
-        const currentPoc = selectedOption.getAttribute("data-poc");
-        pocInput.value = currentPoc;
+        pocInput.value = selectedOption.getAttribute("data-poc");
         previewEV();
     }
 
@@ -185,31 +185,22 @@
 
     function submitPocUpdate() {
         const select = document.getElementById("taskSelect");
-        if(select.value === "") {
-            alert("กรุณาเลือกรายการงานที่ต้องการอัปเดตครับ");
-            return;
-        }
+        if(select.value === "") { alert("กรุณาเลือกรหัสงานที่ต้องการอัปเดตค่ะ"); return; }
 
         let poc = parseFloat(document.getElementById("inputPoc").value);
-        if(isNaN(poc) || poc < 0 || poc > 100) {
-            alert("กรุณาระบุ POC เป็นตัวเลข 0 - 100 ครับ");
-            return;
-        }
+        if(isNaN(poc) || poc < 0 || poc > 100) { alert("กรุณาระบุ POC เป็นตัวเลข 0 - 100 ค่ะ"); return; }
 
         const taskId = parseInt(select.value);
         const remark = document.getElementById("inputRemark").value || "-";
         const evidence = document.getElementById("evidenceFile").files.length > 0 ? "✅ แนบรูปถ่ายแล้ว" : "❌ ไม่มีไฟล์แนบ";
         const updater = document.getElementById("updaterName").value;
         
-        // จำลองเวลาประทับตรา (Timestamp)
         const now = new Date();
         const timeStr = `${now.toLocaleDateString('th-TH', {day:'2-digit', month:'short', year:'numeric'})} ${now.toLocaleTimeString('th-TH')}`;
 
-        // คำนวณ EV
         const cost = projectTasks[taskId].cost;
         const ev = (cost * poc) / 100;
 
-        // อัปเดตข้อมูลใน Array
         projectTasks[taskId].poc = poc;
         projectTasks[taskId].ev = ev;
         projectTasks[taskId].lastUpdate = timeStr;
@@ -217,12 +208,10 @@
         projectTasks[taskId].remark = remark;
         projectTasks[taskId].evidence = evidence;
 
-        // อัปเดต Dropdown attribute (เพื่อให้เวลาเลือกใหม่ค่าจะได้ถูกต้อง)
         select.options[select.selectedIndex].setAttribute("data-poc", poc);
 
-        alert("บันทึกความก้าวหน้าสำเร็จ ระบบได้คำนวณ Earned Value เรียบร้อยแล้วครับ");
+        alert("บันทึกความก้าวหน้าสำเร็จ ระบบคำนวณ Earned Value เรียบร้อยแล้วค่ะ");
         
-        // เคลียร์ฟอร์ม
         select.value = "";
         document.getElementById("inputPoc").value = "";
         document.getElementById("previewEvBox").value = "฿ 0.00";
@@ -238,14 +227,13 @@
         tbody.innerHTML = "";
 
         projectTasks.forEach(task => {
-            // คำนวณสีของ Progress bar
-            let barColor = "#3b82f6"; // Blue
-            if(task.poc === 100) barColor = "#10b981"; // Green
-            if(task.poc > 0 && task.poc < 100) barColor = "#f59e0b"; // Yellow/Orange
+            let barColor = "#3b82f6"; 
+            if(task.poc === 100) barColor = "#10b981"; 
+            if(task.poc > 0 && task.poc < 100) barColor = "#f59e0b"; 
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td><strong>${task.name}</strong></td>
+                <td><span class="task-badge-sm">${task.taskNo}</span> <strong>${task.name}</strong></td>
                 <td class="col-right">฿ ${task.cost.toLocaleString('th-TH')}</td>
                 <td>
                     <div style="font-weight: 700; text-align: center; color: ${barColor};">${task.poc}%</div>
@@ -253,9 +241,7 @@
                         <div class="progress-bar-fill" style="width: ${task.poc}%; background-color: ${barColor};"></div>
                     </div>
                 </td>
-                <td class="col-right" style="color: #059669; font-weight: bold;">
-                    ฿ ${task.ev.toLocaleString('th-TH')}
-                </td>
+                <td class="col-right" style="color: #059669; font-weight: bold;">฿ ${task.ev.toLocaleString('th-TH')}</td>
                 <td style="font-size: 11px; background-color: #f8fafc;">
                     <strong style="color: #0369a1;">อัปเดตล่าสุด:</strong> ${task.lastUpdate}<br>
                     <strong style="color: #475569;">โดย:</strong> ${task.updatedBy}<br>
@@ -271,15 +257,10 @@
         let totalCost = 0;
         let totalEv = 0;
 
-        projectTasks.forEach(task => {
-            totalCost += task.cost;
-            totalEv += task.ev;
-        });
+        projectTasks.forEach(task => { totalCost += task.cost; totalEv += task.ev; });
 
         let overallPoc = 0;
-        if(totalCost > 0) {
-            overallPoc = (totalEv / totalCost) * 100;
-        }
+        if(totalCost > 0) overallPoc = (totalEv / totalCost) * 100;
 
         document.getElementById("sumTotalValue").innerText = `฿ ${totalCost.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
         document.getElementById("sumEarnedValue").innerText = `฿ ${totalEv.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
