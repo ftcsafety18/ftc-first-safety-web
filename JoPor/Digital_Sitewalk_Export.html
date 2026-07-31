@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FM-SAF-09 PDF Export</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #525659; /* สีพื้นหลังเหมือนโปรแกรมดู PDF */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ปุ่ม Export */
+        .no-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #034694;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-family: 'Sarabun';
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .no-print:hover { background-color: #022a5a; }
+
+        /* หน้ากระดาษ A4 */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            margin-bottom: 20mm;
+        }
+
+        /* Header */
+        .form-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .company-logo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 24px;
+            font-weight: 900;
+            color: #034694;
+            font-style: italic;
+        }
+        .form-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .doc-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* ตาราง */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th { background-color: #b4c6e7; font-weight: bold; }
+        
+        /* สีกระจายตามคอลัมน์เหมือนต้นฉบับ */
+        th.col-done { background-color: #c6e0b4; }
+        th.col-not { background-color: #f8cbad; }
+        
+        .img-cell img { width: 100px; height: 75px; object-fit: cover; border: 1px solid #ccc; margin: 2px; }
+        .text-left { text-align: left; }
+
+        /* ตารางส่วนที่ 2 (Consequence / Remark) */
+        .table-part2 th { background-color: #c6e0b4; }
+        .table-part2 td { height: 60px; vertical-align: top; text-align: left; }
+
+        /* ส่วนเซ็นชื่อ */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .sig-box {
+            width: 30%;
+            text-align: center;
+            font-size: 14px;
+        }
+        .sig-line {
+            border-bottom: 1px dotted #000;
+            margin-bottom: 5px;
+            height: 30px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-family: 'Brush Script MT', cursive;
+            font-size: 18px;
+            color: #034694;
+        }
+
+        /* ซ่อนปุ่มตอน Print */
+        @media print {
+            body { background: white; padding: 0; }
+            .a4-page { box-shadow: none; margin: 0; width: auto; height: auto; page-break-after: auto; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ปุ่มสั่ง Print / Save PDF -->
+    <button class="no-print" onclick="window.print()">🖨️ บันทึกเป็น PDF (Save as PDF)</button>
+
+    <div class="a4-page">
+        <!-- Header -->
+        <div class="form-header">
+            <div class="company-logo">First</div>
+            <div class="form-title">Site Walk Safety Audit Report</div>
+        </div>
+
+        <div class="doc-info">
+            <div><strong>Project:</strong> FTC Digital Safety Transformation</div>
+            <div><strong>Issued Date:</strong> 31 ก.ค. 2026</div>
+            <div><strong>No.:</strong> FM-SAF-09-001</div>
+        </div>
+
+        <!-- ตารางส่วนที่ 1: รายละเอียดปัญหาและภาพถ่าย -->
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" width="5%">Item</th>
+                    <th rowspan="2" width="20%">Description</th>
+                    <th rowspan="2" width="20%">Photo Copy<br>Before Corrective</th>
+                    <th rowspan="2" width="10%">Location / Floor</th>
+                    <th rowspan="2" width="20%">Photo Copy<br>After Corrective</th>
+                    <th rowspan="2" width="10%">Action By</th>
+                    <th rowspan="2" width="8%">Plan Complete</th>
+                    <th colspan="2">Done or not</th>
+                </tr>
+                <tr>
+                    <th class="col-done">Done</th>
+                    <th class="col-not">Not</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td class="text-left">พบสายไฟวางพาดกับพื้นเปียกน้ำ เสี่ยงต่อไฟฟ้ารั่ว</td>
+                    <td class="img-cell">
+                        <img src="https://via.placeholder.com/300x200/ef4444/FFFFFF?text=Before+(Wide)" alt="Before Wide">
+                        <img src="https://via.placeholder.com/300x200/ef4444/FFFFFF?text=Before+(Zoom)" alt="Before Zoom">
+                    </td>
+                    <td>เขตอันตราย<br>(Hot Zone)</td>
+                    <td class="img-cell">
+                        <img src="https://via.placeholder.com/300x200/10b981/FFFFFF?text=After+(Zoom)" alt="After Zoom">
+                        <img src="https://via.placeholder.com/300x200/10b981/FFFFFF?text=After+(Wide)" alt="After Wide">
+                    </td>
+                    <td>บจก. เอ แอนด์ บี</td>
+                    <td>31/07/26</td>
+                    <td>✔️</td>
+                    <td></td>
+                </tr>
+                <!-- สมมติว่ามีรายการเดียวที่แก้ไขเสร็จแล้ว รายการอื่นถ้าไม่มีก็เว้นว่างตามฟอร์ม -->
+                <tr>
+                    <td>2</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ตารางส่วนที่ 2: ข้อสังเกตและคำแนะนำ -->
+        <table class="table-part2">
+            <thead>
+                <tr>
+                    <th width="5%">Item</th>
+                    <th width="30%">Consequence</th>
+                    <th width="35%">Good Practice Observation</th>
+                    <th width="30%">Remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:center;">1</td>
+                    <td>อาจเกิดกระแสไฟฟ้ารั่วไหลทำอันตรายต่อผู้ปฏิบัติงานในบริเวณใกล้เคียง</td>
+                    <td>ควรใช้ขาตั้ง (Stand) ยกสายไฟให้พ้นจากพื้นน้ำ หรือเดินสายไฟเหนือระดับศีรษะ</td>
+                    <td>ผู้รับเหมาแก้ไขทันทีโดยการเก็บสายไฟขึ้นพ้นน้ำเรียบร้อย</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ส่วนของการลงนาม (Digital Signature) -->
+        <div class="signature-section">
+            <div class="sig-box">
+                <div class="sig-line">นายณัฐธัญ (Digital Sign)</div>
+                <div>Inspector By Safety / JLL</div>
+                <div>Date: 31/07/26</div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-line">สมศักดิ์ (Digital Sign)</div>
+                <div>Accept By<br>Project Manager</div>
+                <div>Date: 31/07/26</div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-line">PD (Digital Sign)</div>
+                <div>Accept By<br>Project Director</div>
+                <div>Date: 31/07/26</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
