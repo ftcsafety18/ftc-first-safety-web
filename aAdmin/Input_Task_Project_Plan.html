@@ -20,7 +20,7 @@
         
         .audit-box { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 15px; }
         
-        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 15px; margin-bottom: 15px; }
         .grid-3-eq { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
@@ -31,7 +31,7 @@
         }
         input:focus, select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
         ::placeholder { color: #94a3b8; font-size: 13px; }
-        input[readonly] { background-color: #e2e8f0; color: #475569; font-weight: 700; cursor: not-allowed; border-color: #cbd5e1; }
+        input[readonly], input:disabled { background-color: #e2e8f0; color: #475569; font-weight: 700; cursor: not-allowed; border-color: #cbd5e1; }
         
         .btn-add { background-color: #10b981; color: white; border: none; border-radius: 4px; padding: 12px 20px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700; width: 100%; font-size: 15px; margin-top: 10px; transition: background 0.3s; }
         .btn-add:hover { background-color: #059669; }
@@ -149,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- Row 2: Area (Building, Floor, Zone, Remark) -->
+            <!-- Row 2: Area (Building, Floor, Zone, Safety Zone) -->
             <div class="grid-4">
                 <div class="form-group">
                     <label>ชื่ออาคาร (Building) *</label>
@@ -164,12 +164,36 @@
                     <input type="text" id="itemZone" placeholder="เช่น A, B, 1-3">
                 </div>
                 <div class="form-group">
+                    <label>ระดับความปลอดภัย (Safety Zone) *</label>
+                    <select id="zoneRisk">
+                        <option value="">-- เลือกระดับความเสี่ยง --</option>
+                        <option value="hot">เขตอันตราย (Hot Zone)</option>
+                        <option value="warm">เขตควบคุม (Warm Zone)</option>
+                        <option value="cold">เขตปลอดภัย (Cold Zone)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 3: Operations Center & Misc -->
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>ตั้งเป็นศูนย์ปฏิบัติงานหรือไม่?</label>
+                    <select id="isOpsCenter" onchange="toggleOpsCenter()">
+                        <option value="false">ไม่ใช่ (No)</option>
+                        <option value="true">ใช่ เป็นศูนย์ปฏิบัติงาน (Yes)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อศูนย์ปฏิบัติงาน (Ops Center Name)</label>
+                    <input type="text" id="opsCenterName" placeholder="ระบุชื่อศูนย์ (ถ้ามี)" disabled>
+                </div>
+                <div class="form-group">
                     <label>หมายเหตุ</label>
                     <input type="text" id="itemRemark" placeholder="ระบุข้อมูลเพิ่มเติม (ถ้ามี)">
                 </div>
             </div>
 
-            <!-- Row 3: Cost & Timeline -->
+            <!-- Row 4: Cost & Timeline -->
             <div class="grid-3-eq">
                 <div class="form-group">
                     <label>มูลค่างาน (Cost Value)</label>
@@ -192,12 +216,12 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 10%; text-align: center;">รหัสงาน<br>(Task No.)</th>
-                    <th style="width: 13%;">หมวดหมู่</th>
+                    <th style="width: 8%; text-align: center;">รหัสงาน</th>
+                    <th style="width: 14%;">หมวดหมู่</th>
                     <th style="width: 15%;">รายละเอียดงาน</th>
-                    <th style="width: 13%;">พื้นที่ (อาคาร/ชั้น/โซน)</th>
+                    <th style="width: 17%;">พื้นที่ (อาคาร/ชั้น/โซน)</th>
                     <th style="width: 12%; text-align: center;">ระยะเวลา</th>
-                    <th style="width: 25%;">ร่องรอยการบันทึก (Audit Trail)</th>
+                    <th style="width: 22%;">ร่องรอยการบันทึก (Audit Trail)</th>
                     <th style="width: 12%; text-align: center;">จัดการ</th>
                 </tr>
             </thead>
@@ -232,6 +256,18 @@
         else { descOther.style.display = "none"; descOther.value = ""; }
     }
 
+    function toggleOpsCenter() {
+        const isOps = document.getElementById("isOpsCenter").value;
+        const opsName = document.getElementById("opsCenterName");
+        if(isOps === "true") {
+            opsName.disabled = false;
+            opsName.focus();
+        } else {
+            opsName.disabled = true;
+            opsName.value = "";
+        }
+    }
+
     let masterTasks = [];
     let editingIndex = -1;
 
@@ -248,23 +284,29 @@
         const bldg = document.getElementById("itemBldg").value;
         const floor = document.getElementById("itemFloor").value;
         const zone = document.getElementById("itemZone").value;
+        
+        // ข้อมูลใหม่: ความปลอดภัยและศูนย์ปฏิบัติงาน
+        const zoneRisk = document.getElementById("zoneRisk").value;
+        const isOpsCenter = document.getElementById("isOpsCenter").value === "true";
+        const opsCenterName = document.getElementById("opsCenterName").value;
+        
         const remark = document.getElementById("itemRemark").value;
         const cost = parseFloat(document.getElementById("itemCost").value) || 0;
         const start = document.getElementById("itemStart").value;
         const end = document.getElementById("itemEnd").value;
 
-        if(!taskNo || !cat || !desc || !bldg || !floor || !zone || !start || !end) {
-            alert("กรุณากรอกข้อมูลที่จำเป็น (*) ให้ครบถ้วนค่ะ");
+        if(!taskNo || !cat || !desc || !bldg || !floor || !zone || !zoneRisk || !start || !end) {
+            alert("กรุณากรอกข้อมูลที่จำเป็น (*) ให้ครบถ้วนครับ");
             return;
         }
 
         const duration = Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        if(duration <= 0) { alert("วันที่สิ้นสุด ต้องมากกว่าหรือเท่ากับ วันที่เริ่มต้นค่ะ"); return; }
+        if(duration <= 0) { alert("วันที่สิ้นสุด ต้องมากกว่าหรือเท่ากับ วันที่เริ่มต้นครับ"); return; }
 
         if (editingIndex === -1) {
-            masterTasks.push({ taskNo, cat, desc, bldg, floor, zone, remark, cost, start, end, duration, refDoc, createdBy: currentUser, createdAt: currentTimestamp, updatedBy: null, updatedAt: null });
+            masterTasks.push({ taskNo, cat, desc, bldg, floor, zone, zoneRisk, isOpsCenter, opsCenterName, remark, cost, start, end, duration, refDoc, createdBy: currentUser, createdAt: currentTimestamp, updatedBy: null, updatedAt: null });
         } else {
-            masterTasks[editingIndex] = { ...masterTasks[editingIndex], taskNo, cat, desc, bldg, floor, zone, remark, cost, start, end, duration, refDoc, updatedBy: currentUser, updatedAt: currentTimestamp };
+            masterTasks[editingIndex] = { ...masterTasks[editingIndex], taskNo, cat, desc, bldg, floor, zone, zoneRisk, isOpsCenter, opsCenterName, remark, cost, start, end, duration, refDoc, updatedBy: currentUser, updatedAt: currentTimestamp };
             
             const btn = document.getElementById("btnSubmit");
             btn.innerHTML = "+ เพิ่มลงแผนงานแม่บท (Add to Masterplan)";
@@ -307,6 +349,12 @@
         document.getElementById("itemBldg").value = task.bldg;
         document.getElementById("itemFloor").value = task.floor;
         document.getElementById("itemZone").value = task.zone;
+        
+        document.getElementById("zoneRisk").value = task.zoneRisk || "";
+        document.getElementById("isOpsCenter").value = task.isOpsCenter ? "true" : "false";
+        toggleOpsCenter();
+        document.getElementById("opsCenterName").value = task.opsCenterName || "";
+
         document.getElementById("itemRemark").value = task.remark;
         document.getElementById("itemCost").value = task.cost || "";
         document.getElementById("itemStart").value = task.start;
@@ -338,12 +386,26 @@
             }
             auditHTML += `<div style="font-size:10px; color:#3b82f6; margin-top:4px;">📄 ${task.refDoc}</div>`;
 
+            // กำหนดสีของ Zone
+            let zoneBadge = "";
+            if(task.zoneRisk === "hot") zoneBadge = '<span style="color:#ef4444; font-weight:700;">[เขตอันตราย]</span>';
+            else if(task.zoneRisk === "warm") zoneBadge = '<span style="color:#f59e0b; font-weight:700;">[เขตควบคุม]</span>';
+            else if(task.zoneRisk === "cold") zoneBadge = '<span style="color:#10b981; font-weight:700;">[เขตปลอดภัย]</span>';
+
+            // แสดงชื่อศูนย์ปฏิบัติการ
+            let opsCenterHTML = task.isOpsCenter ? `<div style="margin-top: 4px; color:#8b5cf6; font-size:12px; font-weight:700;">📍 ศูนย์ปฏิบัติงาน: ${task.opsCenterName || "ไม่ระบุชื่อ"}</div>` : '';
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="col-center"><span class="task-badge">${task.taskNo}</span></td>
                 <td><strong>${task.cat}</strong></td>
                 <td>${task.desc}</td>
-                <td style="font-size: 13.5px;"><span style="color:#0284c7; font-weight:700;">อาคาร:</span> ${task.bldg}<br><span style="color:#047857; font-weight:700;">ชั้น:</span> ${task.floor} | <span style="color:#d97706; font-weight:700;">โซน:</span> ${task.zone}</td>
+                <td style="font-size: 13px; line-height: 1.5;">
+                    <span style="color:#0284c7; font-weight:700;">อาคาร:</span> ${task.bldg}<br>
+                    <span style="color:#047857; font-weight:700;">ชั้น:</span> ${task.floor} | <span style="color:#d97706; font-weight:700;">โซน:</span> ${task.zone}<br>
+                    ${zoneBadge}
+                    ${opsCenterHTML}
+                </td>
                 <td class="col-center" style="font-size: 11px;"><span style="color:#059669;">เริ่ม:</span> ${formatDate(task.start)}<br><span style="color:#ef4444;">จบ:</span> ${formatDate(task.end)}<br><strong>(${task.duration} วัน)</strong></td>
                 <td>${auditHTML}</td>
                 <td class="col-center">
@@ -364,6 +426,12 @@
         document.getElementById("itemBldg").value = "";
         document.getElementById("itemFloor").value = "";
         document.getElementById("itemZone").value = "";
+        
+        document.getElementById("zoneRisk").value = "";
+        document.getElementById("isOpsCenter").value = "false";
+        document.getElementById("opsCenterName").value = "";
+        document.getElementById("opsCenterName").disabled = true;
+
         document.getElementById("itemRemark").value = "";
         document.getElementById("itemCost").value = "";
         document.getElementById("itemStart").value = "";
