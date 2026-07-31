@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FTC Safety - E-Permit & JSA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f1f5f9; 
+            margin: 0; 
+            padding: 0; 
+            color: #334155;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .mobile-container { 
+            background: white; 
+            width: 100%; 
+            max-width: 480px; 
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header { 
+            background-color: #ffffff; 
+            padding: 15px 20px; 
+            text-align: center;
+            border-bottom: 3px solid #0000ff;
+        }
+        .header img { height: 45px; object-fit: contain; }
+        
+        .page-title {
+            background: #034694;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .content { padding: 20px; }
+
+        /* Form Group */
+        .card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .card-title { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;}
+        
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+        .form-control {
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font-family: 'Sarabun'; font-size: 14px; box-sizing: border-box; background: #f8fafc;
+        }
+        
+        /* Select Zone Specific */
+        .zone-select { font-weight: 600; }
+        .zone-hot { color: #dc2626; }
+        .zone-warm { color: #d97706; }
+        .zone-safe { color: #16a34a; }
+
+        /* Work Type Grid */
+        .work-type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .work-type-btn {
+            padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            text-align: center; font-size: 13px; font-weight: 600; cursor: pointer;
+            background: white; color: #475569; transition: 0.2s;
+        }
+        .work-type-btn.active {
+            background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; box-shadow: 0 2px 4px rgba(59,130,246,0.1);
+        }
+
+        /* JSA Checklist */
+        .jsa-box {
+            background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 12px; margin-top: 15px; display: none;
+        }
+        .jsa-box.active { display: block; }
+        .jsa-title { font-weight: 700; font-size: 13px; color: #b45309; margin-bottom: 10px; }
+        
+        .checklist-item {
+            display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 13px; color: #334155;
+        }
+        .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: #034694;}
+
+        /* Worker Tag */
+        .worker-tag {
+            display: inline-flex; align-items: center; background: #e2e8f0; padding: 5px 10px;
+            border-radius: 20px; font-size: 12px; margin: 0 5px 5px 0; font-weight: 600;
+        }
+        .worker-tag span { color: #64748b; font-weight: normal; margin-left: 5px; }
+
+        /* Bottom Fixed Button */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: white; padding: 15px 20px; box-sizing: border-box;
+            border-top: 1px solid #e2e8f0; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); z-index: 10;
+        }
+        .btn-submit {
+            width: 100%; background: #034694; color: white; border: none; padding: 15px;
+            border-radius: 8px; font-family: 'Sarabun'; font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <!-- Logo Header -->
+        <div class="header">
+            <img src="image_226a10.png" alt="First Technology Co., Ltd." onerror="this.src='https://via.placeholder.com/200x50/ffffff/0000ff?text=FIRST+TECHNOLOGY';">
+        </div>
+        
+        <div class="page-title">
+            📝 ขออนุญาตเข้าทำงาน (E-Permit)
+            <span class="status-badge">ร่าง (Draft)</span>
+        </div>
+
+        <div class="content">
+            
+            <!-- Section 1: General Info -->
+            <div class="card">
+                <div class="card-title">📍 1. ข้อมูลสถานที่และเวลา</div>
+                
+                <div class="form-group">
+                    <label class="form-label">บริษัทผู้รับเหมา / เถ้าแก่</label>
+                    <input type="text" class="form-control" value="บจก. เอ แอนด์ บี คอนสตรัคชั่น" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">วันที่ขอปฏิบัติงาน</label>
+                    <input type="date" class="form-control" id="workDate">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">พื้นที่ปฏิบัติงาน (Area)</label>
+                    <input type="text" class="form-control" placeholder="เช่น แพลนท์ 2 ชั้น 3">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ระดับความเสี่ยงของพื้นที่ (Zone)</label>
+                    <select class="form-control zone-select" id="zoneSelect" onchange="changeZoneColor()">
+                        <option value="" disabled selected>-- เลือกระดับความเสี่ยง --</option>
+                        <option value="hot" class="zone-hot">🔴 เขตอันตราย (Hot Zone)</option>
+                        <option value="warm" class="zone-warm">🟠 เขตควบคุม (Warm Zone)</option>
+                        <option value="safe" class="zone-safe">🟢 เขตปลอดภัย (Safe Zone)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section 2: Work Type & JSA -->
+            <div class="card">
+                <div class="card-title">⚠️ 2. ประเภทงานและการประเมินความเสี่ยง (JSA)</div>
+                <label class="form-label" style="margin-bottom:10px;">เลือกประเภทงาน (เลือกได้มากกว่า 1)</label>
+                
+                <div class="work-type-grid">
+                    <div class="work-type-btn" id="btn-cold" onclick="toggleWork('cold')">❄️ งานทั่วไป (Cold Work)</div>
+                    <div class="work-type-btn" id="btn-hot" onclick="toggleWork('hot')">🔥 งานประกายไฟ (Hot Work)</div>
+                    <div class="work-type-btn" id="btn-height" onclick="toggleWork('height')">🪜 งานบนที่สูง (Height)</div>
+                    <div class="work-type-btn" id="btn-space" onclick="toggleWork('space')">🕳️ งานที่อับอากาศ (Confined)</div>
+                </div>
+
+                <!-- Dynamic JSA Checklists -->
+                <div class="jsa-box" id="jsa-hot">
+                    <div class="jsa-title">📋 มาตรการป้องกัน: งานประกายไฟ (Hot Work)</div>
+                    <label class="checklist-item"><input type="checkbox"> ตรวจวัดก๊าซไวไฟ (LEL) แล้ว ค่าต้องเป็น 0%</label>
+                    <label class="checklist-item"><input type="checkbox"> เตรียมถังดับเพลิงและสายยางฉีดน้ำไว้ใกล้จุดทำงาน</label>
+                    <label class="checklist-item"><input type="checkbox"> ปิดคลุมฝาท่อระบายน้ำและวัสดุติดไฟด้วยผ้าใบกันไฟ</label>
+                    <label class="checklist-item"><input type="checkbox"> จัดคนเฝ้าระวังไฟ (Fire Watcher) ตลอดการทำงาน</label>
+                </div>
+                
+                <div class="jsa-box" id="jsa-height">
+                    <div class="jsa-title">📋 มาตรการป้องกัน: งานบนที่สูง (Working at Height)</div>
+                    <label class="checklist-item"><input type="checkbox"> นั่งร้านผ่านการตรวจสอบและมีป้ายเขียว (Green Tag)</label>
+                    <label class="checklist-item"><input type="checkbox"> ผู้ปฏิบัติงานสวมใส่เข็มขัดนิรภัยแบบเต็มตัว (Full Body Harness)</label>
+                    <label class="checklist-item"><input type="checkbox"> มีจุดเกี่ยวคล้องสายกันตก (Lifeline/Anchor Point) ที่แข็งแรง</label>
+                </div>
+            </div>
+
+            <!-- Section 3: Workers list (Linked to TBT later) -->
+            <div class="card">
+                <div class="card-title">👷 3. รายชื่อผู้ปฏิบัติงาน (ต้องทำ TBT ก่อนเริ่มงาน)</div>
+                <div style="font-size:12px; color:#64748b; margin-bottom:10px;">
+                    * รายชื่อเหล่านี้จะถูกส่งไปยังระบบลงทะเบียน TBT ในเช้าวันทำงาน
+                </div>
+                
+                <div>
+                    <div class="worker-tag">นายสมชาย รักความปลอดภัย <span>(VND-102)</span></div>
+                    <div class="worker-tag">นายสมเกียรติ ขยันทำงาน <span>(VND-103)</span></div>
+                    <div class="worker-tag" style="background:#f1f5f9; border: 1px dashed #94a3b8; cursor:pointer;">
+                        + เพิ่มรายชื่อลูกน้อง
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Submit Button -->
+        <div class="bottom-bar">
+            <button class="btn-submit" onclick="submitPermit()">📤 ส่งคำขออนุมัติ E-Permit</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Set Today's Date Default
+        document.getElementById('workDate').valueAsDate = new Date();
+
+        function changeZoneColor() {
+            const select = document.getElementById('zoneSelect');
+            const val = select.value;
+            select.style.color = val === 'hot' ? '#dc2626' : (val === 'warm' ? '#d97706' : '#16a34a');
+        }
+
+        function toggleWork(type) {
+            const btn = document.getElementById('btn-' + type);
+            btn.classList.toggle('active');
+            
+            // Show/Hide specific JSA based on selection
+            if(type === 'hot') {
+                const jsaBox = document.getElementById('jsa-hot');
+                jsaBox.classList.toggle('active');
+            }
+            if(type === 'height') {
+                const jsaBox = document.getElementById('jsa-height');
+                jsaBox.classList.toggle('active');
+            }
+        }
+
+        function submitPermit() {
+            const zone = document.getElementById('zoneSelect').value;
+            if(!zone) {
+                alert('⚠️ กรุณาระบุ "ระดับความเสี่ยงของพื้นที่ (Zone)" ก่อนส่งคำขอครับ');
+                return;
+            }
+            alert("✅ ส่งคำขอ E-Permit & JSA ล่วงหน้าเรียบร้อยแล้ว!\nระบบได้ส่งแจ้งเตือนไปยัง จป. / Inspector เพื่อพิจารณาอนุมัติครับ");
+        }
+    </script>
+</body>
+</html>
