@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FTC Safety - Mobile Clock-in</title>
+    <title>FTC Safety - Smart Clock-in</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -16,7 +16,6 @@
             justify-content: center;
         }
         
-        /* สไตล์จำลองหน้าจอมือถือ */
         .mobile-container { 
             background: white; 
             width: 100%; 
@@ -32,130 +31,115 @@
             background-color: #ffffff; 
             padding: 15px 20px; 
             text-align: center;
-            border-bottom: 3px solid #0000ff; /* สีน้ำเงิน FTC */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-bottom: 3px solid #0000ff;
         }
-        .header img {
-            height: 45px;
-            object-fit: contain;
+        .header img { height: 45px; object-fit: contain; }
+
+        /* Mode Switcher (สวิตช์เลือกโหมด) */
+        .mode-switch {
+            display: flex;
+            background: #e2e8f0;
+            padding: 5px;
+            margin: 15px 20px 0;
+            border-radius: 8px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            font-family: 'Sarabun';
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            background: transparent;
+            color: #64748b;
+        }
+        .mode-btn.active {
+            background: #034694;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* User Info Bar */
         .user-info {
-            background: #034694;
-            color: white;
+            background: #f8fafc;
             padding: 15px 20px;
             display: flex;
             align-items: center;
             gap: 15px;
+            border-bottom: 1px solid #e2e8f0;
         }
         .avatar {
-            width: 50px;
-            height: 50px;
-            background: #cbd5e1;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            border: 2px solid white;
+            width: 50px; height: 50px; background: #034694; color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;
         }
-        .user-details h3 { margin: 0; font-size: 16px; }
-        .user-details p { margin: 2px 0 0; font-size: 12px; color: #93c5fd; }
+        .user-details h3 { margin: 0; font-size: 16px; color: #0f172a; }
+        .user-details p { margin: 2px 0 0; font-size: 12px; color: #64748b; }
 
-        /* Main Content */
-        .content { padding: 20px; }
-
-        .card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        /* Select Worker (สำหรับ Reverse Scan) */
+        .select-worker-box {
+            display: none;
+            padding: 15px 20px 0;
         }
-        .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 10px; display: flex; justify-content: space-between;}
-        
-        /* GPS Section */
-        .gps-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        .status-dot { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; }
-        .status-dot.active { background: #10b981; box-shadow: 0 0 8px #10b981; }
-
-        /* Camera Section */
-        .camera-box {
+        .select-input {
             width: 100%;
-            height: 200px;
-            background: #e2e8f0;
-            border-radius: 8px;
-            border: 2px dashed #94a3b8;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            position: relative;
-        }
-        .camera-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .camera-icon { font-size: 32px; margin-bottom: 10px; }
-        
-        /* Duty Status Selection */
-        .status-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .status-btn {
-            border: 1px solid #cbd5e1;
-            background: white;
             padding: 12px;
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-family: 'Sarabun';
             font-size: 14px;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            transition: 0.2s;
+            box-sizing: border-box;
+            background-color: #f8fafc;
         }
-        .status-btn.active {
-            background: #eff6ff;
-            border-color: #3b82f6;
-            color: #1d4ed8;
+
+        .content { padding: 20px; }
+
+        /* Card Style */
+        .card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
+        .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+        
+        /* GPS Section (Auto Loading) */
+        .gps-status {
+            display: flex; align-items: center; gap: 10px; padding: 12px;
+            background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; font-size: 13px; color: #b45309;
+            transition: all 0.3s;
+        }
+        .gps-status.success {
+            background: #ecfdf5; border-color: #a7f3d0; color: #065f46;
+        }
+        .loader {
+            border: 3px solid #f3f3f3; border-top: 3px solid #f59e0b;
+            border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Camera Section */
+        .camera-box {
+            width: 100%; height: 220px; background: #f1f5f9; border-radius: 8px;
+            border: 2px dashed #94a3b8; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
+            transition: 0.3s;
+        }
+        .camera-box:hover { background: #e2e8f0; }
+        .camera-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .camera-icon { font-size: 32px; margin-bottom: 5px; }
 
         /* Bottom Fixed Button */
         .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background: white;
-            padding: 15px 20px;
-            box-sizing: border-box;
-            border-top: 1px solid #e2e8f0;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: white; padding: 15px 20px; box-sizing: border-box;
+            border-top: 1px solid #e2e8f0; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
         }
         .btn-submit {
-            width: 100%;
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Sarabun';
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
+            width: 100%; background: #10b981; color: white; border: none; padding: 15px;
+            border-radius: 8px; font-family: 'Sarabun'; font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: 0.3s;
         }
         .btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; }
 
@@ -169,48 +153,50 @@
             <img src="image_226a10.png" alt="First Technology Co., Ltd.">
         </div>
 
+        <!-- Mode Switcher -->
+        <div class="mode-switch">
+            <button class="mode-btn active" id="btnSelfMode" onclick="switchMode('self')">📱 ลงเวลาด้วยตนเอง</button>
+            <button class="mode-btn" id="btnReverseMode" onclick="switchMode('reverse')">👮 สแกนแทน (Reverse Scan)</button>
+        </div>
+
+        <!-- Select Worker (Show only in Reverse Scan) -->
+        <div class="select-worker-box" id="selectWorkerBox">
+            <select class="select-input" id="workerSelect" onchange="updateUserInfo()">
+                <option value="" disabled selected>-- ค้นหารหัสพนักงาน หรือ ชื่อลูกน้อง --</option>
+                <option value="VND-102">VND-102 : นายสมชาย รักความปลอดภัย (ช่างเชื่อม)</option>
+                <option value="VND-103">VND-103 : นายสมเกียรติ ขยันทำงาน (ช่างไฟ)</option>
+            </select>
+        </div>
+
         <!-- User Information -->
-        <div class="user-info">
+        <div class="user-info" id="userInfoBox">
             <div class="avatar">👷</div>
             <div class="user-details">
-                <h3>นายสมชาย รักความปลอดภัย</h3>
-                <p>รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม (บจก. เอ แอนด์ บี)</p>
+                <h3 id="display-name">นายสมชาย รักความปลอดภัย</h3>
+                <p id="display-role">รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม</p>
             </div>
         </div>
 
         <div class="content">
             
-            <!-- Step 1: GPS Location -->
+            <!-- Step 1: Auto GPS Location -->
             <div class="card">
-                <div class="card-title">
-                    <span>📍 ขั้นตอนที่ 1: ตรวจสอบพิกัด (Geofencing)</span>
-                    <button onclick="getLocation()" style="border:none; background:#eff6ff; color:#3b82f6; border-radius:4px; padding:4px 8px; cursor:pointer;">ดึงพิกัด</button>
-                </div>
+                <div class="card-title">📍 พิกัดพื้นที่โครงการ (Geofencing)</div>
                 <div class="gps-status" id="gpsStatusBox">
-                    <div class="status-dot" id="gpsDot"></div>
-                    <span id="gpsText">กำลังรอพิกัด GPS... (กรุณากดปุ่มดึงพิกัด)</span>
+                    <div class="loader" id="gpsLoader"></div>
+                    <span id="gpsText">กำลังดึงพิกัด GPS อัตโนมัติ...</span>
                 </div>
             </div>
 
             <!-- Step 2: Live Selfie (E-Proctoring) -->
             <div class="card">
-                <div class="card-title">📸 ขั้นตอนที่ 2: ถ่ายรูปยืนยันตัวตน (สวม PPE)</div>
+                <div class="card-title" id="cameraTitle">📸 ถ่ายรูปยืนยันตัวตน (เซลฟี่พร้อมสวม PPE)</div>
                 <div class="camera-box" id="cameraBox" onclick="takePhoto()">
-                    <div id="cameraPrompt">
+                    <div id="cameraPrompt" style="text-align: center;">
                         <div class="camera-icon">📷</div>
-                        <span style="font-size: 13px; color:#64748b;">แตะเพื่อเปิดกล้องหน้า</span>
+                        <span style="font-size: 14px; font-weight: 600; color:#475569;">แตะเพื่อเปิดกล้องถ่ายรูป</span>
                     </div>
-                    <!-- รูปตัวอย่างเมื่อถ่ายเสร็จ -->
-                    <img id="previewPhoto" src="https://via.placeholder.com/400x300/10b981/ffffff?text=PPE+Verified+Selfie" alt="Selfie Preview">
-                </div>
-            </div>
-
-            <!-- Step 3: Work Status -->
-            <div class="card">
-                <div class="card-title">📝 ขั้นตอนที่ 3: สถานะการทำงานวันนี้</div>
-                <div class="status-grid">
-                    <button class="status-btn active" id="btnReady" onclick="setStatus('ready')">✅ พร้อมปฏิบัติงาน</button>
-                    <button class="status-btn" id="btnSick" onclick="setStatus('sick')">🤒 ป่วย / ไม่พร้อม</button>
+                    <img id="previewPhoto" src="https://via.placeholder.com/400x300/10b981/ffffff?text=PPE+Verified+Photo" alt="Selfie Preview">
                 </div>
             </div>
 
@@ -218,7 +204,7 @@
 
         <!-- Submit Button -->
         <div class="bottom-bar">
-            <button class="btn-submit" id="btnSubmit" onclick="submitClockIn()" disabled>🔒 กรุณาดึงพิกัดและถ่ายรูปก่อน</button>
+            <button class="btn-submit" id="btnSubmit" onclick="submitClockIn()" disabled>🔒 กรุณาถ่ายรูปเพื่อเข้างาน</button>
         </div>
 
     </div>
@@ -226,25 +212,73 @@
     <script>
         let hasGps = false;
         let hasPhoto = false;
+        let currentMode = 'self';
 
-        // จำลองการดึงพิกัด GPS
-        function getLocation() {
+        // Auto-Run GPS Fetching when page loads
+        window.onload = function() {
+            simulateAutoGPS();
+        };
+
+        function simulateAutoGPS() {
+            const gpsBox = document.getElementById('gpsStatusBox');
             const gpsText = document.getElementById('gpsText');
-            const gpsDot = document.getElementById('gpsDot');
+            const gpsLoader = document.getElementById('gpsLoader');
             
-            gpsText.innerText = "กำลังค้นหาสัญญาณดาวเทียม...";
-            
+            // จำลองการค้นหาสัญญาณ 1.5 วินาที
             setTimeout(() => {
                 hasGps = true;
-                gpsDot.classList.add('active');
-                // จำลองว่าพิกัดอยู่ในรัศมีไซต์งาน
-                gpsText.innerHTML = "<strong>✅ พิกัดถูกต้อง:</strong> อยู่ในรัศมีโครงการ (Lat: 12.65, Lng: 101.21)";
+                gpsBox.classList.add('success');
+                gpsLoader.style.display = 'none';
+                gpsBox.innerHTML = '<span>✅</span><span style="font-weight:600;">พิกัดถูกต้อง:</span> อยู่ในรัศมีโครงการ (Lat: 12.65, Lng: 101.21)';
                 checkUnlock();
-            }, 1000);
+            }, 1500);
         }
 
-        // จำลองการถ่ายรูปกล้องสด
+        // Switch between Self Clock-in and Reverse Scan
+        function switchMode(mode) {
+            currentMode = mode;
+            hasPhoto = false; // Reset รูปถ่าย
+            document.getElementById('previewPhoto').style.display = 'none';
+            document.getElementById('cameraPrompt').style.display = 'block';
+            document.getElementById('cameraBox').style.border = '2px dashed #94a3b8';
+            checkUnlock();
+
+            if(mode === 'self') {
+                document.getElementById('btnSelfMode').classList.add('active');
+                document.getElementById('btnReverseMode').classList.remove('active');
+                document.getElementById('selectWorkerBox').style.display = 'none';
+                document.getElementById('cameraTitle').innerText = '📸 ถ่ายรูปยืนยันตัวตน (เซลฟี่พร้อมสวม PPE)';
+                
+                // คืนค่าชื่อผู้ใช้งานปัจจุบัน
+                document.getElementById('display-name').innerText = 'นายสมชาย รักความปลอดภัย';
+                document.getElementById('display-role').innerText = 'รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม';
+            } else {
+                document.getElementById('btnReverseMode').classList.add('active');
+                document.getElementById('btnSelfMode').classList.remove('active');
+                document.getElementById('selectWorkerBox').style.display = 'block';
+                document.getElementById('cameraTitle').innerText = '📸 ถ่ายรูปลูกน้องเพื่อยืนยันการเข้าพื้นที่';
+                
+                // เคลียร์ชื่อรอการเลือก
+                document.getElementById('workerSelect').value = "";
+                document.getElementById('display-name').innerText = 'กรุณาเลือกรายชื่อพนักงาน...';
+                document.getElementById('display-role').innerText = '-';
+            }
+        }
+
+        function updateUserInfo() {
+            const select = document.getElementById('workerSelect');
+            const text = select.options[select.selectedIndex].text;
+            const details = text.split(' : ');
+            document.getElementById('display-name').innerText = details[1].split(' (')[0];
+            document.getElementById('display-role').innerText = 'รหัส: ' + details[0] + ' | ตำแหน่ง: ' + details[1].split('(')[1].replace(')','');
+        }
+
+        // จำลองการถ่ายรูป
         function takePhoto() {
+            if(currentMode === 'reverse' && document.getElementById('workerSelect').value === "") {
+                alert("⚠️ กรุณาเลือกลูกน้องที่ต้องการสแกนแทนก่อนครับ");
+                return;
+            }
             document.getElementById('cameraPrompt').style.display = 'none';
             document.getElementById('previewPhoto').style.display = 'block';
             document.getElementById('cameraBox').style.border = '2px solid #10b981';
@@ -252,31 +286,29 @@
             checkUnlock();
         }
 
-        // เลือกสถานะ
-        function setStatus(status) {
-            document.getElementById('btnReady').classList.remove('active');
-            document.getElementById('btnSick').classList.remove('active');
-            
-            if(status === 'ready') {
-                document.getElementById('btnReady').classList.add('active');
-            } else {
-                document.getElementById('btnSick').classList.add('active');
-            }
-        }
-
-        // ปลดล็อกปุ่มบันทึกเมื่อครบเงื่อนไข
+        // ปลดล็อกปุ่ม Submit
         function checkUnlock() {
             const btnSubmit = document.getElementById('btnSubmit');
             if(hasGps && hasPhoto) {
                 btnSubmit.disabled = false;
-                btnSubmit.innerText = "✅ บันทึกเวลาเข้างาน (Clock-In)";
+                btnSubmit.innerText = "✅ บันทึกเวลาเข้างาน";
                 btnSubmit.style.boxShadow = "0 4px 15px rgba(16, 185, 129, 0.4)";
+            } else {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "🔒 กรุณาถ่ายรูปเพื่อเข้างาน";
+                btnSubmit.style.boxShadow = "none";
             }
         }
 
-        // กดปุ่ม Submit
         function submitClockIn() {
-            alert("🎉 บันทึกเวลาเข้างานสำเร็จ!\n\nระบบได้ส่งข้อมูล GPS, รูปถ่าย, และเวลาเข้างานเข้าสู่ Supabase Database เรียบร้อยแล้วครับ");
+            if(currentMode === 'self') {
+                alert("🎉 ลงเวลาเข้างานสำเร็จ!\nระบบบันทึกเวลา 08:00 น. เรียบร้อยแล้ว");
+            } else {
+                const name = document.getElementById('display-name').innerText;
+                alert(`🎉 บันทึก Reverse Scan สำเร็จ!\nคุณได้ลงเวลาเข้าพื้นที่ให้กับ:\n${name} เรียบร้อยแล้ว`);
+                // รีเซ็ตเพื่อสแกนคนต่อไป
+                switchMode('reverse'); 
+            }
         }
     </script>
 </body>
