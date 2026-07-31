@@ -10,7 +10,7 @@
         body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
         
-        .header { background-color: #034694; /* สีน้ำเงินคล้ายโลโก้ First */ color: white; padding: 20px; text-align: center; }
+        .header { background-color: #034694; color: white; padding: 20px; text-align: center; }
         .header h2 { margin: 0; font-size: 22px; text-transform: uppercase; }
         .header p { margin: 5px 0 0; font-size: 16px; opacity: 0.9; }
         
@@ -27,6 +27,9 @@
         }
         input:focus, select:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
         
+        /* สไตล์ช่องคำนวณวันอัตโนมัติ */
+        .readonly-input { background-color: #e2e8f0; font-weight: 700; color: #2d3748; cursor: not-allowed; }
+
         /* สไตล์สำหรับกล่องรายการอุปกรณ์ */
         .eq-item { background: #f8fafc; border: 1px solid #cbd5e0; padding: 20px; margin-bottom: 15px; border-radius: 6px; position: relative; }
         .eq-item-header { font-weight: 700; color: #2d3748; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e0; display: flex; justify-content: space-between;}
@@ -61,25 +64,34 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>ผู้รับจ้าง <span>/ Subcontractor</span> *</label>
-                    <!-- ปกติจะ Auto-fill จากระบบ Login แต่ทำ Dropdown ไว้ให้ดูก่อนค่ะ -->
                     <select id="subcontractor" required>
+                        <option value="">-- เลือกบริษัทผู้รับเหมา --</option>
                         <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
                         <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>ผู้บันทึกข้อมูล <span>/ Submitted By</span> *</label>
+                    <input type="text" id="submitterName" required placeholder="ระบุชื่อ-นามสกุล ของผู้ส่งรายการ">
                 </div>
                 <div class="form-group">
                     <label>ระบบที่ปฏิบัติงาน <span>/ System</span></label>
                     <input type="text" id="systemName" placeholder="เช่น ระบบไฟฟ้า, โครงสร้าง">
                 </div>
             </div>
+            
             <div class="form-row">
                 <div class="form-group">
                     <label>ระยะเวลาใช้งานจาก <span>/ From Date</span> *</label>
-                    <input type="date" id="dateFrom" required>
+                    <input type="date" id="dateFrom" onchange="calculateDays()" required>
                 </div>
                 <div class="form-group">
                     <label>ถึงวันที่ <span>/ To Date</span> *</label>
-                    <input type="date" id="dateTo" required>
+                    <input type="date" id="dateTo" onchange="calculateDays()" required>
+                </div>
+                <div class="form-group">
+                    <label>รวมระยะเวลา <span>/ Total Days</span></label>
+                    <input type="text" id="totalDays" class="readonly-input" readonly placeholder="คำนวณอัตโนมัติ">
                 </div>
             </div>
         </div>
@@ -88,7 +100,7 @@
         <div class="form-section" style="background-color: #fafafc;">
             <div class="section-title">2. รายการอุปกรณ์ / เครื่องมือ (Equipment / Tools List)</div>
             <p style="font-size: 13px; color: #718096; margin-top: -10px; margin-bottom: 15px;">
-                * กรุณาระบุรายละเอียดอุปกรณ์ และแนบรูปถ่ายเครื่องมือ หรือใบรับรอง (ปจ.2/คป.1) หากมี
+                * กรุณาระบุรายละเอียดอุปกรณ์ และถ่ายรูปเครื่องมือจากหน้างาน หรือแนบใบรับรอง (ปจ.2/คป.1) หากมี
             </p>
             
             <div id="dynamicEqContainer">
@@ -128,8 +140,9 @@
                             <input type="text" class="eq-capacity" placeholder="เช่น 2 ตัน, 1500W">
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
-                            <label>แนบรูปถ่าย / ใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
-                            <input type="file" class="eq-file" accept="image/*,.pdf" required>
+                            <label>ถ่ายรูปหน้างาน / แนบใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
+                            <!-- การตั้งค่า accept="image/*, application/pdf" จะทำให้มือถือเปิดกล้องถ่ายรูปได้เลย -->
+                            <input type="file" class="eq-file" accept="image/*, application/pdf" required>
                         </div>
                     </div>
                 </div>
@@ -155,6 +168,33 @@
 </div>
 
 <script>
+    // ฟังก์ชันคำนวณจำนวนวัน
+    function calculateDays() {
+        const fromStr = document.getElementById('dateFrom').value;
+        const toStr = document.getElementById('dateTo').value;
+        const totalInput = document.getElementById('totalDays');
+
+        if (fromStr && toStr) {
+            const dateFrom = new Date(fromStr);
+            const dateTo = new Date(toStr);
+
+            if (dateTo < dateFrom) {
+                alert("กรุณาระบุวันที่สิ้นสุดให้ถูกต้อง (ต้องไม่น้อยกว่าวันที่เริ่มต้นครับ)");
+                document.getElementById('dateTo').value = '';
+                totalInput.value = '';
+                return;
+            }
+
+            // คำนวณความต่างของเวลา (มิลลิวินาที) แปลงเป็นวัน และบวก 1 เพื่อให้นับรวมวันเริ่มต้นด้วย
+            const diffTime = Math.abs(dateTo - dateFrom);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+            
+            totalInput.value = diffDays + " วัน";
+        } else {
+            totalInput.value = '';
+        }
+    }
+
     let eqCounter = 1;
 
     function addEquipment() {
@@ -197,8 +237,8 @@
                         <input type="text" class="eq-capacity" placeholder="เช่น 2 ตัน, 1500W">
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
-                        <label>แนบรูปถ่าย / ใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
-                        <input type="file" class="eq-file" accept="image/*,.pdf" required>
+                        <label>ถ่ายรูปหน้างาน / แนบใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
+                        <input type="file" class="eq-file" accept="image/*, application/pdf" required>
                     </div>
                 </div>
             </div>
@@ -210,7 +250,7 @@
         const item = document.getElementById(id);
         if(item) item.remove();
         
-        // จัดเรียงเลขลำดับใหม่
+        // จัดเรียงเลขลำดับใหม่หลังจากกดลบ
         const allItems = document.querySelectorAll('.eq-item-header span');
         allItems.forEach((span, index) => {
             span.innerText = `รายการอุปกรณ์ที่ ${index + 1}`;
@@ -221,16 +261,16 @@
     function submitEquipmentForm(event) {
         event.preventDefault(); 
         
-        // เก็บข้อมูลส่วนหัว
         const payload = {
             subcontractor: document.getElementById('subcontractor').value,
+            submitterName: document.getElementById('submitterName').value,
             system: document.getElementById('systemName').value,
             dateFrom: document.getElementById('dateFrom').value,
             dateTo: document.getElementById('dateTo').value,
+            totalDays: document.getElementById('totalDays').value,
             equipments: []
         };
 
-        // วนลูปเก็บข้อมูลอุปกรณ์ทีละรายการ
         const eqItems = document.querySelectorAll('.eq-item');
         eqItems.forEach(item => {
             payload.equipments.push({
@@ -239,12 +279,12 @@
                 model: item.querySelector('.eq-model').value,
                 capacity: item.querySelector('.eq-capacity').value,
                 qty: item.querySelector('.eq-qty').value,
-                fileName: item.querySelector('.eq-file').files[0]?.name || 'No file'
+                fileName: item.querySelector('.eq-file').files[0]?.name || 'ไม่มีไฟล์'
             });
         });
 
         console.log("Equipment Data to Submit:", payload);
-        alert("ส่งรายการอุปกรณ์ให้ Safety ตรวจสอบเรียบร้อยแล้ว!\n(สามารถกดดู Console เพื่อดูโครงสร้างข้อมูล JSON)");
+        alert("ขอบคุณคุณ " + payload.submitterName + "\\nระบบได้ส่งรายการอุปกรณ์ให้ Safety ตรวจสอบเรียบร้อยแล้วครับ!");
     }
 </script>
 
