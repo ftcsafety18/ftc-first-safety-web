@@ -35,42 +35,24 @@
         }
         .header img { height: 45px; object-fit: contain; }
 
-        /* Mode Switcher (สวิตช์เลือกโหมด) */
+        /* Mode Switcher */
         .mode-switch {
-            display: flex;
-            background: #e2e8f0;
-            padding: 5px;
-            margin: 15px 20px 0;
-            border-radius: 8px;
+            display: flex; background: #e2e8f0; padding: 5px;
+            margin: 15px 20px 0; border-radius: 8px;
         }
         .mode-btn {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            border-radius: 6px;
-            font-family: 'Sarabun';
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.3s;
-            border: none;
-            background: transparent;
-            color: #64748b;
+            flex: 1; padding: 10px; text-align: center; border-radius: 6px;
+            font-family: 'Sarabun'; font-weight: 700; font-size: 14px; cursor: pointer;
+            transition: 0.3s; border: none; background: transparent; color: #64748b;
         }
         .mode-btn.active {
-            background: #034694;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #034694; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* User Info Bar */
         .user-info {
-            background: #f8fafc;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc; padding: 15px 20px; display: flex; align-items: center;
+            gap: 15px; border-bottom: 1px solid #e2e8f0;
         }
         .avatar {
             width: 50px; height: 50px; background: #034694; color: white;
@@ -80,21 +62,17 @@
         .user-details p { margin: 2px 0 0; font-size: 12px; color: #64748b; }
 
         /* Select Worker (สำหรับ Reverse Scan) */
-        .select-worker-box {
-            display: none;
-            padding: 15px 20px 0;
+        .select-worker-box { display: none; padding: 15px 20px 0; }
+        
+        /* Scan QR Button */
+        .scan-qr-btn {
+            width: 100%; padding: 12px; background-color: #3b82f6; color: white;
+            border: none; border-radius: 8px; font-family: 'Sarabun'; font-size: 15px;
+            font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex;
+            align-items: center; justify-content: center; gap: 10px;
         }
-        .select-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-family: 'Sarabun';
-            font-size: 14px;
-            box-sizing: border-box;
-            background-color: #f8fafc;
-        }
-
+        .scan-qr-btn:hover { background-color: #2563eb; }
+        
         .content { padding: 20px; }
 
         /* Card Style */
@@ -104,15 +82,12 @@
         }
         .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
         
-        /* GPS Section (Auto Loading) */
+        /* GPS Section */
         .gps-status {
             display: flex; align-items: center; gap: 10px; padding: 12px;
             background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; font-size: 13px; color: #b45309;
-            transition: all 0.3s;
         }
-        .gps-status.success {
-            background: #ecfdf5; border-color: #a7f3d0; color: #065f46;
-        }
+        .gps-status.success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
         .loader {
             border: 3px solid #f3f3f3; border-top: 3px solid #f59e0b;
             border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite;
@@ -124,9 +99,7 @@
             width: 100%; height: 220px; background: #f1f5f9; border-radius: 8px;
             border: 2px dashed #94a3b8; display: flex; flex-direction: column;
             align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
-            transition: 0.3s;
         }
-        .camera-box:hover { background: #e2e8f0; }
         .camera-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .camera-icon { font-size: 32px; margin-bottom: 5px; }
 
@@ -139,10 +112,22 @@
         .btn-submit {
             width: 100%; background: #10b981; color: white; border: none; padding: 15px;
             border-radius: 8px; font-family: 'Sarabun'; font-size: 16px; font-weight: 700; cursor: pointer;
-            transition: 0.3s;
         }
         .btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; }
 
+        /* QR Scanner Modal */
+        .qr-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .qr-frame { width: 250px; height: 250px; border: 2px solid #10b981; position: relative; }
+        .qr-line {
+            width: 100%; height: 2px; background: red; position: absolute; top: 50%;
+            animation: scan 2s infinite;
+        }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        .qr-text { color: white; margin-top: 20px; font-size: 16px; text-align: center; }
     </style>
 </head>
 <body>
@@ -150,7 +135,7 @@
     <div class="mobile-container">
         <!-- Logo Header -->
         <div class="header">
-            <img src="image_226a10.png" alt="First Technology Co., Ltd.">
+            <img id="logo-img" src="image_226a10.png" alt="First Technology Co., Ltd.">
         </div>
 
         <!-- Mode Switcher -->
@@ -161,11 +146,10 @@
 
         <!-- Select Worker (Show only in Reverse Scan) -->
         <div class="select-worker-box" id="selectWorkerBox">
-            <select class="select-input" id="workerSelect" onchange="updateUserInfo()">
-                <option value="" disabled selected>-- ค้นหารหัสพนักงาน หรือ ชื่อลูกน้อง --</option>
-                <option value="VND-102">VND-102 : นายสมชาย รักความปลอดภัย (ช่างเชื่อม)</option>
-                <option value="VND-103">VND-103 : นายสมเกียรติ ขยันทำงาน (ช่างไฟ)</option>
-            </select>
+            <button class="scan-qr-btn" onclick="openScanner()">
+                <span style="font-size: 20px;">📷</span> สแกน QR Code (ที่หมวก / บัตร)
+            </button>
+            <div style="text-align: center; margin: 10px 0; color: #64748b; font-size: 14px;">--- หรือ ---</div>
         </div>
 
         <!-- User Information -->
@@ -174,11 +158,11 @@
             <div class="user-details">
                 <h3 id="display-name">นายสมชาย รักความปลอดภัย</h3>
                 <p id="display-role">รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม</p>
+                <p id="display-status" style="display:none; color:#10b981; font-weight:bold; margin-top:5px;">✅ สแกน QR Code สำเร็จ</p>
             </div>
         </div>
 
         <div class="content">
-            
             <!-- Step 1: Auto GPS Location -->
             <div class="card">
                 <div class="card-title">📍 พิกัดพื้นที่โครงการ (Geofencing)</div>
@@ -188,7 +172,7 @@
                 </div>
             </div>
 
-            <!-- Step 2: Live Selfie (E-Proctoring) -->
+            <!-- Step 2: Live Selfie -->
             <div class="card">
                 <div class="card-title" id="cameraTitle">📸 ถ่ายรูปยืนยันตัวตน (เซลฟี่พร้อมสวม PPE)</div>
                 <div class="camera-box" id="cameraBox" onclick="takePhoto()">
@@ -199,84 +183,105 @@
                     <img id="previewPhoto" src="https://via.placeholder.com/400x300/10b981/ffffff?text=PPE+Verified+Photo" alt="Selfie Preview">
                 </div>
             </div>
-
         </div>
 
         <!-- Submit Button -->
         <div class="bottom-bar">
             <button class="btn-submit" id="btnSubmit" onclick="submitClockIn()" disabled>🔒 กรุณาถ่ายรูปเพื่อเข้างาน</button>
         </div>
-
+        
+        <!-- QR Scanner Modal -->
+        <div class="qr-modal" id="qrModal" onclick="closeScanner()">
+            <div class="qr-frame"><div class="qr-line"></div></div>
+            <div class="qr-text">กำลังสแกน QR Code ที่หมวก...<br><span style="font-size:12px;color:#94a3b8;">(แตะที่นี่เพื่อจำลองการสแกนสำเร็จ)</span></div>
+        </div>
     </div>
 
     <script>
         let hasGps = false;
         let hasPhoto = false;
+        let hasQRScanned = true; 
         let currentMode = 'self';
 
-        // Auto-Run GPS Fetching when page loads
-        window.onload = function() {
+        // ใช้ DOMContentLoaded เพื่อให้ทำงานทันที ไม่ต้องรอรูปโลโก้โหลดเสร็จ
+        document.addEventListener("DOMContentLoaded", function() {
+            // ดักจับ Error โลโก้เพื่อไม่ให้ระบบค้าง
+            const img = document.getElementById('logo-img');
+            if(img) {
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/200x50/ffffff/0000ff?text=FIRST+TECHNOLOGY';
+                };
+            }
+            
+            // สั่งดึงพิกัดทันที
             simulateAutoGPS();
-        };
+        });
 
         function simulateAutoGPS() {
             const gpsBox = document.getElementById('gpsStatusBox');
             const gpsText = document.getElementById('gpsText');
             const gpsLoader = document.getElementById('gpsLoader');
             
-            // จำลองการค้นหาสัญญาณ 1.5 วินาที
+            // จำลองการค้นหาพิกัด 1 วินาที
             setTimeout(() => {
                 hasGps = true;
                 gpsBox.classList.add('success');
                 gpsLoader.style.display = 'none';
                 gpsBox.innerHTML = '<span>✅</span><span style="font-weight:600;">พิกัดถูกต้อง:</span> อยู่ในรัศมีโครงการ (Lat: 12.65, Lng: 101.21)';
                 checkUnlock();
-            }, 1500);
+            }, 1000);
         }
 
         // Switch between Self Clock-in and Reverse Scan
         function switchMode(mode) {
             currentMode = mode;
-            hasPhoto = false; // Reset รูปถ่าย
+            hasPhoto = false;
             document.getElementById('previewPhoto').style.display = 'none';
             document.getElementById('cameraPrompt').style.display = 'block';
             document.getElementById('cameraBox').style.border = '2px dashed #94a3b8';
-            checkUnlock();
-
+            
             if(mode === 'self') {
+                hasQRScanned = true; 
                 document.getElementById('btnSelfMode').classList.add('active');
                 document.getElementById('btnReverseMode').classList.remove('active');
                 document.getElementById('selectWorkerBox').style.display = 'none';
                 document.getElementById('cameraTitle').innerText = '📸 ถ่ายรูปยืนยันตัวตน (เซลฟี่พร้อมสวม PPE)';
                 
-                // คืนค่าชื่อผู้ใช้งานปัจจุบัน
                 document.getElementById('display-name').innerText = 'นายสมชาย รักความปลอดภัย';
                 document.getElementById('display-role').innerText = 'รหัส: VND-102 | ตำแหน่ง: ช่างเชื่อม';
+                document.getElementById('display-status').style.display = 'none';
             } else {
+                hasQRScanned = false; 
                 document.getElementById('btnReverseMode').classList.add('active');
                 document.getElementById('btnSelfMode').classList.remove('active');
                 document.getElementById('selectWorkerBox').style.display = 'block';
                 document.getElementById('cameraTitle').innerText = '📸 ถ่ายรูปลูกน้องเพื่อยืนยันการเข้าพื้นที่';
                 
-                // เคลียร์ชื่อรอการเลือก
-                document.getElementById('workerSelect').value = "";
-                document.getElementById('display-name').innerText = 'กรุณาเลือกรายชื่อพนักงาน...';
+                document.getElementById('display-name').innerText = 'รอการสแกน QR Code...';
                 document.getElementById('display-role').innerText = '-';
+                document.getElementById('display-status').style.display = 'none';
             }
+            checkUnlock();
         }
 
-        function updateUserInfo() {
-            const select = document.getElementById('workerSelect');
-            const text = select.options[select.selectedIndex].text;
-            const details = text.split(' : ');
-            document.getElementById('display-name').innerText = details[1].split(' (')[0];
-            document.getElementById('display-role').innerText = 'รหัส: ' + details[0] + ' | ตำแหน่ง: ' + details[1].split('(')[1].replace(')','');
+        // QR Scanner Logic
+        function openScanner() {
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+        
+        function closeScanner() {
+            document.getElementById('qrModal').style.display = 'none';
+            hasQRScanned = true;
+            document.getElementById('display-name').innerText = 'นายสมเกียรติ ขยันทำงาน';
+            document.getElementById('display-role').innerText = 'รหัส: VND-103 | ตำแหน่ง: ช่างไฟ';
+            document.getElementById('display-status').style.display = 'block';
+            checkUnlock();
         }
 
         // จำลองการถ่ายรูป
         function takePhoto() {
-            if(currentMode === 'reverse' && document.getElementById('workerSelect').value === "") {
-                alert("⚠️ กรุณาเลือกลูกน้องที่ต้องการสแกนแทนก่อนครับ");
+            if(currentMode === 'reverse' && !hasQRScanned) {
+                alert("⚠️ กรุณาสแกน QR Code ที่หมวกหรือบัตรลูกน้องก่อนครับ");
                 return;
             }
             document.getElementById('cameraPrompt').style.display = 'none';
@@ -289,10 +294,14 @@
         // ปลดล็อกปุ่ม Submit
         function checkUnlock() {
             const btnSubmit = document.getElementById('btnSubmit');
-            if(hasGps && hasPhoto) {
+            if(hasGps && hasPhoto && hasQRScanned) {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "✅ บันทึกเวลาเข้างาน";
                 btnSubmit.style.boxShadow = "0 4px 15px rgba(16, 185, 129, 0.4)";
+            } else if (!hasQRScanned && currentMode === 'reverse') {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "🔒 กรุณาสแกน QR Code ลูกน้อง";
+                btnSubmit.style.boxShadow = "none";
             } else {
                 btnSubmit.disabled = true;
                 btnSubmit.innerText = "🔒 กรุณาถ่ายรูปเพื่อเข้างาน";
@@ -306,7 +315,6 @@
             } else {
                 const name = document.getElementById('display-name').innerText;
                 alert(`🎉 บันทึก Reverse Scan สำเร็จ!\nคุณได้ลงเวลาเข้าพื้นที่ให้กับ:\n${name} เรียบร้อยแล้ว`);
-                // รีเซ็ตเพื่อสแกนคนต่อไป
                 switchMode('reverse'); 
             }
         }
