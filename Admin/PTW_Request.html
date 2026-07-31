@@ -22,7 +22,7 @@
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2d3748; }
         
         input[type="text"], input[type="date"], input[type="time"], select { 
-            width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun'; 
+            width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun'; transition: 0.3s;
         }
         input:focus, select:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
         input[readonly] { background-color: #e2e8f0; cursor: not-allowed; font-weight: bold; }
@@ -50,13 +50,13 @@
         .signature-box { display: flex; gap: 20px; margin-top: 15px; }
         .sign-area { flex: 1; background: #f8fafc; padding: 15px; border: 1px solid #cbd5e0; border-radius: 6px; text-align: center; }
         .sign-area input { text-align: center; font-weight: bold; color: #034694; margin-bottom: 5px; }
+        .sign-title { font-size: 13px; color: #64748b; }
         
         .declaration-box { background: #fffaf0; border-left: 4px solid #dd6b20; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 14.5px; display: flex; gap: 10px; }
         .declaration-box input { margin-top: 4px; transform: scale(1.3); }
 
         .btn-submit { background-color: #034694; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 16px; width: 100%; transition: 0.3s; }
         .btn-submit:hover { background-color: #02316a; }
-        .btn-submit:disabled { background-color: #94a3b8; cursor: not-allowed; }
     </style>
 </head>
 <body onload="initBuildingOptions()">
@@ -133,18 +133,14 @@
         <div class="form-section">
             <div class="section-title">2. ประเภทของงาน (Type of Work) *เลือกได้มากกว่า 1 ข้อ*</div>
             
-            <!-- แจ้งเตือนเรื่องการระงับงานเสี่ยงสูง -->
             <div id="insuranceAlertBox" class="insurance-alert">
                 <span>🚫</span> ระบบจำกัดสิทธิ์: ผู้รับเหมาที่ยังไม่ได้ยื่นหลักฐานการประกันตน (กท.20) จะสามารถปฏิบัติงานได้เฉพาะ "งานทั่วไป" เท่านั้น
             </div>
 
             <div class="checkbox-grid">
-                <!-- งานทั่วไป (เลือกได้เสมอ) -->
                 <label class="checkbox-item">
                     <input type="checkbox" name="workType" value="general"> 1. งานทั่วไป (General Work)
                 </label>
-                
-                <!-- กลุ่มงานเสี่ยงสูง (High Risk) จะถูกล็อกถ้าไม่มีประกัน -->
                 <label class="checkbox-item hr-task">
                     <input type="checkbox" name="workType" value="hotwork" class="hr-input" style="accent-color: #e11d48;"> 2. งานประกายไฟ (Hot Work)
                 </label>
@@ -176,7 +172,7 @@
             </div>
         </div>
 
-        <!-- 3. กำลังพลและเครื่องมือ (ข้ามโค้ดส่วนเดิม) -->
+        <!-- 3. กำลังพลและเครื่องมือ -->
         <div class="form-section">
             <div class="section-title">3. กำลังพลและเครื่องมือ (Manpower & Equipment)</div>
             <div class="integrated-box">
@@ -189,16 +185,26 @@
             </div>
         </div>
 
-        <!-- 4. PPE -->
+        <!-- 4. PPE (แก้ไขชื่อและเพิ่มตัวเลือกให้ครบถ้วนตามต้นฉบับ) -->
         <div class="form-section">
-            <div class="section-title">4. การป้องกันที่จัดให้มี (Personal Protective Equipment - PPE)</div>
+            <div class="section-title">4. การป้องกันที่ต้องจัดให้มีอุปกรณ์นิรภัยส่วนบุคคล (Personal Protective Equipment - PPE)</div>
             <div class="checkbox-grid">
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="helmet"> หมวกนิรภัย</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="fire_tray"> ถาดรองลูกไฟ</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="leather_glove"> ถุงมือหนังกันความร้อน</label>
-                <!-- ซ่อนส่วนที่เหลือเพื่อความกระชับของโค้ดตัวอย่าง -->
+                <label class="checkbox-item"><input type="checkbox" name="ppe" value="cloth_glove"> ถุงมือผ้า</label>
+                <label class="checkbox-item"><input type="checkbox" name="ppe" value="safety_glass"> แว่นตากันสะเก็ดไฟ</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="extinguisher"> ถังดับเพลิง 1 ถัง</label>
+                <label class="checkbox-item"><input type="checkbox" name="ppe" value="dust_mask"> หน้ากากกันฝุ่น</label>
+                <label class="checkbox-item"><input type="checkbox" name="ppe" value="welding_mask"> หน้ากากลดแสง</label>
                 <label class="checkbox-item"><input type="checkbox" name="ppe" value="harness"> เข็มขัดนิรภัย</label>
+                <label class="checkbox-item"><input type="checkbox" name="ppe" value="earplug"> ปลั๊กอุดหูลดเสียง</label>
+                
+                <!-- ช่องอื่นๆ -->
+                <div style="display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; margin-top: 5px;">
+                    <label class="checkbox-item"><input type="checkbox" id="ppeOtherCheck" onchange="toggleOtherInput(this, 'ppeOtherText')"> อื่นๆ (ระบุ)</label>
+                    <input type="text" id="ppeOtherText" placeholder="โปรดระบุอุปกรณ์อื่นๆ..." style="display: none; width: 300px; padding: 6px;">
+                </div>
             </div>
         </div>
 
@@ -207,7 +213,7 @@
             <div class="section-title">5. การรับรองและลงชื่อ (Declaration & E-Signature)</div>
             <div class="declaration-box">
                 <input type="checkbox" id="certifyCheck" required>
-                <label for="certifyCheck" style="margin-bottom: 0;"><strong>ข้าพเจ้าขอรับรองว่า:</strong> ข้อมูลทั้งหมดเป็นความจริง และจะปฏิบัติตามกฎความปลอดภัยอย่างเคร่งครัด</label>
+                <label for="certifyCheck" style="margin-bottom: 0;"><strong>ข้าพเจ้าขอรับรองว่า:</strong> ข้อมูลทั้งหมดเป็นความจริง และจะปฏิบัติตามกฎความปลอดภัยอย่างเคร่งครัด พร้อมทั้งจัดให้มีอุปกรณ์ป้องกันนิรภัยส่วนบุคคลตามที่ระบุไว้ตลอดการทำงาน</label>
             </div>
             <div class="signature-box">
                 <div class="sign-area">
@@ -229,16 +235,14 @@
     // ฐานข้อมูลจำลอง (Mock Database) สำหรับตรวจสถานะผู้รับเหมา
     // ----------------------------------------------------------------------
     const contractorDB = {
-        "Sompong_Team": { hasInsurance: false }, // ผู้รับเหมาทั่วไป ไม่มี กท.20
-        "ABC_Corp": { hasInsurance: true }       // บริษัท มี กท.20
+        "Sompong_Team": { hasInsurance: false }, // ไม่มี กท.20
+        "ABC_Corp": { hasInsurance: true }       // มี กท.20
     };
 
-    // ฟังก์ชันตรวจสอบและล็อกประเภทงานตามประเภทผู้รับเหมา
     function applyContractorRule() {
         const contractorId = document.getElementById('subcontractor').value;
         const alertBox = document.getElementById('insuranceAlertBox');
         
-        // ดึง DOM ของกลุ่มงานเสี่ยงสูง
         const hrLabels = document.querySelectorAll('.hr-task');
         const hrInputs = document.querySelectorAll('.hr-input');
 
@@ -246,27 +250,23 @@
             const hasInsurance = contractorDB[contractorId].hasInsurance;
 
             if(!hasInsurance) {
-                // ถ้าไม่มีประกัน -> โชว์เตือน, Disable งานเสี่ยงสูงทั้งหมด, และติ๊กออก
                 alertBox.style.display = 'flex';
                 hrLabels.forEach(lbl => lbl.classList.add('disabled'));
                 hrInputs.forEach(input => {
                     input.disabled = true;
                     input.checked = false; 
                 });
-                // เคลียร์ช่องอื่นๆ
                 const otherText = document.getElementById('workTypeOtherText');
                 otherText.style.display = 'none';
                 otherText.value = '';
                 otherText.required = false;
 
             } else {
-                // ถ้ามีประกัน -> ซ่อนเตือน, Enable กลับมาทั้งหมด
                 alertBox.style.display = 'none';
                 hrLabels.forEach(lbl => lbl.classList.remove('disabled'));
                 hrInputs.forEach(input => input.disabled = false);
             }
         } else {
-            // กรณีเคลียร์ค่า Dropdown ให้กลับเป็นค่าเริ่มต้น
             alertBox.style.display = 'none';
             hrLabels.forEach(lbl => lbl.classList.remove('disabled'));
             hrInputs.forEach(input => input.disabled = false);
@@ -274,7 +274,7 @@
     }
 
     // ----------------------------------------------------------------------
-    // ส่วนลอจิกพิกัดและ Zone จากขั้นตอนที่แล้ว
+    // ลอจิกพิกัดและ Zone
     // ----------------------------------------------------------------------
     const masterLocationData = {
         "อาคาร A": {
@@ -364,18 +364,31 @@
         }
     }
 
+    // ----------------------------------------------------------------------
+    // ฟังก์ชันตรวจสอบข้อมูลก่อนส่ง (Validation)
+    // ----------------------------------------------------------------------
     function submitPTW(event) {
         event.preventDefault();
         
+        // 1. เช็คพิกัด
         if(!document.getElementById('hiddenZoneValue').value) {
             alert("กรุณาระบุพิกัดปฏิบัติงานให้ถูกต้องตามที่โครงการกำหนดไว้ครับ");
             return;
         }
 
+        // 2. เช็คการเลือกประเภทงาน
         const workTypes = document.querySelectorAll('input[name="workType"]:checked');
         const otherWork = document.getElementById('workTypeOtherCheck').checked;
         if(workTypes.length === 0 && !otherWork) {
             alert("กรุณาเลือก 'ประเภทของงาน' อย่างน้อย 1 ประเภทครับ");
+            return;
+        }
+
+        // 3. เช็คการเลือก PPE (ต้องเลือกอย่างน้อย 1 อย่าง)
+        const ppes = document.querySelectorAll('input[name="ppe"]:checked');
+        const otherPpe = document.getElementById('ppeOtherCheck').checked;
+        if(ppes.length === 0 && !otherPpe) {
+            alert("กรุณาเลือก 'อุปกรณ์ป้องกันนิรภัยส่วนบุคคล (PPE)' ที่จะนำมาใช้งานอย่างน้อย 1 รายการครับ");
             return;
         }
 
@@ -384,7 +397,7 @@
         const flr = document.getElementById('selFloor').value;
         const zone = document.getElementById('autoZoneDisplay').value;
 
-        alert(`ระบบได้รับใบคำขอ PTW พื้นที่: ${bldg} > ${flr} (${zone}) เรียบร้อยแล้วครับ!\n\nสถานะ: ส่งให้เจ้าหน้าที่ จป. พิจารณาอนุมัติ`);
+        alert(`ระบบได้รับใบคำขอ PTW พื้นที่: ${bldg} > ${flr} (${zone}) เรียบร้อยแล้วครับ!\n\nลงนามโดย: คุณ ${subName}\nสถานะ: ส่งให้เจ้าหน้าที่ จป. พิจารณาอนุมัติ`);
     }
 </script>
 
