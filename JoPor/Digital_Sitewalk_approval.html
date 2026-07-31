@@ -40,8 +40,28 @@
         .header h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
         .header p { margin: 5px 0 0; font-size: 14px; color: #94a3b8; }
 
+        /* Progress Tracker (แถบติดตามสถานะ) */
+        .progress-container { padding: 25px 20px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+        .progress-track { display: flex; justify-content: space-between; position: relative; margin: 0 10px; }
+        .progress-track::before { 
+            content: ''; position: absolute; top: 15px; left: 0; right: 0; height: 3px; background: #cbd5e1; z-index: 1; 
+        }
+        .progress-step { position: relative; z-index: 2; text-align: center; background: #f8fafc; padding: 0 5px; flex: 1; }
+        .step-circle { 
+            width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; color: #64748b; 
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; 
+            margin: 0 auto 8px auto; border: 3px solid #f8fafc; transition: all 0.3s;
+        }
+        .step-label { font-size: 11px; color: #64748b; font-weight: 600; line-height: 1.2; }
+
+        /* สถานะต่างๆ ของ Tracker */
+        .progress-step.completed .step-circle { background: #10b981; color: white; border-color: #10b981; }
+        .progress-step.completed .step-label { color: #065f46; }
+        .progress-step.active .step-circle { background: #f59e0b; color: white; border-color: #fef3c7; box-shadow: 0 0 0 3px #f59e0b; }
+        .progress-step.active .step-label { color: #b45309; font-weight: 700; }
+
         /* Report Info */
-        .report-info { padding: 15px 20px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 14px; }
+        .report-info { padding: 15px 20px; display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px solid #e2e8f0; }
         .info-label { color: #64748b; font-weight: 600; }
         .info-value { font-weight: 700; color: #0f172a; }
 
@@ -67,12 +87,14 @@
         .form-control.error { border-color: #ef4444; background-color: #fef2f2; }
         
         /* Action Buttons */
-        .action-box { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 15px; }
+        .action-box { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 15px; transition: 0.3s; }
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-family: 'Sarabun'; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn:disabled { cursor: not-allowed; opacity: 0.5; }
         .btn-reject { background-color: #ef4444; color: white; }
         .btn-accept { background-color: #10b981; color: white; }
         .btn-pd { background-color: #034694; color: white; width: 100%; margin-top: 10px; }
+        .locked { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; }
 
     </style>
 </head>
@@ -83,6 +105,29 @@
             <div class="form-no">FM-SAF-09</div>
             <h1>Safety Audit Review</h1>
             <p>ระบบพิจารณาและอนุมัติรายงาน Site Walk</p>
+        </div>
+
+        <!-- แถบติดตามสถานะ -->
+        <div class="progress-container">
+            <div class="progress-track">
+                <div class="progress-step completed" id="step1">
+                    <div class="step-circle">✓</div>
+                    <div class="step-label">จป.<br>ออกใบสั่ง</div>
+                </div>
+                <div class="progress-step completed" id="step2">
+                    <div class="step-circle">✓</div>
+                    <div class="step-label">ผู้รับเหมา<br>แก้ไขแล้ว</div>
+                </div>
+                <!-- ค่าเริ่มต้นอยู่ที่สถานะ รอ PM -->
+                <div class="progress-step active" id="step3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">รอ PM<br>ตรวจสอบ</div>
+                </div>
+                <div class="progress-step" id="step4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">รอ PD<br>รับทราบ</div>
+                </div>
+            </div>
         </div>
 
         <div class="report-info">
@@ -122,10 +167,9 @@
         <!-- ส่วนของ Project Manager -->
         <div class="section">
             <h3 class="section-title">ส่วนที่ 1: สำหรับ Project Manager (PM)</h3>
-            <div class="action-box">
+            <div class="action-box" id="pmSection">
                 <div class="form-group">
                     <label class="form-label">ความเห็น / ข้อสังเกต (Comments & Remark):</label>
-                    <!-- เพิ่ม ID ให้กล่องข้อความเพื่อใช้ตรวจสอบ -->
                     <textarea id="pmComment" class="form-control" rows="2" placeholder="ระบุข้อความสั่งการหรือเหตุผลที่ตีกลับ..."></textarea>
                 </div>
                 <div class="form-group">
@@ -133,9 +177,8 @@
                     <input type="text" class="form-control" value="นายสมศักดิ์ วิศวกรโครงการ" readonly>
                 </div>
                 <div class="btn-group">
-                    <!-- เปลี่ยนมาเรียกใช้ฟังก์ชันเช็กเงื่อนไข -->
-                    <button class="btn btn-reject" onclick="rejectReport()">❌ ตีกลับ (Reject)</button>
-                    <button class="btn btn-accept" onclick="promptPin('PM')">✅ ยอมรับ (Accept By PM)</button>
+                    <button id="btnRejectPM" class="btn btn-reject" onclick="rejectReport()">❌ ตีกลับ (Reject)</button>
+                    <button id="btnAcceptPM" class="btn btn-accept" onclick="acceptPM()">✅ ยอมรับ (Accept By PM)</button>
                 </div>
             </div>
         </div>
@@ -143,39 +186,83 @@
         <!-- ส่วนของ Project Director -->
         <div class="section">
             <h3 class="section-title">ส่วนที่ 2: สำหรับ Project Director (PD)</h3>
-            <div class="action-box">
+            <div class="action-box" id="pdSection">
                 <div class="form-group">
                     <label class="form-label">ความเห็นระดับบริหาร (Executive Comments):</label>
-                    <textarea class="form-control" rows="2" placeholder="ข้อเสนอแนะเพิ่มเติม (ถ้ามี)..."></textarea>
+                    <!-- ทำการปิดช่องกรอกของ PD ไว้ก่อนจนกว่า PM จะอนุมัติ -->
+                    <textarea id="pdComment" class="form-control" rows="2" placeholder="รอ PM พิจารณาก่อน..." disabled></textarea>
                 </div>
-                <button class="btn btn-pd" onclick="promptPin('PD')">📝 รับทราบและปิดรายงาน (Accept By PD)</button>
+                <button id="btnAcceptPD" class="btn btn-pd" onclick="acceptPD()" disabled>🔒 รอ PM อนุมัติ</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ฟังก์ชันสำหรับตรวจจับการกดปุ่ม "ตีกลับ"
+        // ฟังก์ชันตีกลับแบบบังคับใส่เหตุผล
         function rejectReport() {
             const commentBox = document.getElementById('pmComment');
-            const commentValue = commentBox.value.trim(); // ลบช่องว่างหัวท้ายออก
+            const commentValue = commentBox.value.trim(); 
 
-            // ตรวจสอบว่ากล่องข้อความว่างเปล่าหรือไม่
             if (commentValue === "") {
                 alert("⚠️ ไม่อนุญาตให้ตีกลับเอกสาร!\n\nกรุณาระบุเหตุผลในช่อง 'ความเห็น / ข้อสังเกต' เพื่อให้ผู้รับเหมาทราบจุดที่ต้องแก้ไขครับ");
-                commentBox.classList.add('error'); // เปลี่ยนสีกรอบเป็นสีแดง
-                commentBox.focus(); // เลื่อนเคอร์เซอร์ไปที่กล่อง
+                commentBox.classList.add('error'); 
+                commentBox.focus(); 
             } else {
-                commentBox.classList.remove('error'); // เอาสีแดงออก
+                commentBox.classList.remove('error'); 
                 alert("❌ ตีกลับเรียบร้อย!\nระบบได้ส่งแจ้งเตือนให้ผู้รับเหมาแก้ไขใหม่ พร้อมเหตุผล: " + commentValue);
-                // ในระบบจริงตรงนี้จะส่งข้อมูลเข้าฐานข้อมูลและแจ้งเตือนผ่าน LINE OA ครับ
+                
+                // ถอยสถานะ Tracker กลับไปที่ผู้รับเหมา (จำลองให้เห็นภาพ)
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step2').classList.remove('completed');
+                document.getElementById('step2').classList.add('active');
+                document.getElementById('step2').querySelector('.step-circle').innerHTML = '2';
             }
         }
 
-        // ฟังก์ชันยืนยันตัวตนด้วย PIN
-        function promptPin(role) {
-            let pin = prompt("กรุณากรอกรหัส PIN 6 หลัก เพื่อยืนยันลายมือชื่ออิเล็กทรอนิกส์ในฐานะ " + role + ":");
+        // ฟังก์ชัน PM อนุมัติ (จะดันสถานะไปที่ PD)
+        function acceptPM() {
+            let pin = prompt("กรุณากรอกรหัส PIN 6 หลัก เพื่อยืนยันลายมือชื่ออิเล็กทรอนิกส์ในฐานะ PM:");
             if(pin) {
-                alert("ยืนยันลายเซ็นดิจิทัลเรียบร้อย!\nระบบได้บันทึกสถานะ Accept By " + role + " และเก็บ Log เวลา " + new Date().toLocaleTimeString() + " เรียบร้อยแล้วครับ");
+                // 1. เปลี่ยนสถานะ Tracker เป็นรอ PD รับทราบ
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step3').classList.add('completed');
+                document.getElementById('step3').querySelector('.step-circle').innerHTML = '✓';
+                document.getElementById('step4').classList.add('active');
+
+                // 2. ล็อกหน้าจอส่วนของ PM
+                document.getElementById('pmComment').disabled = true;
+                document.getElementById('btnRejectPM').disabled = true;
+                document.getElementById('btnAcceptPM').disabled = true;
+                document.getElementById('btnAcceptPM').innerHTML = '✅ PM อนุมัติแล้ว';
+                document.getElementById('pmSection').classList.add('locked');
+
+                // 3. ปลดล็อกหน้าจอส่วนของ PD
+                document.getElementById('pdComment').disabled = false;
+                document.getElementById('pdComment').placeholder = "ข้อเสนอแนะเพิ่มเติม (ถ้ามี)...";
+                document.getElementById('btnAcceptPD').disabled = false;
+                document.getElementById('btnAcceptPD').innerHTML = '📝 รับทราบและปิดรายงาน (Accept By PD)';
+
+                alert("✅ ยืนยันลายเซ็นดิจิทัล PM เรียบร้อย!\n\nสถานะเอกสารปัจจุบัน: ส่งต่อให้ PD พิจารณา (Pending PD)");
+            }
+        }
+
+        // ฟังก์ชัน PD อนุมัติ (ปิดจ๊อบสมบูรณ์)
+        function acceptPD() {
+            let pin = prompt("กรุณากรอกรหัส PIN 6 หลัก เพื่อยืนยันลายมือชื่อระดับบริหาร (PD):");
+            if(pin) {
+                // เปลี่ยนสถานะ Tracker เป็น Completed ทั้งหมด
+                document.getElementById('step4').classList.remove('active');
+                document.getElementById('step4').classList.add('completed');
+                document.getElementById('step4').querySelector('.step-circle').innerHTML = '✓';
+
+                // ล็อกปุ่ม PD
+                document.getElementById('pdComment').disabled = true;
+                document.getElementById('btnAcceptPD').disabled = true;
+                document.getElementById('btnAcceptPD').innerHTML = '🎯 ปิดรายงานเรียบร้อย (Closed)';
+                document.getElementById('btnAcceptPD').style.backgroundColor = '#10b981';
+                document.getElementById('pdSection').classList.add('locked');
+
+                alert("🎯 ปิดรายงานสมบูรณ์ (Closed Report)!\nเอกสาร FM-SAF-09 ฉบับนี้ได้รับการอนุมัติจากผู้บริหารเรียบร้อยแล้วครับ");
             }
         }
     </script>
