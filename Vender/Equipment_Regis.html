@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ขึ้นทะเบียนอุปกรณ์เครื่องมือ - FTC Digital Safety</title>
+    <!-- นำเข้าฟอนต์ Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        .header { background-color: #034694; /* สีน้ำเงินคล้ายโลโก้ First */ color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 22px; text-transform: uppercase; }
+        .header p { margin: 5px 0 0; font-size: 16px; opacity: 0.9; }
+        
+        .form-section { padding: 25px; border-bottom: 1px solid #e2e8f0; }
+        .section-title { font-size: 18px; font-weight: 700; color: #034694; margin-bottom: 15px; border-left: 4px solid #034694; padding-left: 10px; }
+        
+        .form-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 200px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        label span { font-weight: 400; color: #718096; font-size: 13px; }
+        
+        input[type="text"], input[type="number"], select, input[type="date"], input[type="file"] { 
+            width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-family: 'Sarabun'; transition: 0.3s; 
+        }
+        input:focus, select:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
+        
+        /* สไตล์สำหรับกล่องรายการอุปกรณ์ */
+        .eq-item { background: #f8fafc; border: 1px solid #cbd5e0; padding: 20px; margin-bottom: 15px; border-radius: 6px; position: relative; }
+        .eq-item-header { font-weight: 700; color: #2d3748; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e0; display: flex; justify-content: space-between;}
+        .btn-remove { background: #e53e3e; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        
+        .eq-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        @media (max-width: 600px) { .eq-grid { grid-template-columns: 1fr; } }
+        
+        .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; margin-bottom: 20px; }
+        .btn-add:hover { background-color: #e2e8f0; }
+        
+        .btn-submit { background-color: #034694; color: white; border: none; padding: 15px 30px; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 16px; width: 100%; transition: 0.3s; }
+        .btn-submit:hover { background-color: #02316a; }
+        
+        .declaration-box { background: #fffaf0; border-left: 4px solid #dd6b20; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 14px; display: flex; gap: 10px; }
+        .declaration-box input { margin-top: 4px; transform: scale(1.2); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Request for Equipment / Tools Inspection</h2>
+        <p>แบบใบขอส่งรายการอุปกรณ์ / เครื่องมือเพื่อตรวจสอบ (FTC Digital Safety)</p>
+    </div>
+
+    <form id="equipmentRegisForm" onsubmit="submitEquipmentForm(event)">
+        
+        <!-- ข้อมูลโครงการและผู้รับเหมา -->
+        <div class="form-section">
+            <div class="section-title">1. ข้อมูลทั่วไป (General Information)</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ผู้รับจ้าง <span>/ Subcontractor</span> *</label>
+                    <!-- ปกติจะ Auto-fill จากระบบ Login แต่ทำ Dropdown ไว้ให้ดูก่อนค่ะ -->
+                    <select id="subcontractor" required>
+                        <option value="Sompong_Team">ทีมผู้รับเหมา - ช่างสมปอง</option>
+                        <option value="ABC_Corp">บจก. เอบีซี (ABC Corp.)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ระบบที่ปฏิบัติงาน <span>/ System</span></label>
+                    <input type="text" id="systemName" placeholder="เช่น ระบบไฟฟ้า, โครงสร้าง">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ระยะเวลาใช้งานจาก <span>/ From Date</span> *</label>
+                    <input type="date" id="dateFrom" required>
+                </div>
+                <div class="form-group">
+                    <label>ถึงวันที่ <span>/ To Date</span> *</label>
+                    <input type="date" id="dateTo" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- รายการอุปกรณ์ -->
+        <div class="form-section" style="background-color: #fafafc;">
+            <div class="section-title">2. รายการอุปกรณ์ / เครื่องมือ (Equipment / Tools List)</div>
+            <p style="font-size: 13px; color: #718096; margin-top: -10px; margin-bottom: 15px;">
+                * กรุณาระบุรายละเอียดอุปกรณ์ และแนบรูปถ่ายเครื่องมือ หรือใบรับรอง (ปจ.2/คป.1) หากมี
+            </p>
+            
+            <div id="dynamicEqContainer">
+                <!-- รายการที่ 1 (แสดงเป็นค่าเริ่มต้น) -->
+                <div class="eq-item" id="eq-1">
+                    <div class="eq-item-header">
+                        <span>รายการอุปกรณ์ที่ 1</span>
+                    </div>
+                    <div class="eq-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>ชื่ออุปกรณ์ <span>/ Equipment Name</span> *</label>
+                            <input type="text" class="eq-name" required placeholder="เช่น สว่านไฟฟ้า, รอกโซ่">
+                        </div>
+                        <div class="form-group">
+                            <label>หมวดหมู่ <span>/ Category</span> *</label>
+                            <select class="eq-category" required>
+                                <option value="">-- เลือก --</option>
+                                <option value="general">เครื่องมือช่างทั่วไป</option>
+                                <option value="electrical">อุปกรณ์ไฟฟ้า</option>
+                                <option value="lifting">อุปกรณ์ยกหิ้ว (Lifting)</option>
+                                <option value="hotwork">อุปกรณ์งานเชื่อม/ตัด</option>
+                                <option value="heavy">เครื่องจักรกลหนัก</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>จำนวน <span>/ Number</span> *</label>
+                            <input type="number" class="eq-qty" required min="1" value="1">
+                        </div>
+                    </div>
+                    <div class="eq-grid">
+                        <div class="form-group">
+                            <label>รุ่น/ยี่ห้อ <span>/ Model</span></label>
+                            <input type="text" class="eq-model" placeholder="ระบุรุ่น (ถ้ามี)">
+                        </div>
+                        <div class="form-group">
+                            <label>ขนาด <span>/ Capacity</span></label>
+                            <input type="text" class="eq-capacity" placeholder="เช่น 2 ตัน, 1500W">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>แนบรูปถ่าย / ใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
+                            <input type="file" class="eq-file" accept="image/*,.pdf" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" class="btn-add" onclick="addEquipment()">
+                + เพิ่มรายการอุปกรณ์ / Add More Equipment
+            </button>
+        </div>
+
+        <!-- การรับรองข้อมูล -->
+        <div class="form-section" style="border-bottom: none;">
+            <div class="declaration-box">
+                <input type="checkbox" id="declareCheck" required>
+                <label for="declareCheck" style="margin-bottom: 0;">
+                    <strong>ข้าพเจ้าขอรับรองว่า:</strong> อุปกรณ์และเครื่องมือทั้งหมดที่ระบุในแบบฟอร์มนี้ ได้รับการตรวจเช็คสภาพเบื้องต้นจากผู้รับเหมาแล้วว่าอยู่ในสภาพพร้อมใช้งาน และปลอดภัย หากพบว่าอุปกรณ์ชำรุดหรือไม่ผ่านมาตรฐาน ข้าพเจ้ายินยอมให้นำออกจากพื้นที่โครงการทันที
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit">บันทึกข้อมูลและส่งให้ จป. ตรวจสอบ</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let eqCounter = 1;
+
+    function addEquipment() {
+        eqCounter++;
+        const container = document.getElementById('dynamicEqContainer');
+        const eqHtml = `
+            <div class="eq-item" id="eq-${eqCounter}">
+                <div class="eq-item-header">
+                    <span>รายการอุปกรณ์ที่ ${eqCounter}</span>
+                    <button type="button" class="btn-remove" onclick="removeEquipment('eq-${eqCounter}')">ลบรายการนี้</button>
+                </div>
+                <div class="eq-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>ชื่ออุปกรณ์ <span>/ Equipment Name</span> *</label>
+                        <input type="text" class="eq-name" required placeholder="เช่น สว่านไฟฟ้า, รอกโซ่">
+                    </div>
+                    <div class="form-group">
+                        <label>หมวดหมู่ <span>/ Category</span> *</label>
+                        <select class="eq-category" required>
+                            <option value="">-- เลือก --</option>
+                            <option value="general">เครื่องมือช่างทั่วไป</option>
+                            <option value="electrical">อุปกรณ์ไฟฟ้า</option>
+                            <option value="lifting">อุปกรณ์ยกหิ้ว (Lifting)</option>
+                            <option value="hotwork">อุปกรณ์งานเชื่อม/ตัด</option>
+                            <option value="heavy">เครื่องจักรกลหนัก</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>จำนวน <span>/ Number</span> *</label>
+                        <input type="number" class="eq-qty" required min="1" value="1">
+                    </div>
+                </div>
+                <div class="eq-grid">
+                    <div class="form-group">
+                        <label>รุ่น/ยี่ห้อ <span>/ Model</span></label>
+                        <input type="text" class="eq-model" placeholder="ระบุรุ่น (ถ้ามี)">
+                    </div>
+                    <div class="form-group">
+                        <label>ขนาด <span>/ Capacity</span></label>
+                        <input type="text" class="eq-capacity" placeholder="เช่น 2 ตัน, 1500W">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>แนบรูปถ่าย / ใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
+                        <input type="file" class="eq-file" accept="image/*,.pdf" required>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', eqHtml);
+    }
+
+    function removeEquipment(id) {
+        const item = document.getElementById(id);
+        if(item) item.remove();
+        
+        // จัดเรียงเลขลำดับใหม่
+        const allItems = document.querySelectorAll('.eq-item-header span');
+        allItems.forEach((span, index) => {
+            span.innerText = `รายการอุปกรณ์ที่ ${index + 1}`;
+        });
+        eqCounter = allItems.length;
+    }
+
+    function submitEquipmentForm(event) {
+        event.preventDefault(); 
+        
+        // เก็บข้อมูลส่วนหัว
+        const payload = {
+            subcontractor: document.getElementById('subcontractor').value,
+            system: document.getElementById('systemName').value,
+            dateFrom: document.getElementById('dateFrom').value,
+            dateTo: document.getElementById('dateTo').value,
+            equipments: []
+        };
+
+        // วนลูปเก็บข้อมูลอุปกรณ์ทีละรายการ
+        const eqItems = document.querySelectorAll('.eq-item');
+        eqItems.forEach(item => {
+            payload.equipments.push({
+                name: item.querySelector('.eq-name').value,
+                category: item.querySelector('.eq-category').value,
+                model: item.querySelector('.eq-model').value,
+                capacity: item.querySelector('.eq-capacity').value,
+                qty: item.querySelector('.eq-qty').value,
+                fileName: item.querySelector('.eq-file').files[0]?.name || 'No file'
+            });
+        });
+
+        console.log("Equipment Data to Submit:", payload);
+        alert("ส่งรายการอุปกรณ์ให้ Safety ตรวจสอบเรียบร้อยแล้ว!\n(สามารถกดดู Console เพื่อดูโครงสร้างข้อมูล JSON)");
+    }
+</script>
+
+</body>
+</html>
