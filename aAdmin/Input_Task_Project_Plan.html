@@ -21,13 +21,13 @@
         /* Audit Box */
         .audit-box { background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 15px; }
         
-        .grid-4 { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 15px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
         input[type="text"], input[type="number"], input[type="date"], select {
-            width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px; color: #334155;
+            width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px; color: #334155; background-color: #fff;
         }
         input:focus, select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
         ::placeholder { color: #94a3b8; font-size: 13px; }
@@ -43,6 +43,9 @@
         th { background-color: #f8fafc; color: #334155; font-weight: 700; border-bottom: 2px solid #cbd5e1; }
         .col-right { text-align: right; }
         .col-center { text-align: center; }
+        
+        optgroup { font-family: 'Sarabun', sans-serif; font-weight: 700; color: #047857; }
+        option { font-weight: 400; color: #334155; }
     </style>
 </head>
 <body onload="setTodayDate()">
@@ -77,29 +80,69 @@
                 </div>
             </div>
 
-            <!-- Row 1: Category -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>หมวดหมู่งาน (Item Category) *</label>
-                <select id="itemCat" onchange="toggleCategoryOther()">
-                    <option value="">-- เลือกหมวดหมู่ --</option>
-                    <option value="1. Preliminary (งานเตรียมการ)">1. Preliminary (งานเตรียมการ)</option>
-                    <option value="2. Structure (งานโครงสร้าง)">2. Structure (งานโครงสร้าง)</option>
-                    <option value="3. Architect (งานสถาปัตย์)">3. Architect (งานสถาปัตย์)</option>
-                    <option value="4. External (งานภายนอก)">4. External (งานภายนอก)</option>
-                    <option value="5. Civil Works for M&E">5. Civil Works for M&E</option>
-                    <option value="6. Electrical Work">6. Electrical Work</option>
-                    <option value="7. Mechanical Work">7. Mechanical Work</option>
-                    <option value="8. Land Clearing and Land Fill">8. Land Clearing and Land Fill</option>
-                    <option value="OTHER">หมวดหมู่อื่นๆ (ระบุ)</option>
-                </select>
-                <input type="text" id="itemCatOther" placeholder="โปรดระบุหมวดหมู่งาน..." style="display:none; margin-top:8px;">
+            <!-- Row 1: Category & Description -->
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>หมวดหมู่งานหลัก (Item Category) *</label>
+                    <select id="itemCat" onchange="toggleCategoryOther()">
+                        <option value="">-- เลือกหมวดหมู่หลัก --</option>
+                        <option value="1. Preliminary (งานเตรียมการ)">1. Preliminary (งานเตรียมการ)</option>
+                        <option value="2. Structure (งานโครงสร้าง)">2. Structure (งานโครงสร้าง)</option>
+                        <option value="3. Architect (งานสถาปัตย์)">3. Architect (งานสถาปัตย์)</option>
+                        <option value="4. External (งานภายนอก)">4. External (งานภายนอก)</option>
+                        <option value="5. Civil Works for M&E">5. Civil Works for M&E</option>
+                        <option value="6. Electrical Work (EE)">6. Electrical Work (EE)</option>
+                        <option value="7. Mechanical Work (AC/SAN/FP)">7. Mechanical Work (AC/SAN/FP)</option>
+                        <option value="8. Land Clearing and Land Fill">8. Land Clearing and Land Fill</option>
+                        <option value="OTHER">หมวดหมู่อื่นๆ (ระบุ)</option>
+                    </select>
+                    <input type="text" id="itemCatOther" placeholder="โปรดระบุหมวดหมู่งาน..." style="display:none; margin-top:8px;">
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียดงานย่อย (Description) *</label>
+                    <select id="itemDesc" onchange="toggleDescOther()">
+                        <option value="">-- เลือกรายละเอียดงาน --</option>
+                        <optgroup label="งานโครงสร้างและสถาปัตย์ (Structure & Architect)">
+                            <option value="งานเสาเข็ม (Piling Work)">งานเสาเข็ม (Piling Work)</option>
+                            <option value="งานฐานรากและโครงสร้างใต้ดิน">งานฐานรากและโครงสร้างใต้ดิน (Foundation)</option>
+                            <option value="งานโครงสร้างคอนกรีตเสริมเหล็ก (RC)">งานโครงสร้างคอนกรีตเสริมเหล็ก (RC)</option>
+                            <option value="งานโครงสร้างเหล็กรูปพรรณ">งานโครงสร้างเหล็กรูปพรรณ (Steel Structure)</option>
+                            <option value="งานก่ออิฐและฉาบปูน">งานก่ออิฐและฉาบปูน (Masonry/Plastering)</option>
+                            <option value="งานผนังเบาและพาร์ทิชัน">งานผนังเบาและพาร์ทิชัน (Drywall/Partition)</option>
+                            <option value="งานฝ้าเพดาน (Ceiling)">งานฝ้าเพดาน (Ceiling)</option>
+                        </optgroup>
+                        <optgroup label="งานระบบปรับอากาศ (AC)">
+                            <option value="งานติดตั้งท่อลมระบายอากาศ (Duct)">งานติดตั้งท่อลมระบายอากาศ (Duct)</option>
+                            <option value="งานเดินท่อน้ำเย็น (Chilled Water)">งานเดินท่อน้ำเย็น (Chilled Water)</option>
+                            <option value="งานหุ้มฉนวน (Insulation)">งานหุ้มฉนวน (Insulation)</option>
+                            <option value="งานติดตั้งเครื่องปรับอากาศ">งานติดตั้งเครื่องปรับอากาศ (AC Unit Installation)</option>
+                        </optgroup>
+                        <optgroup label="งานระบบไฟฟ้า (EE)">
+                            <option value="งานเดินท่อร้อยสายไฟ (Conduit)">งานเดินท่อร้อยสายไฟ (Conduit)</option>
+                            <option value="งานติดตั้งรางสายไฟ (Cable Tray/Ladder)">งานติดตั้งรางสายไฟ (Cable Tray/Ladder)</option>
+                            <option value="งานดึงสายไฟและเข้าหัว (Wiring)">งานดึงสายไฟและเข้าหัว (Wiring)</option>
+                            <option value="งานติดตั้งตู้สวิตช์บอร์ด (MDB/Panel)">งานติดตั้งตู้สวิตช์บอร์ด (MDB/Panel)</option>
+                            <option value="งานระบบแจ้งเหตุเพลิงไหม้ (Fire Alarm)">งานระบบแจ้งเหตุเพลิงไหม้ (Fire Alarm)</option>
+                        </optgroup>
+                        <optgroup label="งานระบบสุขาภิบาลและดับเพลิง (SAN / SPK)">
+                            <option value="งานเดินท่อน้ำดีและท่อน้ำทิ้ง (Plumbing)">งานเดินท่อน้ำดีและท่อน้ำทิ้ง (Plumbing)</option>
+                            <option value="งานติดตั้งสุขภัณฑ์ (Sanitary Ware)">งานติดตั้งสุขภัณฑ์ (Sanitary Ware)</option>
+                            <option value="งานเดินท่อดับเพลิง (Fire Pipe)">งานเดินท่อดับเพลิง (Fire Pipe)</option>
+                            <option value="งานติดตั้งสปริงเกลอร์ (Sprinkler)">งานติดตั้งสปริงเกลอร์ (Sprinkler)</option>
+                        </optgroup>
+                        <optgroup label="อื่นๆ">
+                            <option value="OTHER">รายละเอียดอื่นๆ (โปรดระบุ)</option>
+                        </optgroup>
+                    </select>
+                    <input type="text" id="itemDescOther" placeholder="โปรดระบุรายละเอียดงาน..." style="display:none; margin-top:8px;">
+                </div>
             </div>
 
-            <!-- Row 2: Details & Area -->
+            <!-- Row 3: Area (Building, Floor, Zone, Remark) -->
             <div class="grid-4">
                 <div class="form-group">
-                    <label>รายละเอียดงาน (Description) *</label>
-                    <input type="text" id="itemDesc" placeholder="เช่น Piling work, RC Structure">
+                    <label>ชื่ออาคาร (Building) *</label>
+                    <input type="text" id="itemBldg" placeholder="เช่น WH2, WH5, Main Office">
                 </div>
                 <div class="form-group">
                     <label>พื้นที่ทำงาน (ชั้น) *</label>
@@ -111,11 +154,11 @@
                 </div>
                 <div class="form-group">
                     <label>หมายเหตุ</label>
-                    <input type="text" id="itemRemark" placeholder="ระบุข้อมูลอื่นๆเพื่อระบุพื้นที่ทำงานที่ชัดเจน">
+                    <input type="text" id="itemRemark" placeholder="ระบุข้อมูลเพิ่มเติม (ถ้ามี)">
                 </div>
             </div>
 
-            <!-- Row 3: Cost & Timeline -->
+            <!-- Row 4: Cost & Timeline -->
             <div class="grid-3">
                 <div class="form-group">
                     <label>มูลค่างานตาม BOQ (Cost Value - Baht)</label>
@@ -138,18 +181,18 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 13%;">หมวดหมู่ (Category)</th>
-                    <th style="width: 17%;">รายละเอียดงาน (Description)</th>
-                    <th style="width: 11%;">พื้นที่ (ชั้น/โซน)</th>
-                    <th style="width: 14%;">หมายเหตุ (Remarks)</th>
-                    <th style="width: 12%; text-align: right;">มูลค่า (Cost)</th>
-                    <th style="width: 13%; text-align: center;">Timeline</th>
-                    <th style="width: 15%; text-align: center;">ข้อมูลการบันทึก</th>
+                    <th style="width: 12%;">หมวดหมู่ (Category)</th>
+                    <th style="width: 18%;">รายละเอียดงาน (Description)</th>
+                    <th style="width: 16%;">พื้นที่ (อาคาร/ชั้น/โซน)</th>
+                    <th style="width: 12%;">หมายเหตุ</th>
+                    <th style="width: 10%; text-align: right;">มูลค่า (Cost)</th>
+                    <th style="width: 13%; text-align: center;">ระยะเวลา (Timeline)</th>
+                    <th style="width: 14%; text-align: center;">ข้อมูลการบันทึก</th>
                     <th style="width: 5%; text-align: center;">ลบ</th>
                 </tr>
             </thead>
             <tbody id="masterTableBody">
-                <tr id="emptyRow"><td colspan="8" class="col-center" style="color: #94a3b8; padding: 20px;">ยังไม่มีข้อมูลแผนงาน</td></tr>
+                <tr id="emptyRow"><td colspan="8" class="col-center" style="color: #94a3b8; padding: 20px;">ยังไม่มีข้อมูลแผนงานแม่บท</td></tr>
             </tbody>
         </table>
     </div>
@@ -176,6 +219,19 @@
         }
     }
 
+    // ฟังก์ชันเปิด/ปิด ช่องระบุรายละเอียดอื่นๆ
+    function toggleDescOther() {
+        const descSelect = document.getElementById("itemDesc");
+        const descOther = document.getElementById("itemDescOther");
+        if (descSelect.value === "OTHER") {
+            descOther.style.display = "block";
+            descOther.focus();
+        } else {
+            descOther.style.display = "none";
+            descOther.value = "";
+        }
+    }
+
     let masterTasks = [];
 
     function addMasterTask() {
@@ -192,11 +248,13 @@
 
         // รับค่า Category
         let cat = document.getElementById("itemCat").value;
-        if (cat === "OTHER") {
-            cat = document.getElementById("itemCatOther").value;
-        }
+        if (cat === "OTHER") cat = document.getElementById("itemCatOther").value;
 
-        const desc = document.getElementById("itemDesc").value;
+        // รับค่า Description
+        let desc = document.getElementById("itemDesc").value;
+        if (desc === "OTHER") desc = document.getElementById("itemDescOther").value;
+
+        const bldg = document.getElementById("itemBldg").value;
         const floor = document.getElementById("itemFloor").value;
         const zone = document.getElementById("itemZone").value;
         const remark = document.getElementById("itemRemark").value;
@@ -204,7 +262,7 @@
         const start = document.getElementById("itemStart").value;
         const end = document.getElementById("itemEnd").value;
 
-        if(!cat || !desc || !floor || !zone || !start || !end) {
+        if(!cat || !desc || !bldg || !floor || !zone || !start || !end) {
             alert("กรุณากรอกข้อมูลที่จำเป็น (*) ให้ครบถ้วนครับ");
             return;
         }
@@ -220,15 +278,20 @@
             return;
         }
 
-        // เพิ่มข้อมูลผู้บันทึกลงไปใน Array ด้วย
-        masterTasks.push({ cat, desc, floor, zone, remark, cost, start, end, duration, recorder, recordDate, pdfFile });
+        // เพิ่มข้อมูลลงไปใน Array
+        masterTasks.push({ cat, desc, bldg, floor, zone, remark, cost, start, end, duration, recorder, recordDate, pdfFile });
         renderTable();
 
-        // เคลียร์ฟอร์มส่วนข้อมูลงาน (แต่เก็บชื่อผู้บันทึกไว้เผื่อบันทึกต่อ)
+        // เคลียร์ฟอร์มส่วนข้อมูลงาน (เก็บชื่อผู้บันทึกและ PDF ไว้เผื่อคีย์ต่อ)
         document.getElementById("itemCat").value = "";
         document.getElementById("itemCatOther").style.display = "none";
         document.getElementById("itemCatOther").value = "";
+        
         document.getElementById("itemDesc").value = "";
+        document.getElementById("itemDescOther").style.display = "none";
+        document.getElementById("itemDescOther").value = "";
+        
+        document.getElementById("itemBldg").value = "";
         document.getElementById("itemFloor").value = "";
         document.getElementById("itemZone").value = "";
         document.getElementById("itemRemark").value = "";
@@ -242,7 +305,7 @@
         tbody.innerHTML = "";
         
         if (masterTasks.length === 0) {
-            tbody.innerHTML = '<tr id="emptyRow"><td colspan="8" class="col-center" style="color: #94a3b8; padding: 20px;">ยังไม่มีข้อมูลแผนงาน</td></tr>';
+            tbody.innerHTML = '<tr id="emptyRow"><td colspan="8" class="col-center" style="color: #94a3b8; padding: 20px;">ยังไม่มีข้อมูลแผนงานแม่บท</td></tr>';
             return;
         }
 
@@ -253,7 +316,10 @@
             tr.innerHTML = `
                 <td><strong>${task.cat}</strong></td>
                 <td>${task.desc}</td>
-                <td><span style="color:#047857; font-weight:600;">ช.</span> ${task.floor}<br><span style="color:#047857; font-weight:600;">Z.</span> ${task.zone}</td>
+                <td style="font-size: 13.5px;">
+                    <span style="color:#0284c7; font-weight:700;">อาคาร:</span> ${task.bldg}<br>
+                    <span style="color:#047857; font-weight:700;">ชั้น:</span> ${task.floor} | <span style="color:#d97706; font-weight:700;">โซน:</span> ${task.zone}
+                </td>
                 <td><span style="font-size: 11px; color:#64748b;">${task.remark || '-'}</span></td>
                 <td class="col-right">${costDisplay}</td>
                 <td class="col-center" style="font-size: 11px;">
