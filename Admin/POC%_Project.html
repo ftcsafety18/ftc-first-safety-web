@@ -39,11 +39,16 @@
         .update-box { background-color: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
         .btn-update { background-color: #3b82f6; color: white; border: none; border-radius: 4px; padding: 12px 20px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-weight: 700; width: 100%; font-size: 15px; margin-top: 10px; transition: background 0.3s; }
         .btn-update:hover { background-color: #2563eb; }
+        
+        /* Action Button styling for Table */
+        .btn-action-sm { background-color: #0ea5e9; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600; transition: background 0.3s; }
+        .btn-action-sm:hover { background-color: #0284c7; }
 
         table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; margin-top: 20px;}
         th, td { border: 1px solid #e2e8f0; padding: 10px 12px; text-align: left; vertical-align: middle; }
         th { background-color: #f8fafc; color: #334155; font-weight: 700; border-bottom: 2px solid #cbd5e1; text-align: center; }
         .col-right { text-align: right; }
+        .col-center { text-align: center; }
         
         .progress-bar-bg { background-color: #e2e8f0; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin-top: 5px; position: relative; }
         .progress-bar-fill { background-color: #10b981; height: 100%; transition: width 0.5s; }
@@ -57,7 +62,6 @@
     <div class="header">
         <h1>ระบบอัปเดตความก้าวหน้าโครงการ (Progress & POC Tracking)</h1>
         <p>บันทึกเปอร์เซ็นต์ผลงาน (POC) พร้อมคำนวณมูลค่าที่ทำได้จริง (Earned Value) ควบคุมโดยระบบ Audit Trail</p>
-        <!-- Project ID Badge added here -->
         <div class="project-badge">
             PROJECT: <span>PRJ-26-045 (FTC Digital Safety Transformation)</span>
         </div>
@@ -83,7 +87,7 @@
         <div class="section-title">อัปเดตความก้าวหน้าของงาน (Update Task Progress)</div>
 
         <!-- Form Update POC -->
-        <div class="update-box">
+        <div id="updateFormSection" class="update-box">
             <div class="grid-3">
                 <div class="form-group">
                     <label>ผู้เข้าสู่ระบบ (Logged in as) 🔒</label>
@@ -93,7 +97,6 @@
                     <label>เลือกรหัสงานและรายการ (Select Task No. / Description) *</label>
                     <select id="taskSelect" onchange="loadTaskDetails()">
                         <option value="">-- โปรดเลือกรหัสงานที่ต้องการอัปเดต --</option>
-                        <!-- แสดง Task Number นำหน้าใน Dropdown -->
                         <option value="0" data-cost="1500000" data-poc="0">[T-01] งานเสาเข็ม (Piling Work) - อาคาร WH2</option>
                         <option value="1" data-cost="800000" data-poc="25">[T-02] งานติดตั้งท่อลมระบายอากาศ - อาคาร WH5</option>
                         <option value="2" data-cost="500000" data-poc="100">[EE-01] งานเดินท่อร้อยสายไฟ - Main Office</option>
@@ -130,10 +133,11 @@
             <thead>
                 <tr>
                     <th style="width: 25%;">รหัสงานและรายการ (Task No. & Description)</th>
-                    <th style="width: 15%; text-align: right;">มูลค่าตามแผน (Cost)</th>
-                    <th style="width: 20%;">ความก้าวหน้า (POC %)</th>
+                    <th style="width: 13%; text-align: right;">มูลค่าตามแผน (Cost)</th>
+                    <th style="width: 17%;">ความก้าวหน้า (POC %)</th>
                     <th style="width: 15%; text-align: right;">มูลค่าที่ทำได้ (EV)</th>
-                    <th style="width: 25%;">ประวัติการอัปเดต (Audit Log)</th>
+                    <th style="width: 20%;">ประวัติการอัปเดต (Audit Log)</th>
+                    <th style="width: 10%; text-align: center;">จัดการ</th>
                 </tr>
             </thead>
             <tbody id="progressTableBody">
@@ -144,7 +148,6 @@
 </div>
 
 <script>
-    // ฐานข้อมูลงานที่ถูกแก้ไขเพิ่ม taskNo เข้าไป
     let projectTasks = [
         { id: 0, taskNo: "T-01", name: "งานเสาเข็ม (Piling Work) - อาคาร WH2", cost: 1500000, poc: 0, ev: 0, lastUpdate: "-", updatedBy: "-", remark: "-", evidence: "-" },
         { id: 1, taskNo: "T-02", name: "งานติดตั้งท่อลมระบายอากาศ - อาคาร WH5", cost: 800000, poc: 25, ev: 200000, lastUpdate: "24 ก.ค. 2569", updatedBy: "ทีมวิศวกร A", remark: "ติดตั้งชั้น 1 เสร็จสิ้น", evidence: "มีรูปถ่าย" },
@@ -167,6 +170,20 @@
         const selectedOption = select.options[select.selectedIndex];
         pocInput.value = selectedOption.getAttribute("data-poc");
         previewEV();
+    }
+
+    // ฟังก์ชันใหม่: ดึงข้อมูลจากตารางไปที่ฟอร์มเพื่อให้อัปเดตได้ไวขึ้น
+    function selectTaskForUpdate(taskId) {
+        const select = document.getElementById("taskSelect");
+        select.value = taskId;
+        loadTaskDetails(); // ดึง % เดิมมาโชว์
+        
+        // เลื่อนหน้าจอกลับขึ้นไปที่ฟอร์มอัปเดต
+        const formSection = document.getElementById("updateFormSection");
+        window.scrollTo({ top: formSection.offsetTop - 20, behavior: 'smooth' });
+        
+        // โฟกัสไปที่ช่องกรอก % ให้พิมพ์ได้ทันที
+        document.getElementById("inputPoc").focus();
     }
 
     function previewEV() {
@@ -243,10 +260,14 @@
                 </td>
                 <td class="col-right" style="color: #059669; font-weight: bold;">฿ ${task.ev.toLocaleString('th-TH')}</td>
                 <td style="font-size: 11px; background-color: #f8fafc;">
-                    <strong style="color: #0369a1;">อัปเดตล่าสุด:</strong> ${task.lastUpdate}<br>
+                    <strong style="color: #0369a1;">อัปเดต:</strong> ${task.lastUpdate}<br>
                     <strong style="color: #475569;">โดย:</strong> ${task.updatedBy}<br>
                     <span style="color: #64748b;">📝 ${task.remark}</span><br>
                     <span style="color: #d97706;">📸 ${task.evidence}</span>
+                </td>
+                <td class="col-center">
+                    <!-- ปุ่มอัปเดตสำหรับกดเรียกข้อมูลขึ้นไปที่ฟอร์ม -->
+                    <button type="button" class="btn-action-sm" onclick="selectTaskForUpdate(${task.id})">อัปเดต</button>
                 </td>
             `;
             tbody.appendChild(tr);
