@@ -27,10 +27,8 @@
         }
         input:focus, select:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
         
-        /* สไตล์ช่องคำนวณวันอัตโนมัติ */
         .readonly-input { background-color: #e2e8f0; font-weight: 700; color: #2d3748; cursor: not-allowed; }
 
-        /* สไตล์สำหรับกล่องรายการอุปกรณ์ */
         .eq-item { background: #f8fafc; border: 1px solid #cbd5e0; padding: 20px; margin-bottom: 15px; border-radius: 6px; position: relative; }
         .eq-item-header { font-weight: 700; color: #2d3748; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e0; display: flex; justify-content: space-between;}
         .btn-remove { background: #e53e3e; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 12px; font-weight: bold; }
@@ -116,14 +114,17 @@
                         </div>
                         <div class="form-group">
                             <label>หมวดหมู่ <span>/ Category</span> *</label>
-                            <select class="eq-category" required>
+                            <select class="eq-category" required onchange="toggleOtherCategory(this)">
                                 <option value="">-- เลือก --</option>
-                                <option value="general">เครื่องมือช่างทั่วไป</option>
-                                <option value="electrical">อุปกรณ์ไฟฟ้า</option>
-                                <option value="lifting">อุปกรณ์ยกหิ้ว (Lifting)</option>
-                                <option value="hotwork">อุปกรณ์งานเชื่อม/ตัด</option>
-                                <option value="heavy">เครื่องจักรกลหนัก</option>
+                                <option value="เครื่องมือช่างทั่วไป">เครื่องมือช่างทั่วไป</option>
+                                <option value="อุปกรณ์ไฟฟ้า">อุปกรณ์ไฟฟ้า</option>
+                                <option value="อุปกรณ์ยกหิ้ว (Lifting)">อุปกรณ์ยกหิ้ว (Lifting)</option>
+                                <option value="อุปกรณ์งานเชื่อม/ตัด">อุปกรณ์งานเชื่อม/ตัด</option>
+                                <option value="เครื่องจักรกลหนัก">เครื่องจักรกลหนัก</option>
+                                <option value="other">อื่นๆ (โปรดระบุ)</option>
                             </select>
+                            <!-- ซ่อนกล่องรับข้อความ "อื่นๆ" ไว้เป็นค่าเริ่มต้น -->
+                            <input type="text" class="eq-category-other" placeholder="โปรดระบุหมวดหมู่..." style="display: none; margin-top: 8px; border-color: #dd6b20;">
                         </div>
                         <div class="form-group">
                             <label>จำนวน <span>/ Number</span> *</label>
@@ -141,7 +142,6 @@
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
                             <label>ถ่ายรูปหน้างาน / แนบใบรับรอง <span>(อัปโหลดไฟล์)</span> *</label>
-                            <!-- การตั้งค่า accept="image/*, application/pdf" จะทำให้มือถือเปิดกล้องถ่ายรูปได้เลย -->
                             <input type="file" class="eq-file" accept="image/*, application/pdf" required>
                         </div>
                     </div>
@@ -185,13 +185,27 @@
                 return;
             }
 
-            // คำนวณความต่างของเวลา (มิลลิวินาที) แปลงเป็นวัน และบวก 1 เพื่อให้นับรวมวันเริ่มต้นด้วย
             const diffTime = Math.abs(dateTo - dateFrom);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
             
             totalInput.value = diffDays + " วัน";
         } else {
             totalInput.value = '';
+        }
+    }
+
+    // ฟังก์ชันจัดการช่องกรอก "อื่นๆ"
+    function toggleOtherCategory(selectElement) {
+        // อ้างอิงไปยังช่อง input ที่อยู่ถัดจาก select (ที่เป็น class eq-category-other)
+        const otherInput = selectElement.nextElementSibling;
+        
+        if (selectElement.value === 'other') {
+            otherInput.style.display = 'block';
+            otherInput.required = true; // บังคับให้ต้องพิมพ์
+        } else {
+            otherInput.style.display = 'none';
+            otherInput.required = false;
+            otherInput.value = ''; // ล้างค่าเผื่อเปลี่ยนใจกลับไปเลือกหมวดปกติ
         }
     }
 
@@ -213,14 +227,16 @@
                     </div>
                     <div class="form-group">
                         <label>หมวดหมู่ <span>/ Category</span> *</label>
-                        <select class="eq-category" required>
+                        <select class="eq-category" required onchange="toggleOtherCategory(this)">
                             <option value="">-- เลือก --</option>
-                            <option value="general">เครื่องมือช่างทั่วไป</option>
-                            <option value="electrical">อุปกรณ์ไฟฟ้า</option>
-                            <option value="lifting">อุปกรณ์ยกหิ้ว (Lifting)</option>
-                            <option value="hotwork">อุปกรณ์งานเชื่อม/ตัด</option>
-                            <option value="heavy">เครื่องจักรกลหนัก</option>
+                            <option value="เครื่องมือช่างทั่วไป">เครื่องมือช่างทั่วไป</option>
+                            <option value="อุปกรณ์ไฟฟ้า">อุปกรณ์ไฟฟ้า</option>
+                            <option value="อุปกรณ์ยกหิ้ว (Lifting)">อุปกรณ์ยกหิ้ว (Lifting)</option>
+                            <option value="อุปกรณ์งานเชื่อม/ตัด">อุปกรณ์งานเชื่อม/ตัด</option>
+                            <option value="เครื่องจักรกลหนัก">เครื่องจักรกลหนัก</option>
+                            <option value="other">อื่นๆ (โปรดระบุ)</option>
                         </select>
+                        <input type="text" class="eq-category-other" placeholder="โปรดระบุหมวดหมู่..." style="display: none; margin-top: 8px; border-color: #dd6b20;">
                     </div>
                     <div class="form-group">
                         <label>จำนวน <span>/ Number</span> *</label>
@@ -250,7 +266,6 @@
         const item = document.getElementById(id);
         if(item) item.remove();
         
-        // จัดเรียงเลขลำดับใหม่หลังจากกดลบ
         const allItems = document.querySelectorAll('.eq-item-header span');
         allItems.forEach((span, index) => {
             span.innerText = `รายการอุปกรณ์ที่ ${index + 1}`;
@@ -273,9 +288,14 @@
 
         const eqItems = document.querySelectorAll('.eq-item');
         eqItems.forEach(item => {
+            // เช็คว่าเลือก "อื่นๆ" หรือไม่ ถ้าเลือกให้ดึงข้อความจากช่อง input มาใช้แทน
+            const categorySelect = item.querySelector('.eq-category').value;
+            const categoryOther = item.querySelector('.eq-category-other').value;
+            const finalCategory = (categorySelect === 'other') ? categoryOther : categorySelect;
+
             payload.equipments.push({
                 name: item.querySelector('.eq-name').value,
-                category: item.querySelector('.eq-category').value,
+                category: finalCategory,
                 model: item.querySelector('.eq-model').value,
                 capacity: item.querySelector('.eq-capacity').value,
                 qty: item.querySelector('.eq-qty').value,
@@ -284,7 +304,7 @@
         });
 
         console.log("Equipment Data to Submit:", payload);
-        alert("ขอบคุณคุณ " + payload.submitterName + "\\nระบบได้ส่งรายการอุปกรณ์ให้ Safety ตรวจสอบเรียบร้อยแล้วครับ!");
+        alert("ขอบคุณคุณ " + payload.submitterName + "\\nระบบได้ส่งรายการอุปกรณ์ให้ Safety ตรวจสอบเรียบร้อยแล้วครับ!\\n(หมวดหมู่ที่เลือกจะถูกบันทึกตามที่ระบุไว้ครับ)");
     }
 </script>
 
