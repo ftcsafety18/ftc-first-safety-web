@@ -36,10 +36,6 @@ interface FormData {
   idNumber: string
   dateOfBirth: string
   vendor: string
-  vendorContact: string
-  department: string
-  jobTitle: string
-  startDate: string
   emergencyName: string
   emergencyRelationship: string
   emergencyRelationshipOther: string
@@ -62,16 +58,6 @@ const VENDOR_LIST = [
   "บริษัท พีพี เซฟตี้ จำกัด",
   "บริษัท ออมเทค ซัพพลาย จำกัด",
   "บริษัท ฟิวเจอร์ เมนเทนแนนซ์ จำกัด",
-]
-
-const DEPARTMENTS = [
-  "ฝ่ายผลิต (Production)",
-  "ฝ่ายซ่อมบำรุง (Maintenance)",
-  "ฝ่ายก่อสร้าง (Construction)",
-  "ฝ่ายคลังสินค้า (Warehouse)",
-  "ฝ่ายรักษาความปลอดภัย (Security)",
-  "ฝ่ายทำความสะอาด (Cleaning)",
-  "ฝ่ายขนส่ง (Logistics)",
 ]
 
 const RELATIONSHIPS = [
@@ -534,7 +520,6 @@ function UploadZone({
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? [])
     if (selected.length) onFiles(selected)
-    // reset input so same file can be re-selected after removal
     e.target.value = ""
   }
 
@@ -877,7 +862,6 @@ function Step3FaceScan({
 
   function handleLineFetch() {
     setLineLoading(true)
-    // Simulate LIFF auto-fill
     setTimeout(() => {
       setLineId("@ftcsafety_worker")
       setLineLoading(false)
@@ -1146,10 +1130,6 @@ export default function Page() {
     idNumber: "",
     dateOfBirth: "",
     vendor: "",
-    vendorContact: "",
-    department: "",
-    jobTitle: "",
-    startDate: "",
     emergencyName: "",
     emergencyRelationship: "",
     emergencyRelationshipOther: "",
@@ -1213,16 +1193,16 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-background">
       {/* ── Sticky Header ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-brand-navy shadow-xl shadow-brand-navy/20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-orange flex items-center justify-center shrink-0 shadow-lg shadow-brand-orange/30">
-            <ShieldCheck className="w-5 h-5 text-white" />
+      <header className="sticky top-0 z-40 bg-brand-navy shadow-md shadow-brand-navy/20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-brand-orange flex items-center justify-center shrink-0 shadow shadow-brand-orange/30">
+            <ShieldCheck className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white leading-tight tracking-wide">
+            <h1 className="text-sm font-bold text-white leading-tight tracking-wide">
               FTC First Safety
             </h1>
-            <p className="text-xs text-white/70 leading-tight">
+            <p className="text-[10px] sm:text-xs text-white/70 leading-tight mt-0.5">
               ลงทะเบียนเข้าปฏิบัติงาน{" "}
               <span className="text-white/50">(Worker Registration)</span>
             </p>
@@ -1425,76 +1405,6 @@ export default function Page() {
                 <VendorCombobox
                   value={form.vendor}
                   onChange={(v) => set("vendor", v)}
-                />
-              </div>
-
-              {/* Vendor Contact Person */}
-              <div className="mb-4">
-                <Label htmlFor="vendorContact">
-                  ชื่อบุคคลติดต่อผู้รับเหมา{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Vendor Contact Person)
-                  </span>
-                </Label>
-                <input
-                  id="vendorContact"
-                  type="text"
-                  value={form.vendorContact}
-                  onChange={(e) => set("vendorContact", e.target.value)}
-                  placeholder="ชื่อ-นามสกุล ผู้ประสานงาน"
-                  className={inputCls}
-                />
-              </div>
-
-              {/* Department & Job Title */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <Label htmlFor="department" required>
-                    แผนก{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Department)
-                    </span>
-                  </Label>
-                  <SelectField
-                    id="department"
-                    value={form.department}
-                    onChange={(v) => set("department", v)}
-                    placeholder="-- เลือกแผนก --"
-                    options={DEPARTMENTS}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="jobTitle">
-                    ตำแหน่งงาน{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Job Title)
-                    </span>
-                  </Label>
-                  <input
-                    id="jobTitle"
-                    type="text"
-                    value={form.jobTitle}
-                    onChange={(e) => set("jobTitle", e.target.value)}
-                    placeholder="เช่น ช่างเชื่อม, พนักงานขับรถ"
-                    className={inputCls}
-                  />
-                </div>
-              </div>
-
-              {/* Start Date */}
-              <div className="mb-4">
-                <Label htmlFor="startDate" required>
-                  วันที่เริ่มงาน{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Start Date)
-                  </span>
-                </Label>
-                <input
-                  id="startDate"
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) => set("startDate", e.target.value)}
-                  className={inputCls}
                 />
               </div>
 
