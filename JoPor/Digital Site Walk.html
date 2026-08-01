@@ -75,7 +75,7 @@
         .status-badge.done { background: #d1fae5; color: #10b981; }
 
         /* Photo Upload UI */
-        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px; }
         .photo-upload {
             border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 6px;
             height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -84,6 +84,11 @@
         .photo-upload.has-image { border-style: solid; border-color: #e2e8f0; padding: 0; overflow: hidden; }
         .photo-upload img { width: 100%; height: 100%; object-fit: cover; }
         .photo-icon { font-size: 24px; margin-bottom: 4px; }
+        
+        /* Optional Toggle Text */
+        .toggle-photo-btn {
+            display: block; text-align: right; font-size: 13px; color: #034694; font-weight: 600; cursor: pointer; margin-bottom: 15px; text-decoration: underline;
+        }
 
         /* Add Button */
         .btn-add {
@@ -106,9 +111,7 @@
 
     <div class="app-container">
         <div class="header">
-            <!-- มุมขวาบน รหัสเอกสาร -->
             <div class="form-no">FM-SAF-09</div>
-            
             <h1>Site Walk Safety Audit</h1>
             <p>ระบบบันทึกการตรวจความปลอดภัยพื้นที่</p>
         </div>
@@ -155,17 +158,28 @@
                     </select>
                 </div>
 
-                <div class="photo-grid">
-                    <!-- กล่องใส่รูป Before -->
+                <div class="photo-grid" id="photoGrid_1">
+                    <!-- Default (จุดเกิดเหตุ) -->
                     <div class="photo-upload has-image">
                         <img src="https://via.placeholder.com/150/ef4444/FFFFFF?text=Before+Photo" alt="Before">
                     </div>
-                    <!-- กล่องใส่รูป After -->
-                    <div class="photo-upload" onclick="alert('เปิดกล้องถ่ายรูป After Corrective')">
+                    <div class="photo-upload" onclick="alert('เปิดกล้องถ่ายรูป After (จุดเกิดเหตุ)')">
                         <span class="photo-icon">📸</span>
                         <span>ถ่ายรูป After</span>
                     </div>
+                    
+                    <!-- Optional (มุมกว้าง) ถูกซ่อนไว้เป็นค่าเริ่มต้น -->
+                    <div class="photo-upload extra-photo" style="display: none;" onclick="alert('เปิดกล้องถ่ายรูป Before (มุมกว้าง)')">
+                        <span class="photo-icon">📸</span>
+                        <span>ถ่ายรูป Before<br>(มุมกว้าง)</span>
+                    </div>
+                    <div class="photo-upload extra-photo" style="display: none;" onclick="alert('เปิดกล้องถ่ายรูป After (มุมกว้าง)')">
+                        <span class="photo-icon">📸</span>
+                        <span>ถ่ายรูป After<br>(มุมกว้าง)</span>
+                    </div>
                 </div>
+                <!-- ปุ่มสลับเปิดปิดรูปมุมกว้าง -->
+                <span class="toggle-photo-btn" onclick="toggleExtraPhotos('1', this)">+ เพิ่มรูปมุมกว้าง (Optional)</span>
 
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">ผู้รับผิดชอบ (Action By)</label>
@@ -173,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- Card Item 2 (ตัวอย่างงานที่แก้แล้ว) -->
+            <!-- Card Item 2 -->
             <div class="audit-card">
                 <div class="audit-header">
                     <div class="item-no">รายการที่ 2</div>
@@ -189,18 +203,28 @@
                         <option selected>เขตควบคุม (Warm Zone)</option>
                     </select>
                 </div>
-                <div class="photo-grid">
+                
+                <div class="photo-grid" id="photoGrid_2">
                     <div class="photo-upload has-image">
                         <img src="https://via.placeholder.com/150/ef4444/FFFFFF?text=Before+Photo" alt="Before">
                     </div>
                     <div class="photo-upload has-image">
                         <img src="https://via.placeholder.com/150/10b981/FFFFFF?text=After+Photo" alt="After">
                     </div>
+                    <!-- Optional (มุมกว้าง) -->
+                    <div class="photo-upload extra-photo has-image" style="display: none;">
+                        <img src="https://via.placeholder.com/150/ef4444/FFFFFF?text=Before+Wide" alt="Before Wide">
+                    </div>
+                    <div class="photo-upload extra-photo has-image" style="display: none;">
+                        <img src="https://via.placeholder.com/150/10b981/FFFFFF?text=After+Wide" alt="After Wide">
+                    </div>
                 </div>
+                <span class="toggle-photo-btn" onclick="toggleExtraPhotos('2', this)">+ เพิ่มรูปมุมกว้าง (Optional)</span>
+
             </div>
 
             <button class="btn-add" onclick="alert('เพิ่มรายการตรวจสอบใหม่')">+ เพิ่มรายการตรวจสอบ (Add Item)</button>
-            <br><br><br> <!-- เผื่อพื้นที่ให้ปุ่ม Submit -->
+            <br><br><br>
         </div>
 
         <div class="footer-action">
@@ -208,5 +232,31 @@
         </div>
     </div>
 
+    <!-- สคริปต์ควบคุมการแสดงผลรูปมุมกว้าง -->
+    <script>
+        function toggleExtraPhotos(itemId, btnElement) {
+            const extraPhotos = document.querySelectorAll('#photoGrid_' + itemId + ' .extra-photo');
+            let isHidden = true;
+
+            extraPhotos.forEach(photo => {
+                if (photo.style.display === 'none' || photo.style.display === '') {
+                    photo.style.display = 'flex'; // แสดงผล
+                    isHidden = false;
+                } else {
+                    photo.style.display = 'none'; // ซ่อน
+                    isHidden = true;
+                }
+            });
+
+            // เปลี่ยนข้อความปุ่มตามสถานะ
+            if (isHidden) {
+                btnElement.innerText = '+ เพิ่มรูปมุมกว้าง (Optional)';
+                btnElement.style.color = '#034694';
+            } else {
+                btnElement.innerText = '- ซ่อนรูปมุมกว้าง';
+                btnElement.style.color = '#64748b';
+            }
+        }
+    </script>
 </body>
 </html>
