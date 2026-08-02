@@ -14,7 +14,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --white: #ffffff;
-            --danger: #ef4444;
         }
 
         body { 
@@ -33,11 +32,11 @@
         }
         
         /* =========================================
-           1. Header Design (แบบใหม่แถบน้ำเงิน)
+           1. Header Design (โลโก้แบบเขียนด้วย Code)
            ========================================= */
         .header-top {
             background-color: var(--ftc-blue);
-            padding: 15px 20px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -46,20 +45,47 @@
             top: 0;
             z-index: 50;
         }
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .logo-box {
+
+        .logo-code-wrapper {
             background-color: var(--white);
+            padding: 4px 10px 4px 6px;
             border-radius: 6px;
-            width: 48px;
-            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo-icon-circle {
+            background-color: #0012b3;
+            color: var(--white);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2px;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 14px;
         }
-        .header-title-wrap { display: flex; flex-direction: column; color: var(--white); }
-        .sys-title { font-size: 18px; font-weight: 700; line-height: 1.2; letter-spacing: 0.5px; }
-        .sys-subtitle { font-size: 12px; font-weight: 300; color: #e2e8f0; }
+
+        .logo-text-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-title-center {
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            color: var(--white); 
+            font-weight: 700; 
+            font-size: 16px; 
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
 
         .header-content {
             background-color: var(--white);
@@ -182,20 +208,25 @@
 
 <div class="app-container">
     
-    <!-- แถบ Header สีน้ำเงินด้านบนสุด -->
+    <!-- แถบ Header สีน้ำเงิน (พร้อมโลโก้ที่สร้างจาก HTML/CSS) -->
     <div class="header-top">
-        <div class="header-left">
-            <div class="logo-box">
-                <!-- 💡 พี่ณัฐธัญสามารถลบ div ด้านล่าง แล้วใส่แท็ก <img src="ชื่อไฟล์โลโก้.png" style="width:100%;"> แทนได้เลยครับ -->
-                <div style="color:#1e2a78; font-weight:900; font-style:italic; font-size:12px; text-align:center; line-height:1;">
-                    <span style="color:#e11d48; font-size:16px;">1</span><br>First
-                </div>
-            </div>
-            <div class="header-title-wrap">
-                <div class="sys-title">FTC First Safety</div>
-                <div class="sys-subtitle">ระบบบริหารจัดการความปลอดภัย</div>
+        <!-- ฝั่งซ้าย: โลโก้ FTC First -->
+        <div class="logo-code-wrapper">
+            <div class="logo-icon-circle">1</div>
+            <div class="logo-text-group">
+                <div style="color: #0012b3; font-weight: 900; font-style: italic; font-size: 16px; line-height: 1; letter-spacing: -0.2px;">1 First</div>
+                <div style="height: 2px; background-color: #fff000; width: 100%; margin: 2px 0;"></div>
+                <div style="color: #0012b3; font-size: 5px; font-weight: 800; letter-spacing: 0.5px; line-height: 1;">TECHNOLOGY CO.,LTD.</div>
             </div>
         </div>
+
+        <!-- ตรงกลาง: ชื่อหน้าเมนู -->
+        <div class="header-title-center">
+            เมนูที่ 0 Main Menu
+        </div>
+
+        <!-- ฝั่งขวา: ตัวเว้นระยะเพื่อให้ข้อความอยู่ตรงกลาง -->
+        <div style="width: 90px;"></div>
     </div>
 
     <!-- ส่วนต้อนรับและโปรไฟล์ -->
