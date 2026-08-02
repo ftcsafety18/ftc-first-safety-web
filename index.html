@@ -2,413 +2,165 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FTC Safety Super App - Main Menu</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC Safety - Main Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --ftc-blue: #1e2a78; 
-            --ftc-yellow: #fff000; 
-            --bg-light: #f4f7fb;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --white: #ffffff;
-        }
-
-        body { 
-            font-family: 'Sarabun', sans-serif; 
-            background-color: var(--bg-light); 
-            margin: 0; padding: 0; 
-            color: var(--text-main);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .app-container {
-            max-width: 600px; margin: 0 auto;
-            background: var(--bg-light);
-            min-height: 100vh; padding-bottom: 30px;
-            position: relative; overflow-x: hidden;
-        }
-        
-        /* =========================================
-           1. Header Design (โลโก้แบบเขียนด้วย Code)
-           ========================================= */
-        .header-top {
-            background-color: var(--ftc-blue);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .logo-code-wrapper {
-            background-color: var(--white);
-            padding: 4px 10px 4px 6px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .logo-icon-circle {
-            background-color: #0012b3;
-            color: var(--white);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-style: italic;
-            font-size: 14px;
-        }
-
-        .logo-text-group {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .header-title-center {
-            position: absolute; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            color: var(--white); 
-            font-weight: 700; 
-            font-size: 16px; 
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .header-content {
-            background-color: var(--white);
-            padding: 20px 20px 25px 20px;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 5px;
-        }
-
-        .welcome-banner {
-            background: #f8fafc; border-left: 4px solid var(--ftc-yellow);
-            padding: 12px 15px; border-radius: 8px; margin-bottom: 20px;
-            text-align: center; font-size: 13px; line-height: 1.5; color: var(--text-main);
-        }
-        .welcome-banner strong { color: var(--ftc-blue); font-size: 14px; }
-        .welcome-banner .highlight { color: #b45309; font-weight: 600; display: block; margin-top: 4px; }
-
-        .user-profile {
-            display: flex; align-items: center;
-            background: linear-gradient(135deg, var(--ftc-blue), #1e3a8a);
-            padding: 15px; border-radius: 16px;
-            box-shadow: 0 8px 15px rgba(0, 18, 179, 0.2); color: var(--white);
-        }
-        .user-profile img {
-            width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--ftc-yellow); 
-            object-fit: cover; margin-right: 15px; background: white;
-        }
-        .profile-name { font-size: 16px; font-weight: 700; display: block; margin-bottom: 2px;}
-        .profile-role { font-size: 13px; font-weight: 400; color: #cbd5e1; display: block;}
-
-        /* =========================================
-           2. Main Menu Grid
-           ========================================= */
-        .menu-section-title {
-            padding: 20px 20px 10px 20px; font-size: 14px; font-weight: 700;
-            color: var(--text-muted); letter-spacing: 0.5px;
-        }
-
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 20px; }
-        .menu-card {
-            background: var(--white); border-radius: 16px; padding: 18px 10px;
-            text-align: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.03); transition: all 0.2s;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        body { font-family: 'Sarabun', sans-serif; background-color: #F8F9FA; }
+        .menu-card { transition: all 0.2s ease-in-out; }
         .menu-card:active { transform: scale(0.96); }
-        .menu-icon { font-size: 34px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-        .menu-title { font-weight: 600; font-size: 13px; line-height: 1.3; margin-bottom: 4px; color: var(--text-main);}
-        .menu-subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400;}
-
-        /* =========================================
-           3. SOS Button & Bottom Sheet
-           ========================================= */
-        .sos-wrapper { padding: 20px; margin-top: 10px; }
-        .sos-btn {
-            width: 100%; background: linear-gradient(135deg, #ef4444, #b91c1c);
-            color: white; border: none; border-radius: 16px; padding: 18px;
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3); cursor: pointer; transition: all 0.2s;
-        }
-        .sos-btn:active { transform: scale(0.97); }
-        .sos-icon { font-size: 28px; animation: pulse 2s infinite; }
-        .sos-text { font-size: 18px; font-weight: 700; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
-
-        .overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.6); z-index: 99;
-            opacity: 0; visibility: hidden; transition: 0.3s ease; backdrop-filter: blur(3px);
-        }
-        .overlay.active { opacity: 1; visibility: visible; }
-
-        .bottom-sheet {
-            position: fixed; bottom: -100%; left: 0; right: 0; max-width: 600px; margin: 0 auto;
-            background: var(--white); z-index: 100;
-            border-radius: 28px 28px 0 0; padding: 25px 20px 40px 20px;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1);
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
-            max-height: 88vh; overflow-y: auto;
-        }
-        .bottom-sheet.active { bottom: 0; }
-
-        .sheet-drag-handle { width: 40px; height: 5px; background: #cbd5e1; border-radius: 10px; margin: 0 auto 20px auto; }
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .sheet-title { font-size: 16px; font-weight: 700; color: var(--ftc-blue); display: flex; align-items: center; gap: 8px;}
-        .close-btn { 
-            background: #f1f5f9; border: none; width: 32px; height: 32px; 
-            border-radius: 50%; font-size: 14px; font-weight: bold; color: #64748b; cursor: pointer; 
-        }
-
-        .sub-btn {
-            width: 100%; text-align: left; padding: 16px; margin-bottom: 12px;
-            background: var(--bg-light); border: 1px solid #e2e8f0; border-radius: 14px;
-            display: flex; align-items: flex-start; gap: 15px; cursor: pointer; transition: 0.2s;
-            font-family: 'Sarabun', sans-serif;
-        }
-        .sub-btn:active { background: #e2e8f0; transform: scale(0.98); }
-        .sub-icon { font-size: 26px; width: 35px; text-align: center; flex-shrink: 0; margin-top: 2px; }
-        
-        .sub-text-container { display: flex; flex-direction: column; }
-        .sub-title { font-weight: 700; font-size: 14px; color: var(--text-main); margin-bottom: 4px; line-height: 1.3; }
-        .sub-number { color: var(--ftc-blue); margin-right: 4px; font-weight: 800; }
-        .sub-desc { font-size: 12px; color: var(--text-muted); font-weight: 400; line-height: 1.4; }
-        
-        .sub-btn.vendor { background: #fffbeb; border-color: #fef08a; }
-        .sub-btn.vendor .sub-title { color: #b45309; }
-        .sub-btn.vendor .sub-number { color: #b45309; }
-        
-        .sub-btn.danger { background: #fef2f2; border-color: #fecaca; }
-        .sub-btn.danger .sub-title { color: #b91c1c; }
-        .sub-btn.danger .sub-number { color: #b91c1c; }
-        
-        .sub-btn.success { background: #f0fdf4; border-color: #bbf7d0; }
-        .sub-btn.success .sub-title { color: #15803d; }
-        .sub-btn.success .sub-number { color: #15803d; }
     </style>
 </head>
-<body>
+<body class="text-gray-800 min-h-screen relative pb-10">
 
-<div class="app-container">
-    
-    <!-- แถบ Header สีน้ำเงิน (พร้อมโลโก้ที่สร้างจาก HTML/CSS) -->
-    <div class="header-top">
-        <!-- ฝั่งซ้าย: โลโก้ FTC First -->
-        <div class="logo-code-wrapper">
-            <div class="logo-icon-circle">1</div>
-            <div class="logo-text-group">
-                <div style="color: #0012b3; font-weight: 900; font-style: italic; font-size: 16px; line-height: 1; letter-spacing: -0.2px;">1 First</div>
-                <div style="height: 2px; background-color: #fff000; width: 100%; margin: 2px 0;"></div>
-                <div style="color: #0012b3; font-size: 5px; font-weight: 800; letter-spacing: 0.5px; line-height: 1;">TECHNOLOGY CO.,LTD.</div>
-            </div>
+    <!-- Header & Logo -->
+    <div class="bg-[#1a237e] text-white py-4 px-6 flex items-center shadow-md rounded-b-2xl">
+        <div class="bg-white text-blue-900 font-bold px-3 py-1 rounded-md text-sm border-2 border-blue-400 flex items-center">
+            <span class="bg-blue-900 text-white rounded-full w-5 h-5 flex items-center justify-center mr-1 text-xs">1</span>
+            1 First
         </div>
-
-        <!-- ตรงกลาง: ชื่อหน้าเมนู -->
-        <div class="header-title-center">
+        <div class="flex-grow text-center font-bold text-lg pr-10">
             เมนูที่ 0 Main Menu
         </div>
-
-        <!-- ฝั่งขวา: ตัวเว้นระยะเพื่อให้ข้อความอยู่ตรงกลาง -->
-        <div style="width: 90px;"></div>
     </div>
 
-    <!-- ส่วนต้อนรับและโปรไฟล์ -->
-    <div class="header-content">
-        <div class="welcome-banner">
-            <strong>ยินดีต้อนรับสู่ระบบความปลอดภัย</strong><br>
-            บริษัท เฟิร์ส เทคโนโลยี คอนสตรัคชั่น<br>
-            <span class="highlight">"เพราะความปลอดภัยเป็นหน้าที่ของทุกคน"</span>
+    <div class="px-4 mt-6 max-w-md mx-auto space-y-4">
+        
+        <!-- Welcome Card -->
+        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-300 text-center">
+            <h2 class="text-[#1a237e] font-bold">ยินดีต้อนรับสู่ระบบความปลอดภัย</h2>
+            <p class="text-sm text-gray-600 mt-1">บริษัท เฟิร์ส เทคโนโลยี คอนสตรัคชั่น</p>
+            <p class="text-xs text-orange-600 font-medium mt-1">"เพราะความปลอดภัยเป็นหน้าที่ของทุกคน"</p>
         </div>
 
-        <div class="user-profile">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Natthun" alt="Profile">
+        <!-- User Profile Card -->
+        <div class="bg-gradient-to-r from-[#283593] to-[#3f51b5] rounded-2xl p-4 shadow-md flex items-center text-white">
+            <div class="bg-pink-100 rounded-full p-2 mr-4 shadow-inner border-2 border-white">
+                <!-- Avatar Emoji -->
+                <div class="w-12 h-12 flex items-center justify-center text-3xl">👨‍🦳</div>
+            </div>
             <div>
-                <span class="profile-name">ณัฐธัญ ละอองทอง</span>
-                <span class="profile-role">ผู้บริหาร (Admin / PM)</span>
+                <h3 class="font-bold text-lg">ณัฐธัญ ละอองทอง</h3>
+                <p class="text-sm text-blue-100">ผู้บริหาร (Admin / PM)</p>
             </div>
         </div>
-    </div>
 
-    <!-- Main Menu Grid -->
-    <div class="menu-section-title">เมนูการปฏิบัติงาน (OPERATIONS)</div>
-    <div class="menu-grid">
-        <div class="menu-card" onclick="openSheet('menu1')">
-            <div class="menu-icon">📝</div>
-            <div class="menu-title">1. ลงทะเบียน & อบรม</div>
-            <div class="menu-subtitle">Onboarding</div>
-        </div>
-        <div class="menu-card" onclick="openSheet('menu2')">
-            <div class="menu-icon">🦺</div>
-            <div class="menu-title">2. ขอใบอนุญาตทำงาน</div>
-            <div class="menu-subtitle">PTW (Permit To Work)</div>
-        </div>
-        <div class="menu-card" onclick="openSheet('menu3')">
-            <div class="menu-icon">👷</div>
-            <div class="menu-title">3. ประชุมหน้างาน & จุดเสี่ยง</div>
-            <div class="menu-subtitle">TBT & Near Miss</div>
-        </div>
-        <div class="menu-card" onclick="openSheet('menu4')">
-            <div class="menu-icon">🏁</div>
-            <div class="menu-title">4. ปิดใบงาน 5ส</div>
-            <div class="menu-subtitle">Secure Close-out</div>
-        </div>
-        <div class="menu-card" onclick="openSheet('menu5')">
-            <div class="menu-icon">🪪</div>
-            <div class="menu-title">5. บัตรดิจิทัลของฉัน</div>
-            <div class="menu-subtitle">My E-Badge</div>
-        </div>
-        <div class="menu-card" onclick="openSheet('menu6')">
-            <div class="menu-icon">🛠️</div>
-            <div class="menu-title">6. ทรัพย์สิน & ตรวจเครื่องมือ</div>
-            <div class="menu-subtitle">Asset & E-Tagging</div>
+        <!-- Menu Section -->
+        <div class="mt-6">
+            <h3 class="text-gray-500 font-bold mb-3 text-sm px-1">เมนูการปฏิบัติงาน (OPERATIONS)</h3>
+            
+            <!-- Grid Menu Container -->
+            <div id="menuGrid" class="grid grid-cols-2 gap-3">
+                <!-- JavaScript will generate menu buttons here -->
+            </div>
+
+            <!-- SOS Button -->
+            <button class="w-full mt-4 bg-[#c62828] hover:bg-red-800 text-white rounded-2xl py-4 shadow-lg flex flex-col items-center justify-center menu-card">
+                <span class="text-2xl mb-1">🚨</span>
+                <span class="font-bold">7. แจ้งเหตุฉุกเฉินด่วน (SOS)</span>
+            </button>
         </div>
     </div>
 
-    <!-- SOS Button -->
-    <div class="sos-wrapper">
-        <button class="sos-btn" onclick="openSheet('menu7')">
-            <div class="sos-icon">🚨</div>
-            <div class="sos-text">7. แจ้งเหตุฉุกเฉินด่วน (SOS)</div>
-        </button>
+    <!-- ---------------------------------------------------- -->
+    <!-- Modal (Pop-up) สำหรับ Sub-menu -->
+    <!-- ---------------------------------------------------- -->
+    <div id="submenuModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl w-10/12 max-w-sm overflow-hidden shadow-2xl transform transition-all">
+            
+            <!-- Modal Header -->
+            <div class="bg-[#1a237e] px-5 py-4 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-white font-bold text-lg">เลือกรายการ</h3>
+                <button onclick="closeModal()" class="text-white hover:text-gray-300 text-2xl font-bold leading-none">&times;</button>
+            </div>
+            
+            <!-- Modal Body (List of Submenus) -->
+            <div id="modalContent" class="p-5 space-y-3 bg-gray-50">
+                <!-- JavaScript will inject Submenus here -->
+            </div>
+            
+        </div>
     </div>
 
-</div>
+    <!-- Script สำหรับควบคุมการทำงาน -->
+    <script>
+        // ข้อมูลเมนูทั้งหมด
+        const menuData = [
+            {
+                id: '1',
+                title: 'ลงทะเบียน & อบรม',
+                subtitle: 'Onboarding',
+                icon: '📝', 
+                // เมนูที่มี Submenu ให้ใช้ Array แบบนี้ครับ
+                submenus: [
+                    { id: '1.1', title: 'ลงทะเบียนเข้าปฏิบัติงาน', link: 'Worker/Worker_Registration_ToSystem.html' },
+                    { id: '1.2', title: 'อบรมความปลอดภัย (Orientation)', link: '#' }
+                ]
+            },
+            { id: '2', title: 'ขอใบอนุญาตทำงาน', subtitle: 'PTW (Permit To Work)', icon: '🦺', link: '#' },
+            { id: '3', title: 'ประชุมหน้างาน & จุดเสี่ยง', subtitle: 'TBT & Near Miss', icon: '👷', link: '#' },
+            { id: '4', title: 'ปิดใบงาน 5ส', subtitle: 'Secure Close-out', icon: '🏁', link: '#' },
+            { id: '5', title: 'บัตรดิจิทัลของฉัน', subtitle: 'My E-Badge', icon: '🪪', link: '#' },
+            { id: '6', title: 'ทรัพย์สิน & ตรวจเครื่องมือ', subtitle: 'Asset & E-Tagging', icon: '🛠️', link: '#' }
+        ];
 
-<!-- Bottom Sheet Overlay & Container -->
-<div id="overlay" class="overlay" onclick="closeSheet()"></div>
-<div id="bottomSheet" class="bottom-sheet">
-    <div class="sheet-drag-handle"></div>
-    <div class="sheet-header">
-        <div class="sheet-title" id="sheetTitle">หัวข้อเมนู</div>
-        <button class="close-btn" onclick="closeSheet()">✕</button>
-    </div>
-    <div id="sheetContent">
-        <!-- ปุ่ม Sub-menu จะถูก Inject เข้ามาตรงนี้ -->
-    </div>
-</div>
-
-<script>
-    // ฐานข้อมูลเมนู พร้อมการเชื่อมโยงลิงก์ URL เข้าหาฟอร์มจริง
-    const menuData = {
-        'menu1': {
-            title: '1. ลงทะเบียนและอบรมความปลอดภัย<br>& อนุมัติยืนยันพนักงานของ Vendor',
-            buttons: [
-               {
-    id: '1',
-    title: 'ลงทะเบียนเข้าปฏิบัติงาน',
-    subtitle: 'Worker Registration',
-    icon: 'user-plus',
-    // เปลี่ยนตรงลิงก์ด้านล่างนี้ครับ
-    link: 'Worker/Worker_Registration_ToSystem.html', 
-    color: 'bg-blue-50 text-blue-600'
-}
-                { num: '1.2', icon: '🎓', title: 'อบรมความปลอดภัยและเข้าใจความเสี่ยง', desc: 'ทดสอบความรู้และถ่าย Live Selfie ป้องกันการสวมรอย เฉพาะผู้ผ่านเกณฑ์จึงจะได้รับ E-Badge', class: '', url: '' },
-                { num: '1.3', icon: '✅', title: 'อนุมัติและยืนยันพนักงาน (Vendor/PM)', desc: 'สำหรับเถ้าแก่ตรวจสอบผลสอบลูกน้อง และกดยืนยันยอดคนงานที่ได้รับอนุญาตเข้าไซต์งานจริง', class: 'vendor', url: '' }
-            ]
-        },
-        'menu2': {
-            title: '2. ขอใบอนุญาตทำงาน (PTW)',
-            buttons: [
-                { num: '2.1', icon: '📄', title: 'ขอเปิดใบงานใหม่ (Create Permit)', desc: 'ระบุรายละเอียดงานและพื้นที่ เพื่อขออนุมัติเริ่มงานตามขั้นตอนความปลอดภัยอย่างเคร่งครัด', class: '', url: '' },
-                { num: '2.2', icon: '🛡️', title: 'จัดการแผนความปลอดภัย & บันทึกค่าก๊าซ', desc: 'แนบเอกสาร JSA หรือบันทึกค่าก๊าซสำหรับงานอับอากาศ หากละเลยจะไม่สามารถเริ่มงานได้', class: '', url: '' },
-                { num: '2.3', icon: '🔍', title: 'เช็กสถานะใบงาน', desc: 'ติดตามสถานะการอนุมัติ ห้ามปฏิบัติงานใดๆ จนกว่าสถานะใบงานจะได้รับการอนุมัติจาก จป.', class: '', url: '' },
-                { num: '2.4', icon: '✅', title: 'พิจารณาใบงาน (จป./PM)', desc: 'ตะกร้างานสำหรับ จป. และ PM เพื่อตรวจสอบความถูกต้องและอนุมัติใบงาน (E-Sign)', class: 'vendor', url: '' }
-            ]
-        },
-        'menu3': {
-            title: '3. ประชุมหน้างานเข้าพื้นที่และแจ้งจุดเสี่ยง (TBT & Near Miss)',
-            buttons: [
-                { num: '3.1', icon: '📸', title: 'บันทึก TBT', desc: 'ถ่ายรูปหมู่กล้องสดฝัง GPS เพื่อยืนยันการบรีฟแผนงานและความปลอดภัยก่อนเริ่มงานทุกวัน (บังคับ)', class: '', url: '' },
-                { num: '3.2', icon: '⏱️', title: 'ลงเวลาเข้าพื้นที่ (Check-in)', desc: 'สแกนหมวกหรือ QR Code เพื่อบันทึกยอดคนงานเข้าเขตอันตรายและเขตควบคุม ป้องกันบุคคลภายนอก', class: 'success', url: '' },
-                { num: '3.3', icon: '⚠️', title: 'แจ้งจุดเสี่ยง & เสนอแนะ (Near Miss)', desc: 'รายงานสภาพแวดล้อมที่ไม่ปลอดภัยทันทีที่พบเห็น หรือส่งข้อเสนอแนะด้านความปลอดภัย', class: 'vendor', url: '' }
-            ]
-        },
-        'menu4': {
-            title: '4. ส่งผลงาน & ปิดงาน 5ส (Progress, NCR & Close-out)',
-            buttons: [
-                { num: '4.1', icon: '📈', title: 'ส่งความคืบหน้างาน (% Progress)', desc: 'ถ่ายรูประบุเปอร์เซ็นต์ความคืบหน้า เพื่อส่งให้ระบบหลังบ้านคำนวณมูลค่างาน (Earned Value)', class: '', url: '' },
-                { num: '4.2', icon: '🛡️', title: 'ตอบกลับใบเตือนความปลอดภัย (NCR / CAPA)', desc: 'ตรวจสอบใบเตือนที่โดนปรับ และอัปโหลดภาพหลักฐานการแก้ไข เพื่อขอปลดล็อกค่าปรับก่อนวางบิล', class: 'vendor', url: '' },
-                { num: '4.3', icon: '🧹', title: 'รายงานผล 5ส (Before / After)', desc: 'ถ่ายรูปเปรียบเทียบพื้นที่ก่อน-หลัง เพื่อยืนยันการเคลียร์พื้นที่ให้ปลอดภัยร้อยเปอร์เซ็นต์', class: '', url: '' },
-                { num: '4.4', icon: '⏱️', title: 'ลงเวลาออกพื้นที่ (Check-out)', desc: 'เช็กยอดคนงานออก หากละเลยการ Check-out ระบบจะล็อกสิทธิ์การเข้าพื้นที่ในวันถัดไปทันที', class: 'success', url: '' }
-            ]
-        },
-        'menu5': {
-            title: '5. บัตรดิจิทัลของฉัน (My E-Badge)',
-            buttons: [
-                { num: '5.1', icon: '🪪', title: 'แสดง E-Badge', desc: 'บัตรประจำตัวดิจิทัล ใช้แสดงต่อ รปภ. หรือ จป. เพื่อยืนยันสิทธิ์ในกรณีลืมบัตรแข็ง', class: '', url: '' },
-                { num: '5.2', icon: '🔄', title: 'แก้ไขข้อมูลส่วนตัว', desc: 'อัปเดตเบอร์ติดต่อฉุกเฉินและกรุ๊ปเลือด ข้อมูลบังคับเพื่อการช่วยเหลือทางการแพทย์ที่แม่นยำ', class: '', url: '' },
-                { num: '5.3', icon: '🏆', title: 'ประวัติความปลอดภัย', desc: 'ตรวจสอบประวัติการทำผิดกฎ และยอดสะสม Safety Coins เพื่อประเมินผลงานและเครดิต Vendor', class: 'vendor', url: '' }
-            ]
-        },
-        'menu6': {
-            title: '6. ทรัพย์สินและตรวจสอบเครื่องมือ (Asset & E-Tagging)',
-            buttons: [
-                { num: '6.1', icon: '📱', title: 'สแกนตรวจเครื่องมือ & นั่งร้าน (Checklist)', desc: 'สแกนตรวจสอบป้ายเขียว/แดงประจำวัน หากฝ่าฝืนใช้เครื่องมือชำรุด ระบบจะระงับใบงานทันที', class: '', url: '' },
-                { num: '6.2', icon: '🔄', title: 'ยืมคืนอุปกรณ์ส่วนกลางบริษัท', desc: 'สแกนยืม-คืนอุปกรณ์ส่วนกลาง ผูกติดกับรหัสพนักงานเพื่อป้องกันการสูญหายและต้องรับผิดชอบ', class: 'success', url: '' },
-                { num: '6.3', icon: '➕', title: 'ขึ้นทะเบียนเครื่องมือใหม่', desc: 'ลงทะเบียนเครื่องมือ/อุปกรณ์ไฟฟ้าก่อนเข้าไซต์งาน เพื่อรับ QR Code บังคับตรวจสภาพ', class: '', url: '' },
-                { num: '6.4', icon: '📋', title: 'ประวัติการซ่อมบำรุง', desc: 'เช็กประวัติการตรวจเช็กสภาพเครื่องมือ เพื่อยืนยันความพร้อมใช้งานตามมาตรฐานความปลอดภัย', class: '', url: '' }
-            ]
-        },
-        'menu7': {
-            title: '7. แจ้งเหตุฉุกเฉินด่วน! (SOS & Evacuation)',
-            buttons: [
-                { num: '7.1', icon: '🔥', title: 'เกิดอุบัติเหตุ / เพลิงไหม้ / สารเคมีรั่วไหล', desc: 'แจ้งทีมตอบโต้ภาวะฉุกเฉินด่วน พร้อมระบบดึงพิกัด GPS เพื่อประสานงานเข้าระงับเหตุ', class: 'danger', url: '' },
-                { num: '7.2', icon: '🏃‍♂️', title: 'รายงานตัวจุดรวมพล (Muster Point)', desc: 'กดยืนยันตัวตนเมื่ออพยพมาถึงเขตปลอดภัย (จุดรวมพล) เพื่อให้ระบบประมวลผลยอดผู้สูญหาย', class: 'success', url: '' },
-                { num: '7.3', icon: '🚑', title: 'เหตุฉุกเฉินรุนแรงเร่งด่วน อันตรายสาหัส', desc: 'แจ้งทีมแพทย์และผู้บริหารระดับสูงทันที เพื่อระดมกำลังเข้าช่วยเหลือขั้นวิกฤต', class: 'danger', url: '' },
-                { num: '7.4', icon: '❌', title: 'ยกเลิกการแจ้งเหตุ', desc: 'ปิดหน้าต่างนี้ (กรณีเผลอกดโดนปุ่มฉุกเฉิน) เพื่อป้องกันการระดมพลที่ผิดพลาด', class: '', url: '' }
-            ]
-        }
-    };
-
-    function openSheet(menuId) {
-        const data = menuData[menuId];
-        document.getElementById('sheetTitle').innerHTML = data.title;
-        
-        let contentHtml = '';
-        data.buttons.forEach(btn => {
-            // เช็คว่าถ้ามี url ให้เปิดหน้านั้น แต่ถ้าไม่มีให้โชว์ Alert เตือนว่ากำลังพัฒนา
-            const action = btn.url 
-                ? `window.location.href='${btn.url}'` 
-                : `alert('กำลังพัฒนาระบบ: ${btn.num} ${btn.title}')`;
-
-            contentHtml += `
-                <button class="sub-btn ${btn.class}" onclick="${action}">
-                    <div class="sub-icon">${btn.icon}</div>
-                    <div class="sub-text-container">
-                        <div class="sub-title"><span class="sub-number">${btn.num}</span> ${btn.title}</div>
-                        <div class="sub-desc">${btn.desc}</div>
-                    </div>
-                </button>
+        // ฟังก์ชันสร้างปุ่มเมนูลงในหน้าจอ
+        const grid = document.getElementById('menuGrid');
+        menuData.forEach(menu => {
+            const btn = document.createElement('button');
+            btn.className = 'bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center menu-card';
+            btn.onclick = () => handleMenuClick(menu);
+            
+            btn.innerHTML = `
+                <div class="text-3xl mb-2">${menu.icon}</div>
+                <h4 class="font-bold text-gray-800 text-sm leading-tight">${menu.id}. ${menu.title}</h4>
+                <p class="text-[10px] text-gray-400 mt-1">${menu.subtitle}</p>
             `;
+            grid.appendChild(btn);
         });
-        
-        document.getElementById('sheetContent').innerHTML = contentHtml;
-        document.getElementById('overlay').classList.add('active');
-        document.getElementById('bottomSheet').classList.add('active');
-    }
 
-    function closeSheet() {
-        document.getElementById('overlay').classList.remove('active');
-        document.getElementById('bottomSheet').classList.remove('active');
-    }
-</script>
+        // ฟังก์ชันจัดการตอนกดปุ่มเมนู
+        function handleMenuClick(menu) {
+            // ถ้ามีเมนูย่อย (Submenu) ให้เปิด Pop-up
+            if (menu.submenus && menu.submenus.length > 0) {
+                openModal(menu);
+            } 
+            // ถ้าไม่มีเมนูย่อย และมี Link ให้วิ่งไปหน้าต่างใหม่เลย
+            else if (menu.link && menu.link !== '#') {
+                window.location.href = menu.link;
+            }
+        }
 
+        // ฟังก์ชันเปิด Pop-up
+        function openModal(menu) {
+            document.getElementById('modalTitle').textContent = `${menu.id}. ${menu.title}`;
+            const content = document.getElementById('modalContent');
+            content.innerHTML = ''; // ล้างข้อมูลเก่า
+
+            // วนลูปสร้างปุ่ม Submenu
+            menu.submenus.forEach(sub => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left px-4 py-4 bg-white hover:bg-blue-50 border border-gray-200 rounded-xl shadow-sm text-gray-700 font-medium flex justify-between items-center transition-colors';
+                btn.onclick = () => {
+                    if(sub.link !== '#') window.location.href = sub.link;
+                };
+                
+                btn.innerHTML = `
+                    <span class="text-sm"><span class="font-bold text-blue-800 mr-1">${sub.id}</span> ${sub.title}</span>
+                    <span class="text-blue-400 text-lg">›</span>
+                `;
+                content.appendChild(btn);
+            });
+
+            // แสดง Modal
+            document.getElementById('submenuModal').classList.remove('hidden');
+        }
+
+        // ฟังก์ชันปิด Pop-up
+        function closeModal() {
+            document.getElementById('submenuModal').classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
