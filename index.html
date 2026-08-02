@@ -10,6 +10,13 @@
         body { font-family: 'Sarabun', sans-serif; background-color: #F8F9FA; }
         .menu-card { transition: all 0.2s ease-in-out; }
         .menu-card:active { transform: scale(0.96); }
+        
+        /* Animation สำหรับ Modal ให้เด้งขึ้นมาจากด้านล่างแบบมือถือ */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-animate { animation: slideUp 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="text-gray-800 min-h-screen relative pb-10">
@@ -58,29 +65,67 @@
         </div>
     </div>
 
-    <!-- Modal (Pop-up) สำหรับ Sub-menu -->
-    <div id="submenuModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-10/12 max-w-sm overflow-hidden shadow-2xl transform transition-all">
-            <div class="bg-[#1a237e] px-5 py-4 flex justify-between items-center">
-                <h3 id="modalTitle" class="text-white font-bold text-lg">เลือกรายการ</h3>
-                <button onclick="closeModal()" class="text-white hover:text-gray-300 text-2xl font-bold leading-none">&times;</button>
+    <!-- Modal (Pop-up) สำหรับ Sub-menu ดีไซน์ใหม่ -->
+    <div id="submenuModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm transition-opacity">
+        <!-- กล่อง Modal โค้งมนแบบ Bottom Sheet -->
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md overflow-hidden shadow-2xl modal-animate pb-6">
+            
+            <!-- เส้นลากด้านบน (Drag handle) -->
+            <div class="flex justify-center pt-3 pb-2">
+                <div class="w-10 h-1.5 bg-gray-300 rounded-full"></div>
             </div>
-            <div id="modalContent" class="p-5 space-y-3 bg-gray-50"></div>
+
+            <!-- Header ของ Modal -->
+            <div class="px-6 py-2 flex justify-between items-start">
+                <h3 id="modalTitle" class="text-[#1a237e] font-bold text-lg leading-tight pr-2">
+                    <!-- Title จะถูกดึงมาใส่ด้วย JS -->
+                </h3>
+                <button onclick="closeModal()" class="bg-gray-100 text-gray-500 hover:bg-gray-300 rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl flex-shrink-0">&times;</button>
+            </div>
+            
+            <!-- เนื้อหา Sub-menu -->
+            <div id="modalContent" class="px-5 py-4">
+                <!-- JavaScript จะสร้างปุ่ม Submenu ตรงนี้ -->
+            </div>
         </div>
     </div>
 
     <script>
-        // ข้อมูลเมนูแบบลิงก์เต็ม ไม่มีย่อ คืนฟังก์ชันเดิมของพี่ณัฐธัญครับ
+        // ข้อมูลเมนู และ Sub-menu แบบละเอียดตามภาพที่พี่ณัฐธัญต้องการ
         const menuData = [
             {
                 id: '1',
                 title: 'ลงทะเบียน & อบรม',
                 subtitle: 'Onboarding',
                 icon: '📝', 
+                // ตั้งชื่อหัว Modal แบบขึ้นบรรทัดใหม่ตามภาพ
+                modalTitle: '1. ลงทะเบียนและอบรมความปลอดภัย <br>& อนุมัติยืนยันพนักงานของ Vendor',
                 submenus: [
-                    { id: '1.1', title: 'ลงทะเบียนเข้าปฏิบัติงาน', link: 'https://ftcsafety18.github.io/ftc-first-safety-web/Worker/Worker_Registration_ToSystem.html' },
-                    { id: '1.2', title: 'ลงทะเบียนผู้รับเหมา (Vendor)', link: 'https://ftcsafety18.github.io/ftc-first-safety-web/Vender_register.html' },
-                    { id: '1.3', title: 'ลงทะเบียนกำลังพล (Manpower)', link: 'https://ftcsafety18.github.io/ftc-first-safety-web/liff/ManPowr_Registration.html' }
+                    { 
+                        id: '1.1', 
+                        title: 'ลงทะเบียนพนักงานใหม่', 
+                        subtitle: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA ภาคบังคับ',
+                        icon: '👤',
+                        // ลิงก์ไปหน้า Worker Register ตามที่พี่ณัฐธัญสั่งครับ
+                        link: 'https://ftcsafety18.github.io/ftc-first-safety-web/Worker/Worker_Registration_ToSystem.html',
+                        style: 'normal'
+                    },
+                    { 
+                        id: '1.2', 
+                        title: 'อบรมความปลอดภัยและเข้าใจความเสี่ยง', 
+                        subtitle: 'ทดสอบความรู้และถ่าย Live Selfie ป้องกันการสวมรอย เฉพาะผู้ผ่านเกณฑ์จึงจะได้รับ E-Badge',
+                        icon: '🎓',
+                        link: '#',
+                        style: 'normal'
+                    },
+                    { 
+                        id: '1.3', 
+                        title: 'อนุมัติและยืนยันพนักงาน (Vendor/PM)', 
+                        subtitle: 'สำหรับเถ้าแก่ตรวจสอบผลสอบลูกน้อง และกดยืนยันยอดคนงานที่ได้รับอนุญาตเข้าไซต์งานจริง',
+                        icon: '✅',
+                        link: '#',
+                        style: 'highlight' // ตัวนี้จะแสดงกล่องสีเหลืองครับ
+                    }
                 ]
             },
             { id: '2', title: 'ขอใบอนุญาตทำงาน', subtitle: 'PTW (Permit To Work)', icon: '🦺', link: 'https://ftcsafety18.github.io/ftc-first-safety-web/permit_form.html' },
@@ -90,7 +135,7 @@
             { id: '6', title: 'ทรัพย์สิน & ตรวจเครื่องมือ', subtitle: 'Asset & E-Tagging', icon: '🛠️', link: '#' }
         ];
 
-        // สร้างปุ่มเมนู
+        // สร้างปุ่มเมนูหลัก 6 ปุ่ม
         const grid = document.getElementById('menuGrid');
         menuData.forEach(menu => {
             const btn = document.createElement('button');
@@ -104,7 +149,7 @@
             grid.appendChild(btn);
         });
 
-        // ฟังก์ชันจัดการตอนกดปุ่มเมนู
+        // จัดการเมื่อกดปุ่มเมนูหลัก
         function handleMenuClick(menu) {
             if (menu.submenus && menu.submenus.length > 0) {
                 openModal(menu);
@@ -113,27 +158,42 @@
             }
         }
 
-        // ฟังก์ชันเปิด Pop-up
+        // ฟังก์ชันเปิดและสร้างดีไซน์ Pop-up (Modal)
         function openModal(menu) {
-            document.getElementById('modalTitle').textContent = `${menu.id}. ${menu.title}`;
+            // ใส่ชื่อ Header
+            document.getElementById('modalTitle').innerHTML = menu.modalTitle ? menu.modalTitle : `${menu.id}. ${menu.title}`;
+            
             const content = document.getElementById('modalContent');
             content.innerHTML = ''; 
 
+            // วนลูปสร้างปุ่ม Sub-menu ทีละอัน
             menu.submenus.forEach(sub => {
+                // เช็คว่าต้องเป็นกล่องสีเหลืองหรือไม่ (สำหรับ 1.3)
+                const isHighlight = sub.style === 'highlight';
+                const bgClass = isHighlight ? 'bg-[#fffae8] border-[#fcefc7]' : 'bg-white border-gray-100 hover:bg-gray-50';
+                const titleColor = isHighlight ? 'text-[#b7791f]' : 'text-[#1a237e]';
+
                 const btn = document.createElement('button');
-                btn.className = 'w-full text-left px-4 py-4 bg-white hover:bg-blue-50 border border-gray-200 rounded-xl shadow-sm text-gray-700 font-medium flex justify-between items-center transition-colors';
+                btn.className = `w-full text-left p-4 mb-3 border rounded-xl shadow-sm flex items-start transition-colors ${bgClass}`;
                 btn.onclick = () => {
                     if(sub.link !== '#') window.location.href = sub.link;
                 };
+                
                 btn.innerHTML = `
-                    <span class="text-sm"><span class="font-bold text-blue-800 mr-1">${sub.id}</span> ${sub.title}</span>
-                    <span class="text-blue-400 text-lg">›</span>
+                    <div class="text-3xl mr-4 mt-1 opacity-90">${sub.icon}</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-[15px] ${titleColor} mb-1">${sub.id} ${sub.title}</h4>
+                        <p class="text-[11px] text-gray-500 leading-snug">${sub.subtitle}</p>
+                    </div>
                 `;
                 content.appendChild(btn);
             });
+            
+            // โชว์หน้าต่างขึ้นมา
             document.getElementById('submenuModal').classList.remove('hidden');
         }
 
+        // ฟังก์ชันปิด Pop-up
         function closeModal() {
             document.getElementById('submenuModal').classList.add('hidden');
         }
