@@ -1,1593 +1,772 @@
-"use client"
-
-import { useState, useRef, useEffect, useCallback } from "react"
-import {
-  Check,
-  ChevronDown,
-  Search,
-  Lock,
-  ChevronRight,
-  ChevronLeft,
-  Upload,
-  FileText,
-  ShieldCheck,
-  MapPin,
-  Droplets,
-  ScanFace,
-  Camera,
-  Navigation,
-  MessageCircle,
-  AlertTriangle,
-  X,
-  CheckCircle2,
-} from "lucide-react"
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type Nationality = "thai" | "foreigner"
-type DocType = "passport" | "pinkcard" | "workpermit"
-type Step = 1 | 2 | 3
-
-interface FormData {
-  nationality: Nationality
-  docType: DocType
-  firstName: string
-  lastName: string
-  idNumber: string
-  dateOfBirth: string
-  vendor: string
-  emergencyName: string
-  emergencyRelationship: string
-  emergencyRelationshipOther: string
-  emergencyPhone: string
-  pdpaConsent1: boolean
-  pdpaConsent2: boolean
-  pdpaConsent3: boolean
-}
-
-// ─── Static data ──────────────────────────────────────────────────────────────
-
-const VENDOR_LIST = [
-  "บริษัท เอบีซี จำกัด",
-  "บริษัท เดลต้า เซอร์วิส จำกัด",
-  "บริษัท ไทยอุตสาหกรรม จำกัด",
-  "ห้างหุ้นส่วน เจเค คอนสตรัคชั่น",
-  "บริษัท เมกะบิลด์ จำกัด",
-  "บริษัท กรีนเทค โซลูชั่นส์ จำกัด",
-  "บริษัท แอลฟ่า เอ็นจิเนียริ่ง จำกัด",
-  "บริษัท พีพี เซฟตี้ จำกัด",
-  "บริษัท ออมเทค ซัพพลาย จำกัด",
-  "บริษัท ฟิวเจอร์ เมนเทนแนนซ์ จำกัด",
-]
-
-const RELATIONSHIPS = [
-  "บิดา/มารดา",
-  "คู่สมรส",
-  "พี่น้อง",
-  "ญาติ",
-  "อื่นๆ",
-]
-
-const DOC_TYPES: { value: DocType; label: string }[] = [
-  { value: "passport", label: "Passport (พาสปอร์ต)" },
-  { value: "pinkcard", label: "Pink Card (บัตรสีชมพู)" },
-  { value: "workpermit", label: "Work Permit (ใบอนุญาตทำงาน)" },
-]
-
-// ─── Step Indicator ────────────────────────────────────────────────────────────
-
-function StepIndicator({ activeStep }: { activeStep: Step }) {
-  const steps = [
-    { number: 1, label: "ข้อมูลส่วนตัว", sublabel: "Personal Info" },
-    { number: 2, label: "อัปโหลดเอกสาร", sublabel: "Documents" },
-    { number: 3, label: "สแกนใบหน้า", sublabel: "Face Scan" },
-  ]
-
-  return (
-    <div className="flex items-center justify-center gap-0">
-      {steps.map((step, index) => {
-        const isActive = step.number === activeStep
-        const isDone = step.number < activeStep
-        const isLocked = step.number > activeStep
-
-        return (
-          <div key={step.number} className="flex items-center">
-            <div className="flex flex-col items-center gap-1.5">
-              <div
-                className={[
-                  "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all",
-                  isActive
-                    ? "bg-brand-orange text-white shadow-lg shadow-brand-orange/30 ring-4 ring-brand-orange/20"
-                    : isDone
-                    ? "bg-brand-navy text-white"
-                    : "bg-muted text-muted-foreground border border-border",
-                ].join(" ")}
-              >
-                {isDone ? (
-                  <Check className="w-4 h-4" />
-                ) : isLocked ? (
-                  <Lock className="w-3.5 h-3.5 opacity-40" />
-                ) : (
-                  step.number
-                )}
-              </div>
-              <div className="text-center">
-                <p
-                  className={[
-                    "text-xs font-semibold leading-tight",
-                    isActive
-                      ? "text-brand-orange"
-                      : isDone
-                      ? "text-brand-navy"
-                      : "text-muted-foreground",
-                  ].join(" ")}
-                >
-                  {step.number}. {step.label}
-                </p>
-                <p className="text-[10px] text-muted-foreground leading-tight">
-                  {step.sublabel}
-                </p>
-              </div>
-            </div>
-
-            {index < steps.length - 1 && (
-              <div
-                className={[
-                  "w-16 sm:w-20 h-0.5 mx-3 mb-5 flex-shrink-0 rounded-full",
-                  isDone ? "bg-brand-navy" : "bg-border",
-                ].join(" ")}
-              />
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-// ─── Step Banner ───────────────────────────────────────────────────────────────
-
-function StepBanner({
-  number,
-  title,
-  subtitle,
-}: {
-  number: number
-  title: string
-  subtitle: string
-}) {
-  return (
-    <div className="rounded-xl bg-brand-navy/8 border border-brand-navy/20 px-4 py-3 mb-4 flex items-start gap-3">
-      <div className="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-px shadow shadow-brand-orange/30">
-        {number}
-      </div>
-      <div>
-        <p className="text-sm font-bold text-brand-navy">{title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
-      </div>
-    </div>
-  )
-}
-
-// ─── Nationality Toggle ────────────────────────────────────────────────────────
-
-function NationalityToggle({
-  value,
-  onChange,
-}: {
-  value: Nationality
-  onChange: (v: Nationality) => void
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-semibold text-foreground">
-        สัญชาติ{" "}
-        <span className="text-muted-foreground font-normal">(Nationality)</span>
-        <span className="text-destructive ml-1">*</span>
-      </label>
-      <div className="inline-flex rounded-xl border-2 border-border bg-muted p-1 gap-1 w-fit">
-        <button
-          type="button"
-          onClick={() => onChange("thai")}
-          className={[
-            "px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-150",
-            value === "thai"
-              ? "bg-brand-navy text-white shadow-md"
-              : "text-muted-foreground hover:text-foreground",
-          ].join(" ")}
-        >
-          Thai{" "}
-          <span className="font-normal opacity-80">(ไทย)</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange("foreigner")}
-          className={[
-            "px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-150",
-            value === "foreigner"
-              ? "bg-brand-navy text-white shadow-md"
-              : "text-muted-foreground hover:text-foreground",
-          ].join(" ")}
-        >
-          Foreigner{" "}
-          <span className="font-normal opacity-80">(ต่างด้าว)</span>
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Searchable Vendor Combobox ────────────────────────────────────────────────
-
-function VendorCombobox({
-  value,
-  onChange,
-}: {
-  value: string
-  onChange: (v: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState("")
-  const containerRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const filtered = VENDOR_LIST.filter((v) =>
-    v.toLowerCase().includes(query.toLowerCase())
-  )
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setOpen(false)
-        setQuery("")
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  function handleSelect(vendor: string) {
-    onChange(vendor)
-    setOpen(false)
-    setQuery("")
-  }
-
-  function handleOpen() {
-    setOpen(true)
-    setTimeout(() => inputRef.current?.focus(), 50)
-  }
-
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={handleOpen}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        className={[
-          "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-sm text-left transition-all",
-          "bg-background border-input hover:border-ring focus:outline-none",
-          value ? "text-foreground" : "text-muted-foreground",
-          open
-            ? "border-brand-navy ring-2 ring-brand-navy/20"
-            : "hover:border-ring",
-        ].join(" ")}
-      >
-        <span className="flex items-center gap-2 min-w-0">
-          <Search className="w-4 h-4 shrink-0 text-muted-foreground" />
-          <span className="truncate">
-            {value || "-- เลือก/พิมพ์ค้นหา Vendor --"}
-          </span>
-        </span>
-        <ChevronDown
-          className={[
-            "w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200",
-            open ? "rotate-180" : "",
-          ].join(" ")}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-xl shadow-xl overflow-hidden">
-          <div className="p-2 border-b border-border">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted">
-              <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="ค้นหาผู้รับเหมา..."
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery("")}
-                  className="text-muted-foreground hover:text-foreground text-xs leading-none"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-          <ul role="listbox" className="max-h-52 overflow-y-auto py-1">
-            {filtered.length > 0 ? (
-              filtered.map((vendor) => (
-                <li key={vendor}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={vendor === value}
-                    onClick={() => handleSelect(vendor)}
-                    className={[
-                      "w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 transition-colors",
-                      vendor === value
-                        ? "bg-brand-navy/10 text-brand-navy font-semibold"
-                        : "text-foreground hover:bg-muted",
-                    ].join(" ")}
-                  >
-                    <span>{vendor}</span>
-                    {vendor === value && (
-                      <Check className="w-4 h-4 shrink-0 text-brand-navy" />
-                    )}
-                  </button>
-                </li>
-              ))
-            ) : (
-              <li className="px-3 py-4 text-center text-sm text-muted-foreground">
-                ไม่พบผลลัพธ์
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Simple Select ─────────────────────────────────────────────────────────────
-
-function SelectField({
-  id,
-  value,
-  onChange,
-  placeholder,
-  options,
-}: {
-  id: string
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  options: string[]
-}) {
-  return (
-    <div className="relative">
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={[
-          "w-full appearance-none px-3 py-2 pr-9 rounded-lg border border-input bg-background text-sm transition-colors",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 focus-visible:border-brand-navy",
-          value ? "text-foreground" : "text-muted-foreground",
-        ].join(" ")}
-      >
-        <option value="" disabled hidden>
-          {placeholder}
-        </option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-    </div>
-  )
-}
-
-// ─── Field label helper ────────────────────────────────────────────────────────
-
-function Label({
-  htmlFor,
-  children,
-  required,
-}: {
-  htmlFor?: string
-  children: React.ReactNode
-  required?: boolean
-}) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="block text-sm font-semibold text-foreground mb-1.5"
-    >
-      {children}
-      {required && <span className="text-destructive ml-1">*</span>}
-    </label>
-  )
-}
-
-// ─── Section header ────────────────────────────────────────────────────────────
-
-function SectionHeader({
-  title,
-  subtitle,
-}: {
-  title: string
-  subtitle?: string
-}) {
-  return (
-    <div className="flex items-center gap-3 mb-5 mt-2">
-      <div className="flex-1 h-px bg-border" />
-      <div className="text-center px-1">
-        <p className="text-xs font-bold text-brand-navy uppercase tracking-widest whitespace-nowrap">
-          {title}
-        </p>
-        {subtitle && (
-          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
-        )}
-      </div>
-      <div className="flex-1 h-px bg-border" />
-    </div>
-  )
-}
-
-// ─── Input base style ──────────────────────────────────────────────────────────
-
-const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 focus-visible:border-brand-navy transition-colors"
-
-// ─── PDPA / Consent Checkbox ──────────────────────────────────────────────────
-
-function ConsentCheckbox({
-  id,
-  checked,
-  onChange,
-  icon: Icon,
-  text,
-}: {
-  id: string
-  checked: boolean
-  onChange: (v: boolean) => void
-  icon: React.ElementType
-  text: React.ReactNode
-}) {
-  return (
-    <label className="flex items-start gap-3 cursor-pointer group">
-      <div className="relative flex-shrink-0 mt-0.5">
-        <input
-          type="checkbox"
-          id={id}
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="sr-only"
-        />
-        <div
-          className={[
-            "w-5 h-5 rounded border-2 flex items-center justify-center transition-all",
-            checked
-              ? "bg-brand-navy border-brand-navy"
-              : "bg-background border-input group-hover:border-brand-navy/50",
-          ].join(" ")}
-          aria-hidden="true"
-        >
-          {checked && <Check className="w-3 h-3 text-white stroke-[3]" />}
-        </div>
-      </div>
-      <div className="flex items-start gap-2 flex-1">
-        <Icon
-          className={[
-            "w-4 h-4 mt-0.5 shrink-0 transition-colors",
-            checked ? "text-brand-orange" : "text-muted-foreground",
-          ].join(" ")}
-        />
-        <p className="text-sm text-foreground leading-relaxed">{text}</p>
-      </div>
-    </label>
-  )
-}
-
-// ─── Upload Zone ──────────────────────────────────────────────────────────────
-
-function UploadZone({
-  label,
-  sublabel,
-  required,
-  files,
-  onFiles,
-}: {
-  label: string
-  sublabel?: string
-  required?: boolean
-  files: File[]
-  onFiles: (files: File[]) => void
-}) {
-  const [dragging, setDragging] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setDragging(false)
-    const dropped = Array.from(e.dataTransfer.files)
-    if (dropped.length) onFiles(dropped)
-  }
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? [])
-    if (selected.length) onFiles(selected)
-    e.target.value = ""
-  }
-
-  function removeFile(index: number) {
-    onFiles(files.filter((_, i) => i !== index))
-  }
-
-  const hasFiles = files.length > 0
-
-  return (
-    <div>
-      <Label required={required}>
-        {label}
-        {sublabel && (
-          <span className="text-muted-foreground font-normal ml-1">
-            ({sublabel})
-          </span>
-        )}
-      </Label>
-
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
-        className={[
-          "relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-all cursor-pointer",
-          dragging
-            ? "border-brand-orange bg-brand-orange/5 scale-[1.01]"
-            : hasFiles
-            ? "border-brand-navy bg-brand-navy/5"
-            : "border-border bg-muted/40 hover:border-brand-navy/50 hover:bg-brand-navy/5",
-        ].join(" ")}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          capture="environment"
-          multiple
-          className="hidden"
-          onChange={handleChange}
-        />
-
-        {hasFiles ? (
-          <>
-            <div className="w-12 h-12 rounded-2xl bg-brand-navy/10 flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-brand-navy" />
-            </div>
-            <p className="text-sm font-semibold text-brand-navy">
-              อัปโหลดสำเร็จ — {files.length} ไฟล์
-            </p>
-            <p className="text-xs text-muted-foreground">
-              คลิกเพื่อเพิ่มหรือเปลี่ยนไฟล์
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center">
-              <Camera className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                ถ่ายภาพหรือเลือกไฟล์
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                เปิดกล้อง หรือเลือก JPG / PNG / PDF · สูงสุด 10 MB
-              </p>
-            </div>
-            <span className="text-xs text-muted-foreground bg-background border border-border px-3 py-1 rounded-full flex items-center gap-1.5">
-              <Upload className="w-3 h-3" />
-              แตะหรือลากไฟล์มาวาง
-            </span>
-          </>
-        )}
-      </div>
-
-      {/* File list */}
-      {hasFiles && (
-        <ul className="mt-2 flex flex-col gap-1.5">
-          {files.map((file, i) => (
-            <li
-              key={i}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm"
-            >
-              <FileText className="w-4 h-4 text-brand-navy shrink-0" />
-              <span className="flex-1 truncate text-foreground text-xs">
-                {file.name}
-              </span>
-              <span className="text-[10px] text-muted-foreground shrink-0">
-                {(file.size / 1024).toFixed(0)} KB
-              </span>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); removeFile(i) }}
-                className="text-muted-foreground hover:text-destructive transition-colors"
-                aria-label="ลบไฟล์"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-// ─── Step 2: Document Upload ───────────────────────────────────────────────────
-
-function Step2Upload({
-  nationality,
-  onBack,
-  onNext,
-}: {
-  nationality: Nationality
-  onBack: () => void
-  onNext: () => void
-}) {
-  const [idFiles, setIdFiles] = useState<File[]>([])
-  const [passportFiles, setPassportFiles] = useState<File[]>([])
-  const [workPermitFiles, setWorkPermitFiles] = useState<File[]>([])
-  const [ageConfirmed, setAgeConfirmed] = useState(false)
-
-  const canProceed =
-    ageConfirmed &&
-    (nationality === "thai"
-      ? idFiles.length > 0
-      : passportFiles.length > 0 && workPermitFiles.length > 0)
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Upload zones */}
-      {nationality === "thai" ? (
-        <UploadZone
-          label="สำเนาบัตรประชาชน"
-          sublabel="ID Card Copy"
-          required
-          files={idFiles}
-          onFiles={setIdFiles}
-        />
-      ) : (
-        <>
-          <UploadZone
-            label="สำเนาหนังสือเดินทาง"
-            sublabel="Passport Copy"
-            required
-            files={passportFiles}
-            onFiles={setPassportFiles}
-          />
-          <UploadZone
-            label="ใบอนุญาตทำงาน"
-            sublabel="Work Permit"
-            required
-            files={workPermitFiles}
-            onFiles={setWorkPermitFiles}
-          />
-        </>
-      )}
-
-      {/* Tip note */}
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3">
-        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800 leading-relaxed">
-          <span className="font-semibold">หมายเหตุ:</span>{" "}
-          เอกสารต้องเป็นฉบับจริงหรือสำเนาที่ชัดเจน
-          อ่านออกได้ทุกตัวอักษร ถ่ายตรง ไม่มีแสงสะท้อน
-        </p>
-      </div>
-
-      {/* Age verification */}
-      <div className="rounded-xl border-2 border-border bg-muted/30 p-4">
-        <ConsentCheckbox
-          id="ageConfirm"
-          checked={ageConfirmed}
-          onChange={setAgeConfirmed}
-          icon={ShieldCheck}
-          text={
-            <>
-              ข้าพเจ้าขอยืนยันว่าตนเองมีอายุไม่ต่ำกว่า 18 ปีบริบูรณ์{" "}
-              <span className="font-semibold text-brand-navy">
-                (I confirm I am over 18 years old)
-              </span>
-              <span className="text-destructive ml-1">*</span>
-            </>
-          }
-        />
-      </div>
-
-      {/* Navigation */}
-      <div className="flex gap-3 pt-1">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl border-2 border-border bg-background text-sm font-semibold text-foreground hover:border-brand-navy hover:text-brand-navy transition-all"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          ย้อนกลับ
-        </button>
-        <button
-          type="button"
-          disabled={!canProceed}
-          onClick={() => canProceed && onNext()}
-          className={[
-            "flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold text-sm transition-all",
-            canProceed
-              ? "bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg shadow-brand-orange/25 active:scale-[0.99]"
-              : "bg-muted text-muted-foreground cursor-not-allowed",
-          ].join(" ")}
-        >
-          ถัดไป — ขั้นตอนที่ 3: สแกนใบหน้า
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Face Scan Placeholder ─────────────────────────────────────────────────────
-
-function FaceScanFrame({ captured }: { captured: boolean }) {
-  return (
-    <div className="relative flex items-center justify-center w-full aspect-[3/4] max-w-xs mx-auto rounded-3xl overflow-hidden bg-brand-navy/90 border-2 border-brand-navy shadow-2xl shadow-brand-navy/30">
-      {/* Simulated camera background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-brand-navy/60 via-brand-navy/80 to-brand-navy/95" />
-
-      {/* Corner brackets – face alignment guide */}
-      {["top-left", "top-right", "bottom-left", "bottom-right"].map((pos) => {
-        const [v, h] = pos.split("-") as ["top" | "bottom", "left" | "right"]
-        return (
-          <div
-            key={pos}
-            className={[
-              "absolute w-8 h-8 z-10",
-              v === "top" ? "top-12" : "bottom-12",
-              h === "left" ? "left-[calc(50%-55px)]" : "right-[calc(50%-55px)]",
-              captured ? "border-brand-orange" : "border-white",
-            ].join(" ")}
-            style={{
-              borderTopWidth: v === "top" ? 3 : 0,
-              borderBottomWidth: v === "bottom" ? 3 : 0,
-              borderLeftWidth: h === "left" ? 3 : 0,
-              borderRightWidth: h === "right" ? 3 : 0,
-            }}
-          />
-        )
-      })}
-
-      {/* Oval face guide */}
-      <div
-        className={[
-          "absolute w-32 h-44 rounded-full border-2 border-dashed z-10 transition-colors duration-500",
-          captured ? "border-brand-orange" : "border-white/60",
-        ].join(" ")}
-      />
-
-      {/* Centre icon */}
-      <div className="relative z-20 flex flex-col items-center gap-3">
-        {captured ? (
-          <>
-            <CheckCircle2 className="w-12 h-12 text-brand-orange" />
-            <p className="text-white text-sm font-bold text-center px-4">
-              สแกนใบหน้าสำเร็จ!
-            </p>
-          </>
-        ) : (
-          <>
-            <ScanFace className="w-12 h-12 text-white/70" />
-            <p className="text-white/70 text-xs text-center px-4 leading-snug">
-              วางใบหน้าให้อยู่ในกรอบ
-            </p>
-          </>
-        )}
-      </div>
-
-      {/* Scanning line animation */}
-      {!captured && (
-        <div
-          className="absolute left-[calc(50%-60px)] w-[120px] h-0.5 bg-brand-orange/70 z-20 rounded-full"
-          style={{ animation: "scanLine 2.5s ease-in-out infinite" }}
-        />
-      )}
-
-      {/* Inline keyframe */}
-      <style>{`
-        @keyframes scanLine {
-          0%   { top: 25%;  opacity: 0.3; }
-          20%  { opacity: 1; }
-          80%  { opacity: 1; }
-          100% { top: 75%; opacity: 0.3; }
-        }
-      `}</style>
-    </div>
-  )
-}
-
-// ─── Step 3: Face Scan, GPS & Identity ────────────────────────────────────────
-
-function Step3FaceScan({
-  onBack,
-  onSubmit,
-}: {
-  onBack: () => void
-  onSubmit: () => void
-}) {
-  const [faceCaptured, setFaceCaptured] = useState(false)
-  const [lat, setLat] = useState("")
-  const [lng, setLng] = useState("")
-  const [gpsLoading, setGpsLoading] = useState(false)
-  const [gpsError, setGpsError] = useState("")
-  const [lineId, setLineId] = useState("")
-  const [lineLoading, setLineLoading] = useState(false)
-  const [finalConsent, setFinalConsent] = useState(false)
-
-  const canSubmit = faceCaptured && lat && lng && finalConsent
-
-  function handleGetLocation() {
-    setGpsError("")
-    if (!navigator.geolocation) {
-      setGpsError("เบราว์เซอร์ไม่รองรับ GPS กรุณากรอกพิกัดด้วยตนเอง")
-      return
-    }
-    setGpsLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude.toFixed(6))
-        setLng(pos.coords.longitude.toFixed(6))
-        setGpsLoading(false)
-      },
-      () => {
-        setGpsError("ไม่สามารถดึงพิกัดได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง")
-        setGpsLoading(false)
-        // simulate for demo
-        setLat("13.756331")
-        setLng("100.501765")
-      },
-      { timeout: 8000 }
-    )
-  }
-
-  function handleLineFetch() {
-    setLineLoading(true)
-    setTimeout(() => {
-      setLineId("@ftcsafety_worker")
-      setLineLoading(false)
-    }, 1200)
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* ── Face Scan ── */}
-      <SectionHeader title="สแกนใบหน้า" subtitle="Face Scan & Liveness" />
-
-      {/* Liveness warning */}
-      <div className="rounded-xl border border-brand-navy/25 bg-brand-navy/6 px-4 py-3 flex gap-3">
-        <AlertTriangle className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
-        <p className="text-xs text-brand-navy leading-relaxed">
-          <span className="font-bold">เพื่อป้องกันการสวมสิทธิ์</span>{" "}
-          กรุณามองกล้องและกระพริบตา{" "}
-          <span className="text-muted-foreground">
-            (Liveness Detection — Please look at the camera and blink)
-          </span>
-        </p>
-      </div>
-
-      {/* Camera view */}
-      <FaceScanFrame captured={faceCaptured} />
-
-      {/* Capture / re-capture button */}
-      <button
-        type="button"
-        onClick={() => setFaceCaptured((prev) => !prev)}
-        className={[
-          "w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all",
-          faceCaptured
-            ? "border-2 border-brand-navy text-brand-navy bg-background hover:bg-brand-navy/5"
-            : "bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg shadow-brand-navy/20 active:scale-[0.99]",
-        ].join(" ")}
-      >
-        <Camera className="w-4 h-4" />
-        {faceCaptured ? "สแกนใบหน้าใหม่อีกครั้ง (Re-scan)" : "เริ่มสแกนใบหน้า (Start Face Scan)"}
-      </button>
-
-      {/* ── GPS Location ── */}
-      <SectionHeader title="ตำแหน่ง GPS" subtitle="GPS Location" />
-
-      <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          onClick={handleGetLocation}
-          disabled={gpsLoading}
-          className={[
-            "flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold transition-all w-full border-2",
-            gpsLoading
-              ? "border-border text-muted-foreground cursor-not-allowed bg-muted"
-              : lat
-              ? "border-brand-navy text-brand-navy bg-brand-navy/5 hover:bg-brand-navy/10"
-              : "border-brand-navy bg-brand-navy text-white hover:bg-brand-navy-light shadow-md",
-          ].join(" ")}
-        >
-          <Navigation className={["w-4 h-4", gpsLoading ? "animate-spin" : ""].join(" ")} />
-          {gpsLoading
-            ? "กำลังดึงพิกัด..."
-            : lat
-            ? "ดึงพิกัดใหม่อีกครั้ง"
-            : "ดึงพิกัดตำแหน่ง (Get Current Location)"}
-        </button>
-
-        {gpsError && (
-          <p className="text-xs text-destructive flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-            {gpsError}
-          </p>
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label htmlFor="lat">
-              ละติจูด{" "}
-              <span className="text-muted-foreground font-normal">(Latitude)</span>
-            </Label>
-            <input
-              id="lat"
-              type="text"
-              readOnly
-              value={lat}
-              placeholder="ยังไม่ได้ดึงพิกัด"
-              className={inputCls + " bg-muted font-mono text-xs cursor-default"}
-            />
-          </div>
-          <div>
-            <Label htmlFor="lng">
-              ลองจิจูด{" "}
-              <span className="text-muted-foreground font-normal">(Longitude)</span>
-            </Label>
-            <input
-              id="lng"
-              type="text"
-              readOnly
-              value={lng}
-              placeholder="ยังไม่ได้ดึงพิกัด"
-              className={inputCls + " bg-muted font-mono text-xs cursor-default"}
-            />
-          </div>
-        </div>
-
-        {lat && lng && (
-          <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-            <MapPin className="w-3 h-3 text-brand-orange shrink-0" />
-            พิกัดที่บันทึก: {lat}, {lng}
-          </p>
-        )}
-      </div>
-
-      {/* ── LINE ID ── */}
-      <SectionHeader title="LINE ID" subtitle="LINE Integration" />
-
-      <div>
-        <Label htmlFor="lineId">
-          LINE ID{" "}
-          <span className="text-muted-foreground font-normal">(Line ID)</span>
-        </Label>
-        <div className="flex gap-2">
-          <input
-            id="lineId"
-            type="text"
-            value={lineId}
-            onChange={(e) => setLineId(e.target.value)}
-            placeholder="@yourlineid"
-            className={inputCls}
-          />
-          <button
-            type="button"
-            onClick={handleLineFetch}
-            disabled={lineLoading}
-            className={[
-              "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border-2 transition-all whitespace-nowrap",
-              lineLoading
-                ? "border-border text-muted-foreground bg-muted cursor-not-allowed"
-                : "border-[#06C755] text-[#06C755] bg-[#06C755]/8 hover:bg-[#06C755]/15",
-            ].join(" ")}
-          >
-            <MessageCircle className="w-4 h-4" />
-            {lineLoading ? "กำลังดึง..." : "ดึงข้อมูลจาก LINE"}
-          </button>
-        </div>
-        <p className="text-[11px] text-muted-foreground mt-1">
-          กดปุ่มเพื่อดึงข้อมูล LINE ID อัตโนมัติผ่าน LIFF
-        </p>
-      </div>
-
-      {/* ── Final Declaration ── */}
-      <SectionHeader title="คำรับรองขั้นสุดท้าย" subtitle="Final Declaration" />
-
-      <div className="rounded-xl border-2 border-border bg-muted/30 p-4">
-        <ConsentCheckbox
-          id="finalConsent"
-          checked={finalConsent}
-          onChange={setFinalConsent}
-          icon={ShieldCheck}
-          text={
-            <>
-              ข้าพเจ้าขอยืนยันว่าข้อมูลทั้งหมดเป็นความจริง
-              และยินยอมให้บันทึกภาพใบหน้าและพิกัดตำแหน่ง{" "}
-              <span className="font-semibold text-brand-navy">
-                (I confirm all data is true and consent to face/location capture)
-              </span>
-              <span className="text-destructive ml-1">*</span>
-            </>
-          }
-        />
-      </div>
-
-      {!canSubmit && (
-        <p className="text-xs text-muted-foreground text-center -mt-2">
-          {!faceCaptured
-            ? "กรุณาสแกนใบหน้าก่อนดำเนินการ"
-            : !lat
-            ? "กรุณาดึงพิกัด GPS ก่อนดำเนินการ"
-            : "กรุณายืนยันคำรับรองก่อนส่งข้อมูล"}
-        </p>
-      )}
-
-      {/* Navigation */}
-      <div className="flex gap-3 pt-1">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl border-2 border-border bg-background text-sm font-semibold text-foreground hover:border-brand-navy hover:text-brand-navy transition-all"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          ย้อนกลับ
-        </button>
-        <button
-          type="button"
-          disabled={!canSubmit}
-          onClick={() => canSubmit && onSubmit()}
-          className={[
-            "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all",
-            canSubmit
-              ? "bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg shadow-brand-orange/30 active:scale-[0.99]"
-              : "bg-muted text-muted-foreground cursor-not-allowed",
-          ].join(" ")}
-        >
-          <ShieldCheck className="w-4 h-4 shrink-0" />
-          ลงทะเบียนเข้าปฏิบัติงาน
-          <span className="hidden sm:inline">(Submit Registration)</span>
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Success Screen ────────────────────────────────────────────────────────────
-
-function SuccessScreen({ name }: { name: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-6 py-10 text-center">
-      <div className="w-20 h-20 rounded-full bg-brand-navy flex items-center justify-center shadow-2xl shadow-brand-navy/30">
-        <CheckCircle2 className="w-10 h-10 text-white" />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold text-brand-navy text-balance">
-          ลงทะเบียนสำเร็จ!
-        </h2>
-        <p className="text-base font-semibold text-brand-orange mt-1">
-          Registration Complete
-        </p>
-        {name && (
-          <p className="text-sm text-foreground mt-3">
-            ยินดีต้อนรับ{" "}
-            <span className="font-bold text-brand-navy">{name}</span>{" "}
-            เข้าสู่พื้นที่ปฏิบัติงาน
-          </p>
-        )}
-      </div>
-      <div className="rounded-xl border border-border bg-muted/40 px-5 py-4 max-w-sm w-full text-left">
-        <p className="text-xs font-bold text-brand-navy mb-2 uppercase tracking-widest">
-          ขั้นตอนถัดไป
-        </p>
-        <ul className="flex flex-col gap-2">
-          {[
-            "นำบัตรผ่านเข้าออกไปรับที่จุดประชาสัมพันธ์",
-            "สวมอุปกรณ์ความปลอดภัยก่อนเข้าพื้นที่",
-            "ติดต่อหัวหน้างานเพื่อรับมอบหมายงาน",
-          ].map((item) => (
-            <li key={item} className="flex items-start gap-2 text-xs text-foreground">
-              <Check className="w-3.5 h-3.5 text-brand-orange shrink-0 mt-0.5" />
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
-// ─── Main Page ─────────────────────────────────────────────────────────────────
-
-export default function Page() {
-  const [step, setStep] = useState<Step | 4>(1)
-
-  const [form, setForm] = useState<FormData>({
-    nationality: "thai",
-    docType: "passport",
-    firstName: "",
-    lastName: "",
-    idNumber: "",
-    dateOfBirth: "",
-    vendor: "",
-    emergencyName: "",
-    emergencyRelationship: "",
-    emergencyRelationshipOther: "",
-    emergencyPhone: "",
-    pdpaConsent1: false,
-    pdpaConsent2: false,
-    pdpaConsent3: false,
-  })
-
-  function set<K extends keyof FormData>(key: K, value: FormData[K]) {
-    setForm((prev) => ({ ...prev, [key]: value }))
-  }
-
-  const canProceedStep1 =
-    form.pdpaConsent1 && form.pdpaConsent2 && form.pdpaConsent3
-
-  // ID field config based on nationality + doc type
-  const idConfig = (() => {
-    if (form.nationality === "thai") {
-      return {
-        label: "เลขบัตรประชาชน 13 หลัก (National ID)",
-        placeholder: "X-XXXX-XXXXX-XX-X",
-        inputMode: "numeric" as const,
-        maxLength: 13,
-        isNumericOnly: true,
-        hint: `กรอกเฉพาะตัวเลข 13 หลัก (${form.idNumber.length}/13)`,
-      }
-    }
-    if (form.docType === "pinkcard") {
-      return {
-        label: "เลขบัตรสีชมพู 13 หลัก (Pink Card No.)",
-        placeholder: "เลขบัตร 13 หลัก",
-        inputMode: "numeric" as const,
-        maxLength: 13,
-        isNumericOnly: true,
-        hint: `กรอกเฉพาะตัวเลข 13 หลัก (${form.idNumber.length}/13)`,
-      }
-    }
-    if (form.docType === "workpermit") {
-      return {
-        label: "เลขที่ใบอนุญาตทำงาน (Work Permit No.)",
-        placeholder: "เลขที่ใบอนุญาตทำงาน",
-        inputMode: "text" as const,
-        maxLength: 20,
-        isNumericOnly: false,
-        hint: "กรอกเลขที่ใบอนุญาตทำงาน",
-      }
-    }
-    return {
-      label: "เลขพาสปอร์ต (Passport No.)",
-      placeholder: "เช่น AA1234567",
-      inputMode: "text" as const,
-      maxLength: 20,
-      isNumericOnly: false,
-      hint: "กรอกเลขพาสปอร์ตภาษาอังกฤษและตัวเลข",
-    }
-  })()
-
-  const isSuccess = step === 4
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* ── Sticky Header ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-brand-navy shadow-md shadow-brand-navy/20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-brand-orange flex items-center justify-center shrink-0 shadow shadow-brand-orange/30">
-            <ShieldCheck className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold text-white leading-tight tracking-wide">
-              FTC First Safety
-            </h1>
-            <p className="text-[10px] sm:text-xs text-white/70 leading-tight mt-0.5">
-              ลงทะเบียนเข้าปฏิบัติงาน{" "}
-              <span className="text-white/50">(Worker Registration)</span>
-            </p>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-12">
-        {/* ── Step Indicator ───────────────────────────────────────────── */}
-        {!isSuccess && (
-          <div className="bg-card rounded-2xl border border-border shadow-sm px-6 pt-5 pb-4 mb-4">
-            <StepIndicator activeStep={step as Step} />
-          </div>
-        )}
-
-        {/* ── Step banner ──────────────────────────────────────────────── */}
-        {step === 1 && (
-          <StepBanner
-            number={1}
-            title="ขั้นตอนที่ 1: ข้อมูลส่วนตัว"
-            subtitle="กรอกข้อมูลส่วนตัวและข้อมูลการจ้างงานให้ครบถ้วนก่อนดำเนินการขั้นตอนถัดไป"
-          />
-        )}
-        {step === 2 && (
-          <StepBanner
-            number={2}
-            title="ขั้นตอนที่ 2: อัปโหลดเอกสาร"
-            subtitle="อัปโหลดสำเนาเอกสารประจำตัวเพื่อยืนยันตัวตนก่อนเข้าปฏิบัติงาน"
-          />
-        )}
-        {step === 3 && (
-          <StepBanner
-            number={3}
-            title="ขั้นตอนที่ 3: สแกนใบหน้า / GPS / ยืนยันตัวตน"
-            subtitle="สแกนใบหน้า ดึงพิกัดตำแหน่ง และยืนยันข้อมูลก่อนส่งแบบฟอร์ม"
-          />
-        )}
-
-        {/* ── Main card ────────────────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl border border-border shadow-sm px-5 sm:px-7 py-6">
-          {/* SUCCESS */}
-          {isSuccess && (
-            <SuccessScreen name={`${form.firstName} ${form.lastName}`.trim()} />
-          )}
-
-          {/* STEP 3 */}
-          {step === 3 && (
-            <Step3FaceScan
-              onBack={() => setStep(2)}
-              onSubmit={() => setStep(4)}
-            />
-          )}
-
-          {/* STEP 2 */}
-          {step === 2 && (
-            <Step2Upload
-              nationality={form.nationality}
-              onBack={() => setStep(1)}
-              onNext={() => setStep(3)}
-            />
-          )}
-
-          {/* STEP 1 */}
-          {step === 1 && (
-            <form onSubmit={(e) => e.preventDefault()} noValidate>
-              {/* ── Worker Information ── */}
-              <SectionHeader
-                title="ข้อมูลพนักงาน"
-                subtitle="Worker Information"
-              />
-
-              {/* Nationality toggle */}
-              <div className="mb-5">
-                <NationalityToggle
-                  value={form.nationality}
-                  onChange={(v) => {
-                    set("nationality", v)
-                    set("idNumber", "")
-                    set("docType", "passport")
-                  }}
-                />
-              </div>
-
-              {/* Foreigner doc type */}
-              {form.nationality === "foreigner" && (
-                <div className="mb-4">
-                  <Label htmlFor="docType" required>
-                    ประเภทเอกสาร{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Document Type)
-                    </span>
-                  </Label>
-                  <SelectField
-                    id="docType"
-                    value={form.docType}
-                    onChange={(v) => {
-                      set("docType", v as DocType)
-                      set("idNumber", "")
-                    }}
-                    placeholder="-- เลือกประเภทเอกสาร --"
-                    options={DOC_TYPES.map((d) => d.label)}
-                  />
-                </div>
-              )}
-
-              {/* First & Last name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <Label htmlFor="firstName" required>
-                    ชื่อ{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (First Name)
-                    </span>
-                  </Label>
-                  <input
-                    id="firstName"
-                    type="text"
-                    value={form.firstName}
-                    onChange={(e) => set("firstName", e.target.value)}
-                    placeholder="ชื่อจริง"
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName" required>
-                    นามสกุล{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Last Name)
-                    </span>
-                  </Label>
-                  <input
-                    id="lastName"
-                    type="text"
-                    value={form.lastName}
-                    onChange={(e) => set("lastName", e.target.value)}
-                    placeholder="นามสกุล"
-                    className={inputCls}
-                  />
-                </div>
-              </div>
-
-              {/* ID Number (dynamic) */}
-              <div className="mb-4">
-                <Label htmlFor="idNumber" required>
-                  {idConfig.label}
-                </Label>
-                <input
-                  id="idNumber"
-                  type="text"
-                  inputMode={idConfig.inputMode}
-                  value={form.idNumber}
-                  onChange={(e) =>
-                    set(
-                      "idNumber",
-                      idConfig.isNumericOnly
-                        ? e.target.value.replace(/\D/g, "")
-                        : e.target.value
-                    )
-                  }
-                  placeholder={idConfig.placeholder}
-                  maxLength={idConfig.maxLength}
-                  className={inputCls + " font-mono tracking-wider"}
-                />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {idConfig.hint}
-                </p>
-              </div>
-
-              {/* Date of Birth */}
-              <div className="mb-4">
-                <Label htmlFor="dateOfBirth" required>
-                  วันเกิด{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Date of Birth)
-                  </span>
-                </Label>
-                <input
-                  id="dateOfBirth"
-                  type="date"
-                  value={form.dateOfBirth}
-                  onChange={(e) => set("dateOfBirth", e.target.value)}
-                  className={inputCls}
-                />
-              </div>
-
-              {/* ── Employment Details ── */}
-              <SectionHeader
-                title="ข้อมูลการจ้างงาน"
-                subtitle="Employment Details"
-              />
-
-              {/* Vendor */}
-              <div className="mb-4">
-                <Label htmlFor="vendor" required>
-                  บริษัท / ผู้รับเหมา{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Vendor / Contractor)
-                  </span>
-                </Label>
-                <VendorCombobox
-                  value={form.vendor}
-                  onChange={(v) => set("vendor", v)}
-                />
-              </div>
-
-              {/* ── Emergency Contact ── */}
-              <SectionHeader
-                title="ผู้ติดต่อฉุกเฉิน"
-                subtitle="Emergency Contact"
-              />
-
-              {/* Name + Relationship */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <Label htmlFor="emergencyName" required>
-                    ชื่อผู้ติดต่อ{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Contact Name)
-                    </span>
-                  </Label>
-                  <input
-                    id="emergencyName"
-                    type="text"
-                    value={form.emergencyName}
-                    onChange={(e) => set("emergencyName", e.target.value)}
-                    placeholder="ชื่อ-นามสกุล"
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="emergencyRelationship" required>
-                    ความสัมพันธ์{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Relationship)
-                    </span>
-                  </Label>
-                  <SelectField
-                    id="emergencyRelationship"
-                    value={form.emergencyRelationship}
-                    onChange={(v) => {
-                      set("emergencyRelationship", v)
-                      if (v !== "อื่นๆ") set("emergencyRelationshipOther", "")
-                    }}
-                    placeholder="-- เลือกความสัมพันธ์ --"
-                    options={RELATIONSHIPS}
-                  />
-                </div>
-              </div>
-
-              {/* "Other" relationship field */}
-              {form.emergencyRelationship === "อื่นๆ" && (
-                <div className="mb-4">
-                  <Label htmlFor="emergencyRelationshipOther" required>
-                    โปรดระบุความสัมพันธ์{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Please specify)
-                    </span>
-                  </Label>
-                  <input
-                    id="emergencyRelationshipOther"
-                    type="text"
-                    value={form.emergencyRelationshipOther}
-                    onChange={(e) =>
-                      set("emergencyRelationshipOther", e.target.value)
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC First Safety - Worker Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#19335A', 
+                            orange: '#DB5A24',
+                            'navy-light': '#254B82',
+                            'orange-hover': '#C14B1A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Sarabun', 'sans-serif'],
                     }
-                    placeholder="ระบุความสัมพันธ์"
-                    className={inputCls}
-                    autoFocus
-                  />
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { background-color: #F4F6F8; }
+        .input-field {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #D1D5DB;
+            background-color: #F9FAFB;
+            font-size: 0.875rem;
+            color: #1F2937;
+            transition: all 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #19335A;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1);
+        }
+        @keyframes scanLine {
+            0%   { top: 25%;  opacity: 0.3; }
+            20%  { opacity: 1; }
+            80%  { opacity: 1; }
+            100% { top: 75%; opacity: 0.3; }
+        }
+        .animate-scan { animation: scanLine 2.5s ease-in-out infinite; }
+        /* ซ่อน Scrollbar ของ Dropdown ให้ดูสะอาดตา */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+    <header class="sticky top-0 z-40 bg-brand-navy shadow-md">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <div class="bg-white px-2 py-1.5 rounded flex items-center gap-1.5 h-11 shrink-0 shadow-sm border border-white/20">
+                    <div class="relative w-8 h-8 bg-[#0017e6] rounded-full flex items-center justify-center overflow-hidden shrink-0">
+                        <div class="absolute -right-0.5 top-1/2 -translate-y-1/2 text-white font-black italic text-3xl">1</div>
+                        <div class="absolute left-[3px] top-1/2 -translate-y-[45%] flex flex-col items-center">
+                            <svg width="10" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2h-1.5"/><path d="M14 4V3a2 2 0 0 0-2-2H9.5"/><path d="M10 1v3"/><path d="M6 4v7"/><path d="M18 11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8a2 2 0 0 1 2-2h1.5"/><path d="M10 6v5"/></svg>
+                            <span class="text-[3px] text-white font-bold leading-none mt-[1px]">FIRST</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center pb-0.5">
+                        <div class="text-[#0017e6] font-black italic text-2xl leading-none tracking-tight -mb-0.5">First</div>
+                        <div class="w-full h-[2px] bg-[#fff000] my-[3px]"></div>
+                        <div class="text-[#0017e6] font-bold text-[5px] tracking-widest leading-none">TECHNOLOGY CO.,LTD.</div>
+                    </div>
                 </div>
-              )}
+                <div>
+                    <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
+                    <p class="text-[9px] sm:text-xs text-white/70 leading-tight">ลงทะเบียนเข้าปฏิบัติงาน</p>
+                </div>
+            </div>
+            <div class="shrink-0 flex items-start h-full">
+                <span class="text-[9px] sm:text-[10px] font-mono font-semibold text-brand-navy bg-white/90 px-2 py-1 rounded shadow-sm tracking-wider">
+                    FM-SAF-01
+                </span>
+            </div>
+        </div>
+    </header>
 
-              {/* Emergency phone */}
-              <div className="mb-6">
-                <Label htmlFor="emergencyPhone" required>
-                  เบอร์โทรศัพท์{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Phone Number)
-                  </span>
-                </Label>
-                <input
-                  id="emergencyPhone"
-                  type="tel"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={form.emergencyPhone}
-                  onChange={(e) =>
-                    set("emergencyPhone", e.target.value.replace(/\D/g, ""))
-                  }
-                  placeholder="0XX-XXX-XXXX"
-                  maxLength={10}
-                  className={inputCls + " font-mono tracking-wider"}
-                />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  กรอกเฉพาะตัวเลข 10 หลัก ({form.emergencyPhone.length}/10)
-                </p>
-              </div>
-
-              {/* ── PDPA Consent ── */}
-              <SectionHeader
-                title="การยินยอม PDPA"
-                subtitle="Privacy Consent"
-              />
-
-              <div className="rounded-xl border-2 border-border bg-muted/30 p-4 mb-5 flex flex-col gap-4">
-                <ConsentCheckbox
-                  id="pdpa1"
-                  checked={form.pdpaConsent1}
-                  onChange={(v) => set("pdpaConsent1", v)}
-                  icon={ScanFace}
-                  text={
-                    <>
-                      ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล{" "}
-                      <span className="font-semibold text-brand-navy">
-                        ชีวมิติ/ใบหน้า (Biometric / Face Data)
-                      </span>{" "}
-                      เพื่อการยืนยันตัวตนและควบคุมการเข้าออกพื้นที่
-                      <span className="text-destructive ml-1">*</span>
-                    </>
-                  }
-                />
-                <div className="h-px bg-border" />
-                <ConsentCheckbox
-                  id="pdpa2"
-                  checked={form.pdpaConsent2}
-                  onChange={(v) => set("pdpaConsent2", v)}
-                  icon={Droplets}
-                  text={
-                    <>
-                      ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล{" "}
-                      <span className="font-semibold text-brand-navy">
-                        สุขภาพ/กรุ๊ปเลือด (Health / Blood Type)
-                      </span>{" "}
-                      เพื่อความปลอดภัยในกรณีฉุกเฉิน
-                      <span className="text-destructive ml-1">*</span>
-                    </>
-                  }
-                />
-                <div className="h-px bg-border" />
-                <ConsentCheckbox
-                  id="pdpa3"
-                  checked={form.pdpaConsent3}
-                  onChange={(v) => set("pdpaConsent3", v)}
-                  icon={MapPin}
-                  text={
-                    <>
-                      ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล{" "}
-                      <span className="font-semibold text-brand-navy">
-                        ตำแหน่งที่ตั้ง GPS (Location / GPS)
-                      </span>{" "}
-                      ขณะปฏิบัติงานในพื้นที่โรงงาน
-                      <span className="text-destructive ml-1">*</span>
-                    </>
-                  }
-                />
-              </div>
-
-              {!canProceedStep1 && (
-                <p className="text-xs text-muted-foreground text-center mb-4">
-                  กรุณายืนยันการยินยอม PDPA ทั้ง 3 ข้อก่อนดำเนินการต่อ
-                </p>
-              )}
-
-              <button
-                type="button"
-                disabled={!canProceedStep1}
-                onClick={() => canProceedStep1 && setStep(2)}
-                className={[
-                  "w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-bold text-sm transition-all duration-150",
-                  canProceedStep1
-                    ? "bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg shadow-brand-orange/30 active:scale-[0.99]"
-                    : "bg-muted text-muted-foreground cursor-not-allowed",
-                ].join(" ")}
-              >
-                ถัดไป — ขั้นตอนที่ 2: อัปโหลดเอกสาร
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </form>
-          )}
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12">
+        
+        <div id="step-indicator" class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-6">
+            <div class="flex items-center justify-center gap-0">
+                <div class="flex items-center w-full max-w-sm">
+                    <div class="flex flex-col items-center gap-2 relative z-10">
+                        <div id="ind-1" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20">1</div>
+                        <p id="ind-text-1" class="text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap">1. ข้อมูลส่วนตัว</p>
+                    </div>
+                    <div id="line-1" class="flex-1 h-0.5 mx-2 bg-gray-200"></div>
+                    <div class="flex flex-col items-center gap-2 relative z-10">
+                        <div id="ind-2" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200">
+                            <i data-lucide="lock" class="w-4 h-4 opacity-50" id="lock-icon-2"></i>
+                        </div>
+                        <p id="ind-text-2" class="text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap">2. อัปโหลดเอกสาร</p>
+                    </div>
+                    <div id="line-2" class="flex-1 h-0.5 mx-2 bg-gray-200"></div>
+                    <div class="flex flex-col items-center gap-2 relative z-10">
+                        <div id="ind-3" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200">
+                            <i data-lucide="lock" class="w-4 h-4 opacity-50" id="lock-icon-3"></i>
+                        </div>
+                        <p id="ind-text-3" class="text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap">3. ยืนยันตัวตน</p>
+                    </div>
+                </div>
+            </div>
+            <div class="h-6"></div>
         </div>
 
-        <p className="text-center text-[11px] text-muted-foreground mt-4">
-          ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัยตามมาตรฐาน PDPA
-        </p>
-      </main>
-    </div>
-  )
-}
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
+            
+            <!-- ================= STEP 1 ================= -->
+            <div id="step-1" class="block">
+                <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">1</div>
+                    <div>
+                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 1: ข้อมูลส่วนตัว</p>
+                        <p class="text-xs text-gray-500 mt-0.5">กรอกข้อมูลส่วนตัวและข้อมูลการจ้างงานให้ครบถ้วนก่อนดำเนินการขั้นตอนถัดไป</p>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">สัญชาติ (Nationality) <span class="text-red-500">*</span></label>
+                    <div class="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1 gap-1 w-full sm:w-auto">
+                        <button type="button" id="btn-thai" onclick="setNationality('thai')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors">Thai (ไทย)</button>
+                        <button type="button" id="btn-foreign" onclick="setNationality('foreigner')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors">Foreigner (ต่างชาติ)</button>
+                    </div>
+                </div>
+
+                <div id="foreigner-doc-section" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">ประเภทเอกสาร (Document Type) <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <select id="doc-type" onchange="updateIdField()" class="input-field appearance-none cursor-pointer">
+                            <option value="passport">Passport (พาสปอร์ต)</option>
+                            <option value="pinkcard">Pink Card (บัตรสีชมพู)</option>
+                            <option value="workpermit">Work Permit (ใบอนุญาตทำงาน)</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-3"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">ชื่อ (First Name) <span class="text-red-500">*</span></label>
+                        <input type="text" id="fname-input" placeholder="ชื่อจริง" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">นามสกุล (Last Name) <span class="text-red-500">*</span></label>
+                        <input type="text" id="lname-input" placeholder="นามสกุล" class="input-field">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span></label>
+                    <input type="text" id="id-input" placeholder="X-XXXX-XXXXX-XX-X" class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
+                    <p id="id-hint" class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 13 หลัก</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="relative">
+                            <select id="dob-day" class="input-field appearance-none cursor-pointer"><option value="">วัน</option></select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5"></i>
+                        </div>
+                        <div class="relative">
+                            <select id="dob-month" class="input-field appearance-none cursor-pointer">
+                                <option value="">เดือน</option>
+                                <option value="1">มกราคม (January)</option>
+                                <option value="2">กุมภาพันธ์ (February)</option>
+                                <option value="3">มีนาคม (March)</option>
+                                <option value="4">เมษายน (April)</option>
+                                <option value="5">พฤษภาคม (May)</option>
+                                <option value="6">มิถุนายน (June)</option>
+                                <option value="7">กรกฎาคม (July)</option>
+                                <option value="8">สิงหาคม (August)</option>
+                                <option value="9">กันยายน (September)</option>
+                                <option value="10">ตุลาคม (October)</option>
+                                <option value="11">พฤศจิกายน (November)</option>
+                                <option value="12">ธันวาคม (December)</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5"></i>
+                        </div>
+                        <div class="relative">
+                            <select id="dob-year" class="input-field appearance-none cursor-pointer"><option value="">ปี (พ.ศ.)</option></select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (Expiry Date) <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="relative">
+                            <select id="exp-day" class="input-field appearance-none cursor-pointer"><option value="">วัน</option></select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5"></i>
+                        </div>
+                        <div class="relative">
+                            <select id="exp-month" class="input-field appearance-none cursor-pointer">
+                                <option value="">เดือน</option>
+                                <option value="1">มกราคม (January)</option>
+                                <option value="2">กุมภาพันธ์ (February)</option>
+                                <option value="3">มีนาคม (March)</option>
+                                <option value="4">เมษายน (April)</option>
+                                <option value="5">พฤษภาคม (May)</option>
+                                <option value="6">มิถุนายน (June)</option>
+                                <option value="7">กรกฎาคม (July)</option>
+                                <option value="8">สิงหาคม (August)</option>
+                                <option value="9">กันยายน (September)</option>
+                                <option value="10">ตุลาคม (October)</option>
+                                <option value="11">พฤศจิกายน (November)</option>
+                                <option value="12">ธันวาคม (December)</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5"></i>
+                        </div>
+                        <div class="relative">
+                            <select id="exp-year" class="input-field appearance-none cursor-pointer"><option value="">ปี (พ.ศ.)</option></select>
+                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 mb-6 mt-8">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <div class="text-center px-2">
+                        <p class="text-xs font-bold text-brand-navy uppercase tracking-wider">ข้อมูลการจ้างงาน</p>
+                    </div>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                </div>
+
+                <!-- ระบบค้นหาบริษัทอัจฉริยะ (Searchable Dropdown) -->
+                <div class="mb-6 relative" id="vendor-container">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor / Contractor) <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input type="text" id="vendor-input" placeholder="-- พิมพ์ค้นหา / เลือกบริษัท --" class="input-field pr-10 cursor-text" autocomplete="off" onfocus="showVendorList()" oninput="filterVendors()">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
+                    </div>
+                    <!-- กล่อง Dropdown ที่จะโชว์ตอนพิมพ์ -->
+                    <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto no-scrollbar hidden">
+                        <!-- รายชื่อบริษัทจะถูกดึงมาใส่ตรงนี้ด้วย JS -->
+                    </ul>
+                    <p class="text-[11px] text-brand-orange mt-1.5 flex items-center gap-1">
+                        <i data-lucide="info" class="w-3 h-3"></i> 
+                        พิมพ์ชื่อบริษัทเพื่อค้นหาจากฐานข้อมูล (Master Data)
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 mb-6 mt-8">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <div class="text-center px-2">
+                        <p class="text-xs font-bold text-brand-navy uppercase tracking-wider">ผู้ติดต่อในภาวะฉุกเฉิน</p>
+                    </div>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">ชื่อผู้ติดต่อ (Contact Name) <span class="text-red-500">*</span></label>
+                        <input type="text" id="em-name-input" placeholder="ชื่อ-นามสกุล" class="input-field">
+                    </div>
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">ความสัมพันธ์ (Relationship) <span class="text-red-500">*</span></label>
+                        <select id="relationship-select" onchange="toggleOtherRelation()" class="input-field appearance-none cursor-pointer">
+                            <option value="">-- เลือกความสัมพันธ์ --</option>
+                            <option value="บิดา/มารดา">บิดา/มารดา</option>
+                            <option value="คู่สมรส">คู่สมรส</option>
+                            <option value="พี่น้อง">พี่น้อง</option>
+                            <option value="อื่นๆ">อื่นๆ</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-9"></i>
+                    </div>
+                </div>
+
+                <div id="other-relation-container" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">โปรดระบุความสัมพันธ์ (Please Specify) <span class="text-red-500">*</span></label>
+                    <input type="text" id="em-other-input" placeholder="ระบุความสัมพันธ์" class="input-field border-brand-orange focus:ring-brand-orange">
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">เบอร์โทรศัพท์ (Phone Number) <span class="text-red-500">*</span></label>
+                    <input type="tel" id="phone-input" placeholder="0XX-XXX-XXXX" maxlength="10" class="input-field font-mono" oninput="validatePhoneInput(this)">
+                    <p class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 10 หลักเท่านั้น</p>
+                </div>
+
+                <div class="flex items-center gap-3 mb-6 mt-8">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <div class="text-center px-2">
+                        <p class="text-xs font-bold text-brand-navy uppercase tracking-wider">การยินยอม PDPA</p>
+                    </div>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                </div>
+
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-4">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="pdpa-1" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
+                        <div class="text-sm text-gray-700 leading-relaxed">
+                            <p>1. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ชีวมิติ/ใบหน้า</span> เพื่อการยืนยันตัวตน <span class="text-red-500">*</span></p>
+                        </div>
+                    </label>
+                    <div class="h-px bg-gray-200"></div>
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="pdpa-2" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
+                        <div class="text-sm text-gray-700 leading-relaxed">
+                            <p>2. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">สุขภาพ/กรุ๊ปเลือด</span> เพื่อความปลอดภัย <span class="text-red-500">*</span></p>
+                        </div>
+                    </label>
+                    <div class="h-px bg-gray-200"></div>
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="pdpa-3" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
+                        <div class="text-sm text-gray-700 leading-relaxed">
+                            <p>3. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ตำแหน่งที่ตั้ง GPS</span> ขณะปฏิบัติงาน <span class="text-red-500">*</span></p>
+                        </div>
+                    </label>
+                </div>
+
+                <button type="button" onclick="if(validateStep1()) goToStep(2)" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
+                    ถัดไป — ขั้นตอนที่ 2: อัปโหลดเอกสาร
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- ================= STEP 2 ================= -->
+            <div id="step-2" class="hidden">
+                <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">2</div>
+                    <div>
+                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: อัปโหลดเอกสาร</p>
+                        <p class="text-xs text-gray-500 mt-0.5">อัปโหลดสำเนาเอกสารประจำตัว (รองรับไฟล์รูปภาพและ PDF)</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
+                    <input type="file" id="file-main" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('main')">
+                    <div id="dropzone-main" onclick="document.getElementById('file-main').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
+                            <i data-lucide="camera" class="w-6 h-6 text-brand-navy"></i>
+                        </div>
+                        <div>
+                            <p id="text-main" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
+                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่ออัปโหลดไฟล์ JPG, PNG, PDF</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="upload-workpermit" class="mb-6 hidden">
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
+                    <input type="file" id="file-wp" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('wp')">
+                    <div id="dropzone-wp" onclick="document.getElementById('file-wp').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
+                            <i data-lucide="file-text" class="w-6 h-6 text-brand-navy"></i>
+                        </div>
+                        <div>
+                            <p id="text-wp" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
+                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่ออัปโหลดไฟล์ Work Permit</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                    <button type="button" onclick="goToStep(1)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
+                    </button>
+                    <button type="button" onclick="if(validateStep2()) goToStep(3)" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
+                        ถัดไป — ขั้นตอนที่ 3: ยืนยันตัวตน
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= STEP 3 ================= -->
+            <div id="step-3" class="hidden">
+                <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">3</div>
+                    <div>
+                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 3: ยืนยันตัวตน</p>
+                    </div>
+                </div>
+
+                <label class="block text-sm font-semibold text-brand-navy mb-2 border-b border-gray-200 pb-2 mt-4">คำรับรองขั้นสุดท้าย (Final Declaration)</label>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-3">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="consent-final" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
+                        <div class="text-sm text-gray-700 leading-relaxed">
+                            <p>ข้าพเจ้าขอยืนยันว่าข้อมูลทั้งหมดเป็นความจริง และยินยอมให้บันทึกภาพใบหน้าและพิกัดตำแหน่ง <span class="text-red-500">*</span></p>
+                        </div>
+                    </label>
+                    <div class="h-px bg-gray-200"></div>
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="consent-age" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
+                        <div class="text-sm text-gray-700 leading-relaxed">
+                            <p>ข้าพเจ้ายืนยันว่าตนเองมีอายุ <span class="font-bold text-brand-navy">ไม่ต่ำกว่า 18 ปีบริบูรณ์</span> <span class="text-red-500">*</span></p>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                    <button type="button" onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
+                    </button>
+                    <button type="button" onclick="if(validateStep3()) submitForm()" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> ลงทะเบียนเข้าปฏิบัติงาน
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= SUCCESS (Flow อบรมออนไลน์) ================= -->
+            <div id="step-success" class="hidden flex flex-col items-center justify-center gap-6 py-10 text-center">
+                <div class="w-20 h-20 rounded-full bg-brand-navy flex items-center justify-center shadow-lg">
+                    <i data-lucide="check" class="w-10 h-10 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-brand-navy">ลงทะเบียนสำเร็จ!</h2>
+                    <p class="text-base font-semibold text-brand-orange mt-1">Registration Complete</p>
+                    <p id="success-welcome-msg" class="text-sm text-gray-800 font-medium mt-4 px-4 leading-relaxed"></p>
+                </div>
+                
+                <div class="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl p-5 mt-2 text-left">
+                    <p class="text-sm font-bold text-brand-navy mb-4 border-b border-gray-200 pb-2">ขั้นตอนถัดไป (Next Steps)</p>
+                    <ul class="flex flex-col gap-4">
+                        <li class="flex items-start gap-3 text-sm text-gray-700">
+                            <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-navy"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-brand-navy block mb-0.5">1. รอการตรวจสอบ (Pending Approval)</span>
+                                ข้อมูลของท่านถูกส่งไปยัง "บริษัทต้นสังกัด (Vendor)" เพื่อตรวจสอบและยืนยันสถานะ
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-700">
+                            <div class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <i data-lucide="monitor-play" class="w-3.5 h-3.5 text-brand-orange"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-brand-orange block mb-0.5">2. เข้าอบรมออนไลน์ (E-Learning)</span>
+                                กรุณาเข้าสู่ระบบเพื่อดูวิดีโอความปลอดภัย และทำแบบทดสอบ (10 ข้อ) ให้ผ่านเกณฑ์ที่กำหนด
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-gray-700">
+                            <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-green-600"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-green-700 block mb-0.5">3. รับบัตรเข้าพื้นที่ (Get Badge)</span>
+                                เมื่อทำข้อสอบผ่าน และได้รับการอนุมัติเรียบร้อยแล้ว จึงจะสามารถติดต่อรับบัตรผ่านเข้าออกได้
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // ข้อมูลบริษัทจำลอง (Master Data) สำหรับให้ระบบค้นหา
+        const vendorsMasterData = [
+            "บริษัท เอบีซี จำกัด",
+            "บริษัท ไทยอุตสาหกรรม จำกัด",
+            "บริษัท พีพี เซฟตี้ จำกัด",
+            "บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด",
+            "บริษัท รักษาความปลอดภัย เอ็นพีซี เอสจี จำกัด",
+            "บริษัท ระยองวิศวกรรม จำกัด",
+            "บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด",
+            "บริษัท รับเหมาก่อสร้างไทย จำกัด",
+            "บริษัท เอ็นจิเนียริ่ง แอนด์ เซอร์วิส จำกัด",
+            "บริษัท คลีนนิ่ง เซอร์วิส โปร จำกัด"
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentYearBE = new Date().getFullYear() + 543;
+            const days = Array.from({length: 31}, (_, i) => i + 1);
+            const birthYears = Array.from({length: 70}, (_, i) => currentYearBE - i);
+            const expYears = Array.from({length: 20}, (_, i) => currentYearBE + i);
+
+            function populateDropdown(id, arr) {
+                const select = document.getElementById(id);
+                arr.forEach(val => {
+                    let option = document.createElement('option');
+                    option.value = val;
+                    option.text = val;
+                    select.appendChild(option);
+                });
+            }
+
+            populateDropdown('dob-day', days); populateDropdown('dob-year', birthYears);
+            populateDropdown('exp-day', days); populateDropdown('exp-year', expYears);
+            
+            // โหลดรายชื่อบริษัทตอนเริ่มต้น
+            filterVendors();
+        });
+
+        // ==========================================
+        // ระบบค้นหาบริษัท (Searchable Dropdown)
+        // ==========================================
+        function showVendorList() {
+            document.getElementById('vendor-list').classList.remove('hidden');
+            filterVendors();
+        }
+
+        function filterVendors() {
+            const inputVal = document.getElementById('vendor-input').value.toLowerCase();
+            const list = document.getElementById('vendor-list');
+            list.innerHTML = "";
+            
+            const filtered = vendorsMasterData.filter(v => v.toLowerCase().includes(inputVal));
+            
+            if(filtered.length === 0) {
+                list.innerHTML = '<li class="px-4 py-3 text-sm text-gray-500 text-center">ไม่พบรายชื่อบริษัทที่ค้นหา</li>';
+                return;
+            }
+
+            filtered.forEach(v => {
+                const li = document.createElement('li');
+                li.className = "px-4 py-2.5 text-sm text-gray-800 hover:bg-brand-navy hover:text-white cursor-pointer transition-colors border-b border-gray-100 last:border-0";
+                li.innerText = v;
+                // เมื่อกดเลือกบริษัท ให้เอาชื่อไปใส่ในช่อง Input และซ่อน Dropdown
+                li.onmousedown = function() {
+                    document.getElementById('vendor-input').value = v;
+                    document.getElementById('vendor-list').classList.add('hidden');
+                };
+                list.appendChild(li);
+            });
+        }
+
+        // กดพื้นที่อื่นบนจอ ให้ซ่อน Dropdown บริษัท
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('vendor-container');
+            if (container && !container.contains(e.target)) {
+                document.getElementById('vendor-list').classList.add('hidden');
+            }
+        });
+
+        // ==========================================
+
+        let currentNationality = 'thai';
+
+        function setNationality(nat) {
+            currentNationality = nat;
+            const btnThai = document.getElementById('btn-thai');
+            const btnForeign = document.getElementById('btn-foreign');
+            const foreignDocSection = document.getElementById('foreigner-doc-section');
+            const idInput = document.getElementById('id-input');
+            const uploadWorkPermit = document.getElementById('upload-workpermit');
+
+            if(nat === 'thai') {
+                btnThai.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors";
+                btnForeign.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors";
+                foreignDocSection.classList.add('hidden');
+                uploadWorkPermit.classList.add('hidden'); 
+            } else {
+                btnForeign.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors";
+                btnThai.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors";
+                foreignDocSection.classList.remove('hidden');
+            }
+            idInput.value = "";
+            updateIdField();
+        }
+
+        function updateIdField() {
+            const docType = document.getElementById('doc-type').value;
+            const label = document.getElementById('id-label');
+            const input = document.getElementById('id-input');
+            const uploadLabel = document.getElementById('upload-label');
+            const uploadWorkPermit = document.getElementById('upload-workpermit');
+
+            if(currentNationality === 'thai') {
+                label.innerHTML = 'เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span>';
+                input.maxLength = 13;
+                uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรประชาชน <span class="text-red-500">*</span>';
+            } else {
+                uploadWorkPermit.classList.remove('hidden');
+                if(docType === 'pinkcard') {
+                    label.innerHTML = 'เลขบัตรสีชมพู 13 หลัก <span class="text-red-500">*</span>';
+                    input.maxLength = 13;
+                    uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรสีชมพู <span class="text-red-500">*</span>';
+                } else if(docType === 'workpermit') {
+                    label.innerHTML = 'เลขที่ใบอนุญาตทำงาน <span class="text-red-500">*</span>';
+                    input.maxLength = 20;
+                    uploadLabel.innerHTML = 'อัปโหลด Passport หรือ บัตรสีชมพู <span class="text-red-500">*</span>';
+                } else {
+                    label.innerHTML = 'เลขพาสปอร์ต <span class="text-red-500">*</span>';
+                    input.maxLength = 20;
+                    uploadLabel.innerHTML = 'อัปโหลดสำเนา Passport <span class="text-red-500">*</span>';
+                }
+            }
+        }
+
+        function validateIdInput(obj) {
+            const docType = document.getElementById('doc-type').value;
+            if(currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) {
+                obj.value = obj.value.replace(/\D/g, '');
+            }
+        }
+
+        function validatePhoneInput(obj) {
+            obj.value = obj.value.replace(/\D/g, '');
+        }
+
+        function toggleOtherRelation() {
+            const select = document.getElementById('relationship-select');
+            const otherContainer = document.getElementById('other-relation-container');
+            if(select.value === 'อื่นๆ') {
+                otherContainer.classList.remove('hidden');
+            } else {
+                otherContainer.classList.add('hidden');
+            }
+        }
+
+        function updateFileUI(type) {
+            const fileInput = document.getElementById('file-' + type);
+            const textElement = document.getElementById('text-' + type);
+            const dropzone = document.getElementById('dropzone-' + type);
+            
+            if(fileInput.files.length > 0) {
+                textElement.innerText = "✅ อัปโหลดไฟล์เรียบร้อยแล้ว: " + fileInput.files[0].name;
+                textElement.classList.replace('text-brand-navy', 'text-green-600');
+                dropzone.classList.add('border-green-500', 'bg-green-50');
+            }
+        }
+
+        function validateStep1() {
+            const fname = document.getElementById('fname-input').value.trim();
+            const lname = document.getElementById('lname-input').value.trim();
+            const idVal = document.getElementById('id-input').value.trim();
+            const phone = document.getElementById('phone-input').value.trim();
+            const vendor = document.getElementById('vendor-input').value.trim(); // เช็คช่อง Input แทน Select
+            
+            if(!fname || !lname || !idVal || !phone || !vendor) {
+                alert("❌ กรุณากรอกข้อมูลในช่องที่มีเครื่องหมายดอกจัน (*) ให้ครบถ้วน");
+                return false;
+            }
+
+            const docType = document.getElementById('doc-type').value;
+            if((currentNationality === 'thai' || docType === 'pinkcard') && idVal.length !== 13) {
+                alert("❌ กรุณากรอกเลขบัตรให้ครบ 13 หลัก (ปัจจุบันกรอกมา " + idVal.length + " หลัก)");
+                return false;
+            }
+
+            if(!document.getElementById('dob-day').value || !document.getElementById('dob-month').value || !document.getElementById('dob-year').value) {
+                alert("❌ กรุณาระบุ วัน/เดือน/ปีเกิด ให้ครบถ้วน");
+                return false;
+            }
+
+            const relation = document.getElementById('relationship-select').value;
+            if(!relation) {
+                alert("❌ กรุณาเลือกความสัมพันธ์ของผู้ติดต่อฉุกเฉิน");
+                return false;
+            }
+            if(relation === 'อื่นๆ' && !document.getElementById('em-other-input').value.trim()) {
+                alert("❌ กรุณาระบุความสัมพันธ์ของผู้ติดต่อฉุกเฉินเพิ่มเติม");
+                return false;
+            }
+
+            if(phone.length !== 10) {
+                alert("❌ กรุณากรอกเบอร์โทรศัพท์มือถือให้ครบ 10 หลัก");
+                return false;
+            }
+
+            const p1 = document.getElementById('pdpa-1').checked;
+            const p2 = document.getElementById('pdpa-2').checked;
+            const p3 = document.getElementById('pdpa-3').checked;
+            if(!p1 || !p2 || !p3) {
+                alert("❌ กรุณาทำเครื่องหมายติ๊กถูก (✓) ยินยอมเงื่อนไข PDPA ให้ครบทั้ง 3 ข้อ เพื่อดำเนินการต่อ");
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateStep2() {
+            const fileMain = document.getElementById('file-main');
+            if(fileMain.files.length === 0) {
+                alert("❌ กรุณาอัปโหลดเอกสารหลัก (บัตรประชาชน/พาสปอร์ต) เพื่อยืนยันตัวตน");
+                return false;
+            }
+
+            if(currentNationality !== 'thai') {
+                const fileWp = document.getElementById('file-wp');
+                if(fileWp.files.length === 0) {
+                    alert("❌ กรุณาอัปโหลดใบอนุญาตทำงาน (Work Permit) ให้ครบถ้วน");
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function validateStep3() {
+            const cFinal = document.getElementById('consent-final').checked;
+            const cAge = document.getElementById('consent-age').checked;
+
+            if(!cFinal || !cAge) {
+                alert("❌ กรุณายืนยัน 'คำรับรองขั้นสุดท้าย' และ 'ยืนยันอายุ' ก่อนกดส่งแบบฟอร์ม");
+                return false;
+            }
+
+            return true;
+        }
+
+        function goToStep(stepNumber) {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-success').classList.add('hidden');
+
+            document.getElementById('step-' + stepNumber).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateIndicator(stepNumber);
+        }
+
+        function submitForm() {
+            const fname = document.getElementById('fname-input').value.trim();
+            const lname = document.getElementById('lname-input').value.trim();
+            const fullName = fname ? `${fname} ${lname}` : 'พนักงาน';
+            
+            document.getElementById('success-welcome-msg').innerText = `ยินดีต้อนรับ คุณ.${fullName} สู่ความปลอดภัยภายในบริษัท First Construction Technology...`;
+
+            document.getElementById('step-indicator').classList.add('hidden');
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-success').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateIndicator(step) {
+            for(let i=1; i<=3; i++) {
+                let circle = document.getElementById('ind-' + i);
+                let text = document.getElementById('ind-text-' + i);
+                let icon = document.getElementById('lock-icon-' + i);
+                let line = document.getElementById('line-' + i);
+                
+                if(circle) circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200 relative z-10 transition-colors";
+                if(text) text.className = "text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap transition-colors";
+                if(line) line.className = "flex-1 h-0.5 mx-2 bg-gray-200 transition-colors";
+                if(icon) icon.outerHTML = `<i data-lucide="lock" class="w-4 h-4 opacity-50" id="lock-icon-${i}"></i>`;
+            }
+
+            for(let i=1; i<=step; i++) {
+                let circle = document.getElementById('ind-' + i);
+                let text = document.getElementById('ind-text-' + i);
+                let line = document.getElementById('line-' + (i-1)); 
+                
+                if(i === step) { 
+                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20 relative z-10 transition-colors";
+                    circle.innerHTML = i; 
+                    text.className = "text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap transition-colors";
+                    if(line) line.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
+                } else { 
+                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-navy text-white relative z-10 transition-colors";
+                    circle.innerHTML = `<i data-lucide="check" class="w-5 h-5 text-white" id="lock-icon-${i}"></i>`;
+                    text.className = "text-[10px] font-semibold text-brand-navy absolute top-12 whitespace-nowrap transition-colors";
+                    if(line) line.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
+                }
+            }
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
