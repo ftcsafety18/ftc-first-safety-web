@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FTC Safety Super App - Final Detailed Mockup</title>
+    <title>FTC Safety Super App - Main Menu</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --ftc-blue: #0012b3; 
+            --ftc-blue: #1e2a78; 
             --ftc-yellow: #fff000; 
             --bg-light: #f4f7fb;
             --text-main: #1e293b;
@@ -32,20 +32,42 @@
             position: relative; overflow-x: hidden;
         }
         
-        /* 1. Header & Welcome Banner Design */
-        .header {
+        /* =========================================
+           1. Header Design (แบบใหม่แถบน้ำเงิน)
+           ========================================= */
+        .header-top {
+            background-color: var(--ftc-blue);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .logo-box {
+            background-color: var(--white);
+            border-radius: 6px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+        }
+        .header-title-wrap { display: flex; flex-direction: column; color: var(--white); }
+        .sys-title { font-size: 18px; font-weight: 700; line-height: 1.2; letter-spacing: 0.5px; }
+        .sys-subtitle { font-size: 12px; font-weight: 300; color: #e2e8f0; }
+
+        .header-content {
             background-color: var(--white);
             padding: 20px 20px 25px 20px;
-            border-bottom: 4px solid var(--ftc-blue);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             border-bottom-left-radius: 24px;
             border-bottom-right-radius: 24px;
-        }
-
-        .logo-wrapper { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
-        .mock-logo {
-            font-size: 28px; font-weight: 800; color: var(--ftc-blue); font-style: italic;
-            border-bottom: 4px solid var(--ftc-yellow); padding-bottom: 2px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 5px;
         }
 
         .welcome-banner {
@@ -69,9 +91,11 @@
         .profile-name { font-size: 16px; font-weight: 700; display: block; margin-bottom: 2px;}
         .profile-role { font-size: 13px; font-weight: 400; color: #cbd5e1; display: block;}
 
-        /* 2. Main Menu Grid */
+        /* =========================================
+           2. Main Menu Grid
+           ========================================= */
         .menu-section-title {
-            padding: 25px 20px 10px 20px; font-size: 14px; font-weight: 700;
+            padding: 20px 20px 10px 20px; font-size: 14px; font-weight: 700;
             color: var(--text-muted); letter-spacing: 0.5px;
         }
 
@@ -87,7 +111,9 @@
         .menu-title { font-weight: 600; font-size: 13px; line-height: 1.3; margin-bottom: 4px; color: var(--text-main);}
         .menu-subtitle { font-size: 11px; color: var(--text-muted); font-weight: 400;}
 
-        /* SOS Button */
+        /* =========================================
+           3. SOS Button & Bottom Sheet
+           ========================================= */
         .sos-wrapper { padding: 20px; margin-top: 10px; }
         .sos-btn {
             width: 100%; background: linear-gradient(135deg, #ef4444, #b91c1c);
@@ -100,7 +126,6 @@
         .sos-text { font-size: 18px; font-weight: 700; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-        /* 3. Bottom Sheet Design */
         .overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15, 23, 42, 0.6); z-index: 99;
@@ -140,7 +165,6 @@
         .sub-number { color: var(--ftc-blue); margin-right: 4px; font-weight: 800; }
         .sub-desc { font-size: 12px; color: var(--text-muted); font-weight: 400; line-height: 1.4; }
         
-        /* บทบาทพิเศษ สีสันปุ่ม */
         .sub-btn.vendor { background: #fffbeb; border-color: #fef08a; }
         .sub-btn.vendor .sub-title { color: #b45309; }
         .sub-btn.vendor .sub-number { color: #b45309; }
@@ -158,13 +182,24 @@
 
 <div class="app-container">
     
-    <!-- 1. Header & Auto-Identity Profile -->
-    <div class="header">
-        <div class="logo-wrapper">
-            <div class="mock-logo">1 First</div>
+    <!-- แถบ Header สีน้ำเงินด้านบนสุด -->
+    <div class="header-top">
+        <div class="header-left">
+            <div class="logo-box">
+                <!-- 💡 พี่ณัฐธัญสามารถลบ div ด้านล่าง แล้วใส่แท็ก <img src="ชื่อไฟล์โลโก้.png" style="width:100%;"> แทนได้เลยครับ -->
+                <div style="color:#1e2a78; font-weight:900; font-style:italic; font-size:12px; text-align:center; line-height:1;">
+                    <span style="color:#e11d48; font-size:16px;">1</span><br>First
+                </div>
+            </div>
+            <div class="header-title-wrap">
+                <div class="sys-title">FTC First Safety</div>
+                <div class="sys-subtitle">ระบบบริหารจัดการความปลอดภัย</div>
+            </div>
         </div>
-        
-        <!-- Welcome Banner ตามที่ออกแบบ -->
+    </div>
+
+    <!-- ส่วนต้อนรับและโปรไฟล์ -->
+    <div class="header-content">
         <div class="welcome-banner">
             <strong>ยินดีต้อนรับสู่ระบบความปลอดภัย</strong><br>
             บริษัท เฟิร์ส เทคโนโลยี คอนสตรัคชั่น<br>
@@ -180,9 +215,8 @@
         </div>
     </div>
 
-    <!-- 2. Main Menu Grid (เพิ่มหมายเลขกำกับทุกเมนู) -->
+    <!-- Main Menu Grid -->
     <div class="menu-section-title">เมนูการปฏิบัติงาน (OPERATIONS)</div>
-    
     <div class="menu-grid">
         <div class="menu-card" onclick="openSheet('menu1')">
             <div class="menu-icon">📝</div>
@@ -216,7 +250,7 @@
         </div>
     </div>
 
-    <!-- 3. SOS Button -->
+    <!-- SOS Button -->
     <div class="sos-wrapper">
         <button class="sos-btn" onclick="openSheet('menu7')">
             <div class="sos-icon">🚨</div>
@@ -226,7 +260,7 @@
 
 </div>
 
-<!-- 4. Bottom Sheet Overlay & Container -->
+<!-- Bottom Sheet Overlay & Container -->
 <div id="overlay" class="overlay" onclick="closeSheet()"></div>
 <div id="bottomSheet" class="bottom-sheet">
     <div class="sheet-drag-handle"></div>
@@ -240,66 +274,73 @@
 </div>
 
 <script>
-    // ฐานข้อมูลอัปเดตคำบรรยายและหมายเลขเมนูแบบเชื่อมโยง Backend 100%
+    // ฐานข้อมูลเมนู พร้อมการเชื่อมโยงลิงก์ URL เข้าหาฟอร์มจริง
     const menuData = {
         'menu1': {
             title: '1. ลงทะเบียนและอบรมความปลอดภัย<br>& อนุมัติยืนยันพนักงานของ Vendor',
             buttons: [
-                { num: '1.1', icon: '👤', title: 'ลงทะเบียนพนักงานใหม่', desc: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA ภาคบังคับ', class: '' },
-                { num: '1.2', icon: '🎓', title: 'อบรมความปลอดภัยและเข้าใจความเสี่ยง', desc: 'ทดสอบความรู้และถ่าย Live Selfie ป้องกันการสวมรอย เฉพาะผู้ผ่านเกณฑ์จึงจะได้รับ E-Badge', class: '' },
-                { num: '1.3', icon: '✅', title: 'อนุมัติและยืนยันพนักงาน (Vendor/PM)', desc: 'สำหรับเถ้าแก่ตรวจสอบผลสอบลูกน้อง และกดยืนยันยอดคนงานที่ได้รับอนุญาตเข้าไซต์งานจริง', class: 'vendor' }
+                { 
+                    num: '1.1', 
+                    icon: '👤', 
+                    title: 'ลงทะเบียนพนักงานใหม่', 
+                    desc: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA ภาคบังคับ', 
+                    class: '',
+                    url: 'Worker/Worker_Registration_ToSystem.html' // 🔗 ลิงก์ไปหาไฟล์ฟอร์มที่โฟลเดอร์ Worker
+                },
+                { num: '1.2', icon: '🎓', title: 'อบรมความปลอดภัยและเข้าใจความเสี่ยง', desc: 'ทดสอบความรู้และถ่าย Live Selfie ป้องกันการสวมรอย เฉพาะผู้ผ่านเกณฑ์จึงจะได้รับ E-Badge', class: '', url: '' },
+                { num: '1.3', icon: '✅', title: 'อนุมัติและยืนยันพนักงาน (Vendor/PM)', desc: 'สำหรับเถ้าแก่ตรวจสอบผลสอบลูกน้อง และกดยืนยันยอดคนงานที่ได้รับอนุญาตเข้าไซต์งานจริง', class: 'vendor', url: '' }
             ]
         },
         'menu2': {
             title: '2. ขอใบอนุญาตทำงาน (PTW)',
             buttons: [
-                { num: '2.1', icon: '📄', title: 'ขอเปิดใบงานใหม่ (Create Permit)', desc: 'ระบุรายละเอียดงานและพื้นที่ เพื่อขออนุมัติเริ่มงานตามขั้นตอนความปลอดภัยอย่างเคร่งครัด', class: '' },
-                { num: '2.2', icon: '🛡️', title: 'จัดการแผนความปลอดภัย & บันทึกค่าก๊าซ', desc: 'แนบเอกสาร JSA หรือบันทึกค่าก๊าซสำหรับงานอับอากาศ หากละเลยจะไม่สามารถเริ่มงานได้', class: '' },
-                { num: '2.3', icon: '🔍', title: 'เช็กสถานะใบงาน', desc: 'ติดตามสถานะการอนุมัติ ห้ามปฏิบัติงานใดๆ จนกว่าสถานะใบงานจะได้รับการอนุมัติจาก จป.', class: '' },
-                { num: '2.4', icon: '✅', title: 'พิจารณาใบงาน (จป./PM)', desc: 'ตะกร้างานสำหรับ จป. และ PM เพื่อตรวจสอบความถูกต้องและอนุมัติใบงาน (E-Sign)', class: 'vendor' }
+                { num: '2.1', icon: '📄', title: 'ขอเปิดใบงานใหม่ (Create Permit)', desc: 'ระบุรายละเอียดงานและพื้นที่ เพื่อขออนุมัติเริ่มงานตามขั้นตอนความปลอดภัยอย่างเคร่งครัด', class: '', url: '' },
+                { num: '2.2', icon: '🛡️', title: 'จัดการแผนความปลอดภัย & บันทึกค่าก๊าซ', desc: 'แนบเอกสาร JSA หรือบันทึกค่าก๊าซสำหรับงานอับอากาศ หากละเลยจะไม่สามารถเริ่มงานได้', class: '', url: '' },
+                { num: '2.3', icon: '🔍', title: 'เช็กสถานะใบงาน', desc: 'ติดตามสถานะการอนุมัติ ห้ามปฏิบัติงานใดๆ จนกว่าสถานะใบงานจะได้รับการอนุมัติจาก จป.', class: '', url: '' },
+                { num: '2.4', icon: '✅', title: 'พิจารณาใบงาน (จป./PM)', desc: 'ตะกร้างานสำหรับ จป. และ PM เพื่อตรวจสอบความถูกต้องและอนุมัติใบงาน (E-Sign)', class: 'vendor', url: '' }
             ]
         },
         'menu3': {
             title: '3. ประชุมหน้างานเข้าพื้นที่และแจ้งจุดเสี่ยง (TBT & Near Miss)',
             buttons: [
-                { num: '3.1', icon: '📸', title: 'บันทึก TBT', desc: 'ถ่ายรูปหมู่กล้องสดฝัง GPS เพื่อยืนยันการบรีฟแผนงานและความปลอดภัยก่อนเริ่มงานทุกวัน (บังคับ)', class: '' },
-                { num: '3.2', icon: '⏱️', title: 'ลงเวลาเข้าพื้นที่ (Check-in)', desc: 'สแกนหมวกหรือ QR Code เพื่อบันทึกยอดคนงานเข้าเขตอันตรายและเขตควบคุม ป้องกันบุคคลภายนอก', class: 'success' },
-                { num: '3.3', icon: '⚠️', title: 'แจ้งจุดเสี่ยง & เสนอแนะ (Near Miss)', desc: 'รายงานสภาพแวดล้อมที่ไม่ปลอดภัยทันทีที่พบเห็น หรือส่งข้อเสนอแนะด้านความปลอดภัย', class: 'vendor' }
+                { num: '3.1', icon: '📸', title: 'บันทึก TBT', desc: 'ถ่ายรูปหมู่กล้องสดฝัง GPS เพื่อยืนยันการบรีฟแผนงานและความปลอดภัยก่อนเริ่มงานทุกวัน (บังคับ)', class: '', url: '' },
+                { num: '3.2', icon: '⏱️', title: 'ลงเวลาเข้าพื้นที่ (Check-in)', desc: 'สแกนหมวกหรือ QR Code เพื่อบันทึกยอดคนงานเข้าเขตอันตรายและเขตควบคุม ป้องกันบุคคลภายนอก', class: 'success', url: '' },
+                { num: '3.3', icon: '⚠️', title: 'แจ้งจุดเสี่ยง & เสนอแนะ (Near Miss)', desc: 'รายงานสภาพแวดล้อมที่ไม่ปลอดภัยทันทีที่พบเห็น หรือส่งข้อเสนอแนะด้านความปลอดภัย', class: 'vendor', url: '' }
             ]
         },
         'menu4': {
             title: '4. ส่งผลงาน & ปิดงาน 5ส (Progress, NCR & Close-out)',
             buttons: [
-                { num: '4.1', icon: '📈', title: 'ส่งความคืบหน้างาน (% Progress)', desc: 'ถ่ายรูประบุเปอร์เซ็นต์ความคืบหน้า เพื่อส่งให้ระบบหลังบ้านคำนวณมูลค่างาน (Earned Value)', class: '' },
-                { num: '4.2', icon: '🛡️', title: 'ตอบกลับใบเตือนความปลอดภัย (NCR / CAPA)', desc: 'ตรวจสอบใบเตือนที่โดนปรับ และอัปโหลดภาพหลักฐานการแก้ไข เพื่อขอปลดล็อกค่าปรับก่อนวางบิล', class: 'vendor' },
-                { num: '4.3', icon: '🧹', title: 'รายงานผล 5ส (Before / After)', desc: 'ถ่ายรูปเปรียบเทียบพื้นที่ก่อน-หลัง เพื่อยืนยันการเคลียร์พื้นที่ให้ปลอดภัยร้อยเปอร์เซ็นต์', class: '' },
-                { num: '4.4', icon: '⏱️', title: 'ลงเวลาออกพื้นที่ (Check-out)', desc: 'เช็กยอดคนงานออก หากละเลยการ Check-out ระบบจะล็อกสิทธิ์การเข้าพื้นที่ในวันถัดไปทันที', class: 'success' }
+                { num: '4.1', icon: '📈', title: 'ส่งความคืบหน้างาน (% Progress)', desc: 'ถ่ายรูประบุเปอร์เซ็นต์ความคืบหน้า เพื่อส่งให้ระบบหลังบ้านคำนวณมูลค่างาน (Earned Value)', class: '', url: '' },
+                { num: '4.2', icon: '🛡️', title: 'ตอบกลับใบเตือนความปลอดภัย (NCR / CAPA)', desc: 'ตรวจสอบใบเตือนที่โดนปรับ และอัปโหลดภาพหลักฐานการแก้ไข เพื่อขอปลดล็อกค่าปรับก่อนวางบิล', class: 'vendor', url: '' },
+                { num: '4.3', icon: '🧹', title: 'รายงานผล 5ส (Before / After)', desc: 'ถ่ายรูปเปรียบเทียบพื้นที่ก่อน-หลัง เพื่อยืนยันการเคลียร์พื้นที่ให้ปลอดภัยร้อยเปอร์เซ็นต์', class: '', url: '' },
+                { num: '4.4', icon: '⏱️', title: 'ลงเวลาออกพื้นที่ (Check-out)', desc: 'เช็กยอดคนงานออก หากละเลยการ Check-out ระบบจะล็อกสิทธิ์การเข้าพื้นที่ในวันถัดไปทันที', class: 'success', url: '' }
             ]
         },
         'menu5': {
             title: '5. บัตรดิจิทัลของฉัน (My E-Badge)',
             buttons: [
-                { num: '5.1', icon: '🪪', title: 'แสดง E-Badge', desc: 'บัตรประจำตัวดิจิทัล ใช้แสดงต่อ รปภ. หรือ จป. เพื่อยืนยันสิทธิ์ในกรณีลืมบัตรแข็ง', class: '' },
-                { num: '5.2', icon: '🔄', title: 'แก้ไขข้อมูลส่วนตัว', desc: 'อัปเดตเบอร์ติดต่อฉุกเฉินและกรุ๊ปเลือด ข้อมูลบังคับเพื่อการช่วยเหลือทางการแพทย์ที่แม่นยำ', class: '' },
-                { num: '5.3', icon: '🏆', title: 'ประวัติความปลอดภัย', desc: 'ตรวจสอบประวัติการทำผิดกฎ และยอดสะสม Safety Coins เพื่อประเมินผลงานและเครดิต Vendor', class: 'vendor' }
+                { num: '5.1', icon: '🪪', title: 'แสดง E-Badge', desc: 'บัตรประจำตัวดิจิทัล ใช้แสดงต่อ รปภ. หรือ จป. เพื่อยืนยันสิทธิ์ในกรณีลืมบัตรแข็ง', class: '', url: '' },
+                { num: '5.2', icon: '🔄', title: 'แก้ไขข้อมูลส่วนตัว', desc: 'อัปเดตเบอร์ติดต่อฉุกเฉินและกรุ๊ปเลือด ข้อมูลบังคับเพื่อการช่วยเหลือทางการแพทย์ที่แม่นยำ', class: '', url: '' },
+                { num: '5.3', icon: '🏆', title: 'ประวัติความปลอดภัย', desc: 'ตรวจสอบประวัติการทำผิดกฎ และยอดสะสม Safety Coins เพื่อประเมินผลงานและเครดิต Vendor', class: 'vendor', url: '' }
             ]
         },
         'menu6': {
             title: '6. ทรัพย์สินและตรวจสอบเครื่องมือ (Asset & E-Tagging)',
             buttons: [
-                { num: '6.1', icon: '📱', title: 'สแกนตรวจเครื่องมือ & นั่งร้าน (Checklist)', desc: 'สแกนตรวจสอบป้ายเขียว/แดงประจำวัน หากฝ่าฝืนใช้เครื่องมือชำรุด ระบบจะระงับใบงานทันที', class: '' },
-                { num: '6.2', icon: '🔄', title: 'ยืมคืนอุปกรณ์ส่วนกลางบริษัท', desc: 'สแกนยืม-คืนอุปกรณ์ส่วนกลาง ผูกติดกับรหัสพนักงานเพื่อป้องกันการสูญหายและต้องรับผิดชอบ', class: 'success' },
-                { num: '6.3', icon: '➕', title: 'ขึ้นทะเบียนเครื่องมือใหม่', desc: 'ลงทะเบียนเครื่องมือ/อุปกรณ์ไฟฟ้าก่อนเข้าไซต์งาน เพื่อรับ QR Code บังคับตรวจสภาพ', class: '' },
-                { num: '6.4', icon: '📋', title: 'ประวัติการซ่อมบำรุง', desc: 'เช็กประวัติการตรวจเช็กสภาพเครื่องมือ เพื่อยืนยันความพร้อมใช้งานตามมาตรฐานความปลอดภัย', class: '' }
+                { num: '6.1', icon: '📱', title: 'สแกนตรวจเครื่องมือ & นั่งร้าน (Checklist)', desc: 'สแกนตรวจสอบป้ายเขียว/แดงประจำวัน หากฝ่าฝืนใช้เครื่องมือชำรุด ระบบจะระงับใบงานทันที', class: '', url: '' },
+                { num: '6.2', icon: '🔄', title: 'ยืมคืนอุปกรณ์ส่วนกลางบริษัท', desc: 'สแกนยืม-คืนอุปกรณ์ส่วนกลาง ผูกติดกับรหัสพนักงานเพื่อป้องกันการสูญหายและต้องรับผิดชอบ', class: 'success', url: '' },
+                { num: '6.3', icon: '➕', title: 'ขึ้นทะเบียนเครื่องมือใหม่', desc: 'ลงทะเบียนเครื่องมือ/อุปกรณ์ไฟฟ้าก่อนเข้าไซต์งาน เพื่อรับ QR Code บังคับตรวจสภาพ', class: '', url: '' },
+                { num: '6.4', icon: '📋', title: 'ประวัติการซ่อมบำรุง', desc: 'เช็กประวัติการตรวจเช็กสภาพเครื่องมือ เพื่อยืนยันความพร้อมใช้งานตามมาตรฐานความปลอดภัย', class: '', url: '' }
             ]
         },
         'menu7': {
             title: '7. แจ้งเหตุฉุกเฉินด่วน! (SOS & Evacuation)',
             buttons: [
-                { num: '7.1', icon: '🔥', title: 'เกิดอุบัติเหตุ / เพลิงไหม้ / สารเคมีรั่วไหล', desc: 'แจ้งทีมตอบโต้ภาวะฉุกเฉินด่วน พร้อมระบบดึงพิกัด GPS เพื่อประสานงานเข้าระงับเหตุ', class: 'danger' },
-                { num: '7.2', icon: '🏃‍♂️', title: 'รายงานตัวจุดรวมพล (Muster Point)', desc: 'กดยืนยันตัวตนเมื่ออพยพมาถึงเขตปลอดภัย (จุดรวมพล) เพื่อให้ระบบประมวลผลยอดผู้สูญหาย', class: 'success' },
-                { num: '7.3', icon: '🚑', title: 'เหตุฉุกเฉินรุนแรงเร่งด่วน อันตรายสาหัส', desc: 'แจ้งทีมแพทย์และผู้บริหารระดับสูงทันที เพื่อระดมกำลังเข้าช่วยเหลือขั้นวิกฤต', class: 'danger' },
-                { num: '7.4', icon: '❌', title: 'ยกเลิกการแจ้งเหตุ', desc: 'ปิดหน้าต่างนี้ (กรณีเผลอกดโดนปุ่มฉุกเฉิน) เพื่อป้องกันการระดมพลที่ผิดพลาด', class: '' }
+                { num: '7.1', icon: '🔥', title: 'เกิดอุบัติเหตุ / เพลิงไหม้ / สารเคมีรั่วไหล', desc: 'แจ้งทีมตอบโต้ภาวะฉุกเฉินด่วน พร้อมระบบดึงพิกัด GPS เพื่อประสานงานเข้าระงับเหตุ', class: 'danger', url: '' },
+                { num: '7.2', icon: '🏃‍♂️', title: 'รายงานตัวจุดรวมพล (Muster Point)', desc: 'กดยืนยันตัวตนเมื่ออพยพมาถึงเขตปลอดภัย (จุดรวมพล) เพื่อให้ระบบประมวลผลยอดผู้สูญหาย', class: 'success', url: '' },
+                { num: '7.3', icon: '🚑', title: 'เหตุฉุกเฉินรุนแรงเร่งด่วน อันตรายสาหัส', desc: 'แจ้งทีมแพทย์และผู้บริหารระดับสูงทันที เพื่อระดมกำลังเข้าช่วยเหลือขั้นวิกฤต', class: 'danger', url: '' },
+                { num: '7.4', icon: '❌', title: 'ยกเลิกการแจ้งเหตุ', desc: 'ปิดหน้าต่างนี้ (กรณีเผลอกดโดนปุ่มฉุกเฉิน) เพื่อป้องกันการระดมพลที่ผิดพลาด', class: '', url: '' }
             ]
         }
     };
@@ -310,8 +351,13 @@
         
         let contentHtml = '';
         data.buttons.forEach(btn => {
+            // เช็คว่าถ้ามี url ให้เปิดหน้านั้น แต่ถ้าไม่มีให้โชว์ Alert เตือนว่ากำลังพัฒนา
+            const action = btn.url 
+                ? `window.location.href='${btn.url}'` 
+                : `alert('กำลังพัฒนาระบบ: ${btn.num} ${btn.title}')`;
+
             contentHtml += `
-                <button class="sub-btn ${btn.class}" onclick="alert('กำลังเข้าสู่เมนู: ${btn.num} ${btn.title}')">
+                <button class="sub-btn ${btn.class}" onclick="${action}">
                     <div class="sub-icon">${btn.icon}</div>
                     <div class="sub-text-container">
                         <div class="sub-title"><span class="sub-number">${btn.num}</span> ${btn.title}</div>
