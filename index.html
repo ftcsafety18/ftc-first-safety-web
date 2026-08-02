@@ -310,14 +310,15 @@
         'menu1': {
             title: '1. ลงทะเบียนและอบรมความปลอดภัย<br>& อนุมัติยืนยันพนักงานของ Vendor',
             buttons: [
-                { 
-                    num: '1.1', 
-                    icon: '👤', 
-                    title: 'ลงทะเบียนพนักงานใหม่', 
-                    desc: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA ภาคบังคับ', 
-                    class: '',
-                    url: 'Worker/Worker_Registration_ToSystem.html' // 🔗 ลิงก์ไปหาไฟล์ฟอร์มที่โฟลเดอร์ Worker
-                },
+               {
+    id: '1',
+    title: 'ลงทะเบียนเข้าปฏิบัติงาน',
+    subtitle: 'Worker Registration',
+    icon: 'user-plus',
+    // เปลี่ยนตรงลิงก์ด้านล่างนี้ครับ
+    link: 'Worker/Worker_Registration_ToSystem.html', 
+    color: 'bg-blue-50 text-blue-600'
+}
                 { num: '1.2', icon: '🎓', title: 'อบรมความปลอดภัยและเข้าใจความเสี่ยง', desc: 'ทดสอบความรู้และถ่าย Live Selfie ป้องกันการสวมรอย เฉพาะผู้ผ่านเกณฑ์จึงจะได้รับ E-Badge', class: '', url: '' },
                 { num: '1.3', icon: '✅', title: 'อนุมัติและยืนยันพนักงาน (Vendor/PM)', desc: 'สำหรับเถ้าแก่ตรวจสอบผลสอบลูกน้อง และกดยืนยันยอดคนงานที่ได้รับอนุญาตเข้าไซต์งานจริง', class: 'vendor', url: '' }
             ]
