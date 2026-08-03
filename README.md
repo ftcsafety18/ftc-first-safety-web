@@ -129,6 +129,8 @@
     *   Checkbox คำรับรองขั้นสุดท้าย
     *   การยืนยันอายุ (ต้องไม่ต่ำกว่า 18 ปีบริบูรณ์)
 4.  **Step 4: Success Page & Workflow (หน้าลงทะเบียนสำเร็จ)**
+
+5.  
     *   ปรับ Flow ใหม่ตามมาตรฐานความปลอดภัย: 
         `รอ Vendor ตรวจสอบ` -> `เข้าอบรมออนไลน์ (ดูวิดีโอ + ทำแบบทดสอบ 10 ข้อ)` -> `รับบัตรเข้าพื้นที่ (Badge)`
 
@@ -139,3 +141,69 @@
 
 ## 💡 Prompt สำหรับ AI (คำสั่งอ้างอิง)
 "ฉันคือ พี่ณัฐธัญ และให้คุณสวมบทบาทเป็น 'นายณัฐธัญ' (โปรแกรมเมอร์ผู้เชี่ยวชาญ) โปรดอ่านเอกสาร README นี้เพื่อทำความเข้าใจบริบทของโปรเจกต์ FTC First Safety ที่เราทำค้างไว้ และพร้อมสำหรับการพัฒนา Phase 2 (Vendor Dashboard) ต่อไป"
+
+
+
+# 🛡️ FTC Digital Safety Transformation (Project Paperless)
+**Project Name:** FTC Safety Super App (ระบบความปลอดภัย บริษัท เฟิร์ส เทคโนโลยี คอนสตรัคชั่น)
+**Admin / PM:** ณัฐธัญ ละอองทอง
+**Contact:** ftcsafety18@gmail.com
+
+## 📌 ภาพรวมโครงการ (Project Overview)
+ระบบบริหารจัดการความปลอดภัยแบบดิจิทัลผ่าน LINE OA เพื่อลดการใช้กระดาษ (Paperless) โดยเน้นการใช้งานผ่านสมาร์ทโฟนเป็นหลัก (Mobile-First) ระบบหลักประกอบด้วย การลงทะเบียนผู้ปฏิบัติงาน, การขออนุญาตทำงาน (E-Permit), การลงเวลาและ TBT, และการตรวจพื้นที่ (Digital Sitewalk)
+
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack & Deployment)
+* **Frontend:** HTML5, Vanilla JavaScript, Tailwind CSS (via CDN), ฟอนต์ Sarabun
+* **Icons & Graphics:** Lucide Icons, 100% CSS/SVG Logos
+* **Database & Backend:** Supabase (FTC-Master-DB)
+* **Version Control & Hosting:** GitHub (`ftc-first-safety-web`) -> Deployed via GitHub Pages / Netlify
+* **Integration:** LINE OA (LIFF App)
+
+## 📂 โครงสร้างระบบและไฟล์ (Project Structure)
+### 1. ฝั่งความปลอดภัย (Folder: JoPor)
+* `E-Permit.html` : หน้าจัดการใบอนุญาตเข้าทำงาน
+* `Digital Sitewalk.html` : ระบบตรวจประเมินหน้างาน
+* `Digital_Sitewalk_Dashboard.html` : หน้ากระดานสรุปผลการเดินตรวจพื้นที่
+* `Digital_Sitewalk_Export.html` : หน้าสำหรับการ Export ข้อมูล
+
+### 2. ฝั่งผู้รับเหมา (Folder: Vender)
+* `Vendor_Dashboard.html` : หน้ากระดานหลักของผู้รับเหมา
+* `Equipment_Regis.html` : ระบบลงทะเบียนเครื่องมือ/อุปกรณ์
+* `Worker_Registration_ToSystem.html` : ระบบลงทะเบียนรายชื่อผู้ปฏิบัติงาน
+* `PTW_Request.html` : ฟอร์มหลักสำหรับขออนุญาตเข้าทำงาน
+
+### 3. ฝั่งผู้ดูแลระบบ (Folder: Admin)
+* `Admin_Approval.html` : หน้าอนุมัติหลัก
+* `Admin_Equipment_Approval.html` : หน้าอนุมัติเครื่องมือ
+* `Admin_Vendor_Approval.html` : หน้าจัดการผู้รับเหมา
+
+## 📖 คำศัพท์และมาตรฐานของโครงการ (Terminology)
+เพื่อความเข้าใจที่ตรงกันในการพัฒนาระบบ ให้ใช้คำศัพท์วิชาการภาษาไทยดังนี้:
+* **Hot Zone** แปลว่า **เขตอันตราย**
+* **Warm Zone** แปลว่า **เขตควบคุม**
+* **Safe Zone** แปลว่า **เขตปลอดภัย**
+* **Decon** แปลว่า **การชำระล้าง**
+
+## 🗄️ โครงสร้างฐานข้อมูล (Supabase: FTC-Master-DB)
+* `table_vendors` : ข้อมูลผู้รับเหมา (vendor_id, vendor_name, entity_type, accum_billing, vendor_rating)
+* `table_users` / `table_permit_workers` : ข้อมูลพนักงานและผู้ปฏิบัติงาน
+* `table_permits` / `table_e_ptw` : ข้อมูลใบขออนุญาตเข้าทำงาน (PTW)
+* `table_equipment` : เก็บทะเบียนอุปกรณ์ที่ผ่านการตรวจสอบ
+* `table_toolbox_talks` : ข้อมูลการลงเวลาและ TBT
+* `table_area_master` : ข้อมูลพื้นที่ปฏิบัติงาน
+
+## 📱 การเชื่อมต่อระบบ LINE (LINE Developers)
+**Provider:** First Technology
+* **LIFF app name:** FTC Safety
+* **LIFF ID:** 2010907761-KrJ8PgNN
+* **LIFF URL:** https://liff.line.me/2010907761-KrJ8PgNN (เชื่อมต่อกับหน้า Main Menu `index.html`)
+
+## 🚀 สถานะการทำงานปัจจุบัน (Current Status)
+* [x] หน้า Main Menu (`index.html`) พร้อมระบบ Navigation Grid & SOS Button
+* [x] ออกแบบฟอร์ม PTW Request เสร็จสมบูรณ์
+* [x] **Phase 1:** ระบบลงทะเบียนพนักงานใหม่ (`Worker_Registration_ToSystem.html`) แบบ Multi-step Form (Personal Info, Upload, Identity Verification) พร้อม Data Validation และ PDPA Consent
+* [ ] **Phase 2 (In Progress):** Vendor Dashboard สำหรับให้ผู้รับเหมา อนุมัติ/ปฏิเสธ รายชื่อลูกจ้างก่อนส่งเข้าระบบ E-Learning และให้ จป. ตรวจสอบ
+* [ ] กำลังพัฒนา: การเชื่อมต่อฟอร์มลงทะเบียนเข้ากับฐานข้อมูล Supabase
+* [ ] แผนงานต่อไป: ระบบ PTW Activation หน้างาน (เปิดใบงานและเช็คชื่อ TBT) และผูกระบบ E-Tagging กับ QR Code
+
+* [ ] 
