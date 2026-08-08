@@ -274,7 +274,7 @@
                     </div>
                 </div>
 
-                <!-- 💡 ปุ่มถ่ายภาพกลับมาใช้ <label> ครอบ <input> เพื่อหลอก Android ให้เด้งกล้องมือถือตรงๆ -->
+                <!-- 💡 โค้ดกล้องมาตรฐานสากล ที่เสถียรที่สุดสำหรับทุกอุปกรณ์ -->
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -286,8 +286,7 @@
                             <div class="flex gap-2 justify-center">
                                 <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <!-- ใช้ accept="image/*" คู่กับ capture="environment" คือสูตรที่ดีที่สุดบนเบราว์เซอร์ปกติ -->
-                                    <input type="file" id="file-main-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture="environment" onchange="updateFileUI('main', this)">
+                                    <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
                                 </label>
                                 <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
@@ -310,7 +309,7 @@
                             <div class="flex gap-2 justify-center">
                                 <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture="environment" onchange="updateFileUI('wp', this)">
+                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
                                 </label>
                                 <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
@@ -475,34 +474,13 @@
             }, 800);
         });
 
-        // 💡 ระบบเตือนและบังคับให้เปิดใน Chrome อัตโนมัติ (ยังคงเก็บไว้เพื่อหนีการบล็อกของแอป LINE)
+        // 💡 ปลดล็อคระบบดีดเข้า Chrome และหยุดวนลูป กลับมาใช้ LIFF ปกติ
         async function initializeLiff() {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
-                
-                if (liff.isInClient()) {
-                    Swal.fire({
-                        title: 'เพื่อการใช้งานที่สมบูรณ์ 📸',
-                        text: 'ระบบขอดำเนินการเปิดหน้าต่างเบราว์เซอร์หลัก (Google Chrome / Safari) เพื่อให้สามารถเปิดใช้งานกล้องมือถือได้ครับ',
-                        icon: 'info',
-                        confirmButtonText: '🚀 ดำเนินการต่อ',
-                        confirmButtonColor: '#19335A',
-                        allowOutsideClick: false
-                    }).then(() => {
-                        liff.openWindow({
-                            url: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html",
-                            external: true 
-                        });
-                        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:Sarabun; text-align:center; color:#19335A;"><h2>ระบบกำลังนำคุณไปยังเบราว์เซอร์หลัก...</h2></div>';
-                    });
-                    return; 
-                }
-
                 if (liff.isLoggedIn()) {
                     var profile = await liff.getProfile();
                     userLineUid = profile.userId;
-                } else {
-                    liff.login({ redirectUri: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html" });
                 }
             } catch (error) { 
                 console.error("LIFF Error:", error); 
@@ -657,25 +635,19 @@
         }
 
         function updateFileUI(type, inputElement) {
-            var otherInputId = inputElement.id.includes('-cam') ? 'file-' + type + '-doc' : 'file-' + type + '-cam';
-            document.getElementById(otherInputId).value = ""; 
-
             var textElement = document.getElementById('text-' + type);
             var dropzone = document.getElementById('dropzone-' + type);
             
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ ถ่ายภาพพร้อมส่ง: " + inputElement.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
             }
         }
 
         function updateDynamicFileUI(id, inputElement) {
-            var otherInputId = inputElement.id.includes('-cam') ? 'file-doc-doc-' + id : 'file-doc-cam-' + id;
-            document.getElementById(otherInputId).value = ""; 
-
             var textElement = document.getElementById('text-doc-' + id);
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ ถ่ายภาพพร้อมส่ง: " + inputElement.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
             }
         }
 
@@ -697,7 +669,7 @@
                     <div class="flex gap-2 justify-center mt-3 mb-1">
                         <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center cursor-pointer">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/jpeg, image/png, image/jpg" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                         </label>
                         <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center cursor-pointer">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
