@@ -41,6 +41,10 @@
         .btn-add:hover { background-color: #254B82; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(25, 51, 90, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* สไตล์สำหรับกล้อง WebRTC */
+        #live-camera-modal { backdrop-filter: blur(5px); }
+        #live-video { width: 100%; max-height: 70vh; object-fit: cover; background-color: #000; border-radius: 1rem; }
     </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -274,7 +278,7 @@
                     </div>
                 </div>
 
-                <!-- 💡 แก้ไข accept ให้เป็น image/jpeg,image/png เพื่อหลบ Photo Picker ของ Android 13 -->
+                <!-- 💡 ปุ่มถ่ายภาพแก้ไขเป็นปุ่มธรรมดา เรียก WebRTC เพื่อกัน Android ดักจับ -->
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -284,17 +288,19 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
+                                <button type="button" onclick="openLiveCamera('main')" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-main-cam" class="hidden" accept="image/jpeg,image/png,image/jpg" capture="environment" onchange="updateFileUI('main', this)">
-                                </label>
-                                <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
+                                </button>
+                                <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                                    <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
-                                </label>
+                                </button>
                             </div>
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
+                        
+                        <!-- ช่องแอบรับไฟล์ (ไม่ต้องมี capture แล้วเพราะเราถ่ายสด) -->
+                        <input type="file" id="file-main-cam" class="hidden">
+                        <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
                 </div>
 
@@ -307,17 +313,18 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
+                                <button type="button" onclick="openLiveCamera('wp')" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/jpeg,image/png,image/jpg" capture="environment" onchange="updateFileUI('wp', this)">
-                                </label>
-                                <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
+                                </button>
+                                <button type="button" onclick="document.getElementById('file-wp-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                                    <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
-                                </label>
+                                </button>
                             </div>
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
+                        
+                        <input type="file" id="file-wp-cam" class="hidden">
+                        <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
                 </div>
 
@@ -429,6 +436,28 @@
         </div>
     </main>
 
+    <!-- 📸 โมดอลระบบกล้องถ่ายภาพสด (WebRTC) -->
+    <div id="live-camera-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-brand-navy text-lg">ถ่ายภาพเอกสาร/เซลฟี่</h3>
+                <button type="button" onclick="closeLiveCamera()" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            </div>
+            
+            <div class="relative w-full rounded-xl overflow-hidden bg-black flex items-center justify-center min-h-[300px]">
+                <video id="live-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <div class="absolute inset-0 border-4 border-white/30 rounded-xl pointer-events-none"></div>
+                <div class="absolute inset-x-8 inset-y-12 border-2 border-dashed border-brand-orange/70 pointer-events-none"></div>
+            </div>
+
+            <canvas id="live-canvas" class="hidden"></canvas>
+            
+            <button type="button" onclick="takeSnapshot()" class="w-full py-4 bg-brand-orange text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-brand-orange-hover active:scale-95 transition-transform">
+                <i data-lucide="camera" class="w-6 h-6"></i> กดถ่ายรูป (Snap)
+            </button>
+        </div>
+    </div>
+
     <script>
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; 
@@ -448,6 +477,10 @@
 
         vendorsMasterData.sort(function(a, b) { return a.name.localeCompare(b.name, 'th'); });
         var selectedVendorId = ''; 
+
+        // ตัวแปรรองรับกล้อง WebRTC
+        let currentCameraStream = null;
+        let currentUploadTarget = null;
 
         async function loadVendorsFromDB() {
             try {
@@ -474,17 +507,111 @@
             }, 800);
         });
 
+        // 💡 ฟังก์ชัน LIFF เด้งไปเปิดบน Chrome
         async function initializeLiff() {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
+                
+                if (liff.isInClient()) {
+                    Swal.fire({
+                        title: 'เตรียมพร้อมถ่ายภาพ 📸',
+                        text: 'ระบบขอดำเนินการเปิดหน้าต่างเบราว์เซอร์หลัก (Google Chrome) เพื่อใช้งานกล้องอย่างเต็มรูปแบบครับ',
+                        icon: 'info',
+                        confirmButtonText: '🚀 ดำเนินการต่อ',
+                        confirmButtonColor: '#19335A',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        liff.openWindow({
+                            url: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html",
+                            external: true 
+                        });
+                        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:Sarabun; text-align:center; color:#19335A;"><h2>ระบบกำลังนำคุณไปยังเบราว์เซอร์หลัก...</h2></div>';
+                    });
+                    return; 
+                }
+
                 if (liff.isLoggedIn()) {
                     var profile = await liff.getProfile();
                     userLineUid = profile.userId;
+                } else {
+                    liff.login({ redirectUri: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html" });
                 }
             } catch (error) { 
                 console.error("LIFF Error:", error); 
             }
         }
+
+        // ===============================================
+        // 📸 ฟังก์ชันเปิดกล้องถ่ายทอดสด (WebRTC Live Camera)
+        // ===============================================
+        async function openLiveCamera(targetId) {
+            currentUploadTarget = targetId;
+            const modal = document.getElementById('live-camera-modal');
+            const video = document.getElementById('live-video');
+            
+            modal.classList.remove('hidden');
+            
+            try {
+                // ขออนุญาตเปิดกล้อง (Chrome จะเด้งถามผู้ใช้ให้กด Allow)
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
+                });
+                currentCameraStream = stream;
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("Camera access error:", err);
+                closeLiveCamera();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'กล้องถูกบล็อก',
+                    text: 'กรุณากด "อนุญาต (Allow)" เพื่อให้ระบบเข้าถึงกล้อง หรือสามารถกดปุ่ม "เลือกไฟล์" เพื่อแนบรูปในเครื่องแทนได้ครับ',
+                    confirmButtonColor: '#19335A'
+                });
+            }
+        }
+
+        function closeLiveCamera() {
+            if(currentCameraStream) {
+                currentCameraStream.getTracks().forEach(track => track.stop());
+                currentCameraStream = null;
+            }
+            document.getElementById('live-camera-modal').classList.add('hidden');
+        }
+
+        function takeSnapshot() {
+            const video = document.getElementById('live-video');
+            const canvas = document.getElementById('live-canvas');
+            
+            if(!currentCameraStream) return;
+
+            // ตีพิมพ์ภาพจากวิดีโอสดลงผืนผ้าใบ
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            // แปลงภาพเป็นไฟล์แล้วโยนเข้า Input เพื่อเตรียมส่งขึ้นฐานข้อมูล
+            canvas.toBlob((blob) => {
+                const file = new File([blob], "FTC_Safety_Cam_" + Date.now() + ".jpg", { type: "image/jpeg" });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                
+                let inputElement;
+                if(currentUploadTarget === 'main' || currentUploadTarget === 'wp') {
+                    inputElement = document.getElementById('file-' + currentUploadTarget + '-cam');
+                    inputElement.files = dataTransfer.files;
+                    updateFileUI(currentUploadTarget, inputElement);
+                } else {
+                    inputElement = document.getElementById('file-doc-cam-' + currentUploadTarget);
+                    inputElement.files = dataTransfer.files;
+                    updateDynamicFileUI(currentUploadTarget, inputElement);
+                }
+                
+                closeLiveCamera();
+                Swal.fire({ icon: 'success', title: 'ถ่ายภาพเรียบร้อย!', showConfirmButton: false, timer: 1500 });
+                
+            }, 'image/jpeg', 0.8);
+        }
+        // ===============================================
 
         function initUI() {
             var currentYearBE = new Date().getFullYear() + 543;
@@ -641,7 +768,7 @@
             var dropzone = document.getElementById('dropzone-' + type);
             
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + inputElement.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
             }
         }
@@ -652,10 +779,11 @@
 
             var textElement = document.getElementById('text-doc-' + id);
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + inputElement.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
             }
         }
 
+        // 💡 ปุ่มกล้องเพิ่มเติมก็ถูกเปลี่ยนให้มาเรียก WebRTC แทนเช่นกันครับ
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
@@ -672,17 +800,18 @@
                     </select>
                     
                     <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center cursor-pointer">
+                        <button type="button" onclick="openLiveCamera(${docCounter})" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/jpeg,image/png,image/jpg" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
-                        </label>
-                        <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center cursor-pointer">
+                        </button>
+                        <button type="button" onclick="document.getElementById('file-doc-doc-${docCounter}').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                            <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
-                        </label>
+                        </button>
                     </div>
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
+                    
+                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file">
+                    <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
             if (typeof lucide !== 'undefined') lucide.createIcons();
