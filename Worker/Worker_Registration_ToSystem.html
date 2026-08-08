@@ -172,7 +172,8 @@
 
                 <div class="mb-4">
                     <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span></label>
-                    <input type="text" id="id-input" placeholder="X-XXXX-XXXXX-XX-X" class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
+                    <!-- บังคับ inputmode numeric เพื่อให้มือถือเปิดแป้นพิมพ์ตัวเลข -->
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="id-input" placeholder="X-XXXX-XXXXX-XX-X" class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
                     <p id="id-hint" class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 13 หลัก</p>
                 </div>
 
@@ -312,7 +313,7 @@
 
                 <div class="mb-8">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">เบอร์โทรศัพท์ (Phone Number) <span class="text-red-500">*</span></label>
-                    <input type="tel" id="phone-input" placeholder="0XX-XXX-XXXX" maxlength="10" class="input-field font-mono" oninput="validatePhoneInput(this)">
+                    <input type="tel" inputmode="numeric" pattern="[0-9]*" id="phone-input" placeholder="0XX-XXX-XXXX" maxlength="10" class="input-field font-mono" oninput="validatePhoneInput(this)">
                     <p class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 10 หลักเท่านั้น</p>
                 </div>
 
@@ -325,7 +326,6 @@
                 </div>
 
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-4">
-                    <!-- ปรับข้อความ PDPA ให้ถูกต้องตามกฎหมาย และครอบคลุมเรื่องความปลอดภัยขั้นสูงสุด -->
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="pdpa-1" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
                         <div class="text-sm text-gray-700 leading-relaxed">
@@ -501,27 +501,16 @@
 
     <script>
         // ==========================================
-        // ตั้งค่า API หลังบ้าน (Supabase + LIFF)
+        // การกำหนดค่าตัวแปรระดับโกลบอล (Global Variables)
         // ==========================================
-        const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-        const SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY_HERE'; 
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-        let userLineUid = null;
+        var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
+        var SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY_HERE'; 
+        var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        var userLineUid = null;
+        var currentNationality = 'thai';
+        var docCounter = 0;
 
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: '2010907761-KrJ8PgNN' });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    userLineUid = profile.userId;
-                    console.log("LINE UID (Ready):", userLineUid);
-                }
-            } catch (error) {
-                console.error("LIFF Error:", error);
-            }
-        }
-
-        const vendorsMasterData = [
+        var vendorsMasterData = [
             "บริษัท เอบีซี จำกัด",
             "บริษัท ไทยอุตสาหกรรม จำกัด",
             "บริษัท พีพี เซฟตี้ จำกัด",
@@ -535,38 +524,62 @@
         ];
 
         // ==========================================
-        // เริ่มต้นการทำงาน (แก้ไขปัญหา UI ไม่โหลด)
-        // ทำงานทันทีโดยไม่ต้องรอ Event ทำให้สคริปต์ไม่ถูกบล็อก
+        // ระบบเริ่มการทำงานเมื่อโหลดหน้าเว็บเสร็จสมบูรณ์ (Bulletproof Initialization)
         // ==========================================
-        try {
-            initUI();
-            lucide.createIcons();
-            setTimeout(() => { initializeLiff(); }, 500);
-        } catch(e) {
-            console.error("Initialization Error:", e);
+        window.addEventListener('load', function() {
+            try {
+                initUI();
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error("UI Init Error:", err);
+            }
+            
+            // หน่วงเวลาโหลดระบบหลังบ้าน เพื่อไม่ให้ขัดขวางการแสดงผลหน้าจอ
+            setTimeout(function() {
+                if (typeof liff !== 'undefined') {
+                    initializeLiff();
+                }
+            }, 800);
+        });
+
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: '2010907761-KrJ8PgNN' });
+                if (liff.isLoggedIn()) {
+                    var profile = await liff.getProfile();
+                    userLineUid = profile.userId;
+                    console.log("LINE UID (Ready):", userLineUid);
+                }
+            } catch (error) {
+                console.error("LIFF Error:", error);
+            }
         }
 
         function initUI() {
-            const currentYearBE = new Date().getFullYear() + 543;
-            const days = Array.from({length: 31}, (_, i) => i + 1);
-            const birthYears = Array.from({length: 70}, (_, i) => currentYearBE - i);
-            const expYears = Array.from({length: 20}, (_, i) => currentYearBE + i);
+            var currentYearBE = new Date().getFullYear() + 543;
+            var days = []; for(var i=1; i<=31; i++) days.push(i);
+            var birthYears = []; for(var y=0; y<70; y++) birthYears.push(currentYearBE - y);
+            var expYears = []; for(var e=0; e<20; e++) expYears.push(currentYearBE + e);
 
-            function populateDropdown(id, arr) {
-                const select = document.getElementById(id);
-                if(!select) return; 
-                arr.forEach(val => {
-                    let option = document.createElement('option');
-                    option.value = val;
-                    option.text = val;
-                    select.appendChild(option);
-                });
-            }
-
-            populateDropdown('dob-day', days); populateDropdown('dob-year', birthYears);
-            populateDropdown('exp-day', days); populateDropdown('exp-year', expYears);
+            populateDropdown('dob-day', days);
+            populateDropdown('dob-year', birthYears);
+            populateDropdown('exp-day', days);
+            populateDropdown('exp-year', expYears);
             
             filterVendors();
+        }
+
+        function populateDropdown(id, arr) {
+            var select = document.getElementById(id);
+            if(!select) return; 
+            arr.forEach(function(val) {
+                var option = document.createElement('option');
+                option.value = val;
+                option.text = val;
+                select.appendChild(option);
+            });
         }
 
         // ==========================================
@@ -578,19 +591,21 @@
         }
 
         function filterVendors() {
-            const inputVal = document.getElementById('vendor-input').value.toLowerCase();
-            const list = document.getElementById('vendor-list');
+            var inputVal = document.getElementById('vendor-input').value.toLowerCase();
+            var list = document.getElementById('vendor-list');
             list.innerHTML = "";
             
-            const filtered = vendorsMasterData.filter(v => v.toLowerCase().includes(inputVal));
+            var filtered = vendorsMasterData.filter(function(v) {
+                return v.toLowerCase().indexOf(inputVal) > -1;
+            });
             
             if(filtered.length === 0) {
                 list.innerHTML = '<li class="px-4 py-3 text-sm text-gray-500 text-center">ไม่พบรายชื่อบริษัทที่ค้นหา</li>';
                 return;
             }
 
-            filtered.forEach(v => {
-                const li = document.createElement('li');
+            filtered.forEach(function(v) {
+                var li = document.createElement('li');
                 li.className = "px-4 py-2.5 text-sm text-gray-800 hover:bg-brand-navy hover:text-white cursor-pointer transition-colors border-b border-gray-100 last:border-0";
                 li.innerText = v;
                 li.onmousedown = function() {
@@ -602,9 +617,9 @@
         }
 
         document.addEventListener('click', function(e) {
-            const container = document.getElementById('vendor-container');
+            var container = document.getElementById('vendor-container');
             if (container && !container.contains(e.target)) {
-                const list = document.getElementById('vendor-list');
+                var list = document.getElementById('vendor-list');
                 if(list) list.classList.add('hidden');
             }
         });
@@ -612,15 +627,13 @@
         // ==========================================
         // สคริปต์ควบคุม UI 
         // ==========================================
-        let currentNationality = 'thai';
-
         function setNationality(nat) {
             currentNationality = nat;
-            const btnThai = document.getElementById('btn-thai');
-            const btnForeign = document.getElementById('btn-foreign');
-            const foreignDocSection = document.getElementById('foreigner-doc-section');
-            const uploadWorkPermit = document.getElementById('upload-workpermit');
-            const idInput = document.getElementById('id-input');
+            var btnThai = document.getElementById('btn-thai');
+            var btnForeign = document.getElementById('btn-foreign');
+            var foreignDocSection = document.getElementById('foreigner-doc-section');
+            var uploadWorkPermit = document.getElementById('upload-workpermit');
+            var idInput = document.getElementById('id-input');
 
             if(nat === 'thai') {
                 btnThai.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors";
@@ -637,11 +650,11 @@
         }
 
         function updateIdField() {
-            const docType = document.getElementById('doc-type').value;
-            const label = document.getElementById('id-label');
-            const input = document.getElementById('id-input');
-            const uploadLabel = document.getElementById('upload-label');
-            const uploadWorkPermit = document.getElementById('upload-workpermit');
+            var docType = document.getElementById('doc-type').value;
+            var label = document.getElementById('id-label');
+            var input = document.getElementById('id-input');
+            var uploadLabel = document.getElementById('upload-label');
+            var uploadWorkPermit = document.getElementById('upload-workpermit');
 
             if(currentNationality === 'thai') {
                 label.innerHTML = 'เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span>';
@@ -665,9 +678,9 @@
             }
         }
 
-        // กรองเลขบัตร: บังคับใช้เฉพาะ 0-9 ตัดปัญหาพิมพ์ภาษาไทยทะลุได้ 100%
+        // กรองเลขบัตร: บังคับให้เป็นตัวเลข 0-9 เท่านั้น (ตัดภาษาไทย 100%)
         function validateIdInput(obj) {
-            const docType = document.getElementById('doc-type').value;
+            var docType = document.getElementById('doc-type').value;
             if(currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) {
                 obj.value = obj.value.replace(/[^0-9]/g, '');
             } else {
@@ -675,14 +688,14 @@
             }
         }
 
-        // กรองเบอร์โทรศัพท์: บังคับใช้เฉพาะ 0-9
+        // กรองเบอร์โทรศัพท์: บังคับให้เป็นตัวเลข 0-9 เท่านั้น
         function validatePhoneInput(obj) {
             obj.value = obj.value.replace(/[^0-9]/g, '');
         }
 
         function toggleOtherRelation() {
-            const select = document.getElementById('relationship-select');
-            const otherContainer = document.getElementById('other-relation-container');
+            var select = document.getElementById('relationship-select');
+            var otherContainer = document.getElementById('other-relation-container');
             if(select.value === 'อื่นๆ') {
                 otherContainer.classList.remove('hidden');
             } else {
@@ -691,9 +704,9 @@
         }
 
         function updateFileUI(type) {
-            const fileInput = document.getElementById('file-' + type);
-            const textElement = document.getElementById('text-' + type);
-            const dropzone = document.getElementById('dropzone-' + type);
+            var fileInput = document.getElementById('file-' + type);
+            var textElement = document.getElementById('text-' + type);
+            var dropzone = document.getElementById('dropzone-' + type);
             
             if(fileInput.files.length > 0) {
                 textElement.innerText = "✅ เตรียมไฟล์เรียบร้อย: " + fileInput.files[0].name;
@@ -702,11 +715,10 @@
             }
         }
 
-        let docCounter = 0;
         function addDocument() {
             docCounter++;
-            const container = document.getElementById('dynamicDocsContainer');
-            const docHtml = `
+            var container = document.getElementById('dynamicDocsContainer');
+            var docHtml = `
                 <div class="doc-item" id="doc-${docCounter}">
                     <button type="button" class="btn-remove" onclick="document.getElementById('doc-${docCounter}').remove()">X</button>
                     <select class="doc-type input-field mb-2 cursor-pointer" required>
@@ -727,19 +739,19 @@
         }
 
         function validateStep1() {
-            const fname = document.getElementById('fname-input').value.trim();
-            const lname = document.getElementById('lname-input').value.trim();
-            const idVal = document.getElementById('id-input').value.trim();
-            const phone = document.getElementById('phone-input').value.trim();
-            const vendor = document.getElementById('vendor-input').value.trim();
-            const blood = document.getElementById('bloodGroup').value;
+            var fname = document.getElementById('fname-input').value.trim();
+            var lname = document.getElementById('lname-input').value.trim();
+            var idVal = document.getElementById('id-input').value.trim();
+            var phone = document.getElementById('phone-input').value.trim();
+            var vendor = document.getElementById('vendor-input').value.trim();
+            var blood = document.getElementById('bloodGroup').value;
             
             if(!fname || !lname || !idVal || !phone || !vendor || !blood) {
                 showAlert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลในช่องที่มีเครื่องหมาย (*) ให้ครบถ้วน');
                 return false;
             }
 
-            const docType = document.getElementById('doc-type').value;
+            var docType = document.getElementById('doc-type').value;
             if((currentNationality === 'thai' || docType === 'pinkcard') && idVal.length !== 13) {
                 showAlert('เลขบัตรไม่ถูกต้อง', 'กรุณากรอกเลขบัตรให้ครบ 13 หลัก');
                 return false;
@@ -750,7 +762,7 @@
                 return false;
             }
 
-            const relation = document.getElementById('relationship-select').value;
+            var relation = document.getElementById('relationship-select').value;
             if(!relation) {
                 showAlert('ข้อมูลไม่ครบถ้วน', 'กรุณาเลือกความสัมพันธ์ของผู้ติดต่อฉุกเฉิน');
                 return false;
@@ -765,9 +777,9 @@
                 return false;
             }
 
-            const p1 = document.getElementById('pdpa-1').checked;
-            const p2 = document.getElementById('pdpa-2').checked;
-            const p3 = document.getElementById('pdpa-3').checked;
+            var p1 = document.getElementById('pdpa-1').checked;
+            var p2 = document.getElementById('pdpa-2').checked;
+            var p3 = document.getElementById('pdpa-3').checked;
             if(!p1 || !p2 || !p3) {
                 showAlert('ข้อตกลง PDPA', 'กรุณาทำเครื่องหมายติ๊กถูก (✓) ยินยอมเงื่อนไข PDPA ให้ครบทั้ง 3 ข้อ เพื่อดำเนินการต่อ');
                 return false;
@@ -777,13 +789,13 @@
         }
 
         function validateStep2() {
-            const fileMain = document.getElementById('file-main');
+            var fileMain = document.getElementById('file-main');
             if(fileMain.files.length === 0) {
                 showAlert('ขาดเอกสาร', 'กรุณาอัปโหลดเอกสารหลัก (บัตรประชาชน/พาสปอร์ต) เพื่อยืนยันตัวตน');
                 return false;
             }
             if(currentNationality !== 'thai') {
-                const fileWp = document.getElementById('file-wp');
+                var fileWp = document.getElementById('file-wp');
                 if(fileWp.files.length === 0) {
                     showAlert('ขาดเอกสาร Work Permit', 'กรุณาอัปโหลดใบอนุญาตทำงาน (Work Permit) ให้ครบถ้วน');
                     return false;
@@ -793,8 +805,8 @@
         }
 
         function validateStep3() {
-            const cFinal = document.getElementById('consent-final').checked;
-            const cAge = document.getElementById('consent-age').checked;
+            var cFinal = document.getElementById('consent-final').checked;
+            var cAge = document.getElementById('consent-age').checked;
 
             if(!cFinal || !cAge) {
                 showAlert('คำรับรอง', "กรุณายืนยัน 'คำรับรองขั้นสุดท้าย' และ 'ยืนยันอายุ' ก่อนกดส่งแบบฟอร์ม");
@@ -821,11 +833,11 @@
         }
 
         function updateIndicator(step) {
-            for(let i=1; i<=3; i++) {
-                let circle = document.getElementById('ind-' + i);
-                let text = document.getElementById('ind-text-' + i);
-                let icon = document.getElementById('lock-icon-' + i);
-                let line = document.getElementById('line-' + i);
+            for(var i=1; i<=3; i++) {
+                var circle = document.getElementById('ind-' + i);
+                var text = document.getElementById('ind-text-' + i);
+                var icon = document.getElementById('lock-icon-' + i);
+                var line = document.getElementById('line-' + i);
                 
                 if(circle) circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200 relative z-10 transition-colors";
                 if(text) text.className = "text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap transition-colors";
@@ -833,24 +845,24 @@
                 if(icon) icon.outerHTML = `<i data-lucide="lock" class="w-4 h-4 opacity-50" id="lock-icon-${i}"></i>`;
             }
 
-            for(let i=1; i<=step; i++) {
-                let circle = document.getElementById('ind-' + i);
-                let text = document.getElementById('ind-text-' + i);
-                let line = document.getElementById('line-' + (i-1)); 
+            for(var stepIdx=1; stepIdx<=step; stepIdx++) {
+                var activeCircle = document.getElementById('ind-' + stepIdx);
+                var activeText = document.getElementById('ind-text-' + stepIdx);
+                var activeLine = document.getElementById('line-' + (stepIdx-1)); 
                 
-                if(i === step) { 
-                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20 relative z-10 transition-colors";
-                    circle.innerHTML = i; 
-                    text.className = "text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap transition-colors";
-                    if(line) line.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
+                if(stepIdx === step) { 
+                    activeCircle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20 relative z-10 transition-colors";
+                    activeCircle.innerHTML = stepIdx; 
+                    activeText.className = "text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap transition-colors";
+                    if(activeLine) activeLine.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
                 } else { 
-                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-navy text-white relative z-10 transition-colors";
-                    circle.innerHTML = `<i data-lucide="check" class="w-5 h-5 text-white" id="lock-icon-${i}"></i>`;
-                    text.className = "text-[10px] font-semibold text-brand-navy absolute top-12 whitespace-nowrap transition-colors";
-                    if(line) line.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
+                    activeCircle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-navy text-white relative z-10 transition-colors";
+                    activeCircle.innerHTML = `<i data-lucide="check" class="w-5 h-5 text-white" id="lock-icon-${stepIdx}"></i>`;
+                    activeText.className = "text-[10px] font-semibold text-brand-navy absolute top-12 whitespace-nowrap transition-colors";
+                    if(activeLine) activeLine.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
                 }
             }
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         async function submitToSupabase() {
@@ -863,16 +875,16 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            const fname = document.getElementById('fname-input').value.trim();
-            const lname = document.getElementById('lname-input').value.trim();
-            const fullName = fname ? `${fname} ${lname}` : 'พนักงาน';
+            var fname = document.getElementById('fname-input').value.trim();
+            var lname = document.getElementById('lname-input').value.trim();
+            var fullName = fname ? (fname + ' ' + lname) : 'พนักงาน';
 
             if(!supabase) {
                 Swal.fire({ icon: 'error', title: 'การเชื่อมต่อขัดข้อง', text: 'ระบบหลังบ้านยังไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง' });
                 return;
             }
 
-            const payload = {
+            var payload = {
                 worker_id: 'WK-' + Date.now(), 
                 vendor_id: 'V-001', 
                 full_name: fullName,
@@ -885,7 +897,7 @@
             };
 
             try {
-                const { data, error } = await supabase.from('tb_workers').insert([payload]);
+                var { data, error } = await supabase.from('tb_workers').insert([payload]);
                 if (error) throw error;
 
                 Swal.fire({
@@ -896,7 +908,7 @@
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    document.getElementById('success-welcome-msg').innerText = `ยินดีต้อนรับ คุณ.${fullName} สู่ความปลอดภัยภายในบริษัท First Construction Technology...`;
+                    document.getElementById('success-welcome-msg').innerText = "ยินดีต้อนรับ คุณ." + fullName + " สู่ความปลอดภัยภายในบริษัท First Construction Technology...";
                     document.getElementById('step-indicator').classList.add('hidden');
                     goToStep('success');
                 });
