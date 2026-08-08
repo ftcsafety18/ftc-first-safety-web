@@ -920,10 +920,14 @@
 
             } catch (err) {
                 console.error("Supabase Error:", err);
+                
+                // ดึงข้อความ Error เชิงลึกจากฐานข้อมูลออกมาแสดงผล
+                var errorMessage = err.message || JSON.stringify(err);
+                
                 Swal.fire({
                     icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
+                    title: 'ฐานข้อมูลปฏิเสธการทำงาน',
+                    text: 'สาเหตุ: ' + errorMessage,
                     confirmButtonColor: '#e53e3e'
                 });
             }
