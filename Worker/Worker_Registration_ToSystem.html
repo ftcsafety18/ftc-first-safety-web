@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -6,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FTC First Safety - Worker Registration</title>
     
-    <!-- นำเข้า Tailwind CSS, Lucide Icons, Supabase, LIFF และ SweetAlert2 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -369,17 +367,16 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="triggerUpload('main', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <button type="button" onclick="document.getElementById('file-main-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <button type="button" onclick="triggerUpload('main', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
                             </div>
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <!-- เปลี่ยนจาก environment เป็น camera ทะลวงข้อจำกัด Android -->
                         <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="camera" onchange="updateFileUI('main', this)">
                         <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
@@ -394,17 +391,16 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="triggerUpload('wp', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <button type="button" onclick="document.getElementById('file-wp-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <button type="button" onclick="triggerUpload('wp', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                <button type="button" onclick="document.getElementById('file-wp-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
                             </div>
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <!-- เปลี่ยนจาก environment เป็น camera -->
                         <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="camera" onchange="updateFileUI('wp', this)">
                         <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
@@ -526,7 +522,21 @@
         var currentNationality = 'thai';
         var docCounter = 0;
         
-        var vendorsMasterData = [];
+        // ข้อมูลดัมมี่ ถูกใส่ V-001 บริษัท ทดสอบระบบ จำกัด กลับเข้ามาให้ค้นหาเจอ 100% ครับ
+        var vendorsMasterData = [
+            { id: 'V-001', name: 'บริษัท ทดสอบระบบ จำกัด' },
+            { id: 'C001', name: 'บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด' },
+            { id: 'C002', name: 'บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด' },
+            { id: 'C003', name: 'บริษัท ระยองวิศวกรรม จำกัด' },
+            { id: 'P001', name: 'นายสมชาย ใจดี (รับเหมาอิสระ)' },
+            { id: 'P002', name: 'นางสาวรักดี การช่าง' },
+            { id: 'P003', name: 'นายช่างใหญ่ ทำได้ทุกอย่าง' }
+        ];
+        
+        vendorsMasterData.sort(function(a, b) {
+            return a.name.localeCompare(b.name, 'th');
+        });
+
         var selectedVendorId = ''; 
 
         async function loadVendorsFromDB() {
@@ -544,7 +554,7 @@
                     });
                 }
             } catch (err) {
-                console.error("โหลดข้อมูลบริษัทล้มเหลว:", err);
+                console.error("โหลดข้อมูลบริษัทล้มเหลว (ใช้งานตัวดัมมี่แทน):", err);
             }
         }
 
@@ -712,35 +722,6 @@
             }
         }
 
-        // ใช้ฟังก์ชัน triggerUpload แบบใหม่ที่เชื่อมไปที่ ID ของ Input โดยตรงแทน
-        function triggerUpload(type, useCamera) {
-            var inputId = useCamera ? 'file-' + type + '-cam' : 'file-' + type + '-doc';
-            var input = document.getElementById(inputId);
-            
-            if(useCamera) {
-                input.setAttribute('capture', 'camera'); 
-                input.setAttribute('accept', 'image/*'); 
-            } else {
-                input.removeAttribute('capture'); 
-                input.setAttribute('accept', 'image/*,application/pdf');
-            }
-            input.click();
-        }
-
-        function triggerDynamicUpload(id, useCamera) {
-            var inputId = useCamera ? 'file-doc-cam-' + id : 'file-doc-doc-' + id;
-            var input = document.getElementById(inputId);
-            
-            if(useCamera) {
-                input.setAttribute('capture', 'camera'); 
-                input.setAttribute('accept', 'image/*');
-            } else {
-                input.removeAttribute('capture'); 
-                input.setAttribute('accept', 'image/*,application/pdf');
-            }
-            input.click();
-        }
-
         function updateFileUI(type, inputElement) {
             var otherInputId = inputElement.id.includes('-cam') ? 'file-' + type + '-doc' : 'file-' + type + '-cam';
             document.getElementById(otherInputId).value = ""; 
@@ -780,10 +761,10 @@
                     </select>
                     
                     <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="document.getElementById('file-doc-cam-${docCounter}').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                         </button>
-                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="document.getElementById('file-doc-doc-${docCounter}').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                         </button>
                     </div>
