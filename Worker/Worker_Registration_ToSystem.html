@@ -60,11 +60,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* ปรับปรุงกล่องอัปโหลดเอกสาร Dynamic */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 0.5rem; position: relative; }
-        .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        
-        /* แก้ไขปุ่มเพิ่มเอกสารให้เป็นสีทึบเห็นชัดเจนตามที่พี่ณัฐธัญต้องการ */
+        .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex: none; align-items: center; justify-content: center; display: flex; }
         .btn-add { background-color: #19335A; color: #FFFFFF; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; border: none; box-shadow: 0 4px 6px rgba(25, 51, 90, 0.2); }
         .btn-add:hover { background-color: #254B82; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(25, 51, 90, 0.3); }
     </style>
@@ -363,32 +360,47 @@
                 </div>
 
                 <div class="mb-6">
-                    <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
-                    <!-- เพิ่ม capture="environment" เพื่อให้เปิดกล้องได้ทันทีเมื่อใช้มือถือ -->
-                    <input type="file" id="file-main" class="hidden" accept="image/*,application/pdf" capture="environment" onchange="updateFileUI('main')">
-                    <div id="dropzone-main" onclick="document.getElementById('file-main').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
+                    <!-- กล่อง Dropzone ที่ปรับใหม่ มี 2 ปุ่มแยกกันชัดเจน -->
+                    <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shadow-sm">
                             <i data-lucide="camera" class="w-6 h-6 text-brand-navy"></i>
                         </div>
                         <div>
-                            <p id="text-main" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
-                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่อถ่ายรูป หรือ เลือกไฟล์จากในเครื่อง</p>
+                            <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
+                            <div class="flex gap-2 justify-center">
+                                <button type="button" onclick="triggerUpload('main', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                    <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
+                                </button>
+                                <button type="button" onclick="triggerUpload('main', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                    <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
+                                </button>
+                            </div>
                         </div>
+                        <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
+                        <input type="file" id="file-main" class="hidden" onchange="updateFileUI('main')">
                     </div>
                 </div>
 
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
-                    <!-- เพิ่ม capture="environment" เพื่อให้เปิดกล้องได้ทันทีเมื่อใช้มือถือ -->
-                    <input type="file" id="file-wp" class="hidden" accept="image/*,application/pdf" capture="environment" onchange="updateFileUI('wp')">
-                    <div id="dropzone-wp" onclick="document.getElementById('file-wp').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
+                    <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shadow-sm">
                             <i data-lucide="file-text" class="w-6 h-6 text-brand-navy"></i>
                         </div>
                         <div>
-                            <p id="text-wp" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
-                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่อถ่ายรูป หรือ เลือกไฟล์จากในเครื่อง</p>
+                            <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
+                            <div class="flex gap-2 justify-center">
+                                <button type="button" onclick="triggerUpload('wp', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                    <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
+                                </button>
+                                <button type="button" onclick="triggerUpload('wp', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                    <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
+                                </button>
+                            </div>
                         </div>
+                        <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
+                        <input type="file" id="file-wp" class="hidden" onchange="updateFileUI('wp')">
                     </div>
                 </div>
 
@@ -400,6 +412,8 @@
                 <p class="text-xs text-gray-500 mb-4 text-center">สามารถกดเพิ่มช่องเพื่ออัปโหลดใบรับรอง เช่น ทำงานที่สูง, ที่อับอากาศ ฯลฯ ได้ไม่จำกัด</p>
                 
                 <div id="dynamicDocsContainer"></div>
+                
+                <!-- ปุ่มเพิ่มช่องอัปโหลดที่ปรับสีใหม่ให้เข้มขึ้นเด่นๆ -->
                 <button type="button" class="btn-add mb-6 flex justify-center items-center gap-2" onclick="addDocument()">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มช่องอัปโหลดเอกสารความปลอดภัย
                 </button>
@@ -429,7 +443,7 @@
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="consent-final" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
                         <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>ข้าพเจ้าขอยืนยันว่าข้อมูลทั้งหมดเป็นความจริง และยินยอมให้บันทึกภาพใบหน้าและพิกัดตำแหน่ง <span class="text-red-500">*</span></p>
+                            <p>ข้าพเจ้ายืนยันว่าข้อมูลทั้งหมดเป็นความจริง และยินยอมให้บันทึกภาพใบหน้าและพิกัดตำแหน่ง <span class="text-red-500">*</span></p>
                         </div>
                     </label>
                     <div class="h-px bg-gray-200"></div>
@@ -507,7 +521,9 @@
         var currentNationality = 'thai';
         var docCounter = 0;
 
+        // อัปเดตเพิ่มบริษัททดสอบ เพื่อให้กล่องค้นหาเจอข้อมูลนี้
         var vendorsMasterData = [
+            "บริษัท ทดสอบระบบ จำกัด",
             "บริษัท เอบีซี จำกัด",
             "บริษัท ไทยอุตสาหกรรม จำกัด",
             "บริษัท พีพี เซฟตี้ จำกัด",
@@ -688,21 +704,55 @@
             }
         }
 
+        // ฟังก์ชันสั่งเปิดกล้อง หรือ เปิดไฟล์อัลบั้ม สำหรับกล่องหลัก
+        function triggerUpload(type, useCamera) {
+            var input = document.getElementById('file-' + type);
+            if(useCamera) {
+                input.setAttribute('capture', 'environment'); // บังคับเปิดกล้อง
+                input.setAttribute('accept', 'image/*'); 
+            } else {
+                input.removeAttribute('capture'); // ยกเลิกเปิดกล้อง ให้เลือกไฟล์ได้
+                input.setAttribute('accept', 'image/*,application/pdf');
+            }
+            input.click();
+        }
+
+        // ฟังก์ชันสั่งเปิดกล้อง หรือ เปิดไฟล์อัลบั้ม สำหรับกล่อง Dynamic (เอกสารเพิ่มเติม)
+        function triggerDynamicUpload(id, useCamera) {
+            var input = document.getElementById('file-doc-' + id);
+            if(useCamera) {
+                input.setAttribute('capture', 'environment'); 
+                input.setAttribute('accept', 'image/*');
+            } else {
+                input.removeAttribute('capture'); 
+                input.setAttribute('accept', 'image/*,application/pdf');
+            }
+            input.click();
+        }
+
         function updateFileUI(type) {
             var fileInput = document.getElementById('file-' + type);
             var textElement = document.getElementById('text-' + type);
             var dropzone = document.getElementById('dropzone-' + type);
             
             if(fileInput.files.length > 0) {
-                textElement.innerText = "✅ เตรียมไฟล์เรียบร้อย: " + fileInput.files[0].name;
-                textElement.classList.replace('text-brand-navy', 'text-green-600');
+                textElement.innerHTML = "<span class='text-green-600'>✅ เลือกไฟล์แล้ว: " + fileInput.files[0].name + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
+            }
+        }
+
+        function updateDynamicFileUI(id) {
+            var fileInput = document.getElementById('file-doc-' + id);
+            var textElement = document.getElementById('text-doc-' + id);
+            if(fileInput.files.length > 0) {
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + fileInput.files[0].name + "</span>";
             }
         }
 
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
+            // สร้างกล่องเอกสารแบบใหม่ที่มี 2 ปุ่ม
             var docHtml = `
                 <div class="doc-item" id="doc-${docCounter}">
                     <button type="button" class="btn-remove" onclick="document.getElementById('doc-${docCounter}').remove()">X</button>
@@ -714,10 +764,21 @@
                         <option value="crane_operator">ใบอนุญาตขับปั้นจั่น</option>
                         <option value="other">อื่นๆ</option>
                     </select>
-                    <!-- แถวนี้ก็ใส่ capture="environment" ให้เปิดกล้องถ่ายรูปใบรับรองได้ทันทีเช่นกัน -->
-                    <input type="file" class="doc-file block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 hover:file:bg-gray-200 cursor-pointer" accept="image/*,application/pdf" capture="environment" required>
+                    
+                    <div class="flex gap-2 justify-center mt-3 mb-1">
+                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
+                            <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
+                        </button>
+                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
+                            <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
+                        </button>
+                    </div>
+                    
+                    <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
+                    <input type="file" id="file-doc-${docCounter}" class="hidden doc-file" onchange="updateDynamicFileUI(${docCounter})" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function showAlert(title, text) {
@@ -883,7 +944,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'ข้อมูลซ้ำในระบบ!',
-                        text: 'เลขประจำตัว/พาสปอร์ตนี้ ถูกลงทะเบียนไว้แล้วในชื่อคุณ ' + existingData[0].full_name + ' ไม่สามารถลงทะเบียนซ้ำได้ครับ',
+                        text: 'เลขประจำตัว/พาสปอร์ตนี้ ถูกลงทะเบียนไว้แล้วในชื่อคุณ ' + existingData[0].full_name + ' ไม่สามารถลงทะเบียนซ้ำได้ค่ะ',
                         confirmButtonColor: '#DB5A24'
                     });
                     return; 
@@ -912,7 +973,7 @@
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    document.getElementById('success-welcome-msg').innerText = "ยินดีต้อนรับ คุณ." + fullName + " สู่ความปลอดภัยภายในบริษัท First Construction Technology...";
+                    document.getElementById('success-welcome-msg').innerText = "ยินดีต้อนรับ คุณ." + fullName + " สู่ระบบรักษาความปลอดภัย ภายในบริษัท FTC...";
                     document.getElementById('step-indicator').classList.add('hidden');
                     goToStep('success');
                 });
