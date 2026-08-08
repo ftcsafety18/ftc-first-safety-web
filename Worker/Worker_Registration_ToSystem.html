@@ -146,7 +146,6 @@
                     </div>
                 </div>
 
-                <!-- กล่องเลือกประเภทเอกสารต่างชาติ (โชว์เมื่อกด Foreigner) -->
                 <div id="foreigner-doc-section" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">ประเภทเอกสาร (Document Type) <span class="text-red-500">*</span></label>
                     <div class="relative">
@@ -172,7 +171,6 @@
 
                 <div class="mb-4">
                     <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span></label>
-                    <!-- บังคับ inputmode numeric เพื่อให้มือถือเปิดแป้นพิมพ์ตัวเลข -->
                     <input type="text" inputmode="numeric" pattern="[0-9]*" id="id-input" placeholder="X-XXXX-XXXXX-XX-X" class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
                     <p id="id-hint" class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 13 หลัก</p>
                 </div>
@@ -264,7 +262,6 @@
                     <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
-                <!-- ระบบค้นหาบริษัทอัจฉริยะ (Searchable Dropdown) -->
                 <div class="mb-6 relative" id="vendor-container">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor / Contractor) <span class="text-red-500">*</span></label>
                     <div class="relative">
@@ -272,7 +269,6 @@
                         <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
                     </div>
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto no-scrollbar hidden">
-                        <!-- รายชื่อบริษัทจะถูกดึงมาใส่ตรงนี้ด้วย JS -->
                     </ul>
                     <p class="text-[11px] text-brand-orange mt-1.5 flex items-center gap-1">
                         <i data-lucide="info" class="w-3 h-3"></i> พิมพ์ชื่อบริษัทเพื่อค้นหาจากฐานข้อมูล (Master Data)
@@ -305,7 +301,6 @@
                     </div>
                 </div>
 
-                <!-- ช่องให้ระบุเมื่อเลือก "อื่นๆ" -->
                 <div id="other-relation-container" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">โปรดระบุความสัมพันธ์ (Please Specify) <span class="text-red-500">*</span></label>
                     <input type="text" id="em-other-input" placeholder="ระบุความสัมพันธ์" class="input-field border-brand-orange focus:ring-brand-orange">
@@ -502,9 +497,10 @@
     <script>
         // ==========================================
         // การกำหนดค่าตัวแปรระดับโกลบอล (Global Variables)
+        // นำ API Key ที่ได้รับมาใส่เรียบร้อยแล้ว
         // ==========================================
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-        var SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY_HERE'; 
+        var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; 
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
         var userLineUid = null;
         var currentNationality = 'thai';
@@ -523,9 +519,6 @@
             "บริษัท คลีนนิ่ง เซอร์วิส โปร จำกัด"
         ];
 
-        // ==========================================
-        // ระบบเริ่มการทำงานเมื่อโหลดหน้าเว็บเสร็จสมบูรณ์ (Bulletproof Initialization)
-        // ==========================================
         window.addEventListener('load', function() {
             try {
                 initUI();
@@ -536,7 +529,6 @@
                 console.error("UI Init Error:", err);
             }
             
-            // หน่วงเวลาโหลดระบบหลังบ้าน เพื่อไม่ให้ขัดขวางการแสดงผลหน้าจอ
             setTimeout(function() {
                 if (typeof liff !== 'undefined') {
                     initializeLiff();
@@ -582,9 +574,6 @@
             });
         }
 
-        // ==========================================
-        // ระบบค้นหาบริษัท (Searchable Dropdown)
-        // ==========================================
         function showVendorList() {
             document.getElementById('vendor-list').classList.remove('hidden');
             filterVendors();
@@ -624,9 +613,6 @@
             }
         });
 
-        // ==========================================
-        // สคริปต์ควบคุม UI 
-        // ==========================================
         function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
@@ -678,7 +664,6 @@
             }
         }
 
-        // กรองเลขบัตร: บังคับให้เป็นตัวเลข 0-9 เท่านั้น (ตัดภาษาไทย 100%)
         function validateIdInput(obj) {
             var docType = document.getElementById('doc-type').value;
             if(currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) {
@@ -688,7 +673,6 @@
             }
         }
 
-        // กรองเบอร์โทรศัพท์: บังคับให้เป็นตัวเลข 0-9 เท่านั้น
         function validatePhoneInput(obj) {
             obj.value = obj.value.replace(/[^0-9]/g, '');
         }
@@ -869,8 +853,8 @@
             if(!validateStep3()) return;
 
             Swal.fire({
-                title: 'กำลังบันทึกข้อมูล...',
-                text: 'กรุณารอสักครู่ ระบบกำลังส่งข้อมูลเข้าศูนย์ความปลอดภัย',
+                title: 'กำลังตรวจสอบข้อมูล...',
+                text: 'กรุณารอสักครู่ ระบบกำลังเชื่อมต่อกับศูนย์ความปลอดภัย',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -878,27 +862,48 @@
             var fname = document.getElementById('fname-input').value.trim();
             var lname = document.getElementById('lname-input').value.trim();
             var fullName = fname ? (fname + ' ' + lname) : 'พนักงาน';
+            var nationalId = document.getElementById('id-input').value;
 
             if(!supabase) {
                 Swal.fire({ icon: 'error', title: 'การเชื่อมต่อขัดข้อง', text: 'ระบบหลังบ้านยังไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง' });
                 return;
             }
 
-            var payload = {
-                worker_id: 'WK-' + Date.now(), 
-                vendor_id: 'V-001', 
-                full_name: fullName,
-                national_id: document.getElementById('id-input').value,
-                nationality: currentNationality,
-                blood_group: document.getElementById('bloodGroup').value,
-                emergency_contact_name: document.getElementById('em-name-input').value,
-                emergency_contact_phone: document.getElementById('phone-input').value,
-                is_active: true
-            };
-
             try {
-                var { data, error } = await supabase.from('tb_workers').insert([payload]);
-                if (error) throw error;
+                // 1. ตรวจสอบข้อมูลซ้ำ (Duplicate Check)
+                var { data: existingData, error: searchError } = await supabase
+                    .from('tb_workers')
+                    .select('national_id, full_name')
+                    .eq('national_id', nationalId);
+
+                if (searchError) throw searchError;
+
+                // หากพบข้อมูลซ้ำ แจ้งเตือนและหยุดการทำงานทันที
+                if (existingData && existingData.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ข้อมูลซ้ำในระบบ!',
+                        text: 'เลขประจำตัว/พาสปอร์ตนี้ ถูกลงทะเบียนไว้แล้วในชื่อคุณ ' + existingData[0].full_name + ' ไม่สามารถลงทะเบียนซ้ำได้ครับ',
+                        confirmButtonColor: '#DB5A24'
+                    });
+                    return; 
+                }
+
+                // 2. ถ้าไม่ซ้ำ ให้ดำเนินการเตรียมและบันทึกข้อมูล
+                var payload = {
+                    worker_id: 'WK-' + Date.now(), 
+                    vendor_id: 'V-001', 
+                    full_name: fullName,
+                    national_id: nationalId,
+                    nationality: currentNationality,
+                    blood_group: document.getElementById('bloodGroup').value,
+                    emergency_contact_name: document.getElementById('em-name-input').value,
+                    emergency_contact_phone: document.getElementById('phone-input').value,
+                    is_active: true
+                };
+
+                var { error: insertError } = await supabase.from('tb_workers').insert([payload]);
+                if (insertError) throw insertError;
 
                 Swal.fire({
                     icon: 'success',
@@ -918,7 +923,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาด',
-                    text: 'ระบบฐานข้อมูลขัดข้อง หรือเลขบัตรนี้อาจถูกลงทะเบียนไว้แล้ว กรุณาลองใหม่อีกครั้ง',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
                     confirmButtonColor: '#e53e3e'
                 });
             }
