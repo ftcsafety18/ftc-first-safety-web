@@ -262,7 +262,6 @@
                     <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
-                <!-- ระบบค้นหาบริษัทอัจฉริยะ (โชว์ลิสต์ทันทีที่กด) -->
                 <div class="mb-6 relative" id="vendor-container">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor / Contractor) <span class="text-red-500">*</span></label>
                     <div class="relative">
@@ -270,7 +269,6 @@
                         <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
                     </div>
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto no-scrollbar hidden">
-                        <!-- รายชื่อบริษัทจะถูกดึงมาใส่ตรงนี้ด้วย JS เรียง ก-ฮ -->
                     </ul>
                     <p class="text-[11px] text-brand-orange mt-1.5 flex items-center gap-1">
                         <i data-lucide="info" class="w-3 h-3"></i> พิมพ์ชื่อบริษัทเพื่อค้นหาจากฐานข้อมูล (Master Data)
@@ -370,16 +368,21 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="triggerUpload('main', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <!-- ปุ่มถ่ายภาพ สั่งคลิกไปที่ file-main-cam -->
+                                <button type="button" onclick="document.getElementById('file-main-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <button type="button" onclick="triggerUpload('main', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                <!-- ปุ่มเลือกไฟล์ สั่งคลิกไปที่ file-main-doc -->
+                                <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
                             </div>
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
-                        <input type="file" id="file-main" class="hidden" onchange="updateFileUI('main')">
+                        
+                        <!-- แยก Input แบบตายตัวให้ชัดเจน OS จะได้ไม่งง -->
+                        <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
+                        <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
                 </div>
 
@@ -392,16 +395,18 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="triggerUpload('wp', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <button type="button" onclick="document.getElementById('file-wp-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <button type="button" onclick="triggerUpload('wp', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                <button type="button" onclick="document.getElementById('file-wp-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
                             </div>
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
-                        <input type="file" id="file-wp" class="hidden" onchange="updateFileUI('wp')">
+                        
+                        <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
+                        <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
                 </div>
 
@@ -521,24 +526,9 @@
         var currentNationality = 'thai';
         var docCounter = 0;
         
-        // ข้อมูลดัมมี่ ถูกปรับให้เป็นรูปแบบ Array of Objects อย่างถูกต้อง
-        var vendorsMasterData = [
-            { id: 'C001', name: 'บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด' },
-            { id: 'C002', name: 'บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด' },
-            { id: 'C003', name: 'บริษัท ระยองวิศวกรรม จำกัด' },
-            { id: 'P001', name: 'นายสมชาย ใจดี (รับเหมาอิสระ)' },
-            { id: 'P002', name: 'นางสาวรักดี การช่าง' },
-            { id: 'P003', name: 'นายช่างใหญ่ ทำได้ทุกอย่าง' }
-        ];
-        
-        // สั่งให้เรียงลำดับ ก-ฮ เพื่อความเป็นระเบียบ
-        vendorsMasterData.sort(function(a, b) {
-            return a.name.localeCompare(b.name, 'th');
-        });
-
+        var vendorsMasterData = [];
         var selectedVendorId = ''; 
 
-        // คำสั่งดึงข้อมูลจากหลังบ้าน (เผื่อใช้ในอนาคต หากแก้ปัญหา RLS ตาราง tb_vendors ได้แล้ว)
         async function loadVendorsFromDB() {
             try {
                 if (!supabase) return;
@@ -554,7 +544,7 @@
                     });
                 }
             } catch (err) {
-                console.error("โหลดข้อมูลบริษัทล้มเหลว (ใช้งานตัวดัมมี่แทน):", err);
+                console.error("โหลดข้อมูลบริษัทล้มเหลว:", err);
             }
         }
 
@@ -562,7 +552,6 @@
             try {
                 initUI();
                 if (typeof lucide !== 'undefined') lucide.createIcons();
-                // พยายามดึงจากฐานข้อมูลก่อน ถ้าไม่ได้ระบบจะใช้ตัวดัมมี่ที่ฝังไว้แทน
                 await loadVendorsFromDB();
             } catch (err) {
                 console.error("UI Init Error:", err);
@@ -608,9 +597,6 @@
             });
         }
 
-        // ==========================================
-        // 2. ระบบค้นหาบริษัทอัจฉริยะ (โชว์ลิสต์ ก-ฮ ทันทีที่กด)
-        // ==========================================
         function showVendorList() {
             document.getElementById('vendor-list').classList.remove('hidden');
             filterVendors();
@@ -622,7 +608,6 @@
             list.innerHTML = "";
             selectedVendorId = '';
 
-            // ค้นหาคำที่พิมพ์ (ถ้าช่องว่าง จะดึงมาทั้งหมด)
             var filtered = vendorsMasterData.filter(function(v) {
                 return v.name.toLowerCase().indexOf(inputVal) > -1;
             });
@@ -653,9 +638,6 @@
             }
         });
 
-        // ==========================================
-        // ควบคุม UI และการกรองข้อมูล
-        // ==========================================
         function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
@@ -730,52 +712,37 @@
             }
         }
 
-        function triggerUpload(type, useCamera) {
-            var input = document.getElementById('file-' + type);
-            if(useCamera) {
-                input.setAttribute('capture', 'environment'); 
-                input.setAttribute('accept', 'image/*'); 
-            } else {
-                input.removeAttribute('capture'); 
-                input.setAttribute('accept', 'image/*,application/pdf');
-            }
-            input.click();
-        }
+        // ==========================================
+        // ฟังก์ชันอัปเดตหน้าจอเมื่อมีการเลือกไฟล์ (รองรับ Input แบบ 2 กล่อง)
+        // ==========================================
+        function updateFileUI(type, inputElement) {
+            // ล้างค่าใน Input อีกตัวที่ไม่ได้ใช้ เพื่อป้องกันการเก็บไฟล์ซ้ำซ้อน
+            var otherInputId = inputElement.id.includes('-cam') ? 'file-' + type + '-doc' : 'file-' + type + '-cam';
+            document.getElementById(otherInputId).value = ""; 
 
-        function triggerDynamicUpload(id, useCamera) {
-            var input = document.getElementById('file-doc-' + id);
-            if(useCamera) {
-                input.setAttribute('capture', 'environment'); 
-                input.setAttribute('accept', 'image/*');
-            } else {
-                input.removeAttribute('capture'); 
-                input.setAttribute('accept', 'image/*,application/pdf');
-            }
-            input.click();
-        }
-
-        function updateFileUI(type) {
-            var fileInput = document.getElementById('file-' + type);
             var textElement = document.getElementById('text-' + type);
             var dropzone = document.getElementById('dropzone-' + type);
             
-            if(fileInput.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + fileInput.files[0].name + "</span>";
+            if(inputElement.files.length > 0) {
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + inputElement.files[0].name + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
             }
         }
 
-        function updateDynamicFileUI(id) {
-            var fileInput = document.getElementById('file-doc-' + id);
+        function updateDynamicFileUI(id, inputElement) {
+            var otherInputId = inputElement.id.includes('-cam') ? 'file-doc-doc-' + id : 'file-doc-cam-' + id;
+            document.getElementById(otherInputId).value = ""; 
+
             var textElement = document.getElementById('text-doc-' + id);
-            if(fileInput.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + fileInput.files[0].name + "</span>";
+            if(inputElement.files.length > 0) {
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + inputElement.files[0].name + "</span>";
             }
         }
 
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
+            // กล่อง Dynamic อัปเดตให้รองรับ 2 ปุ่มแยกกัน (กล้อง / ไฟล์)
             var docHtml = `
                 <div class="doc-item" id="doc-${docCounter}">
                     <button type="button" class="btn-remove" onclick="document.getElementById('doc-${docCounter}').remove()">X</button>
@@ -789,16 +756,18 @@
                     </select>
                     
                     <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="document.getElementById('file-doc-cam-${docCounter}').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                         </button>
-                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="document.getElementById('file-doc-doc-${docCounter}').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                         </button>
                     </div>
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
-                    <input type="file" id="file-doc-${docCounter}" class="hidden doc-file" onchange="updateDynamicFileUI(${docCounter})" required>
+                    
+                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                    <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -863,14 +832,19 @@
         }
 
         function validateStep2() {
-            var fileMain = document.getElementById('file-main');
-            if(fileMain.files.length === 0) {
+            // ตรวจสอบว่ามีการเลือกไฟล์จากกล่อง "กล้อง" หรือกล่อง "เอกสาร" อย่างใดอย่างหนึ่ง
+            var mainCam = document.getElementById('file-main-cam').files.length;
+            var mainDoc = document.getElementById('file-main-doc').files.length;
+            
+            if(mainCam === 0 && mainDoc === 0) {
                 showAlert('ขาดเอกสาร', 'กรุณาอัปโหลดเอกสารหลัก (บัตรประชาชน/พาสปอร์ต) เพื่อยืนยันตัวตน');
                 return false;
             }
+            
             if(currentNationality !== 'thai') {
-                var fileWp = document.getElementById('file-wp');
-                if(fileWp.files.length === 0) {
+                var wpCam = document.getElementById('file-wp-cam').files.length;
+                var wpDoc = document.getElementById('file-wp-doc').files.length;
+                if(wpCam === 0 && wpDoc === 0) {
                     showAlert('ขาดเอกสาร Work Permit', 'กรุณาอัปโหลดใบอนุญาตทำงาน (Work Permit) ให้ครบถ้วน');
                     return false;
                 }
