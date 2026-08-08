@@ -60,7 +60,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* สไตล์สำหรับกล่องอัปโหลดเอกสาร Dynamic */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 0.5rem; position: relative; }
         .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; }
@@ -147,6 +146,7 @@
                     </div>
                 </div>
 
+                <!-- กล่องเลือกประเภทเอกสารต่างชาติ (โชว์เมื่อกด Foreigner) -->
                 <div id="foreigner-doc-section" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">ประเภทเอกสาร (Document Type) <span class="text-red-500">*</span></label>
                     <div class="relative">
@@ -270,7 +270,6 @@
                         <input type="text" id="vendor-input" placeholder="-- พิมพ์ค้นหา / เลือกบริษัท --" class="input-field pr-10 cursor-text" autocomplete="off" onfocus="showVendorList()" oninput="filterVendors()">
                         <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
                     </div>
-                    <!-- กล่อง Dropdown ที่จะโชว์ตอนพิมพ์ -->
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto no-scrollbar hidden">
                         <!-- รายชื่อบริษัทจะถูกดึงมาใส่ตรงนี้ด้วย JS -->
                     </ul>
@@ -305,6 +304,7 @@
                     </div>
                 </div>
 
+                <!-- ช่องให้ระบุเมื่อเลือก "อื่นๆ" -->
                 <div id="other-relation-container" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">โปรดระบุความสัมพันธ์ (Please Specify) <span class="text-red-500">*</span></label>
                     <input type="text" id="em-other-input" placeholder="ระบุความสัมพันธ์" class="input-field border-brand-orange focus:ring-brand-orange">
@@ -325,24 +325,25 @@
                 </div>
 
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-4">
+                    <!-- ปรับข้อความ PDPA ให้ถูกต้องตามกฎหมาย และครอบคลุมเรื่องความปลอดภัยขั้นสูงสุด -->
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="pdpa-1" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
                         <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>1. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ชีวมิติ/ใบหน้า</span> เพื่อการยืนยันตัวตน <span class="text-red-500">*</span></p>
+                            <p>1. ข้าพเจ้ายินยอมให้บริษัทเก็บรวบรวมและใช้ <span class="font-bold text-brand-navy">ข้อมูลชีวมิติ (Biometrics) และภาพถ่ายใบหน้า</span> เพื่อใช้ในการยืนยันตัวตน (Identity Verification) ในการเข้า-ออกพื้นที่ปฏิบัติงาน <span class="text-red-500">*</span></p>
                         </div>
                     </label>
                     <div class="h-px bg-gray-200"></div>
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="pdpa-2" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
                         <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>2. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">สุขภาพ/กรุ๊ปเลือด</span> เพื่อความปลอดภัย <span class="text-red-500">*</span></p>
+                            <p>2. ข้าพเจ้ายินยอมให้บริษัทเก็บรวบรวมและใช้ <span class="font-bold text-brand-navy">ข้อมูลส่วนบุคคลที่ละเอียดอ่อน (Sensitive Data) เช่น ข้อมูลสุขภาพ และกรุ๊ปเลือด</span> เพื่อวัตถุประสงค์ในการประเมินความพร้อมก่อนปฏิบัติงาน การปฐมพยาบาล และการบริหารจัดการเหตุฉุกเฉินตามมาตรฐานความปลอดภัย <span class="text-red-500">*</span></p>
                         </div>
                     </label>
                     <div class="h-px bg-gray-200"></div>
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="pdpa-3" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
                         <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>3. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ตำแหน่งที่ตั้ง GPS</span> ขณะปฏิบัติงาน <span class="text-red-500">*</span></p>
+                            <p>3. ข้าพเจ้ายินยอมให้บริษัทเข้าถึงและเก็บข้อมูล <span class="font-bold text-brand-navy">ตำแหน่งพิกัด (GPS Location)</span> ผ่านอุปกรณ์เคลื่อนที่ เฉพาะในขณะที่ลงทะเบียนและปฏิบัติงานในพื้นที่ เพื่อความปลอดภัยและการช่วยเหลือในภาวะฉุกเฉิน <span class="text-red-500">*</span></p>
                         </div>
                     </label>
                 </div>
@@ -450,7 +451,7 @@
                 </div>
             </div>
 
-            <!-- ================= SUCCESS (Flow อบรมออนไลน์) ================= -->
+            <!-- ================= SUCCESS ================= -->
             <div id="step-success" class="hidden flex-col items-center justify-center gap-6 py-10 text-center">
                 <div class="w-20 h-20 rounded-full bg-brand-navy flex items-center justify-center shadow-lg">
                     <i data-lucide="check" class="w-10 h-10 text-white"></i>
@@ -499,8 +500,6 @@
     </main>
 
     <script>
-        lucide.createIcons();
-
         // ==========================================
         // ตั้งค่า API หลังบ้าน (Supabase + LIFF)
         // ==========================================
@@ -522,9 +521,6 @@
             }
         }
 
-        // ==========================================
-        // ข้อมูลบริษัทจำลอง (Master Data) สำหรับให้ระบบค้นหา
-        // ==========================================
         const vendorsMasterData = [
             "บริษัท เอบีซี จำกัด",
             "บริษัท ไทยอุตสาหกรรม จำกัด",
@@ -538,16 +534,17 @@
             "บริษัท คลีนนิ่ง เซอร์วิส โปร จำกัด"
         ];
 
-        // แก้ปัญหา UI Blocking ด้วยการแยก Event ของหน้าจอ กับ LIFF ออกจากกัน
-        document.addEventListener('DOMContentLoaded', function() {
-            // โหลด UI ให้เสร็จสมบูรณ์ทันทีก่อน
+        // ==========================================
+        // เริ่มต้นการทำงาน (แก้ไขปัญหา UI ไม่โหลด)
+        // ทำงานทันทีโดยไม่ต้องรอ Event ทำให้สคริปต์ไม่ถูกบล็อก
+        // ==========================================
+        try {
             initUI();
-            
-            // หน่วงเวลาให้ LIFF โหลดในเบื้องหลัง เพื่อไม่ให้สคริปต์หน้าจอพัง
-            setTimeout(() => {
-                initializeLiff();
-            }, 500);
-        });
+            lucide.createIcons();
+            setTimeout(() => { initializeLiff(); }, 500);
+        } catch(e) {
+            console.error("Initialization Error:", e);
+        }
 
         function initUI() {
             const currentYearBE = new Date().getFullYear() + 543;
@@ -557,7 +554,7 @@
 
             function populateDropdown(id, arr) {
                 const select = document.getElementById(id);
-                if(!select) return; // ป้องกัน Error หากไม่มี Element
+                if(!select) return; 
                 arr.forEach(val => {
                     let option = document.createElement('option');
                     option.value = val;
@@ -607,7 +604,8 @@
         document.addEventListener('click', function(e) {
             const container = document.getElementById('vendor-container');
             if (container && !container.contains(e.target)) {
-                document.getElementById('vendor-list').classList.add('hidden');
+                const list = document.getElementById('vendor-list');
+                if(list) list.classList.add('hidden');
             }
         });
 
@@ -667,16 +665,17 @@
             }
         }
 
+        // กรองเลขบัตร: บังคับใช้เฉพาะ 0-9 ตัดปัญหาพิมพ์ภาษาไทยทะลุได้ 100%
         function validateIdInput(obj) {
             const docType = document.getElementById('doc-type').value;
             if(currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) {
-                obj.value = obj.value.replace(/\D/g, '');
+                obj.value = obj.value.replace(/[^0-9]/g, '');
             } else {
                 obj.value = obj.value.replace(/[^a-zA-Z0-9-]/g, '');
             }
         }
 
-        // ปรับการกรองให้ป้องกันตัวอักษรภาษาไทยและภาษาอังกฤษได้ชัวร์ 100%
+        // กรองเบอร์โทรศัพท์: บังคับใช้เฉพาะ 0-9
         function validatePhoneInput(obj) {
             obj.value = obj.value.replace(/[^0-9]/g, '');
         }
@@ -703,7 +702,6 @@
             }
         }
 
-        // ฟังก์ชันอัปโหลดเอกสารอิสระแบบไม่จำกัด
         let docCounter = 0;
         function addDocument() {
             docCounter++;
@@ -724,9 +722,6 @@
             container.insertAdjacentHTML('beforeend', docHtml);
         }
 
-        // ==========================================
-        // แจ้งเตือนสากลด้วย SweetAlert2
-        // ==========================================
         function showAlert(title, text) {
             Swal.fire({ icon: 'warning', title: title, text: text, confirmButtonColor: '#19335A', confirmButtonText: 'ตกลง' });
         }
@@ -858,9 +853,6 @@
             lucide.createIcons();
         }
 
-        // ==========================================
-        // การยิงข้อมูลทะลุฐานข้อมูลหลังบ้าน (Supabase API)
-        // ==========================================
         async function submitToSupabase() {
             if(!validateStep3()) return;
 
@@ -874,14 +866,6 @@
             const fname = document.getElementById('fname-input').value.trim();
             const lname = document.getElementById('lname-input').value.trim();
             const fullName = fname ? `${fname} ${lname}` : 'พนักงาน';
-
-            let safetyDocs = [];
-            document.querySelectorAll('.doc-item').forEach(item => {
-                safetyDocs.push({
-                    type: item.querySelector('.doc-type').value,
-                    file_name: item.querySelector('.doc-file').files[0]?.name || ''
-                });
-            });
 
             if(!supabase) {
                 Swal.fire({ icon: 'error', title: 'การเชื่อมต่อขัดข้อง', text: 'ระบบหลังบ้านยังไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง' });
@@ -897,7 +881,6 @@
                 blood_group: document.getElementById('bloodGroup').value,
                 emergency_contact_name: document.getElementById('em-name-input').value,
                 emergency_contact_phone: document.getElementById('phone-input').value,
-                // safety_documents: safetyDocs, 
                 is_active: true
             };
 
@@ -929,6 +912,5 @@
             }
         }
     </script>
-
 </body>
 </html>
