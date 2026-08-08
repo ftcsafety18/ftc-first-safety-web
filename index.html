@@ -96,13 +96,14 @@
                 subtitle: 'Onboarding',
                 icon: '📝', 
                 modalTitle: '1. ลงทะเบียนและอบรมความปลอดภัย <br>& อนุมัติยืนยันพนักงานของ Vendor',
-                submenus: [
+               submenus: [
                     { 
                         id: '1.1', 
                         title: 'ลงทะเบียนพนักงานใหม่', 
                         subtitle: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA ภาคบังคับ',
                         icon: '👤',
-                        link: 'https://ftcsafety18.github.io/ftc-first-safety-web/Worker/Worker_Registration_ToSystem.html',
+                        // เปลี่ยนลิงก์เป็นแบบ Relative Path ชี้ไปหาโฟลเดอร์ในบ้านเดียวกัน
+                        link: './Worker/Worker_Registration_ToSystem.html', 
                         style: 'normal'
                     },
                     { 
