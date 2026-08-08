@@ -368,9 +368,11 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
+                                <!-- ปุ่มถ่ายภาพ สั่งคลิกไปที่ file-main-cam -->
                                 <button type="button" onclick="document.getElementById('file-main-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
+                                <!-- ปุ่มเลือกไฟล์ สั่งคลิกไปที่ file-main-doc -->
                                 <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
@@ -378,7 +380,6 @@
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <!-- อัปเดตคำสั่งบังคับกล้องแบบดุดัน ป้องกัน LINE บล็อกสิทธิ์ -->
                         <input type="file" id="file-main-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture onchange="updateFileUI('main', this)">
                         <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
@@ -403,7 +404,6 @@
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <!-- อัปเดตคำสั่งบังคับกล้องแบบดุดัน -->
                         <input type="file" id="file-wp-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture onchange="updateFileUI('wp', this)">
                         <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
@@ -525,7 +525,21 @@
         var currentNationality = 'thai';
         var docCounter = 0;
         
-        var vendorsMasterData = [];
+        // 💡 ใส่รายชื่อดัมมี่เผื่อไว้กันเหนียว เผื่อฐานข้อมูล Supabase ร่ม
+        var vendorsMasterData = [
+            { id: 'C001', name: 'บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด' },
+            { id: 'C002', name: 'บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด' },
+            { id: 'C003', name: 'บริษัท ระยองวิศวกรรม จำกัด' },
+            { id: 'P001', name: 'นายสมชาย ใจดี (รับเหมาอิสระ)' },
+            { id: 'P002', name: 'นางสาวรักดี การช่าง' },
+            { id: 'P003', name: 'นายช่างใหญ่ ทำได้ทุกอย่าง' }
+        ];
+
+        // สั่งให้เรียงลำดับ ก-ฮ เพื่อความเป็นระเบียบ
+        vendorsMasterData.sort(function(a, b) {
+            return a.name.localeCompare(b.name, 'th');
+        });
+
         var selectedVendorId = ''; 
 
         async function loadVendorsFromDB() {
@@ -538,12 +552,13 @@
 
                 if (error) throw error;
                 if (data && data.length > 0) {
+                    // หากต่อ Database ได้สำเร็จ ให้เอารายชื่อจากฐานข้อมูลมาทับรายชื่อดัมมี่
                     vendorsMasterData = data.map(function(item) {
                         return { id: item.vendor_id, name: item.vendor_name };
                     });
                 }
             } catch (err) {
-                console.error("โหลดข้อมูลบริษัทล้มเหลว:", err);
+                console.error("โหลดข้อมูลบริษัทล้มเหลว (ใช้งานตัวดัมมี่แทน):", err);
             }
         }
 
@@ -760,7 +775,6 @@
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
                     
-                    <!-- อัปเดตคำสั่งบังคับกล้องแบบดุดัน สำหรับช่องเอกสารเพิ่มเติมด้วยครับ -->
                     <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/jpeg, image/png, image/jpg" capture onchange="updateDynamicFileUI(${docCounter}, this)" required>
                     <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                 </div>`;
