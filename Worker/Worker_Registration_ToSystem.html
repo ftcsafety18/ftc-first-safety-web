@@ -4,39 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FTC First Safety - Worker Registration</title>
-    <!-- นำเข้า Tailwind, Fonts, Icons, LIFF และ Supabase -->
+    
+    <!-- นำเข้า Tailwind CSS, Lucide Icons, Supabase, LIFF และ SweetAlert2 สำหรับ Pop-up สวยงาม -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' }
-                    },
+                    colors: { brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' } },
                     fontFamily: { sans: ['Sarabun', 'sans-serif'] }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #F4F6F8; }
         .input-field { width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #F9FAFB; font-size: 0.875rem; color: #1F2937; transition: all 0.2s; }
         .input-field:focus { outline: none; border-color: #19335A; background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes scanLine { 0% { top: 25%; opacity: 0.3; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 75%; opacity: 0.3; } }
-        .animate-scan { animation: scanLine 2.5s ease-in-out infinite; }
-        
-        /* สไตล์สำหรับกล่องเอกสารแบบ Dynamic */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 6px; position: relative; }
-        .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
+        .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; }
-        .btn-add:hover { background-color: #e2e8f0; }
+        .btn-add:hover { background-color: #e2e8f0; border-color: #19335A; color: #19335A; }
     </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -60,7 +57,7 @@
                 </div>
                 <div>
                     <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
-                    <p class="text-[9px] sm:text-xs text-white/70 leading-tight">ลงทะเบียนเข้าปฏิบัติงาน</p>
+                    <p class="text-[9px] sm:text-xs text-white/70 leading-tight">ลงทะเบียนเข้าปฏิบัติงาน (Worker Registration)</p>
                 </div>
             </div>
             <div class="shrink-0 flex items-start h-full">
@@ -71,11 +68,12 @@
 
     <main class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12">
         
+        <!-- Step Indicator -->
         <div id="step-indicator" class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-6">
             <div class="flex items-center justify-center gap-0">
                 <div class="flex items-center w-full max-w-sm">
                     <div class="flex flex-col items-center gap-2 relative z-10">
-                        <div id="ind-1" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20">1</div>
+                        <div id="ind-1" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20 shadow-md">1</div>
                         <p id="ind-text-1" class="text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap">1. ข้อมูลส่วนตัว</p>
                     </div>
                     <div id="line-1" class="flex-1 h-0.5 mx-2 bg-gray-200"></div>
@@ -99,12 +97,12 @@
 
         <form id="workerRegistrationForm" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
             
-            <!-- ================= STEP 1 ================= -->
+            <!-- ================= STEP 1: ข้อมูลส่วนตัว ================= -->
             <div id="step-1" class="block">
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">1</div>
                     <div>
-                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 1: ข้อมูลส่วนตัว</p>
+                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 1: ข้อมูลส่วนตัว (Personal Info)</p>
                         <p class="text-xs text-gray-500 mt-0.5">กรอกข้อมูลส่วนตัวและข้อมูลการจ้างงานให้ครบถ้วนก่อนดำเนินการขั้นตอนถัดไป</p>
                     </div>
                 </div>
@@ -117,6 +115,7 @@
                     </div>
                 </div>
 
+                <!-- แสดงเฉพาะต่างชาติ -->
                 <div id="foreigner-doc-section" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">ประเภทเอกสาร (Document Type) <span class="text-red-500">*</span></label>
                     <div class="relative">
@@ -146,57 +145,41 @@
                     <p id="id-hint" class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 13 หลัก</p>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="relative"><select id="dob-day" class="input-field appearance-none cursor-pointer"><option value="">วัน</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
-                        <div class="relative">
-                            <select id="dob-month" class="input-field appearance-none cursor-pointer">
-                                <option value="">เดือน</option>
-                                <option value="1">มกราคม (January)</option><option value="2">กุมภาพันธ์ (February)</option>
-                                <option value="3">มีนาคม (March)</option><option value="4">เมษายน (April)</option>
-                                <option value="5">พฤษภาคม (May)</option><option value="6">มิถุนายน (June)</option>
-                                <option value="7">กรกฎาคม (July)</option><option value="8">สิงหาคม (August)</option>
-                                <option value="9">กันยายน (September)</option><option value="10">ตุลาคม (October)</option>
-                                <option value="11">พฤศจิกายน (November)</option><option value="12">ธันวาคม (December)</option>
-                            </select>
-                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="relative"><select id="dob-day" class="input-field appearance-none cursor-pointer px-1"><option value="">วัน</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
+                            <div class="relative">
+                                <select id="dob-month" class="input-field appearance-none cursor-pointer px-1">
+                                    <option value="">เดือน</option><option value="1">ม.ค.</option><option value="2">ก.พ.</option><option value="3">มี.ค.</option><option value="4">เม.ย.</option><option value="5">พ.ค.</option><option value="6">มิ.ย.</option><option value="7">ก.ค.</option><option value="8">ส.ค.</option><option value="9">ก.ย.</option><option value="10">ต.ค.</option><option value="11">พ.ย.</option><option value="12">ธ.ค.</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i>
+                            </div>
+                            <div class="relative"><select id="dob-year" class="input-field appearance-none cursor-pointer px-1"><option value="">ปี (พ.ศ.)</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
                         </div>
-                        <div class="relative"><select id="dob-year" class="input-field appearance-none cursor-pointer"><option value="">ปี (พ.ศ.)</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของเอกสาร (Expiry Date) <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="relative"><select id="exp-day" class="input-field appearance-none cursor-pointer px-1"><option value="">วัน</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
+                            <div class="relative">
+                                <select id="exp-month" class="input-field appearance-none cursor-pointer px-1">
+                                    <option value="">เดือน</option><option value="1">ม.ค.</option><option value="2">ก.พ.</option><option value="3">มี.ค.</option><option value="4">เม.ย.</option><option value="5">พ.ค.</option><option value="6">มิ.ย.</option><option value="7">ก.ค.</option><option value="8">ส.ค.</option><option value="9">ก.ย.</option><option value="10">ต.ค.</option><option value="11">พ.ย.</option><option value="12">ธ.ค.</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i>
+                            </div>
+                            <div class="relative"><select id="exp-year" class="input-field appearance-none cursor-pointer px-1"><option value="">ปี (พ.ศ.)</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (Expiry Date) <span class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="relative"><select id="exp-day" class="input-field appearance-none cursor-pointer"><option value="">วัน</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
-                        <div class="relative">
-                            <select id="exp-month" class="input-field appearance-none cursor-pointer">
-                                <option value="">เดือน</option>
-                                <option value="1">มกราคม (January)</option><option value="2">กุมภาพันธ์ (February)</option>
-                                <option value="3">มีนาคม (March)</option><option value="4">เมษายน (April)</option>
-                                <option value="5">พฤษภาคม (May)</option><option value="6">มิถุนายน (June)</option>
-                                <option value="7">กรกฎาคม (July)</option><option value="8">สิงหาคม (August)</option>
-                                <option value="9">กันยายน (September)</option><option value="10">ตุลาคม (October)</option>
-                                <option value="11">พฤศจิกายน (November)</option><option value="12">ธันวาคม (December)</option>
-                            </select>
-                            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i>
-                        </div>
-                        <div class="relative"><select id="exp-year" class="input-field appearance-none cursor-pointer"><option value="">ปี (พ.ศ.)</option></select><i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-3.5 pointer-events-none"></i></div>
-                    </div>
-                </div>
-
-                <!-- เพิ่มกรุ๊ปเลือด -->
-                <div class="mb-6">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">กรุ๊ปเลือด (Blood Group) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <select id="bloodGroup" class="input-field appearance-none cursor-pointer" required>
                             <option value="">-- เลือกกรุ๊ปเลือด --</option>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="O">O</option>
-                            <option value="AB">AB</option>
-                            <option value="Unknown">ไม่ทราบ (Unknown)</option>
+                            <option value="A">A</option><option value="B">B</option><option value="O">O</option><option value="AB">AB</option><option value="Unknown">ไม่ทราบ</option>
                         </select>
                         <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-3 pointer-events-none"></i>
                     </div>
@@ -204,32 +187,23 @@
 
                 <div class="flex items-center gap-3 mb-6 mt-8">
                     <div class="flex-1 h-px bg-gray-200"></div>
-                    <div class="text-center px-2">
-                        <p class="text-xs font-bold text-brand-navy uppercase tracking-wider">ข้อมูลการจ้างงาน</p>
-                    </div>
+                    <div class="text-center px-2"><p class="text-xs font-bold text-brand-navy uppercase tracking-wider">ข้อมูลการจ้างงาน</p></div>
                     <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
-                <!-- ระบบค้นหาบริษัทอัจฉริยะ (Searchable Dropdown) -->
                 <div class="mb-6 relative" id="vendor-container">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor / Contractor) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <input type="text" id="vendor-input" placeholder="-- พิมพ์ค้นหา / เลือกบริษัท --" class="input-field pr-10 cursor-text" autocomplete="off" onfocus="showVendorList()" oninput="filterVendors()" required>
                         <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
                     </div>
-                    <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto no-scrollbar hidden">
-                        <!-- รายชื่อบริษัทจะถูกดึงมาใส่ตรงนี้ด้วย JS -->
-                    </ul>
-                    <p class="text-[11px] text-brand-orange mt-1.5 flex items-center gap-1">
-                        <i data-lucide="info" class="w-3 h-3"></i> พิมพ์ชื่อบริษัทเพื่อค้นหาจากฐานข้อมูล (Master Data)
-                    </p>
+                    <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto no-scrollbar hidden"></ul>
+                    <p class="text-[11px] text-brand-orange mt-1.5 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i> พิมพ์ชื่อบริษัทเพื่อค้นหาจากฐานข้อมูล (Master Data)</p>
                 </div>
 
                 <div class="flex items-center gap-3 mb-6 mt-8">
                     <div class="flex-1 h-px bg-gray-200"></div>
-                    <div class="text-center px-2">
-                        <p class="text-xs font-bold text-brand-navy uppercase tracking-wider">ผู้ติดต่อในภาวะฉุกเฉิน</p>
-                    </div>
+                    <div class="text-center px-2"><p class="text-xs font-bold text-brand-navy uppercase tracking-wider">ผู้ติดต่อในภาวะฉุกเฉิน</p></div>
                     <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
@@ -242,17 +216,15 @@
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">ความสัมพันธ์ (Relationship) <span class="text-red-500">*</span></label>
                         <select id="relationship-select" onchange="toggleOtherRelation()" class="input-field appearance-none cursor-pointer" required>
                             <option value="">-- เลือกความสัมพันธ์ --</option>
-                            <option value="บิดา/มารดา">บิดา/มารดา</option>
-                            <option value="คู่สมรส">คู่สมรส</option>
-                            <option value="พี่น้อง">พี่น้อง</option>
-                            <option value="อื่นๆ">อื่นๆ</option>
+                            <option value="บิดา/มารดา">บิดา/มารดา</option><option value="คู่สมรส">คู่สมรส</option>
+                            <option value="พี่น้อง">พี่น้อง</option><option value="อื่นๆ">อื่นๆ</option>
                         </select>
                         <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-9 pointer-events-none"></i>
                     </div>
                 </div>
 
                 <div id="other-relation-container" class="mb-4 hidden">
-                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">โปรดระบุความสัมพันธ์ (Please Specify) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">โปรดระบุความสัมพันธ์ <span class="text-red-500">*</span></label>
                     <input type="text" id="em-other-input" placeholder="ระบุความสัมพันธ์" class="input-field border-brand-orange focus:ring-brand-orange">
                 </div>
 
@@ -262,34 +234,18 @@
                     <p class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 10 หลักเท่านั้น</p>
                 </div>
 
-                <div class="flex items-center gap-3 mb-6 mt-8">
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                    <div class="text-center px-2">
-                        <p class="text-xs font-bold text-brand-navy uppercase tracking-wider">การยินยอม PDPA</p>
-                    </div>
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                </div>
-
-                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-4">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="pdpa-1" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
-                        <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>1. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ชีวมิติ/ใบหน้า</span> เพื่อการยืนยันตัวตน <span class="text-red-500">*</span></p>
-                        </div>
+                <div class="bg-gray-50 p-4 rounded-xl mb-6 border border-gray-200 shadow-sm">
+                    <label class="flex items-start gap-3 cursor-pointer mb-3">
+                        <input type="checkbox" id="pdpa-1" class="mt-1 w-5 h-5 accent-brand-navy" required>
+                        <span class="text-sm text-gray-700">1. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ชีวมิติ/ใบหน้า</span> เพื่อการยืนยันตัวตน <span class="text-red-500">*</span></span>
                     </label>
-                    <div class="h-px bg-gray-200"></div>
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="pdpa-2" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
-                        <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>2. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">สุขภาพ/กรุ๊ปเลือด</span> เพื่อความปลอดภัย <span class="text-red-500">*</span></p>
-                        </div>
+                    <label class="flex items-start gap-3 cursor-pointer mb-3">
+                        <input type="checkbox" id="pdpa-2" class="mt-1 w-5 h-5 accent-brand-navy" required>
+                        <span class="text-sm text-gray-700">2. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">สุขภาพ/กรุ๊ปเลือด</span> เพื่อความปลอดภัย <span class="text-red-500">*</span></span>
                     </label>
-                    <div class="h-px bg-gray-200"></div>
                     <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="pdpa-3" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
-                        <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>3. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ตำแหน่งที่ตั้ง GPS</span> ขณะปฏิบัติงาน <span class="text-red-500">*</span></p>
-                        </div>
+                        <input type="checkbox" id="pdpa-3" class="mt-1 w-5 h-5 accent-brand-navy" required>
+                        <span class="text-sm text-gray-700">3. ข้าพเจ้ายินยอมให้บริษัทเก็บข้อมูล <span class="font-bold text-brand-navy">ตำแหน่งที่ตั้ง GPS</span> ขณะปฏิบัติงาน <span class="text-red-500">*</span></span>
                     </label>
                 </div>
 
@@ -299,61 +255,67 @@
                 </button>
             </div>
 
-            <!-- ================= STEP 2 ================= -->
+            <!-- ================= STEP 2: อัปโหลดเอกสาร ================= -->
             <div id="step-2" class="hidden">
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">2</div>
                     <div>
-                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: อัปโหลดเอกสาร</p>
-                        <p class="text-xs text-gray-500 mt-0.5">อัปโหลดสำเนาเอกสารประจำตัว (รองรับไฟล์รูปภาพและ PDF)</p>
+                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: อัปโหลดเอกสาร (Document Upload)</p>
+                        <p class="text-xs text-gray-500 mt-0.5">สามารถถ่ายรูปจากกล้อง หรือเลือกไฟล์ (ภาพ/PDF) จากในเครื่องได้</p>
                     </div>
                 </div>
 
+                <!-- 1. อัปโหลดรูปโปรไฟล์สำหรับทำบัตร (สำคัญมาก!) -->
+                <div class="mb-6 bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+                    <label class="block text-sm font-bold text-brand-navy mb-2 flex items-center gap-2">
+                        <i data-lucide="user-square" class="w-5 h-5"></i> รูปถ่ายหน้าตรง (Profile Photo) <span class="text-red-500">*</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mb-3">รูปถ่ายที่เห็นใบหน้าชัดเจน เพื่อใช้สำหรับทำบัตรเข้าพื้นที่ (E-Badge)</p>
+                    <input type="file" id="file-profile" class="hidden" accept="image/*" onchange="updateFileUI('profile')">
+                    <div id="dropzone-profile" onclick="document.getElementById('file-profile').click()" class="relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-navy/40 bg-white px-4 py-8 text-center cursor-pointer hover:border-brand-navy transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1"><i data-lucide="camera" class="w-5 h-5 text-brand-navy"></i></div>
+                        <div><p id="text-profile" class="text-sm font-semibold text-brand-navy">แตะเพื่อถ่ายรูป หรือ เลือกรูปภาพ</p></div>
+                    </div>
+                </div>
+
+                <!-- 2. อัปโหลดเอกสารหลัก (บัตร ปชช / พาสปอร์ต) -->
                 <div class="mb-6">
-                    <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
-                    
-                    <!-- เปลี่ยน input file เดิมให้รองรับการเปิดกล้อง capture="environment" ตามที่พี่ต้องการ -->
-                    <input type="file" id="file-main" class="hidden" accept="image/*,.pdf" capture="environment" onchange="updateFileUI('main')">
-                    
-                    <div id="dropzone-main" onclick="document.getElementById('file-main').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
-                            <i data-lucide="camera" class="w-6 h-6 text-brand-navy"></i>
-                        </div>
+                    <label id="upload-label" class="block text-sm font-bold text-gray-800 mb-2">สำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
+                    <input type="file" id="file-main" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('main')">
+                    <div id="dropzone-main" onclick="document.getElementById('file-main').click()" class="relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center cursor-pointer hover:border-brand-navy transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-1"><i data-lucide="file-check-2" class="w-5 h-5 text-gray-600"></i></div>
                         <div>
-                            <p id="text-main" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
-                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่ออัปโหลดไฟล์ JPG, PNG, PDF</p>
+                            <p id="text-main" class="text-sm font-semibold text-gray-600">แตะเพื่อถ่ายเอกสาร หรือ แนบไฟล์ PDF/รูปภาพ</p>
                         </div>
                     </div>
                 </div>
 
+                <!-- 3. อัปโหลด Work Permit (สำหรับต่างชาติ) -->
                 <div id="upload-workpermit" class="mb-6 hidden">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
-                    <input type="file" id="file-wp" class="hidden" accept="image/*,.pdf" capture="environment" onchange="updateFileUI('wp')">
-                    <div id="dropzone-wp" onclick="document.getElementById('file-wp').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
-                            <i data-lucide="file-text" class="w-6 h-6 text-brand-navy"></i>
-                        </div>
+                    <label class="block text-sm font-bold text-gray-800 mb-2">ใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
+                    <input type="file" id="file-wp" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('wp')">
+                    <div id="dropzone-wp" onclick="document.getElementById('file-wp').click()" class="relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center cursor-pointer hover:border-brand-navy transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-1"><i data-lucide="folder-open" class="w-5 h-5 text-gray-600"></i></div>
                         <div>
-                            <p id="text-wp" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
-                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่ออัปโหลดไฟล์ Work Permit</p>
+                            <p id="text-wp" class="text-sm font-semibold text-gray-600">แตะเพื่อถ่ายเอกสาร หรือ แนบไฟล์ PDF/รูปภาพ</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- เพิ่มระบบอัปโหลดเอกสาร Dynamic สำหรับใบเซอร์ต่างๆ -->
+                <!-- 4. อัปโหลดเอกสารความปลอดภัยเพิ่มเติมแบบ Dynamic -->
                 <div class="flex items-center gap-3 mb-4 mt-8">
                     <div class="flex-1 h-px bg-gray-200"></div>
-                    <div class="text-center px-2"><p class="text-xs font-bold text-brand-orange uppercase tracking-wider">เอกสารความปลอดภัยเพิ่มเติม</p></div>
+                    <div class="text-center px-2"><p class="text-xs font-bold text-brand-orange uppercase tracking-wider">เอกสารรับรองเพิ่มเติม (ถ้ามี)</p></div>
                     <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
-                <p class="text-xs text-gray-500 mb-4 text-center">อัปโหลดเพิ่มเติมเฉพาะผู้ที่ต้องใช้ใบรับรอง เช่น ทำงานที่สูง, ที่อับอากาศ</p>
+                <p class="text-xs text-gray-500 mb-4 text-center">สามารถกดเพิ่มช่องเพื่ออัปโหลดใบรับรอง เช่น ทำงานที่สูง, ที่อับอากาศ, ใบขับขี่รถ ฯลฯ ได้ไม่จำกัด</p>
                 
                 <div id="dynamicDocsContainer"></div>
                 <button type="button" class="btn-add mb-6 flex justify-center items-center gap-2" onclick="addDocument()">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มไฟล์เอกสารความปลอดภัย
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i> เพิ่มช่องอัปโหลดเอกสารความปลอดภัย
                 </button>
 
-                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-gray-200">
                     <button type="button" onclick="goToStep(1)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
                     </button>
@@ -364,29 +326,25 @@
                 </div>
             </div>
 
-            <!-- ================= STEP 3 ================= -->
+            <!-- ================= STEP 3: ยืนยันตัวตน ================= -->
             <div id="step-3" class="hidden">
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">3</div>
                     <div>
-                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 3: ยืนยันตัวตน</p>
+                        <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 3: ยืนยันตัวตน (Identity Verification)</p>
                     </div>
                 </div>
 
                 <label class="block text-sm font-semibold text-brand-navy mb-2 border-b border-gray-200 pb-2 mt-4">คำรับรองขั้นสุดท้าย (Final Declaration)</label>
-                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-3">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="consent-final" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
-                        <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>ข้าพเจ้าขอยืนยันว่าข้อมูลทั้งหมดเป็นความจริง และยินยอมให้บันทึกภาพใบหน้าและพิกัดตำแหน่ง <span class="text-red-500">*</span></p>
-                        </div>
+                <div class="bg-red-50 border border-red-200 p-4 rounded-xl mb-6 shadow-sm">
+                    <label class="flex items-start gap-3 cursor-pointer mb-3">
+                        <input type="checkbox" id="consent-final" class="mt-1 w-5 h-5 accent-red-600" required>
+                        <span class="text-sm text-red-800 font-semibold leading-relaxed">ข้าพเจ้าขอยืนยันว่าข้อมูลทั้งหมดเป็นความจริง และยินยอมให้บันทึกพิกัดตำแหน่ง <span class="text-red-500">*</span></span>
                     </label>
-                    <div class="h-px bg-gray-200"></div>
+                    <div class="h-px bg-red-200 my-2"></div>
                     <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="consent-age" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
-                        <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>ข้าพเจ้ายืนยันว่าตนเองมีอายุ <span class="font-bold text-brand-navy">ไม่ต่ำกว่า 18 ปีบริบูรณ์</span> <span class="text-red-500">*</span></p>
-                        </div>
+                        <input type="checkbox" id="consent-age" class="mt-1 w-5 h-5 accent-red-600" required>
+                        <span class="text-sm text-red-800 font-semibold leading-relaxed">ข้าพเจ้ายืนยันว่าตนเองมีอายุ <span class="font-bold text-brand-navy">ไม่ต่ำกว่า 18 ปีบริบูรณ์</span> <span class="text-red-500">*</span></span>
                     </label>
                 </div>
 
@@ -394,17 +352,17 @@
                     <button type="button" onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
                     </button>
-                    <!-- เปลี่ยนปุ่มนี้ให้ทำงานเชื่อมกับ Supabase -->
-                    <button type="button" id="btnSubmit" onclick="if(validateStep3()) submitToSupabase()" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i> ลงทะเบียนเข้าปฏิบัติงาน
+                    <!-- ปุ่มส่งข้อมูล ยิงเข้า Supabase -->
+                    <button type="button" id="btnSubmit" onclick="submitToSupabase()" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i> บันทึกข้อมูลและส่งตรวจสอบ
                     </button>
                 </div>
             </div>
 
             <!-- ================= SUCCESS ================= -->
             <div id="step-success" class="hidden flex-col items-center justify-center gap-6 py-10 text-center">
-                <div class="w-20 h-20 rounded-full bg-brand-navy flex items-center justify-center shadow-lg">
-                    <i data-lucide="check" class="w-10 h-10 text-white"></i>
+                <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-bounce">
+                    <i data-lucide="check-circle-2" class="w-12 h-12 text-white"></i>
                 </div>
                 <div>
                     <h2 class="text-2xl font-bold text-brand-navy">ลงทะเบียนสำเร็จ!</h2>
@@ -412,35 +370,20 @@
                     <p id="success-welcome-msg" class="text-sm text-gray-800 font-medium mt-4 px-4 leading-relaxed"></p>
                 </div>
                 
-                <div class="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl p-5 mt-2 text-left">
+                <div class="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl p-5 mt-2 text-left shadow-sm">
                     <p class="text-sm font-bold text-brand-navy mb-4 border-b border-gray-200 pb-2">ขั้นตอนถัดไป (Next Steps)</p>
                     <ul class="flex flex-col gap-4">
                         <li class="flex items-start gap-3 text-sm text-gray-700">
-                            <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-navy"></i>
-                            </div>
-                            <div>
-                                <span class="font-bold text-brand-navy block mb-0.5">1. รอการตรวจสอบ (Pending Approval)</span>
-                                ข้อมูลของท่านถูกส่งไปยัง "บริษัทต้นสังกัด (Vendor)" เพื่อตรวจสอบและยืนยันสถานะ
-                            </div>
+                            <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-brand-navy"></i></div>
+                            <div><span class="font-bold text-brand-navy block mb-0.5">1. รอการตรวจสอบ (Pending Approval)</span> ข้อมูลของท่านถูกส่งไปยังบริษัทเพื่อตรวจสอบสถานะ</div>
                         </li>
                         <li class="flex items-start gap-3 text-sm text-gray-700">
-                            <div class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <i data-lucide="monitor-play" class="w-3.5 h-3.5 text-brand-orange"></i>
-                            </div>
-                            <div>
-                                <span class="font-bold text-brand-orange block mb-0.5">2. เข้าอบรมออนไลน์ (E-Learning)</span>
-                                กรุณาเข้าสู่ระบบเพื่อดูวิดีโอความปลอดภัย และทำแบบทดสอบ (10 ข้อ) ให้ผ่านเกณฑ์ที่กำหนด
-                            </div>
+                            <div class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="monitor-play" class="w-3.5 h-3.5 text-brand-orange"></i></div>
+                            <div><span class="font-bold text-brand-orange block mb-0.5">2. เข้าอบรมออนไลน์ (E-Learning)</span> กรุณาเข้าสู่ระบบเพื่อดูวิดีโอและทำแบบทดสอบให้ผ่าน</div>
                         </li>
                         <li class="flex items-start gap-3 text-sm text-gray-700">
-                            <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
-                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-green-600"></i>
-                            </div>
-                            <div>
-                                <span class="font-bold text-green-700 block mb-0.5">3. รับบัตรเข้าพื้นที่ (Get Badge)</span>
-                                เมื่อทำข้อสอบผ่าน และได้รับการอนุมัติเรียบร้อยแล้ว จึงจะสามารถติดต่อรับบัตรผ่านเข้าออกได้
-                            </div>
+                            <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="badge-check" class="w-3.5 h-3.5 text-green-600"></i></div>
+                            <div><span class="font-bold text-green-700 block mb-0.5">3. รับบัตรเข้าพื้นที่ (Get Badge)</span> เมื่อผ่านการอนุมัติแล้ว จึงจะสามารถรับบัตรผ่านได้</div>
                         </li>
                     </ul>
                 </div>
@@ -456,7 +399,7 @@
         // 1. ตั้งค่า Supabase API และ LIFF
         // ==========================================
         const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
-        const SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY_HERE'; 
+        const SUPABASE_KEY = 'YOUR_PUBLIC_ANON_KEY_HERE'; // เปลี่ยนเป็น Anon Key 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let userLineUid = null;
 
@@ -466,7 +409,6 @@
                 if (liff.isLoggedIn()) {
                     const profile = await liff.getProfile();
                     userLineUid = profile.userId;
-                    console.log("LINE UID (Ready):", userLineUid);
                 } else {
                     liff.login();
                 }
@@ -509,43 +451,27 @@
         // ==========================================
         // ระบบค้นหาบริษัท (Searchable Dropdown)
         // ==========================================
-        function showVendorList() {
-            document.getElementById('vendor-list').classList.remove('hidden');
-            filterVendors();
-        }
-
+        function showVendorList() { document.getElementById('vendor-list').classList.remove('hidden'); filterVendors(); }
         function filterVendors() {
             const inputVal = document.getElementById('vendor-input').value.toLowerCase();
-            const list = document.getElementById('vendor-list');
-            list.innerHTML = "";
-            
+            const list = document.getElementById('vendor-list'); list.innerHTML = "";
             const filtered = vendorsMasterData.filter(v => v.toLowerCase().includes(inputVal));
-            if(filtered.length === 0) {
-                list.innerHTML = '<li class="px-4 py-3 text-sm text-gray-500 text-center">ไม่พบรายชื่อบริษัทที่ค้นหา</li>';
-                return;
-            }
-
+            if(filtered.length === 0) { list.innerHTML = '<li class="px-4 py-3 text-sm text-gray-500 text-center">ไม่พบรายชื่อบริษัท</li>'; return; }
             filtered.forEach(v => {
                 const li = document.createElement('li');
-                li.className = "px-4 py-2.5 text-sm text-gray-800 hover:bg-brand-navy hover:text-white cursor-pointer transition-colors border-b border-gray-100 last:border-0";
+                li.className = "px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer border-b border-gray-100";
                 li.innerText = v;
-                li.onmousedown = function() {
-                    document.getElementById('vendor-input').value = v;
-                    document.getElementById('vendor-list').classList.add('hidden');
-                };
+                li.onmousedown = function() { document.getElementById('vendor-input').value = v; document.getElementById('vendor-list').classList.add('hidden'); };
                 list.appendChild(li);
             });
         }
-
         document.addEventListener('click', function(e) {
             const container = document.getElementById('vendor-container');
-            if (container && !container.contains(e.target)) {
-                document.getElementById('vendor-list').classList.add('hidden');
-            }
+            if (container && !container.contains(e.target)) document.getElementById('vendor-list').classList.add('hidden');
         });
 
         // ==========================================
-        // ระบบสลับสัญชาติและเอกสารอัจฉริยะ (Nationality Logic)
+        // ระบบสลับสัญชาติและเอกสารอัจฉริยะ
         // ==========================================
         let currentNationality = 'thai';
 
@@ -554,7 +480,6 @@
             const btnThai = document.getElementById('btn-thai');
             const btnForeign = document.getElementById('btn-foreign');
             const foreignDocSection = document.getElementById('foreigner-doc-section');
-            const idInput = document.getElementById('id-input');
             const uploadWorkPermit = document.getElementById('upload-workpermit');
 
             if(nat === 'thai') {
@@ -567,7 +492,7 @@
                 btnThai.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors";
                 foreignDocSection.classList.remove('hidden');
             }
-            idInput.value = "";
+            document.getElementById('id-input').value = "";
             updateIdField();
         }
 
@@ -581,30 +506,26 @@
 
             if(currentNationality === 'thai') {
                 label.innerHTML = 'เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span>';
-                input.maxLength = 13;
-                input.placeholder = "X-XXXX-XXXXX-XX-X";
+                input.maxLength = 13; input.placeholder = "X-XXXX-XXXXX-XX-X";
                 idHint.innerText = "กรอกเฉพาะตัวเลข 13 หลัก";
-                uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span>';
+                uploadLabel.innerHTML = 'สำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span>';
             } else {
                 uploadWorkPermit.classList.remove('hidden');
                 if(docType === 'pinkcard') {
-                    label.innerHTML = 'เลขบัตรสีชมพู 13 หลัก (Pink Card ID) <span class="text-red-500">*</span>';
-                    input.maxLength = 13;
-                    input.placeholder = "กรอกเลข 13 หลัก";
+                    label.innerHTML = 'เลขบัตรสีชมพู 13 หลัก <span class="text-red-500">*</span>';
+                    input.maxLength = 13; input.placeholder = "กรอกเลข 13 หลัก";
                     idHint.innerText = "กรอกเฉพาะตัวเลข 13 หลัก";
-                    uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรสีชมพู (Pink Card Copy) <span class="text-red-500">*</span>';
+                    uploadLabel.innerHTML = 'สำเนาบัตรสีชมพู (Pink Card Copy) <span class="text-red-500">*</span>';
                 } else if(docType === 'workpermit') {
-                    label.innerHTML = 'เลขที่ใบอนุญาตทำงาน (Work Permit No.) <span class="text-red-500">*</span>';
-                    input.removeAttribute('maxLength');
-                    input.placeholder = "กรอกเลข Work Permit";
-                    idHint.innerText = "กรอกเฉพาะตัวเลขและตัวอักษรภาษาอังกฤษ";
-                    uploadLabel.innerHTML = 'อัปโหลด Passport หรือ บัตรสีชมพู <span class="text-red-500">*</span>';
+                    label.innerHTML = 'เลขที่ใบอนุญาตทำงาน <span class="text-red-500">*</span>';
+                    input.removeAttribute('maxLength'); input.placeholder = "กรอกเลข Work Permit";
+                    idHint.innerText = "กรอกตัวอักษรและตัวเลข";
+                    uploadLabel.innerHTML = 'Passport หรือ บัตรสีชมพู <span class="text-red-500">*</span>';
                 } else {
-                    label.innerHTML = 'เลขพาสปอร์ต (Passport No.) <span class="text-red-500">*</span>';
-                    input.removeAttribute('maxLength');
-                    input.placeholder = "กรอกเลขพาสปอร์ต";
-                    idHint.innerText = "กรอกเฉพาะตัวเลขและตัวอักษรภาษาอังกฤษ";
-                    uploadLabel.innerHTML = 'อัปโหลดสำเนา Passport <span class="text-red-500">*</span>';
+                    label.innerHTML = 'เลขพาสปอร์ต <span class="text-red-500">*</span>';
+                    input.removeAttribute('maxLength'); input.placeholder = "กรอกเลขพาสปอร์ต";
+                    idHint.innerText = "กรอกตัวอักษรและตัวเลข";
+                    uploadLabel.innerHTML = 'สำเนา Passport <span class="text-red-500">*</span>';
                 }
             }
         }
@@ -618,22 +539,17 @@
             }
         }
 
-        function validatePhoneInput(obj) {
-            obj.value = obj.value.replace(/\D/g, '');
-        }
+        function validatePhoneInput(obj) { obj.value = obj.value.replace(/\D/g, ''); }
 
         function toggleOtherRelation() {
             const select = document.getElementById('relationship-select');
             const otherContainer = document.getElementById('other-relation-container');
-            if(select.value === 'อื่นๆ') {
-                otherContainer.classList.remove('hidden');
-            } else {
-                otherContainer.classList.add('hidden');
-            }
+            if(select.value === 'อื่นๆ') { otherContainer.classList.remove('hidden'); } 
+            else { otherContainer.classList.add('hidden'); }
         }
 
         // ==========================================
-        // ระบบจัดการไฟล์และเอกสาร (Upload UI)
+        // ระบบจัดการไฟล์และเอกสาร (Upload UI ปลดล็อกอิสระ)
         // ==========================================
         function updateFileUI(type) {
             const fileInput = document.getElementById('file-' + type);
@@ -641,9 +557,12 @@
             const dropzone = document.getElementById('dropzone-' + type);
             
             if(fileInput.files.length > 0) {
-                textElement.innerText = "✅ อัปโหลดไฟล์เรียบร้อยแล้ว: " + fileInput.files[0].name;
+                textElement.innerText = "✅ เตรียมไฟล์เรียบร้อย: " + fileInput.files[0].name;
                 textElement.classList.replace('text-brand-navy', 'text-green-600');
-                dropzone.classList.add('border-green-500', 'bg-green-50');
+                textElement.classList.replace('text-gray-600', 'text-green-600');
+                dropzone.classList.replace('border-brand-navy/40', 'border-green-500');
+                dropzone.classList.replace('border-gray-300', 'border-green-500');
+                dropzone.classList.add('bg-green-50');
             }
         }
 
@@ -652,25 +571,29 @@
             docCounter++;
             const container = document.getElementById('dynamicDocsContainer');
             const docHtml = `
-                <div class="doc-item" id="doc-${docCounter}">
+                <div class="doc-item shadow-sm" id="doc-${docCounter}">
                     <button type="button" class="btn-remove" onclick="document.getElementById('doc-${docCounter}').remove()">X</button>
-                    <select class="doc-type input-field mb-2 cursor-pointer" required>
-                        <option value="">-- เลือกประเภทเอกสาร --</option>
+                    <select class="doc-type input-field mb-3 cursor-pointer border-brand-navy/30" required>
+                        <option value="">-- เลือกประเภทเอกสารที่ต้องการแนบ --</option>
                         <option value="fit_to_work">ใบรับรองแพทย์ (Fit to Work)</option>
                         <option value="working_at_height">ใบผ่านการอบรมที่สูง</option>
-                        <option value="confined_space">อบรมที่อับอากาศ (4 ผู้)</option>
-                        <option value="crane_operator">ใบอนุญาตขับปั้นจั่น</option>
-                        <option value="other">อื่นๆ</option>
+                        <option value="confined_space">ใบผ่านการอบรมที่อับอากาศ (4 ผู้)</option>
+                        <option value="crane_operator">ใบอนุญาตขับปั้นจั่น/เครน</option>
+                        <option value="other">เอกสารอื่นๆ</option>
                     </select>
-                    <!-- ใส่ capture="environment" เผื่อให้เปิดกล้องถ่ายเอกสารได้เช่นกัน -->
-                    <input type="file" class="doc-file block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 hover:file:bg-gray-200" accept=".pdf,image/*" capture="environment" required>
+                    <!-- อนุญาตให้เลือกไฟล์จากเครื่อง หรือ ถ่ายรูปก็ได้ ไม่บังคับกล้อง -->
+                    <input type="file" class="doc-file block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-brand-navy hover:file:bg-blue-100 cursor-pointer" accept=".pdf,image/*" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
         }
 
         // ==========================================
-        // ระบบ Validation และการเปลี่ยนสเต็ป
+        // ระบบ Validation ด้วย SweetAlert2
         // ==========================================
+        function showAlert(title, text) {
+            Swal.fire({ icon: 'warning', title: title, text: text, confirmButtonColor: '#19335A', confirmButtonText: 'ตกลง' });
+        }
+
         function validateStep1() {
             const fname = document.getElementById('fname-input').value.trim();
             const lname = document.getElementById('lname-input').value.trim();
@@ -680,65 +603,30 @@
             const blood = document.getElementById('bloodGroup').value;
             
             if(!fname || !lname || !idVal || !phone || !vendor || !blood) {
-                alert("❌ กรุณากรอกข้อมูลในช่องที่มีเครื่องหมายดอกจัน (*) ให้ครบถ้วน");
-                return false;
+                showAlert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลในช่องที่มีเครื่องหมาย (*) ให้ครบถ้วน'); return false;
             }
-
-            const docType = document.getElementById('doc-type').value;
-            if((currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) && idVal.length !== 13) {
-                alert("❌ กรุณากรอกเลขบัตรให้ครบ 13 หลัก");
-                return false;
+            if(!document.getElementById('pdpa-1').checked || !document.getElementById('pdpa-2').checked || !document.getElementById('pdpa-3').checked) {
+                showAlert('ข้อตกลง PDPA', 'กรุณาทำเครื่องหมาย (✓) ยินยอมเงื่อนไข PDPA ให้ครบทั้ง 3 ข้อ'); return false;
             }
-
-            if(!document.getElementById('dob-day').value || !document.getElementById('dob-month').value || !document.getElementById('dob-year').value) {
-                alert("❌ กรุณาระบุ วัน/เดือน/ปีเกิด ให้ครบถ้วน");
-                return false;
-            }
-
-            const relation = document.getElementById('relationship-select').value;
-            if(!relation || (relation === 'อื่นๆ' && !document.getElementById('em-other-input').value.trim())) {
-                alert("❌ กรุณาระบุความสัมพันธ์ของผู้ติดต่อฉุกเฉิน");
-                return false;
-            }
-
-            if(phone.length !== 10) {
-                alert("❌ กรุณากรอกเบอร์โทรศัพท์มือถือให้ครบ 10 หลัก");
-                return false;
-            }
-
-            const p1 = document.getElementById('pdpa-1').checked;
-            const p2 = document.getElementById('pdpa-2').checked;
-            const p3 = document.getElementById('pdpa-3').checked;
-            if(!p1 || !p2 || !p3) {
-                alert("❌ กรุณาทำเครื่องหมายติ๊กถูก (✓) ยินยอมเงื่อนไข PDPA ให้ครบทั้ง 3 ข้อ");
-                return false;
-            }
-
             return true;
         }
 
         function validateStep2() {
-            const fileMain = document.getElementById('file-main');
-            if(fileMain.files.length === 0) {
-                alert("❌ กรุณาอัปโหลดรูปถ่ายเอกสารยืนยันตัวตนหลัก");
-                return false;
+            if(document.getElementById('file-profile').files.length === 0) {
+                showAlert('ขาดรูปโปรไฟล์', 'กรุณาอัปโหลดรูปถ่ายหน้าตรง เพื่อใช้สำหรับทำบัตรเข้าพื้นที่'); return false;
             }
-            if(currentNationality !== 'thai') {
-                const fileWp = document.getElementById('file-wp');
-                if(fileWp.files.length === 0) {
-                    alert("❌ กรุณาอัปโหลดรูปถ่ายใบอนุญาตทำงาน (Work Permit)");
-                    return false;
-                }
+            if(document.getElementById('file-main').files.length === 0) {
+                showAlert('ขาดเอกสารยืนยันตัวตน', 'กรุณาอัปโหลดรูปถ่ายหรือไฟล์สำเนาบัตรประชาชน/พาสปอร์ต'); return false;
+            }
+            if(currentNationality !== 'thai' && document.getElementById('file-wp').files.length === 0) {
+                showAlert('ขาดเอกสาร Work Permit', 'กรุณาอัปโหลดรูปถ่ายหรือไฟล์ใบอนุญาตทำงาน (Work Permit)'); return false;
             }
             return true;
         }
 
         function validateStep3() {
-            const cFinal = document.getElementById('consent-final').checked;
-            const cAge = document.getElementById('consent-age').checked;
-            if(!cFinal || !cAge) {
-                alert("❌ กรุณายืนยัน 'คำรับรองขั้นสุดท้าย' และ 'ยืนยันอายุ' ก่อนกดส่งแบบฟอร์ม");
-                return false;
+            if(!document.getElementById('consent-final').checked || !document.getElementById('consent-age').checked) {
+                showAlert('คำรับรอง', 'กรุณายืนยันความถูกต้องของข้อมูล และยืนยันอายุ 18 ปีบริบูรณ์'); return false;
             }
             return true;
         }
@@ -750,19 +638,16 @@
             document.getElementById('step-success').classList.add('hidden');
 
             document.getElementById('step-' + stepNumber).classList.remove('hidden');
-            if (stepNumber === 'success') {
-                document.getElementById('step-success').classList.add('flex');
-            }
+            if (stepNumber === 'success') document.getElementById('step-success').classList.add('flex');
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if(typeof stepNumber === 'number') updateIndicator(stepNumber);
         }
 
         function updateIndicator(step) {
             for(let i=1; i<=3; i++) {
-                let circle = document.getElementById('ind-' + i);
-                let text = document.getElementById('ind-text-' + i);
-                let icon = document.getElementById('lock-icon-' + i);
-                let line = document.getElementById('line-' + i);
+                let circle = document.getElementById('ind-' + i); let text = document.getElementById('ind-text-' + i);
+                let icon = document.getElementById('lock-icon-' + i); let line = document.getElementById('line-' + i);
                 
                 if(circle) circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200 relative z-10 transition-colors";
                 if(text) text.className = "text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap transition-colors";
@@ -771,12 +656,11 @@
             }
 
             for(let i=1; i<=step; i++) {
-                let circle = document.getElementById('ind-' + i);
-                let text = document.getElementById('ind-text-' + i);
+                let circle = document.getElementById('ind-' + i); let text = document.getElementById('ind-text-' + i);
                 let line = document.getElementById('line-' + (i-1)); 
                 
                 if(i === step) { 
-                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20 relative z-10 transition-colors";
+                    circle.className = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20 relative z-10 transition-colors shadow-md";
                     circle.innerHTML = i; 
                     text.className = "text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap transition-colors";
                     if(line) line.className = "flex-1 h-0.5 mx-2 bg-brand-navy transition-colors";
@@ -791,15 +675,16 @@
         }
 
         // ==========================================
-        // เชื่อมโยงส่งข้อมูลเข้า Supabase (tb_workers)
+        // เชื่อมโยงข้อมูลเข้า Supabase (tb_workers)
         // ==========================================
         async function submitToSupabase() {
-            const btn = document.getElementById('btnSubmit');
-            btn.innerHTML = "กำลังบันทึกข้อมูล..."; btn.disabled = true;
+            if(!validateStep3()) return;
 
-            const fname = document.getElementById('fname-input').value.trim();
-            const lname = document.getElementById('lname-input').value.trim();
-            const fullName = `${fname} ${lname}`;
+            const btn = document.getElementById('btnSubmit');
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> กำลังบันทึกข้อมูล...`; 
+            btn.disabled = true;
+
+            const fullName = `${document.getElementById('fname-input').value.trim()} ${document.getElementById('lname-input').value.trim()}`;
 
             let safetyDocs = [];
             document.querySelectorAll('.doc-item').forEach(item => {
@@ -809,34 +694,46 @@
                 });
             });
 
-            // สร้าง Payload ให้ตรงกับตาราง tb_workers
             const payload = {
                 worker_id: 'WK-' + Date.now(), 
-                vendor_id: 'V-001', // TODO: เปลี่ยนเป็น Query ดึงรหัส Vendor จริงจากชื่อบริษัท
+                vendor_id: 'V-001', // TODO: ค้นหารหัส Vendor จริง
                 full_name: fullName,
                 national_id: document.getElementById('id-input').value,
                 nationality: document.getElementById('nationality').value,
                 blood_group: document.getElementById('bloodGroup').value,
                 emergency_contact_name: document.getElementById('em-name-input').value,
                 emergency_contact_phone: document.getElementById('phone-input').value,
-                // safety_documents: safetyDocs, // (เอา Comment ออกหากมีคอลัมน์นี้แล้ว)
+                // safety_documents: safetyDocs, // (เอา Comment ออกหากตาราง Supabase มีคอลัมน์ jsonb นี้แล้ว)
                 is_active: true
             };
 
             try {
                 const { data, error } = await supabase.from('tb_workers').insert([payload]);
-                
                 if (error) throw error;
 
-                // ไปยังหน้า Success
-                document.getElementById('success-welcome-msg').innerText = `ยินดีต้อนรับ คุณ.${fullName} สู่ความปลอดภัยภายในบริษัท First Construction Technology...`;
-                document.getElementById('step-indicator').classList.add('hidden');
-                goToStep('success');
+                // โชว์ Pop-up สำเร็จก่อนเปลี่ยนหน้า
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'ข้อมูลของคุณถูกส่งเข้าระบบเรียบร้อยแล้ว',
+                    confirmButtonColor: '#19335A',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    document.getElementById('success-welcome-msg').innerText = `ยินดีต้อนรับ คุณ ${fullName} เข้าสู่ระบบความปลอดภัย FTC First Safety`;
+                    document.getElementById('step-indicator').classList.add('hidden');
+                    goToStep('success');
+                });
 
             } catch (err) {
                 console.error("Supabase Error:", err);
-                alert("เกิดข้อผิดพลาด: ระบบฐานข้อมูลขัดข้อง หรือเลขบัตรนี้อาจถูกลงทะเบียนไว้แล้ว");
-                btn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i> ลงทะเบียนเข้าปฏิบัติงาน`; 
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ระบบฐานข้อมูลขัดข้อง หรือเลขบัตรนี้อาจถูกลงทะเบียนไว้แล้ว กรุณาลองใหม่อีกครั้ง',
+                    confirmButtonColor: '#e53e3e'
+                });
+                btn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i> บันทึกข้อมูลและส่งตรวจสอบ`; 
                 btn.disabled = false;
                 lucide.createIcons();
             }
