@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FTC First Safety - Worker Registration</title>
     
+    <!-- นำเข้า Tailwind CSS, Lucide Icons, Supabase, LIFF และ SweetAlert2 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -377,7 +378,8 @@
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="camera" onchange="updateFileUI('main', this)">
+                        <!-- อัปเดตคำสั่งบังคับกล้องแบบดุดัน ป้องกัน LINE บล็อกสิทธิ์ -->
+                        <input type="file" id="file-main-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture onchange="updateFileUI('main', this)">
                         <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
                 </div>
@@ -401,7 +403,8 @@
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="camera" onchange="updateFileUI('wp', this)">
+                        <!-- อัปเดตคำสั่งบังคับกล้องแบบดุดัน -->
+                        <input type="file" id="file-wp-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture onchange="updateFileUI('wp', this)">
                         <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
                 </div>
@@ -522,21 +525,7 @@
         var currentNationality = 'thai';
         var docCounter = 0;
         
-        // ข้อมูลดัมมี่ ถูกใส่ V-001 บริษัท ทดสอบระบบ จำกัด กลับเข้ามาให้ค้นหาเจอ 100% ครับ
-        var vendorsMasterData = [
-            { id: 'V-001', name: 'บริษัท ทดสอบระบบ จำกัด' },
-            { id: 'C001', name: 'บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด' },
-            { id: 'C002', name: 'บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด' },
-            { id: 'C003', name: 'บริษัท ระยองวิศวกรรม จำกัด' },
-            { id: 'P001', name: 'นายสมชาย ใจดี (รับเหมาอิสระ)' },
-            { id: 'P002', name: 'นางสาวรักดี การช่าง' },
-            { id: 'P003', name: 'นายช่างใหญ่ ทำได้ทุกอย่าง' }
-        ];
-        
-        vendorsMasterData.sort(function(a, b) {
-            return a.name.localeCompare(b.name, 'th');
-        });
-
+        var vendorsMasterData = [];
         var selectedVendorId = ''; 
 
         async function loadVendorsFromDB() {
@@ -554,7 +543,7 @@
                     });
                 }
             } catch (err) {
-                console.error("โหลดข้อมูลบริษัทล้มเหลว (ใช้งานตัวดัมมี่แทน):", err);
+                console.error("โหลดข้อมูลบริษัทล้มเหลว:", err);
             }
         }
 
@@ -771,7 +760,8 @@
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
                     
-                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="camera" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                    <!-- อัปเดตคำสั่งบังคับกล้องแบบดุดัน สำหรับช่องเอกสารเพิ่มเติมด้วยครับ -->
+                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/jpeg, image/png, image/jpg" capture onchange="updateDynamicFileUI(${docCounter}, this)" required>
                     <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
