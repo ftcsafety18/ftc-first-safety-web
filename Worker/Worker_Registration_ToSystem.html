@@ -293,7 +293,6 @@
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <!-- 💡 ชุดรับภาพแบบมาตรฐานที่เด้งเข้ากล้องใน Chrome ได้ทันที -->
                         <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
                         <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
@@ -462,7 +461,6 @@
             } catch (err) { console.error("โหลดข้อมูลบริษัทล้มเหลว:", err); }
         }
 
-        // 🚀 ฟังก์ชันหลัก: ตัดสินใจว่าจะให้อยู่ใน LINE หรือดีดไป Chrome
         window.addEventListener('load', async function() {
             try {
                 initUI();
@@ -481,7 +479,6 @@
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
                 
-                // 💡 จุดหักเหสำคัญ: ถ้าเปิดใน LINE ให้เตือนแล้วดีดออก Chrome ทันที!
                 if (liff.isInClient()) {
                     Swal.fire({
                         title: 'เตรียมพร้อมถ่ายภาพ 📸',
@@ -491,24 +488,22 @@
                         confirmButtonColor: '#19335A',
                         allowOutsideClick: false
                     }).then(() => {
-                        // สั่งให้ LINE เปิด Chrome อัตโนมัติ
+                        // 💡 อัปเดตการล็อคเป้าลิงก์เวลาดีดไปเปิด Chrome
                         liff.openWindow({
-                            url: window.location.href,
+                            url: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html",
                             external: true 
                         });
-                        // ซ่อนหน้าต่างเดิมใน LINE เพื่อไม่ให้พนักงานสับสน
                         document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:Sarabun; text-align:center; color:#19335A;"><h2>กรุณาดำเนินการต่อ<br>ในหน้าต่างเบราว์เซอร์ใหม่ครับ</h2></div>';
                     });
-                    return; // หยุดทำงานโค้ดส่วนอื่นในหน้าต่าง LINE
+                    return; 
                 }
 
-                // 👇 โค้ดส่วนนี้จะทำงานเมื่อพนักงานเด้งไปอยู่บน Chrome แล้วเท่านั้น
                 if (liff.isLoggedIn()) {
                     var profile = await liff.getProfile();
                     userLineUid = profile.userId;
                 } else {
-                    // ถ้าหลุดมา Chrome แล้วยังไม่ได้ล็อกอิน ให้บังคับล็อกอินผ่าน LINE เพื่อดึง UID
-                    liff.login({ redirectUri: window.location.href });
+                    // 💡 อัปเดตจุดที่ทำให้เกิด Error 400 ให้เป็น URL ตายตัว
+                    liff.login({ redirectUri: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html" });
                 }
             } catch (error) { 
                 console.error("LIFF Error:", error); 
@@ -607,7 +602,7 @@
             var uploadLabel = document.getElementById('upload-label');
             var uploadWorkPermit = document.getElementById('upload-workpermit');
 
-            input.value = ""; // ล้างค่าเดิมเสมอเมื่อเปลี่ยนประเภท
+            input.value = ""; 
 
             if(currentNationality === 'thai') {
                 label.innerHTML = 'เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span>';
