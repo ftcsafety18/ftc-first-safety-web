@@ -60,7 +60,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* สไตล์สำหรับกล่องอัปโหลดเอกสาร Dynamic (เจนนี่เพิ่มให้ตรงกับดีไซน์พี่) */
+        /* สไตล์สำหรับกล่องอัปโหลดเอกสาร Dynamic */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 0.5rem; position: relative; }
         .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; }
@@ -240,7 +240,6 @@
                     </div>
                 </div>
 
-                <!-- เจนนี่แทรกกรุ๊ปเลือดตรงนี้ให้เข้ากับหน้าตาเดิมของพี่เป๊ะๆ ค่ะ -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">กรุ๊ปเลือด (Blood Group) <span class="text-red-500">*</span></label>
                     <div class="relative">
@@ -306,7 +305,6 @@
                     </div>
                 </div>
 
-                <!-- กล่องนี้จะโชว์ก็ต่อเมื่อเลือก "อื่นๆ" โค้ดเดิมของพี่เป๊ะๆ เลยครับ -->
                 <div id="other-relation-container" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">โปรดระบุความสัมพันธ์ (Please Specify) <span class="text-red-500">*</span></label>
                     <input type="text" id="em-other-input" placeholder="ระบุความสัมพันธ์" class="input-field border-brand-orange focus:ring-brand-orange">
@@ -367,7 +365,6 @@
 
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
-                    <!-- นำ capture="environment" ออกตามคำสั่งพี่ เพื่อให้แนบไฟล์จากมือถือได้อิสระครับ -->
                     <input type="file" id="file-main" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('main')">
                     <div id="dropzone-main" onclick="document.getElementById('file-main').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
@@ -382,7 +379,6 @@
 
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
-                    <!-- นำ capture="environment" ออกเช่นกันครับ -->
                     <input type="file" id="file-wp" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('wp')">
                     <div id="dropzone-wp" onclick="document.getElementById('file-wp').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
@@ -395,7 +391,6 @@
                     </div>
                 </div>
 
-                <!-- เจนนี่เพิ่มส่วน "อัปโหลดเอกสารอิสระ" ให้ตรงนี้ครับ -->
                 <div class="flex items-center gap-3 mb-4 mt-8">
                     <div class="flex-1 h-px bg-gray-200"></div>
                     <div class="text-center px-2"><p class="text-xs font-bold text-brand-orange uppercase tracking-wider">เอกสารรับรองเพิ่มเติม (ถ้ามี)</p></div>
@@ -449,7 +444,6 @@
                     <button type="button" onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
                     </button>
-                    <!-- เปลี่ยนปุ่มนี้ให้ทำงานเชื่อมกับ Supabase -->
                     <button type="button" id="btnSubmit" onclick="if(validateStep3()) submitToSupabase()" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
                         <i data-lucide="shield-check" class="w-4 h-4"></i> ลงทะเบียนเข้าปฏิบัติงาน
                     </button>
@@ -544,9 +538,18 @@
             "บริษัท คลีนนิ่ง เซอร์วิส โปร จำกัด"
         ];
 
+        // แก้ปัญหา UI Blocking ด้วยการแยก Event ของหน้าจอ กับ LIFF ออกจากกัน
         document.addEventListener('DOMContentLoaded', function() {
-            initializeLiff();
+            // โหลด UI ให้เสร็จสมบูรณ์ทันทีก่อน
+            initUI();
+            
+            // หน่วงเวลาให้ LIFF โหลดในเบื้องหลัง เพื่อไม่ให้สคริปต์หน้าจอพัง
+            setTimeout(() => {
+                initializeLiff();
+            }, 500);
+        });
 
+        function initUI() {
             const currentYearBE = new Date().getFullYear() + 543;
             const days = Array.from({length: 31}, (_, i) => i + 1);
             const birthYears = Array.from({length: 70}, (_, i) => currentYearBE - i);
@@ -554,6 +557,7 @@
 
             function populateDropdown(id, arr) {
                 const select = document.getElementById(id);
+                if(!select) return; // ป้องกัน Error หากไม่มี Element
                 arr.forEach(val => {
                     let option = document.createElement('option');
                     option.value = val;
@@ -566,10 +570,10 @@
             populateDropdown('exp-day', days); populateDropdown('exp-year', expYears);
             
             filterVendors();
-        });
+        }
 
         // ==========================================
-        // ระบบค้นหาบริษัท (Searchable Dropdown) โค้ดเดิม
+        // ระบบค้นหาบริษัท (Searchable Dropdown)
         // ==========================================
         function showVendorList() {
             document.getElementById('vendor-list').classList.remove('hidden');
@@ -608,7 +612,7 @@
         });
 
         // ==========================================
-        // สคริปต์ควบคุม UI แบบดั้งเดิม (ห้ามตัดทอน)
+        // สคริปต์ควบคุม UI 
         // ==========================================
         let currentNationality = 'thai';
 
@@ -618,6 +622,7 @@
             const btnForeign = document.getElementById('btn-foreign');
             const foreignDocSection = document.getElementById('foreigner-doc-section');
             const uploadWorkPermit = document.getElementById('upload-workpermit');
+            const idInput = document.getElementById('id-input');
 
             if(nat === 'thai') {
                 btnThai.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors";
@@ -629,7 +634,7 @@
                 btnThai.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors";
                 foreignDocSection.classList.remove('hidden');
             }
-            document.getElementById('id-input').value = "";
+            idInput.value = "";
             updateIdField();
         }
 
@@ -641,9 +646,9 @@
             const uploadWorkPermit = document.getElementById('upload-workpermit');
 
             if(currentNationality === 'thai') {
-                label.innerHTML = 'เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span>';
+                label.innerHTML = 'เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span>';
                 input.maxLength = 13;
-                uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรประชาชน <span class="text-red-500">*</span>';
+                uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span>';
             } else {
                 uploadWorkPermit.classList.remove('hidden');
                 if(docType === 'pinkcard') {
@@ -671,12 +676,11 @@
             }
         }
 
-        // คงฟังก์ชันดั้งเดิมเป๊ะๆ ป้องกันพิมพ์อักษร
+        // ปรับการกรองให้ป้องกันตัวอักษรภาษาไทยและภาษาอังกฤษได้ชัวร์ 100%
         function validatePhoneInput(obj) {
-            obj.value = obj.value.replace(/\D/g, '');
+            obj.value = obj.value.replace(/[^0-9]/g, '');
         }
 
-        // คงฟังก์ชันดั้งเดิมเป๊ะๆ ให้กล่อง "ระบุความสัมพันธ์" เด้งกลับมา
         function toggleOtherRelation() {
             const select = document.getElementById('relationship-select');
             const otherContainer = document.getElementById('other-relation-container');
@@ -715,14 +719,13 @@
                         <option value="crane_operator">ใบอนุญาตขับปั้นจั่น</option>
                         <option value="other">อื่นๆ</option>
                     </select>
-                    <!-- ไม่บังคับ capture เพื่อให้เลือกไฟล์จากในเครื่องได้อิสระ -->
                     <input type="file" class="doc-file block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 hover:file:bg-gray-200 cursor-pointer" accept=".pdf,image/*" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
         }
 
         // ==========================================
-        // แจ้งเตือนสากลด้วย SweetAlert2 (Pop-up สวยงาม)
+        // แจ้งเตือนสากลด้วย SweetAlert2
         // ==========================================
         function showAlert(title, text) {
             Swal.fire({ icon: 'warning', title: title, text: text, confirmButtonColor: '#19335A', confirmButtonText: 'ตกลง' });
@@ -861,7 +864,6 @@
         async function submitToSupabase() {
             if(!validateStep3()) return;
 
-            // เปลี่ยนหน้าตาปุ่มให้ดูว่ากำลังโหลด
             Swal.fire({
                 title: 'กำลังบันทึกข้อมูล...',
                 text: 'กรุณารอสักครู่ ระบบกำลังส่งข้อมูลเข้าศูนย์ความปลอดภัย',
@@ -881,32 +883,28 @@
                 });
             });
 
-            // ตรวจสอบว่าระบบฐานข้อมูลพร้อมหรือไม่
             if(!supabase) {
                 Swal.fire({ icon: 'error', title: 'การเชื่อมต่อขัดข้อง', text: 'ระบบหลังบ้านยังไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง' });
                 return;
             }
 
-            // ข้อมูล JSON ส่งไปตาราง tb_workers
             const payload = {
                 worker_id: 'WK-' + Date.now(), 
-                vendor_id: 'V-001', // TODO: ค้นหารหัส Vendor จากชื่อบริษัท
+                vendor_id: 'V-001', 
                 full_name: fullName,
                 national_id: document.getElementById('id-input').value,
-                nationality: document.getElementById('nationality').value,
+                nationality: currentNationality,
                 blood_group: document.getElementById('bloodGroup').value,
                 emergency_contact_name: document.getElementById('em-name-input').value,
                 emergency_contact_phone: document.getElementById('phone-input').value,
-                // safety_documents: safetyDocs, // (ถ้าพี่รันคำสั่ง Alter table แล้ว เอาคอมเมนต์บรรทัดนี้ออกได้เลยครับ)
+                // safety_documents: safetyDocs, 
                 is_active: true
             };
 
             try {
-                // ส่งข้อมูล
                 const { data, error } = await supabase.from('tb_workers').insert([payload]);
                 if (error) throw error;
 
-                // เมื่อสำเร็จ ปิดป๊อปอัปโหลด แล้วโชว์สำเร็จ
                 Swal.fire({
                     icon: 'success',
                     title: 'บันทึกสำเร็จ!',
