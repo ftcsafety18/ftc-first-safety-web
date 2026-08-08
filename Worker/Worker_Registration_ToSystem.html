@@ -262,13 +262,15 @@
                     <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
+                <!-- ระบบค้นหาบริษัทอัจฉริยะ (โชว์ลิสต์ทันทีที่กด) -->
                 <div class="mb-6 relative" id="vendor-container">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor / Contractor) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <input type="text" id="vendor-input" placeholder="-- พิมพ์ค้นหา / เลือกบริษัท --" class="input-field pr-10 cursor-text" autocomplete="off" onfocus="showVendorList()" oninput="filterVendors()">
                         <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
                     </div>
-                    <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto no-scrollbar hidden">
+                    <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto no-scrollbar hidden">
+                        <!-- รายชื่อบริษัทจะถูกดึงมาใส่ตรงนี้ด้วย JS เรียง ก-ฮ -->
                     </ul>
                     <p class="text-[11px] text-brand-orange mt-1.5 flex items-center gap-1">
                         <i data-lucide="info" class="w-3 h-3"></i> พิมพ์ชื่อบริษัทเพื่อค้นหาจากฐานข้อมูล (Master Data)
@@ -512,9 +514,6 @@
     </main>
 
     <script>
-        // ==========================================
-        // ตั้งค่าตัวแปรระดับ Global
-        // ==========================================
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; 
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -522,13 +521,24 @@
         var currentNationality = 'thai';
         var docCounter = 0;
         
-        // ตัวแปรเก็บรายชื่อบริษัทที่ดึงจาก Supabase
-        var vendorsMasterData = [];
+        // ข้อมูลดัมมี่ ถูกปรับให้เป็นรูปแบบ Array of Objects อย่างถูกต้อง
+        var vendorsMasterData = [
+            { id: 'C001', name: 'บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด' },
+            { id: 'C002', name: 'บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด' },
+            { id: 'C003', name: 'บริษัท ระยองวิศวกรรม จำกัด' },
+            { id: 'P001', name: 'นายสมชาย ใจดี (รับเหมาอิสระ)' },
+            { id: 'P002', name: 'นางสาวรักดี การช่าง' },
+            { id: 'P003', name: 'นายช่างใหญ่ ทำได้ทุกอย่าง' }
+        ];
+        
+        // สั่งให้เรียงลำดับ ก-ฮ เพื่อความเป็นระเบียบ
+        vendorsMasterData.sort(function(a, b) {
+            return a.name.localeCompare(b.name, 'th');
+        });
+
         var selectedVendorId = ''; 
 
-        // ==========================================
-        // 1. ระบบดึงรายชื่อบริษัทอัตโนมัติ (Dynamic Fetch)
-        // ==========================================
+        // คำสั่งดึงข้อมูลจากหลังบ้าน (เผื่อใช้ในอนาคต หากแก้ปัญหา RLS ตาราง tb_vendors ได้แล้ว)
         async function loadVendorsFromDB() {
             try {
                 if (!supabase) return;
@@ -538,13 +548,13 @@
                     .order('vendor_name', { ascending: true });
 
                 if (error) throw error;
-                if (data) {
+                if (data && data.length > 0) {
                     vendorsMasterData = data.map(function(item) {
                         return { id: item.vendor_id, name: item.vendor_name };
                     });
                 }
             } catch (err) {
-                console.error("โหลดข้อมูลบริษัทล้มเหลว:", err);
+                console.error("โหลดข้อมูลบริษัทล้มเหลว (ใช้งานตัวดัมมี่แทน):", err);
             }
         }
 
@@ -552,8 +562,7 @@
             try {
                 initUI();
                 if (typeof lucide !== 'undefined') lucide.createIcons();
-                
-                // โหลดชื่อบริษัทจากฐานข้อมูลทันทีที่เปิดเว็บ
+                // พยายามดึงจากฐานข้อมูลก่อน ถ้าไม่ได้ระบบจะใช้ตัวดัมมี่ที่ฝังไว้แทน
                 await loadVendorsFromDB();
             } catch (err) {
                 console.error("UI Init Error:", err);
@@ -600,7 +609,7 @@
         }
 
         // ==========================================
-        // 2. ระบบค้นหาบริษัทอัจฉริยะ (อัปเดตให้จำ ID)
+        // 2. ระบบค้นหาบริษัทอัจฉริยะ (โชว์ลิสต์ ก-ฮ ทันทีที่กด)
         // ==========================================
         function showVendorList() {
             document.getElementById('vendor-list').classList.remove('hidden');
@@ -611,10 +620,9 @@
             var inputVal = document.getElementById('vendor-input').value.toLowerCase();
             var list = document.getElementById('vendor-list');
             list.innerHTML = "";
-            
-            // รีเซ็ตค่า ID ถ้าผู้ใช้กลับมาแก้ชื่อบริษัท
             selectedVendorId = '';
 
+            // ค้นหาคำที่พิมพ์ (ถ้าช่องว่าง จะดึงมาทั้งหมด)
             var filtered = vendorsMasterData.filter(function(v) {
                 return v.name.toLowerCase().indexOf(inputVal) > -1;
             });
@@ -630,7 +638,7 @@
                 li.innerText = v.name;
                 li.onmousedown = function() {
                     document.getElementById('vendor-input').value = v.name;
-                    selectedVendorId = v.id; // เก็บจำรหัส C001 หรือ P001 เอาไว้
+                    selectedVendorId = v.id; 
                     document.getElementById('vendor-list').classList.add('hidden');
                 };
                 list.appendChild(li);
@@ -722,9 +730,6 @@
             }
         }
 
-        // ==========================================
-        // 3. ระบบจัดการไฟล์ (แยกปุ่มกล้อง vs อัลบั้ม)
-        // ==========================================
         function triggerUpload(type, useCamera) {
             var input = document.getElementById('file-' + type);
             if(useCamera) {
@@ -810,9 +815,8 @@
             var phone = document.getElementById('phone-input').value.trim();
             var blood = document.getElementById('bloodGroup').value;
             
-            // ตรวจสอบว่าพิมพ์ชื่อบริษัท และคลิกเลือกจาก Master Data แล้วหรือไม่
             if(!selectedVendorId) {
-                showAlert('ข้อมูลบริษัทไม่สมบูรณ์', 'กรุณาพิมพ์ค้นหาและ "คลิกเลือกบริษัท" จากรายชื่อที่ปรากฏ (Master Data) เท่านั้นค่ะ');
+                showAlert('ข้อมูลบริษัทไม่สมบูรณ์', 'กรุณาพิมพ์ค้นหาและ "คลิกเลือกบริษัท" จากรายชื่อที่ปรากฏ (Master Data) เท่านั้นครับ');
                 return false;
             }
 
@@ -967,13 +971,12 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'ข้อมูลซ้ำในระบบ!',
-                        text: 'เลขประจำตัว/พาสปอร์ตนี้ ถูกลงทะเบียนไว้แล้วในชื่อคุณ ' + existingData[0].full_name + ' ไม่สามารถลงทะเบียนซ้ำได้ค่ะ',
+                        text: 'เลขประจำตัว/พาสปอร์ตนี้ ถูกลงทะเบียนไว้แล้วในชื่อคุณ ' + existingData[0].full_name + ' ไม่สามารถลงทะเบียนซ้ำได้ครับ',
                         confirmButtonColor: '#DB5A24'
                     });
                     return; 
                 }
 
-                // นำค่า selectedVendorId มาใช้บันทึกข้อมูล
                 var payload = {
                     worker_id: 'WK-' + Date.now(), 
                     vendor_id: selectedVendorId, 
