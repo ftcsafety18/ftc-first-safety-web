@@ -274,6 +274,7 @@
                     </div>
                 </div>
 
+                <!-- 💡 แก้ไขปุ่มกล้องเอกสารหลัก (Main ID) ให้เป็น Label -->
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -283,21 +284,21 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="document.getElementById('file-main-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                </button>
-                                <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                    <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
+                                </label>
+                                <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                                </button>
+                                    <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
+                                </label>
                             </div>
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
-                        
-                        <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
-                        <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
                 </div>
 
+                <!-- 💡 แก้ไขปุ่มกล้อง Work Permit ให้เป็น Label -->
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -307,18 +308,17 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="document.getElementById('file-wp-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                </button>
-                                <button type="button" onclick="document.getElementById('file-wp-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
+                                </label>
+                                <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                                </button>
+                                    <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
+                                </label>
                             </div>
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
-                        
-                        <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
-                        <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
                 </div>
 
@@ -475,36 +475,15 @@
             }, 800);
         });
 
+        // 💡 อัปเดตฟังก์ชัน LIFF ใหม่ ปลดล็อคป๊อปอัปและระบบเด้งกวนใจออกทั้งหมด!
         async function initializeLiff() {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
-                
-                if (liff.isInClient()) {
-                    Swal.fire({
-                        title: 'เตรียมพร้อมถ่ายภาพ 📸',
-                        text: 'เพื่อให้ระบบกล้องทำงานสมบูรณ์แบบ กรุณากดปุ่มด้านล่างเพื่อเปิดหน้าต่างเบราว์เซอร์หลักของเครื่องครับ',
-                        icon: 'info',
-                        confirmButtonText: '🚀 เปิดเบราว์เซอร์',
-                        confirmButtonColor: '#19335A',
-                        allowOutsideClick: false
-                    }).then(() => {
-                        // 💡 อัปเดตการล็อคเป้าลิงก์เวลาดีดไปเปิด Chrome
-                        liff.openWindow({
-                            url: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html",
-                            external: true 
-                        });
-                        document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:Sarabun; text-align:center; color:#19335A;"><h2>กรุณาดำเนินการต่อ<br>ในหน้าต่างเบราว์เซอร์ใหม่ครับ</h2></div>';
-                    });
-                    return; 
-                }
-
                 if (liff.isLoggedIn()) {
                     var profile = await liff.getProfile();
                     userLineUid = profile.userId;
-                } else {
-                    // 💡 อัปเดตจุดที่ทำให้เกิด Error 400 ให้เป็น URL ตายตัว
-                    liff.login({ redirectUri: "https://ftc-first-safety-web.netlify.app/Worker/Worker_Registration_ToSystem.html" });
                 }
+                // ไม่มีการบังคับล็อกอิน หรือเด้งไปหน้าอื่นอีกต่อไปครับ
             } catch (error) { 
                 console.error("LIFF Error:", error); 
             }
@@ -680,6 +659,7 @@
             }
         }
 
+        // 💡 อัปเดตโครงสร้างปุ่มเพิ่มเอกสาร ให้เป็น Label เช่นกัน
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
@@ -696,18 +676,17 @@
                     </select>
                     
                     <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <button type="button" onclick="document.getElementById('file-doc-cam-${docCounter}').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
+                        <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center cursor-pointer">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                        </button>
-                        <button type="button" onclick="document.getElementById('file-doc-doc-${docCounter}').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
+                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                        </label>
+                        <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center cursor-pointer">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                        </button>
+                            <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                        </label>
                     </div>
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
-                    
-                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
-                    <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
             if (typeof lucide !== 'undefined') lucide.createIcons();
