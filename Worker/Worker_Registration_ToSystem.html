@@ -274,7 +274,7 @@
                     </div>
                 </div>
 
-                <!-- 💡 แก้ไขปุ่มกล้องเอกสารหลัก (Main ID) ให้เป็น Label -->
+                <!-- 💡 แก้ไข accept ให้เป็น image/jpeg,image/png เพื่อหลบ Photo Picker ของ Android 13 -->
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -286,7 +286,7 @@
                             <div class="flex gap-2 justify-center">
                                 <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
+                                    <input type="file" id="file-main-cam" class="hidden" accept="image/jpeg,image/png,image/jpg" capture="environment" onchange="updateFileUI('main', this)">
                                 </label>
                                 <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
@@ -298,7 +298,6 @@
                     </div>
                 </div>
 
-                <!-- 💡 แก้ไขปุ่มกล้อง Work Permit ให้เป็น Label -->
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -310,7 +309,7 @@
                             <div class="flex gap-2 justify-center">
                                 <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
+                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/jpeg,image/png,image/jpg" capture="environment" onchange="updateFileUI('wp', this)">
                                 </label>
                                 <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
@@ -475,7 +474,6 @@
             }, 800);
         });
 
-        // 💡 อัปเดตฟังก์ชัน LIFF ใหม่ ปลดล็อคป๊อปอัปและระบบเด้งกวนใจออกทั้งหมด!
         async function initializeLiff() {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
@@ -483,7 +481,6 @@
                     var profile = await liff.getProfile();
                     userLineUid = profile.userId;
                 }
-                // ไม่มีการบังคับล็อกอิน หรือเด้งไปหน้าอื่นอีกต่อไปครับ
             } catch (error) { 
                 console.error("LIFF Error:", error); 
             }
@@ -659,7 +656,6 @@
             }
         }
 
-        // 💡 อัปเดตโครงสร้างปุ่มเพิ่มเอกสาร ให้เป็น Label เช่นกัน
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
@@ -678,7 +674,7 @@
                     <div class="flex gap-2 justify-center mt-3 mb-1">
                         <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center cursor-pointer">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/jpeg,image/png,image/jpg" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                         </label>
                         <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center cursor-pointer">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
