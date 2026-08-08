@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -368,20 +369,18 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <!-- ปุ่มถ่ายภาพ สั่งคลิกไปที่ file-main-cam -->
-                                <button type="button" onclick="document.getElementById('file-main-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <button type="button" onclick="triggerUpload('main', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <!-- ปุ่มเลือกไฟล์ สั่งคลิกไปที่ file-main-doc -->
-                                <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                <button type="button" onclick="triggerUpload('main', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
                             </div>
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <!-- แยก Input แบบตายตัวให้ชัดเจน OS จะได้ไม่งง -->
-                        <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
+                        <!-- เปลี่ยนจาก environment เป็น camera ทะลวงข้อจำกัด Android -->
+                        <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="camera" onchange="updateFileUI('main', this)">
                         <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
                 </div>
@@ -395,17 +394,18 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="document.getElementById('file-wp-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <button type="button" onclick="triggerUpload('wp', true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <button type="button" onclick="document.getElementById('file-wp-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
+                                <button type="button" onclick="triggerUpload('wp', false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
                             </div>
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
+                        <!-- เปลี่ยนจาก environment เป็น camera -->
+                        <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="camera" onchange="updateFileUI('wp', this)">
                         <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
                 </div>
@@ -712,11 +712,36 @@
             }
         }
 
-        // ==========================================
-        // ฟังก์ชันอัปเดตหน้าจอเมื่อมีการเลือกไฟล์ (รองรับ Input แบบ 2 กล่อง)
-        // ==========================================
+        // ใช้ฟังก์ชัน triggerUpload แบบใหม่ที่เชื่อมไปที่ ID ของ Input โดยตรงแทน
+        function triggerUpload(type, useCamera) {
+            var inputId = useCamera ? 'file-' + type + '-cam' : 'file-' + type + '-doc';
+            var input = document.getElementById(inputId);
+            
+            if(useCamera) {
+                input.setAttribute('capture', 'camera'); 
+                input.setAttribute('accept', 'image/*'); 
+            } else {
+                input.removeAttribute('capture'); 
+                input.setAttribute('accept', 'image/*,application/pdf');
+            }
+            input.click();
+        }
+
+        function triggerDynamicUpload(id, useCamera) {
+            var inputId = useCamera ? 'file-doc-cam-' + id : 'file-doc-doc-' + id;
+            var input = document.getElementById(inputId);
+            
+            if(useCamera) {
+                input.setAttribute('capture', 'camera'); 
+                input.setAttribute('accept', 'image/*');
+            } else {
+                input.removeAttribute('capture'); 
+                input.setAttribute('accept', 'image/*,application/pdf');
+            }
+            input.click();
+        }
+
         function updateFileUI(type, inputElement) {
-            // ล้างค่าใน Input อีกตัวที่ไม่ได้ใช้ เพื่อป้องกันการเก็บไฟล์ซ้ำซ้อน
             var otherInputId = inputElement.id.includes('-cam') ? 'file-' + type + '-doc' : 'file-' + type + '-cam';
             document.getElementById(otherInputId).value = ""; 
 
@@ -742,7 +767,6 @@
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
-            // กล่อง Dynamic อัปเดตให้รองรับ 2 ปุ่มแยกกัน (กล้อง / ไฟล์)
             var docHtml = `
                 <div class="doc-item" id="doc-${docCounter}">
                     <button type="button" class="btn-remove" onclick="document.getElementById('doc-${docCounter}').remove()">X</button>
@@ -756,17 +780,17 @@
                     </select>
                     
                     <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <button type="button" onclick="document.getElementById('file-doc-cam-${docCounter}').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, true)" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                         </button>
-                        <button type="button" onclick="document.getElementById('file-doc-doc-${docCounter}').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="triggerDynamicUpload(${docCounter}, false)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
                             <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                         </button>
                     </div>
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
                     
-                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="camera" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                     <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
@@ -832,7 +856,6 @@
         }
 
         function validateStep2() {
-            // ตรวจสอบว่ามีการเลือกไฟล์จากกล่อง "กล้อง" หรือกล่อง "เอกสาร" อย่างใดอย่างหนึ่ง
             var mainCam = document.getElementById('file-main-cam').files.length;
             var mainDoc = document.getElementById('file-main-doc').files.length;
             
