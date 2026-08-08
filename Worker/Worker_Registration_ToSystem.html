@@ -360,8 +360,7 @@
                 </div>
 
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
-                    <!-- กล่อง Dropzone ที่ปรับใหม่ มี 2 ปุ่มแยกกันชัดเจน -->
+                    <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shadow-sm">
                             <i data-lucide="camera" class="w-6 h-6 text-brand-navy"></i>
@@ -413,7 +412,6 @@
                 
                 <div id="dynamicDocsContainer"></div>
                 
-                <!-- ปุ่มเพิ่มช่องอัปโหลดที่ปรับสีใหม่ให้เข้มขึ้นเด่นๆ -->
                 <button type="button" class="btn-add mb-6 flex justify-center items-center gap-2" onclick="addDocument()">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มช่องอัปโหลดเอกสารความปลอดภัย
                 </button>
@@ -514,42 +512,55 @@
     </main>
 
     <script>
+        // ==========================================
+        // ตั้งค่าตัวแปรระดับ Global
+        // ==========================================
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; 
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
         var userLineUid = null;
         var currentNationality = 'thai';
         var docCounter = 0;
+        
+        // ตัวแปรเก็บรายชื่อบริษัทที่ดึงจาก Supabase
+        var vendorsMasterData = [];
+        var selectedVendorId = ''; 
 
-        // อัปเดตเพิ่มบริษัททดสอบ เพื่อให้กล่องค้นหาเจอข้อมูลนี้
-        var vendorsMasterData = [
-            "บริษัท ทดสอบระบบ จำกัด",
-            "บริษัท เอบีซี จำกัด",
-            "บริษัท ไทยอุตสาหกรรม จำกัด",
-            "บริษัท พีพี เซฟตี้ จำกัด",
-            "บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด",
-            "บริษัท รักษาความปลอดภัย เอ็นพีซี เอสจี จำกัด",
-            "บริษัท ระยองวิศวกรรม จำกัด",
-            "บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด",
-            "บริษัท รับเหมาก่อสร้างไทย จำกัด",
-            "บริษัท เอ็นจิเนียริ่ง แอนด์ เซอร์วิส จำกัด",
-            "บริษัท คลีนนิ่ง เซอร์วิส โปร จำกัด"
-        ];
+        // ==========================================
+        // 1. ระบบดึงรายชื่อบริษัทอัตโนมัติ (Dynamic Fetch)
+        // ==========================================
+        async function loadVendorsFromDB() {
+            try {
+                if (!supabase) return;
+                var { data, error } = await supabase
+                    .from('tb_vendors')
+                    .select('vendor_id, vendor_name')
+                    .order('vendor_name', { ascending: true });
 
-        window.addEventListener('load', function() {
+                if (error) throw error;
+                if (data) {
+                    vendorsMasterData = data.map(function(item) {
+                        return { id: item.vendor_id, name: item.vendor_name };
+                    });
+                }
+            } catch (err) {
+                console.error("โหลดข้อมูลบริษัทล้มเหลว:", err);
+            }
+        }
+
+        window.addEventListener('load', async function() {
             try {
                 initUI();
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                
+                // โหลดชื่อบริษัทจากฐานข้อมูลทันทีที่เปิดเว็บ
+                await loadVendorsFromDB();
             } catch (err) {
                 console.error("UI Init Error:", err);
             }
             
             setTimeout(function() {
-                if (typeof liff !== 'undefined') {
-                    initializeLiff();
-                }
+                if (typeof liff !== 'undefined') initializeLiff();
             }, 800);
         });
 
@@ -559,7 +570,6 @@
                 if (liff.isLoggedIn()) {
                     var profile = await liff.getProfile();
                     userLineUid = profile.userId;
-                    console.log("LINE UID (Ready):", userLineUid);
                 }
             } catch (error) {
                 console.error("LIFF Error:", error);
@@ -576,8 +586,6 @@
             populateDropdown('dob-year', birthYears);
             populateDropdown('exp-day', days);
             populateDropdown('exp-year', expYears);
-            
-            filterVendors();
         }
 
         function populateDropdown(id, arr) {
@@ -591,6 +599,9 @@
             });
         }
 
+        // ==========================================
+        // 2. ระบบค้นหาบริษัทอัจฉริยะ (อัปเดตให้จำ ID)
+        // ==========================================
         function showVendorList() {
             document.getElementById('vendor-list').classList.remove('hidden');
             filterVendors();
@@ -601,8 +612,11 @@
             var list = document.getElementById('vendor-list');
             list.innerHTML = "";
             
+            // รีเซ็ตค่า ID ถ้าผู้ใช้กลับมาแก้ชื่อบริษัท
+            selectedVendorId = '';
+
             var filtered = vendorsMasterData.filter(function(v) {
-                return v.toLowerCase().indexOf(inputVal) > -1;
+                return v.name.toLowerCase().indexOf(inputVal) > -1;
             });
             
             if(filtered.length === 0) {
@@ -613,9 +627,10 @@
             filtered.forEach(function(v) {
                 var li = document.createElement('li');
                 li.className = "px-4 py-2.5 text-sm text-gray-800 hover:bg-brand-navy hover:text-white cursor-pointer transition-colors border-b border-gray-100 last:border-0";
-                li.innerText = v;
+                li.innerText = v.name;
                 li.onmousedown = function() {
-                    document.getElementById('vendor-input').value = v;
+                    document.getElementById('vendor-input').value = v.name;
+                    selectedVendorId = v.id; // เก็บจำรหัส C001 หรือ P001 เอาไว้
                     document.getElementById('vendor-list').classList.add('hidden');
                 };
                 list.appendChild(li);
@@ -630,6 +645,9 @@
             }
         });
 
+        // ==========================================
+        // ควบคุม UI และการกรองข้อมูล
+        // ==========================================
         function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
@@ -704,20 +722,21 @@
             }
         }
 
-        // ฟังก์ชันสั่งเปิดกล้อง หรือ เปิดไฟล์อัลบั้ม สำหรับกล่องหลัก
+        // ==========================================
+        // 3. ระบบจัดการไฟล์ (แยกปุ่มกล้อง vs อัลบั้ม)
+        // ==========================================
         function triggerUpload(type, useCamera) {
             var input = document.getElementById('file-' + type);
             if(useCamera) {
-                input.setAttribute('capture', 'environment'); // บังคับเปิดกล้อง
+                input.setAttribute('capture', 'environment'); 
                 input.setAttribute('accept', 'image/*'); 
             } else {
-                input.removeAttribute('capture'); // ยกเลิกเปิดกล้อง ให้เลือกไฟล์ได้
+                input.removeAttribute('capture'); 
                 input.setAttribute('accept', 'image/*,application/pdf');
             }
             input.click();
         }
 
-        // ฟังก์ชันสั่งเปิดกล้อง หรือ เปิดไฟล์อัลบั้ม สำหรับกล่อง Dynamic (เอกสารเพิ่มเติม)
         function triggerDynamicUpload(id, useCamera) {
             var input = document.getElementById('file-doc-' + id);
             if(useCamera) {
@@ -736,7 +755,7 @@
             var dropzone = document.getElementById('dropzone-' + type);
             
             if(fileInput.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600'>✅ เลือกไฟล์แล้ว: " + fileInput.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + fileInput.files[0].name + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
             }
         }
@@ -752,7 +771,6 @@
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
-            // สร้างกล่องเอกสารแบบใหม่ที่มี 2 ปุ่ม
             var docHtml = `
                 <div class="doc-item" id="doc-${docCounter}">
                     <button type="button" class="btn-remove" onclick="document.getElementById('doc-${docCounter}').remove()">X</button>
@@ -790,10 +808,15 @@
             var lname = document.getElementById('lname-input').value.trim();
             var idVal = document.getElementById('id-input').value.trim();
             var phone = document.getElementById('phone-input').value.trim();
-            var vendor = document.getElementById('vendor-input').value.trim();
             var blood = document.getElementById('bloodGroup').value;
             
-            if(!fname || !lname || !idVal || !phone || !vendor || !blood) {
+            // ตรวจสอบว่าพิมพ์ชื่อบริษัท และคลิกเลือกจาก Master Data แล้วหรือไม่
+            if(!selectedVendorId) {
+                showAlert('ข้อมูลบริษัทไม่สมบูรณ์', 'กรุณาพิมพ์ค้นหาและ "คลิกเลือกบริษัท" จากรายชื่อที่ปรากฏ (Master Data) เท่านั้นค่ะ');
+                return false;
+            }
+
+            if(!fname || !lname || !idVal || !phone || !blood) {
                 showAlert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลในช่องที่มีเครื่องหมาย (*) ให้ครบถ้วน');
                 return false;
             }
@@ -950,9 +973,10 @@
                     return; 
                 }
 
+                // นำค่า selectedVendorId มาใช้บันทึกข้อมูล
                 var payload = {
                     worker_id: 'WK-' + Date.now(), 
-                    vendor_id: 'V-001', 
+                    vendor_id: selectedVendorId, 
                     full_name: fullName,
                     national_id: nationalId,
                     nationality: currentNationality,
