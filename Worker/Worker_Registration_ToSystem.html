@@ -50,20 +50,14 @@
             background-color: #FFFFFF;
             box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1);
         }
-        @keyframes scanLine {
-            0%   { top: 25%;  opacity: 0.3; }
-            20%  { opacity: 1; }
-            80%  { opacity: 1; }
-            100% { top: 75%; opacity: 0.3; }
-        }
-        .animate-scan { animation: scanLine 2.5s ease-in-out infinite; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 0.5rem; position: relative; }
         .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex: none; align-items: center; justify-content: center; display: flex; }
         .btn-add { background-color: #19335A; color: #FFFFFF; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; border: none; box-shadow: 0 4px 6px rgba(25, 51, 90, 0.2); }
         .btn-add:hover { background-color: #254B82; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(25, 51, 90, 0.3); }
+
+        /* ระบบกล้อง WebRTC */
+        #live-camera-modal { backdrop-filter: blur(5px); }
+        #live-video { width: 100%; max-height: 70vh; object-fit: cover; background-color: #000; border-radius: 1rem; }
     </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -171,7 +165,7 @@
 
                 <div class="mb-4">
                     <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span></label>
-                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="id-input" placeholder="X-XXXX-XXXXX-XX-X" class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
+                    <input type="text" inputmode="numeric" id="id-input" placeholder="กรอกข้อมูล..." class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
                     <p id="id-hint" class="text-[10px] text-gray-500 mt-1">กรอกเฉพาะตัวเลข 13 หลัก</p>
                 </div>
 
@@ -368,11 +362,10 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <!-- ปุ่มถ่ายภาพ สั่งคลิกไปที่ file-main-cam -->
-                                <button type="button" onclick="document.getElementById('file-main-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <!-- 💡 เปลี่ยนจากการไปคลิก input file ให้มาเรียกฟังก์ชันเปิดกล้องสดแทน -->
+                                <button type="button" onclick="openLiveCamera('main')" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
-                                <!-- ปุ่มเลือกไฟล์ สั่งคลิกไปที่ file-main-doc -->
                                 <button type="button" onclick="document.getElementById('file-main-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
                                     <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
                                 </button>
@@ -380,7 +373,8 @@
                         </div>
                         <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <input type="file" id="file-main-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture onchange="updateFileUI('main', this)">
+                        <!-- ช่องลับเก็บไฟล์รูปที่ได้จากระบบกล้องสด และช่องสำหรับเลือกไฟล์ทั่วไป -->
+                        <input type="file" id="file-main-cam" class="hidden">
                         <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
                     </div>
                 </div>
@@ -394,7 +388,8 @@
                         <div>
                             <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
                             <div class="flex gap-2 justify-center">
-                                <button type="button" onclick="document.getElementById('file-wp-cam').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
+                                <!-- 💡 เปลี่ยนมาเรียกฟังก์ชันเปิดกล้องสด -->
+                                <button type="button" onclick="openLiveCamera('wp')" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1">
                                     <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                                 </button>
                                 <button type="button" onclick="document.getElementById('file-wp-doc').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1">
@@ -404,7 +399,7 @@
                         </div>
                         <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
                         
-                        <input type="file" id="file-wp-cam" class="hidden" accept="image/jpeg, image/png, image/jpg" capture onchange="updateFileUI('wp', this)">
+                        <input type="file" id="file-wp-cam" class="hidden">
                         <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
                     </div>
                 </div>
@@ -435,6 +430,7 @@
 
             <!-- ================= STEP 3 ================= -->
             <div id="step-3" class="hidden">
+                <!-- เนื้อหา Step 3 (ยืนยันตัวตน) เหมือนเดิม -->
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">3</div>
                     <div>
@@ -517,6 +513,28 @@
         </div>
     </main>
 
+    <!-- 📸 โมดอลระบบกล้องถ่ายรูป WebRTC ฝังในเว็บ -->
+    <div id="live-camera-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-brand-navy text-lg">ถ่ายภาพเอกสาร</h3>
+                <button type="button" onclick="closeLiveCamera()" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+            </div>
+            
+            <div class="relative w-full rounded-xl overflow-hidden bg-black flex items-center justify-center min-h-[300px]">
+                <video id="live-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <div class="absolute inset-0 border-4 border-white/30 rounded-xl pointer-events-none"></div>
+                <div class="absolute inset-x-8 inset-y-12 border-2 border-dashed border-brand-orange/70 pointer-events-none"></div>
+            </div>
+
+            <canvas id="live-canvas" class="hidden"></canvas>
+            
+            <button type="button" onclick="takeSnapshot()" class="w-full py-4 bg-brand-orange text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-brand-orange-hover active:scale-95 transition-transform">
+                <i data-lucide="camera" class="w-6 h-6"></i> กดเพื่อถ่ายรูป (Snap)
+            </button>
+        </div>
+    </div>
+
     <script>
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; 
@@ -525,7 +543,6 @@
         var currentNationality = 'thai';
         var docCounter = 0;
         
-        // 💡 ใส่รายชื่อดัมมี่เผื่อไว้กันเหนียว เผื่อฐานข้อมูล Supabase ร่ม
         var vendorsMasterData = [
             { id: 'C001', name: 'บริษัท เฟิร์ส คอนสตรัคชั่น จำกัด' },
             { id: 'C002', name: 'บริษัท เซฟตี้เฟิร์ส ซัพพลาย จำกัด' },
@@ -535,12 +552,15 @@
             { id: 'P003', name: 'นายช่างใหญ่ ทำได้ทุกอย่าง' }
         ];
 
-        // สั่งให้เรียงลำดับ ก-ฮ เพื่อความเป็นระเบียบ
         vendorsMasterData.sort(function(a, b) {
             return a.name.localeCompare(b.name, 'th');
         });
 
         var selectedVendorId = ''; 
+
+        // 📸 ตัวแปรสำหรับระบบกล้องสด
+        let currentCameraStream = null;
+        let currentUploadTarget = null;
 
         async function loadVendorsFromDB() {
             try {
@@ -552,7 +572,6 @@
 
                 if (error) throw error;
                 if (data && data.length > 0) {
-                    // หากต่อ Database ได้สำเร็จ ให้เอารายชื่อจากฐานข้อมูลมาทับรายชื่อดัมมี่
                     vendorsMasterData = data.map(function(item) {
                         return { id: item.vendor_id, name: item.vendor_name };
                     });
@@ -674,41 +693,52 @@
             updateIdField();
         }
 
+        // 💡 ระบบจัดการประเภทและช่องกรอกเลขบัตรที่สมบูรณ์แบบ
         function updateIdField() {
             var docType = document.getElementById('doc-type').value;
             var label = document.getElementById('id-label');
             var input = document.getElementById('id-input');
+            var hint = document.getElementById('id-hint');
             var uploadLabel = document.getElementById('upload-label');
             var uploadWorkPermit = document.getElementById('upload-workpermit');
 
             if(currentNationality === 'thai') {
                 label.innerHTML = 'เลขบัตรประชาชน 13 หลัก (National ID) <span class="text-red-500">*</span>';
                 input.maxLength = 13;
+                input.setAttribute('inputmode', 'numeric');
+                hint.innerText = "กรอกเฉพาะตัวเลข 13 หลัก";
                 uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span>';
             } else {
                 uploadWorkPermit.classList.remove('hidden');
                 if(docType === 'pinkcard') {
                     label.innerHTML = 'เลขบัตรสีชมพู 13 หลัก <span class="text-red-500">*</span>';
                     input.maxLength = 13;
+                    input.setAttribute('inputmode', 'numeric');
+                    hint.innerText = "กรอกเฉพาะตัวเลข 13 หลัก";
                     uploadLabel.innerHTML = 'อัปโหลดสำเนาบัตรสีชมพู <span class="text-red-500">*</span>';
                 } else if(docType === 'workpermit') {
                     label.innerHTML = 'เลขที่ใบอนุญาตทำงาน <span class="text-red-500">*</span>';
                     input.removeAttribute('maxLength');
+                    input.removeAttribute('inputmode');
+                    hint.innerText = "กรอกเลขใบอนุญาตทำงาน (ตัวอักษรและตัวเลข)";
                     uploadLabel.innerHTML = 'อัปโหลด Passport หรือ บัตรสีชมพู <span class="text-red-500">*</span>';
                 } else {
                     label.innerHTML = 'เลขพาสปอร์ต <span class="text-red-500">*</span>';
                     input.removeAttribute('maxLength');
+                    input.removeAttribute('inputmode');
+                    hint.innerText = "กรอกเลขพาสปอร์ต (ตัวอักษรและตัวเลข)";
                     uploadLabel.innerHTML = 'อัปโหลดสำเนา Passport <span class="text-red-500">*</span>';
                 }
             }
         }
 
+        // 💡 กรองตัวหนังสือและตัวเลขให้ตรงกับประเภทบัตร
         function validateIdInput(obj) {
             var docType = document.getElementById('doc-type').value;
             if(currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) {
-                obj.value = obj.value.replace(/[^0-9]/g, '');
+                obj.value = obj.value.replace(/[^0-9]/g, ''); 
             } else {
-                obj.value = obj.value.replace(/[^a-zA-Z0-9-]/g, '');
+                obj.value = obj.value.replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
             }
         }
 
@@ -726,6 +756,82 @@
             }
         }
 
+        // ===============================================
+        // 📸 ระบบ Live Camera (WebRTC) เพื่อบังคับถ่ายรูปใน LINE
+        // ===============================================
+        async function openLiveCamera(targetId) {
+            currentUploadTarget = targetId;
+            const modal = document.getElementById('live-camera-modal');
+            const video = document.getElementById('live-video');
+            
+            modal.classList.remove('hidden');
+            
+            try {
+                // ขออนุญาตเปิดกล้องหลังจากมือถือ
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
+                });
+                currentCameraStream = stream;
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("Camera access error:", err);
+                closeLiveCamera();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถเปิดกล้องได้',
+                    text: 'กรุณาอนุญาตการเข้าถึงกล้องถ่ายรูป หรือกดปุ่ม "เลือกไฟล์" แทนครับ',
+                    confirmButtonColor: '#19335A'
+                });
+            }
+        }
+
+        function closeLiveCamera() {
+            if(currentCameraStream) {
+                currentCameraStream.getTracks().forEach(track => track.stop());
+                currentCameraStream = null;
+            }
+            document.getElementById('live-camera-modal').classList.add('hidden');
+        }
+
+        function takeSnapshot() {
+            const video = document.getElementById('live-video');
+            const canvas = document.getElementById('live-canvas');
+            
+            if(!currentCameraStream) return;
+
+            // วาดภาพจากวีดีโอลงผืนผ้าใบ (Canvas)
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            // แปลงผืนผ้าใบให้กลายเป็นไฟล์ภาพ (.jpg)
+            canvas.toBlob((blob) => {
+                const file = new File([blob], "FTC_Safety_Cam_" + Date.now() + ".jpg", { type: "image/jpeg" });
+                
+                // นำไฟล์ภาพไปยัดใส่ช่อง Input แบบแนบเนียน
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                
+                let inputElement;
+                if(currentUploadTarget === 'main' || currentUploadTarget === 'wp') {
+                    inputElement = document.getElementById('file-' + currentUploadTarget + '-cam');
+                    inputElement.files = dataTransfer.files;
+                    updateFileUI(currentUploadTarget, inputElement);
+                } else {
+                    inputElement = document.getElementById('file-doc-cam-' + currentUploadTarget);
+                    inputElement.files = dataTransfer.files;
+                    updateDynamicFileUI(currentUploadTarget, inputElement);
+                }
+                
+                // ปิดกล้อง
+                closeLiveCamera();
+                Swal.fire({ icon: 'success', title: 'ถ่ายภาพสำเร็จ!', showConfirmButton: false, timer: 1000 });
+                
+            }, 'image/jpeg', 0.8);
+        }
+
+        // ===============================================
+
         function updateFileUI(type, inputElement) {
             var otherInputId = inputElement.id.includes('-cam') ? 'file-' + type + '-doc' : 'file-' + type + '-cam';
             document.getElementById(otherInputId).value = ""; 
@@ -734,7 +840,7 @@
             var dropzone = document.getElementById('dropzone-' + type);
             
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + inputElement.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
             }
         }
@@ -745,7 +851,7 @@
 
             var textElement = document.getElementById('text-doc-' + id);
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ เลือกไฟล์แล้ว: " + inputElement.files[0].name + "</span>";
+                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
             }
         }
 
@@ -765,7 +871,7 @@
                     </select>
                     
                     <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <button type="button" onclick="document.getElementById('file-doc-cam-${docCounter}').click()" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
+                        <button type="button" onclick="openLiveCamera(${docCounter})" class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center">
                             <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
                         </button>
                         <button type="button" onclick="document.getElementById('file-doc-doc-${docCounter}').click()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center">
@@ -775,8 +881,8 @@
                     
                     <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
                     
-                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/jpeg, image/png, image/jpg" capture onchange="updateDynamicFileUI(${docCounter}, this)" required>
-                    <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                    <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file">
+                    <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)">
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -804,7 +910,7 @@
             }
 
             var docType = document.getElementById('doc-type').value;
-            if((currentNationality === 'thai' || docType === 'pinkcard') && idVal.length !== 13) {
+            if((currentNationality === 'thai' || (currentNationality === 'foreigner' && docType === 'pinkcard')) && idVal.length !== 13) {
                 showAlert('เลขบัตรไม่ถูกต้อง', 'กรุณากรอกเลขบัตรให้ครบ 13 หลัก');
                 return false;
             }
