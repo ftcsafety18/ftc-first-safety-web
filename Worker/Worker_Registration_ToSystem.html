@@ -60,10 +60,13 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* ปรับปรุงกล่องอัปโหลดเอกสาร Dynamic */
         .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 0.5rem; position: relative; }
         .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .btn-add { background-color: #edf2f7; color: #2d3748; border: 1px dashed #cbd5e0; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; }
-        .btn-add:hover { background-color: #e2e8f0; border-color: #19335A; color: #19335A; }
+        
+        /* แก้ไขปุ่มเพิ่มเอกสารให้เป็นสีทึบเห็นชัดเจนตามที่พี่ณัฐธัญต้องการ */
+        .btn-add { background-color: #19335A; color: #FFFFFF; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; border: none; box-shadow: 0 4px 6px rgba(25, 51, 90, 0.2); }
+        .btn-add:hover { background-color: #254B82; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(25, 51, 90, 0.3); }
     </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -361,28 +364,30 @@
 
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
-                    <input type="file" id="file-main" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('main')">
+                    <!-- เพิ่ม capture="environment" เพื่อให้เปิดกล้องได้ทันทีเมื่อใช้มือถือ -->
+                    <input type="file" id="file-main" class="hidden" accept="image/*,application/pdf" capture="environment" onchange="updateFileUI('main')">
                     <div id="dropzone-main" onclick="document.getElementById('file-main').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
                             <i data-lucide="camera" class="w-6 h-6 text-brand-navy"></i>
                         </div>
                         <div>
                             <p id="text-main" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
-                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่ออัปโหลดไฟล์ JPG, PNG, PDF</p>
+                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่อถ่ายรูป หรือ เลือกไฟล์จากในเครื่อง</p>
                         </div>
                     </div>
                 </div>
 
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
-                    <input type="file" id="file-wp" class="hidden" accept="image/*,.pdf" onchange="updateFileUI('wp')">
+                    <!-- เพิ่ม capture="environment" เพื่อให้เปิดกล้องได้ทันทีเมื่อใช้มือถือ -->
+                    <input type="file" id="file-wp" class="hidden" accept="image/*,application/pdf" capture="environment" onchange="updateFileUI('wp')">
                     <div id="dropzone-wp" onclick="document.getElementById('file-wp').click()" class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-6 py-12 text-center cursor-pointer hover:border-brand-navy transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-2 shadow-sm">
                             <i data-lucide="file-text" class="w-6 h-6 text-brand-navy"></i>
                         </div>
                         <div>
                             <p id="text-wp" class="text-sm font-bold text-brand-navy">ถ่ายภาพหรือลากไฟล์มาวาง</p>
-                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่ออัปโหลดไฟล์ Work Permit</p>
+                            <p class="text-xs text-gray-500 mt-1">คลิกเพื่อถ่ายรูป หรือ เลือกไฟล์จากในเครื่อง</p>
                         </div>
                     </div>
                 </div>
@@ -495,10 +500,6 @@
     </main>
 
     <script>
-        // ==========================================
-        // การกำหนดค่าตัวแปรระดับโกลบอล (Global Variables)
-        // นำ API Key ที่ได้รับมาใส่เรียบร้อยแล้ว
-        // ==========================================
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co'; 
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG'; 
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -713,7 +714,8 @@
                         <option value="crane_operator">ใบอนุญาตขับปั้นจั่น</option>
                         <option value="other">อื่นๆ</option>
                     </select>
-                    <input type="file" class="doc-file block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 hover:file:bg-gray-200 cursor-pointer" accept=".pdf,image/*" required>
+                    <!-- แถวนี้ก็ใส่ capture="environment" ให้เปิดกล้องถ่ายรูปใบรับรองได้ทันทีเช่นกัน -->
+                    <input type="file" class="doc-file block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 hover:file:bg-gray-200 cursor-pointer" accept="image/*,application/pdf" capture="environment" required>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
         }
@@ -870,7 +872,6 @@
             }
 
             try {
-                // 1. ตรวจสอบข้อมูลซ้ำ (Duplicate Check)
                 var { data: existingData, error: searchError } = await supabase
                     .from('tb_workers')
                     .select('national_id, full_name')
@@ -878,7 +879,6 @@
 
                 if (searchError) throw searchError;
 
-                // หากพบข้อมูลซ้ำ แจ้งเตือนและหยุดการทำงานทันที
                 if (existingData && existingData.length > 0) {
                     Swal.fire({
                         icon: 'warning',
@@ -889,7 +889,6 @@
                     return; 
                 }
 
-                // 2. ถ้าไม่ซ้ำ ให้ดำเนินการเตรียมและบันทึกข้อมูล
                 var payload = {
                     worker_id: 'WK-' + Date.now(), 
                     vendor_id: 'V-001', 
@@ -920,10 +919,7 @@
 
             } catch (err) {
                 console.error("Supabase Error:", err);
-                
-                // ดึงข้อความ Error เชิงลึกจากฐานข้อมูลออกมาแสดงผล
                 var errorMessage = err.message || JSON.stringify(err);
-                
                 Swal.fire({
                     icon: 'error',
                     title: 'ฐานข้อมูลปฏิเสธการทำงาน',
