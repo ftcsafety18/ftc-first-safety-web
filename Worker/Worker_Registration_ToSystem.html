@@ -37,7 +37,7 @@
         .consent-box { display:flex; align-items:flex-start; gap:10px; background:#F9FAFB; border:1px solid #E5E9F0; border-radius:12px; padding:12px 14px; }
         .consent-box input[type=checkbox] { width:19px; height:19px; margin-top:2px; accent-color:#19335A; border-radius:5px; flex-shrink:0; }
 
-        /* ===== ปุ่มเปิดกล้อง ===== */
+        /* ===== ปุ่มเปิดกล้อง (label ครอบ input file capture="environment") ===== */
         .btn-camera {
             position: relative; display: flex; align-items: center; justify-content: center; gap: 10px;
             padding: 14px 20px; border-radius: 14px; border: none; cursor: pointer;
@@ -49,7 +49,6 @@
         .btn-camera:hover { filter: brightness(1.05); }
         .btn-camera:active { transform: scale(0.97); }
         .btn-camera .icon-badge { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:999px; background: rgba(255,255,255,0.18); }
-        .btn-camera:disabled { opacity: 0.55; cursor: not-allowed; }
 
         .btn-filepick {
             display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -60,27 +59,8 @@
         }
         .btn-filepick:hover { border-color: #19335A; background: #F7F9FC; }
         .btn-filepick:active { transform: scale(0.97); }
-
-        /* ===== กรอบกล้องถ่ายภาพสด ===== */
-        .camera-container { display: none; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 18px; overflow: hidden; background: #0B1220; position: relative; box-shadow: 0 12px 30px -8px rgba(0,0,0,0.45); }
-        .camera-container video { width: 100%; display: block; aspect-ratio: 4 / 3; object-fit: cover; background: #000; }
-        .camera-container .overlay { position: absolute; inset: 0; pointer-events: none; margin: 22px; }
-        .camera-container .overlay .corner { position: absolute; width: 28px; height: 28px; border: 3px solid #fff; opacity: 0.9; }
-        .camera-container .overlay .corner.tl { top:0; left:0; border-right:none; border-bottom:none; border-top-left-radius:8px; }
-        .camera-container .overlay .corner.tr { top:0; right:0; border-left:none; border-bottom:none; border-top-right-radius:8px; }
-        .camera-container .overlay .corner.bl { bottom:0; left:0; border-right:none; border-top:none; border-bottom-left-radius:8px; }
-        .camera-container .overlay .corner.br { bottom:0; right:0; border-left:none; border-top:none; border-bottom-right-radius:8px; }
-        .camera-container .live-badge { position:absolute; top:14px; left:14px; display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.45); padding:4px 10px 4px 8px; border-radius:999px; color:#fff; font-size:0.68rem; font-weight:700; letter-spacing:0.04em; }
-        .camera-container .live-badge .dot { width:7px; height:7px; border-radius:999px; background:#FF4D4D; animation: pulse-dot 1.4s ease-in-out infinite; }
-        @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1);} 50% { opacity:0.4; transform:scale(0.8);} }
-        .camera-container .hint-text { position:absolute; bottom:14px; left:0; right:0; text-align:center; color:rgba(255,255,255,0.85); font-size:0.72rem; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.6); }
-        .camera-controls { padding:14px; background:#101827; display:flex; flex-direction:column; align-items:center; gap:10px; }
-        .shutter-btn { width:62px; height:62px; border-radius:999px; border:4px solid rgba(255,255,255,0.85); background:#DB5A24; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(219,90,36,0.5); transition: transform 0.12s ease; }
-        .shutter-btn:active { transform: scale(0.9); }
-        .cancel-link { background:none; border:none; color:rgba(255,255,255,0.65); font-size:0.78rem; font-weight:600; cursor:pointer; padding:4px 8px; }
-        .cancel-link:hover { color:#fff; }
-        .camera-loading { padding: 40px 14px; text-align:center; color:#9FB0C9; font-size:0.8rem; }
     </style>
+    
 </head>
 <body class="min-h-screen text-gray-800">
 
@@ -240,7 +220,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">ความสัมพันธ์ <span class="text-red-500">*</span></label>
-                        <select id="emg-relation" class="input-field cursor-pointer">
+                        <select id="emg-relation" class="input-field cursor-pointer" onchange="toggleEmgRelationOther()">
                             <option value="">-- เลือก --</option>
                             <option value="Spouse">คู่สมรส</option>
                             <option value="Parent">บิดา/มารดา</option>
@@ -248,12 +228,13 @@
                             <option value="Sibling">พี่/น้อง</option>
                             <option value="Relative">ญาติ</option>
                             <option value="Friend">เพื่อน</option>
-                            <option value="Other">อื่นๆ</option>
+                            <option value="Other">อื่นๆ (Other)</option>
                         </select>
+                        <input type="text" id="emg-relation-other" placeholder="ระบุความสัมพันธ์..." class="input-field mt-2 hidden">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
-                        <input type="text" inputmode="numeric" id="emg-phone" placeholder="08XXXXXXXX" maxlength="10" class="input-field" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        <input type="text" inputmode="numeric" id="emg-phone" placeholder="081-234-5678" maxlength="12" class="input-field" oninput="formatPhoneInput(this)">
                     </div>
                 </div>
 
@@ -293,29 +274,15 @@
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="main-btn-group" class="w-full max-w-xs flex flex-col gap-3">
-                            <button type="button" onclick="startLiveCamera('main')" class="btn-camera">
+                            <label class="btn-camera">
                                 <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
-                            </button>
+                                <input type="file" id="file-main-camera" class="hidden" accept="image/*" capture="environment" onchange="handleCameraCapture('main', this)">
+                            </label>
                             <label class="btn-filepick">
                                 <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
                                 <input type="file" id="file-main-upload" class="hidden" accept="image/*" onchange="handleFileSelect('main', this)">
                             </label>
                         </div>
-
-                        <div id="main-camera-view" class="camera-container">
-                            <div class="relative">
-                                <video id="main-video" autoplay playsinline muted></video>
-                                <div class="overlay"><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div>
-                                <div class="live-badge"><span class="dot"></span>LIVE</div>
-                                <p class="hint-text">วางบัตรให้อยู่ในกรอบ แสงสว่างเพียงพอ</p>
-                            </div>
-                            <div class="camera-controls">
-                                <button type="button" onclick="takeSnapshot('main')" class="shutter-btn" aria-label="ถ่ายภาพ"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>
-                                <button type="button" onclick="stopLiveCamera('main')" class="cancel-link">ยกเลิก</button>
-                            </div>
-                        </div>
-
-                        <canvas id="main-canvas" class="hidden"></canvas>
 
                         <div id="main-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
@@ -329,29 +296,15 @@
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="wp-btn-group" class="w-full max-w-xs flex flex-col gap-3">
-                            <button type="button" onclick="startLiveCamera('wp')" class="btn-camera">
+                            <label class="btn-camera">
                                 <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
-                            </button>
+                                <input type="file" id="file-wp-camera" class="hidden" accept="image/*" capture="environment" onchange="handleCameraCapture('wp', this)">
+                            </label>
                             <label class="btn-filepick">
                                 <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
                                 <input type="file" id="file-wp-upload" class="hidden" accept="image/*" onchange="handleFileSelect('wp', this)">
                             </label>
                         </div>
-
-                        <div id="wp-camera-view" class="camera-container">
-                            <div class="relative">
-                                <video id="wp-video" autoplay playsinline muted></video>
-                                <div class="overlay"><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div>
-                                <div class="live-badge"><span class="dot"></span>LIVE</div>
-                                <p class="hint-text">วางเอกสารให้อยู่ในกรอบ แสงสว่างเพียงพอ</p>
-                            </div>
-                            <div class="camera-controls">
-                                <button type="button" onclick="takeSnapshot('wp')" class="shutter-btn" aria-label="ถ่ายภาพ"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>
-                                <button type="button" onclick="stopLiveCamera('wp')" class="cancel-link">ยกเลิก</button>
-                            </div>
-                        </div>
-
-                        <canvas id="wp-canvas" class="hidden"></canvas>
 
                         <div id="wp-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
@@ -412,7 +365,12 @@
         var vendorsMasterData = [];
         var lineUserId = null;
 
-        var THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+        var THAI_MONTHS = [
+            { th: 'มกราคม', en: 'January' }, { th: 'กุมภาพันธ์', en: 'February' }, { th: 'มีนาคม', en: 'March' },
+            { th: 'เมษายน', en: 'April' }, { th: 'พฤษภาคม', en: 'May' }, { th: 'มิถุนายน', en: 'June' },
+            { th: 'กรกฎาคม', en: 'July' }, { th: 'สิงหาคม', en: 'August' }, { th: 'กันยายน', en: 'September' },
+            { th: 'ตุลาคม', en: 'October' }, { th: 'พฤศจิกายน', en: 'November' }, { th: 'ธันวาคม', en: 'December' }
+        ];
 
         function populateDateDropdowns(prefix, yearFrom, yearTo) {
             var daySel = document.getElementById(prefix + '-day');
@@ -423,7 +381,7 @@
             for (var d = 1; d <= 31; d++) daySel.innerHTML += '<option value="' + d + '">' + d + '</option>';
 
             monthSel.innerHTML = '<option value="">เดือน</option>';
-            THAI_MONTHS.forEach(function(m, idx) { monthSel.innerHTML += '<option value="' + (idx + 1) + '">' + m + '</option>'; });
+            THAI_MONTHS.forEach(function(m, idx) { monthSel.innerHTML += '<option value="' + (idx + 1) + '">' + m.th + ' (' + m.en + ')</option>'; });
 
             yearSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
             if (yearFrom > yearTo) {
@@ -461,10 +419,6 @@
                     }).catch((err) => { console.error("LIFF Error:", err); });
                 }
             }, 500);
-        });
-
-        window.addEventListener('beforeunload', function() {
-            if (activeStream) activeStream.getTracks().forEach(function(t){ t.stop(); });
         });
 
         function openInExternalBrowser() {
@@ -519,114 +473,21 @@
         });
 
         // ===============================================
-        // 📷 กล้องถ่ายภาพสด WebRTC — แก้ปัญหาจอดำบน Android/Samsung
-        // แนวทางที่เลือก: (1) ไล่ลอง constraints จากเข้มงวด→หลวมเป็นลำดับ กันเคส
-        //   OverconstrainedError ที่กล้องบางรุ่นไม่รองรับ facingMode/ความละเอียดที่ขอ
-        // (2) เรียก video.play() เองแบบ explicit หลัง assign srcObject เพราะสาเหตุ
-        //   "จอดำ" ที่พบบ่อยที่สุดคือ autoplay policy บาง WebView บล็อกไม่ให้เล่นอัตโนมัติ
-        //   ทั้งที่ attribute autoplay ใส่ไว้แล้ว (stream ต่อสำเร็จแต่ภาพไม่ขึ้น)
+        // 📷 ถ่ายภาพเอกสาร — ใช้ input[type=file][capture=environment] เรียกแอปกล้อง Native
+        // ของเครื่องโดยตรงแทน WebRTC (getUserMedia) ตามคำสั่งของ PM หลังพบปัญหาจอดำ
+        // บน Samsung Android จริง วิธีนี้ให้ระบบปฏิบัติการ/แอปกล้องของเครื่องจัดการ
+        // สตรีมกล้องเองทั้งหมด จึงเสถียรกว่าและไม่ต้องพึ่ง getUserMedia permission
+        // ในเบราว์เซอร์เลย (แลกกับการปรับแต่งกรอบ/overlay ระหว่างถ่ายเองไม่ได้เหมือน WebRTC)
         // ===============================================
-        let activeStream = null;
-        let activeCameraType = null;
-
-        async function getStreamWithFallback() {
-            var attempts = [
-                { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-                { video: { facingMode: 'environment' }, audio: false },
-                { video: true, audio: false }
-            ];
-            var lastErr;
-            for (var i = 0; i < attempts.length; i++) {
-                try { return await navigator.mediaDevices.getUserMedia(attempts[i]); }
-                catch (e) { lastErr = e; console.warn('getUserMedia attempt ' + i + ' failed:', e.name); }
-            }
-            throw lastErr;
-        }
-
-        async function startLiveCamera(type) {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                Swal.fire('ไม่รองรับกล้อง', 'เบราว์เซอร์นี้ไม่รองรับการเปิดกล้องสด กรุณาใช้ปุ่ม "เลือกรูปจากแฟ้ม" แทน', 'error');
-                return;
-            }
-            if (activeStream) stopLiveCamera(activeCameraType);
-
-            var btnGroup = document.getElementById(type + '-btn-group');
-            var camView = document.getElementById(type + '-camera-view');
-            var camBtn = btnGroup.querySelector('.btn-camera');
-
-            btnGroup.classList.add('hidden');
-            camView.style.display = 'block';
-            camView.innerHTML = '<div class="camera-loading">กำลังเปิดกล้อง...</div>';
-
-            try {
-                var stream = await getStreamWithFallback();
-                activeStream = stream;
-                activeCameraType = type;
-
-                // สร้าง video/overlay/controls กลับเข้าไปใหม่ (เผื่อโดน innerHTML ล้างตอน loading)
-                rebuildCameraView(type);
-
-                var video = document.getElementById(type + '-video');
-                video.muted = true;
-                video.setAttribute('playsinline', 'true');
-                video.srcObject = stream;
-
-                // FIX จอดำ: บังคับ play() ตรงๆ แทนที่จะพึ่ง autoplay attribute อย่างเดียว
-                var tryPlay = function() { video.play().catch(function(err){ console.warn('video.play() blocked:', err); }); };
-                video.onloadedmetadata = tryPlay;
-                tryPlay();
-
-            } catch (err) {
-                console.error(err);
-                stopLiveCamera(type);
-                Swal.fire('เปิดกล้องไม่สำเร็จ', 'กรุณาอนุญาตให้เบราว์เซอร์เข้าถึงกล้อง หรือใช้ปุ่ม "เลือกรูปจากแฟ้ม" แทนครับ', 'error');
-            }
-        }
-
-        function rebuildCameraView(type) {
-            var hint = type === 'main' ? 'วางบัตรให้อยู่ในกรอบ แสงสว่างเพียงพอ' : 'วางเอกสารให้อยู่ในกรอบ แสงสว่างเพียงพอ';
-            document.getElementById(type + '-camera-view').innerHTML =
-                '<div class="relative">' +
-                    '<video id="' + type + '-video" autoplay playsinline muted></video>' +
-                    '<div class="overlay"><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div>' +
-                    '<div class="live-badge"><span class="dot"></span>LIVE</div>' +
-                    '<p class="hint-text">' + hint + '</p>' +
-                '</div>' +
-                '<div class="camera-controls">' +
-                    '<button type="button" onclick="takeSnapshot(\'' + type + '\')" class="shutter-btn" aria-label="ถ่ายภาพ"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>' +
-                    '<button type="button" onclick="stopLiveCamera(\'' + type + '\')" class="cancel-link">ยกเลิก</button>' +
-                '</div>';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function stopLiveCamera(type) {
-            if (activeStream) {
-                activeStream.getTracks().forEach(function(t){ t.stop(); });
-                activeStream = null;
-                activeCameraType = null;
-            }
-            var camView = document.getElementById(type + '-camera-view');
-            camView.style.display = 'none';
-            camView.innerHTML = '';
-            document.getElementById(type + '-btn-group').classList.remove('hidden');
-        }
-
-        function takeSnapshot(type) {
-            if (!activeStream) return;
-            var video = document.getElementById(type + '-video');
-            var canvas = document.getElementById(type + '-canvas');
-            canvas.width = video.videoWidth || 1280;
-            canvas.height = video.videoHeight || 960;
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            canvas.toBlob(function(blob) {
-                var file = new File([blob], "FTC_Snap_" + Date.now() + ".jpg", { type: "image/jpeg" });
-                var dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
-                stopLiveCamera(type);
-                showSuccessUI(type, file.name);
-            }, 'image/jpeg', 0.85);
+        function handleCameraCapture(type, inputElement) {
+            if (inputElement.files.length === 0) return;
+            var file = inputElement.files[0];
+            // คัดลอกไฟล์จาก input กล้องไปไว้ที่ input-upload ตัวเดียวกับที่ใช้ตอน submit
+            // เพื่อให้ validateStep2()/submitToSupabase() อ่านจากจุดเดียวเสมอ ไม่ว่าจะมาจากกล้องหรือแฟ้ม
+            var dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
+            showSuccessUI(type, file.name);
         }
 
         function handleFileSelect(type, inputElement) {
@@ -640,6 +501,8 @@
         }
         function resetFile(type) {
             document.getElementById('file-' + type + '-upload').value = '';
+            var camInput = document.getElementById('file-' + type + '-camera');
+            if (camInput) camInput.value = '';
             document.getElementById(type + '-success-status').classList.add('hidden');
             document.getElementById(type + '-btn-group').classList.remove('hidden');
             document.getElementById('dropzone-' + type).classList.replace('border-green-500', 'border-brand-navy/30');
@@ -674,6 +537,30 @@
             return new Date(parseInt(yearBE) - 543, parseInt(month) - 1, parseInt(day));
         }
 
+        function beToIsoString(day, month, yearBE) {
+            var d = beToAdDate(day, month, yearBE);
+            if (!d) return null;
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            return d.getFullYear() + '-' + mm + '-' + dd;
+        }
+
+        function toggleEmgRelationOther() {
+            var sel = document.getElementById('emg-relation').value;
+            var otherInput = document.getElementById('emg-relation-other');
+            if (sel === 'Other') otherInput.classList.remove('hidden');
+            else { otherInput.classList.add('hidden'); otherInput.value = ''; }
+        }
+
+        // จัดรูปแบบเบอร์โทรอัตโนมัติแบบ 3-3-4 (เช่น 081-234-5678) ขณะพิมพ์
+        function formatPhoneInput(el) {
+            var digits = el.value.replace(/[^0-9]/g, '').slice(0, 10);
+            var formatted = digits;
+            if (digits.length > 6) formatted = digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
+            else if (digits.length > 3) formatted = digits.slice(0, 3) + '-' + digits.slice(3);
+            el.value = formatted;
+        }
+
         function validateStep1() {
             if (!document.getElementById('fname-input').value.trim() || !document.getElementById('lname-input').value.trim()) {
                 Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ-นามสกุล', 'warning'); return false;
@@ -694,8 +581,13 @@
 
             if (!selectedVendorId) { Swal.fire('ยังไม่ได้เลือกบริษัท', 'กรุณาเลือกบริษัท/ผู้รับเหมาจากรายการ', 'warning'); return false; }
 
-            if (!document.getElementById('emg-name').value.trim() || !document.getElementById('emg-relation').value || document.getElementById('emg-phone').value.trim().length < 9) {
-                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลผู้ติดต่อฉุกเฉินให้ครบถ้วน', 'warning'); return false;
+            var emgRelation = document.getElementById('emg-relation').value;
+            var emgPhoneDigits = document.getElementById('emg-phone').value.replace(/-/g, '');
+            if (!document.getElementById('emg-name').value.trim() || !emgRelation || emgPhoneDigits.length !== 10) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลผู้ติดต่อฉุกเฉินให้ครบถ้วน (เบอร์โทร 10 หลัก)', 'warning'); return false;
+            }
+            if (emgRelation === 'Other' && !document.getElementById('emg-relation-other').value.trim()) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุความสัมพันธ์ (Other)', 'warning'); return false;
             }
 
             if (!document.getElementById('pdpa-biometric').checked || !document.getElementById('pdpa-health').checked || !document.getElementById('pdpa-gps').checked) {
@@ -729,7 +621,6 @@
         }
 
         function goToStep(stepNumber) {
-            if (activeStream) stopLiveCamera(activeCameraType);
             document.getElementById('step-1').classList.add('hidden');
             document.getElementById('step-2').classList.add('hidden');
             document.getElementById('step-3').classList.add('hidden');
@@ -790,6 +681,11 @@
                     }
                 }
 
+                var emgRelationValue = document.getElementById('emg-relation').value;
+                if (emgRelationValue === 'Other') {
+                    emgRelationValue = 'Other: ' + document.getElementById('emg-relation-other').value.trim();
+                }
+
                 var payload = {
                     worker_id: generateWorkerId(),
                     vendor_id: selectedVendorId,
@@ -799,9 +695,15 @@
                     is_active: true,
                     line_user_id: lineUserId,
                     id_card_photo_url: mainUrl,
-                    work_permit_photo_url: wpUrl
-                    // หมายเหตุ: date_of_birth, id_expiry_date, emergency_contact_*, pdpa_* ยังไม่มีคอลัมน์
-                    // รองรับในสกีม่า tb_workers ที่ PM ยืนยันไว้ ต้องขอเพิ่มคอลัมน์ก่อนจึงจะบันทึกฟิลด์เหล่านี้ได้จริง
+                    work_permit_photo_url: wpUrl,
+                    date_of_birth: beToIsoString(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value),
+                    id_expiry_date: beToIsoString(document.getElementById('exp-day').value, document.getElementById('exp-month').value, document.getElementById('exp-year').value),
+                    emergency_contact_name: document.getElementById('emg-name').value.trim(),
+                    emergency_contact_relation: emgRelationValue,
+                    emergency_contact_phone: document.getElementById('emg-phone').value.replace(/-/g, ''),
+                    pdpa_biometric: document.getElementById('pdpa-biometric').checked,
+                    pdpa_health: document.getElementById('pdpa-health').checked,
+                    pdpa_gps: document.getElementById('pdpa-gps').checked
                 };
 
                 var insertRes = await supabase.from('tb_workers').insert(payload);
