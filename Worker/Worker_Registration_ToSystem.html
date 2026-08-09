@@ -395,29 +395,51 @@ HTML
             }
         }
 
-        window.addEventListener('load', function() {
-            try {
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-                var thisYearBE = new Date().getFullYear() + 543;
-                populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
-                populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
-            } catch (err) { console.error("UI Setup Error:", err); }
+       window.addEventListener('load', async function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
 
-            fetchVendors();
+            var thisYearBE = new Date().getFullYear() + 543;
+            populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
+            populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-            if (typeof liff !== 'undefined') {
-                liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
-                    if (liff.isInClient()) {
-                        document.getElementById('main-form').classList.add('hidden');
-                        document.getElementById('liff-blocker').classList.remove('hidden');
-                    }
-                    if (liff.isLoggedIn && liff.isLoggedIn()) {
-                        try { var profile = await liff.getProfile(); lineUserId = profile.userId; }
-                        catch (e) { console.error('liff.getProfile error:', e); }
-                    }
-                }).catch((err) => { console.error("LIFF Error:", err); });
+            await fetchVendors();
+
+            // 🎯 1. ไม้ตายสูงสุด: ดักจับแอป LINE ด้วย User-Agent ทันทีที่โหลดหน้าเว็บ
+            var isLineApp = /Line/i.test(navigator.userAgent);
+            var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
+
+            if (isLineApp && !isExternalRequested) {
+                // ถ้าตรวจพบว่าเปิดในแอป LINE ให้บังคับโชว์โล่สีแดงทันที (ซ่อนฟอร์ม)
+                document.getElementById('main-form').classList.add('hidden');
+                document.getElementById('liff-blocker').classList.remove('hidden');
+            } else {
+                // ถ้าเปิดใน Chrome หรือแอปอื่น ให้โชว์ฟอร์มทำงานปกติ
+                document.getElementById('liff-blocker').classList.add('hidden');
+                document.getElementById('main-form').classList.remove('hidden');
             }
+
+            // 2. รัน LIFF เบื้องหลังเพื่อเตรียมดึงรหัสพนักงาน (ถ้ามี)
+            setTimeout(function() {
+                if (typeof liff !== 'undefined') {
+                    liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
+                        if (liff.isLoggedIn && liff.isLoggedIn()) {
+                            try { var profile = await liff.getProfile(); lineUserId = profile.userId; }
+                            catch (e) { console.error('liff.getProfile error:', e); }
+                        }
+                    }).catch((err) => { console.error("LIFF Error:", err); });
+                }
+            }, 500);
         });
+
+        // 🎯 3. คำสั่งพิเศษของ LINE: บังคับดีดผู้ใช้ออกไปที่ Google Chrome ทันที
+        function openInExternalBrowser() {
+            var currentUrl = window.location.href;
+            if (currentUrl.indexOf('openExternalBrowser=1') === -1) {
+                var separator = currentUrl.indexOf('?') !== -1 ? '&' : '?';
+                // ใส่รหัสลับท้าย URL ให้ LINE รู้ว่าต้องดีดออกเบราว์เซอร์หลักของเครื่อง
+                window.location.href = currentUrl + separator + 'openExternalBrowser=1';
+            }
+        }
 
         function openInExternalBrowser() {
             liff.openWindow({ url: window.location.href, external: true });
