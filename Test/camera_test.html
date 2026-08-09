@@ -3,148 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FTC Camera Debugger</title>
+    <title>FTC Camera Debugger V.2</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 15px; 
-            background: #F4F6F8; 
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .test-box { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            border: 1px solid #e2e8f0;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; background: #F4F6F8; color: #333; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .test-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         h3 { margin-top: 0; color: #19335A; font-size: 16px; }
         p.desc { font-size: 12px; color: #666; font-family: monospace; background: #f1f5f9; padding: 5px; border-radius: 4px; }
         
-        /* สไตล์ปุ่ม */
-        label.btn { 
-            display: block; 
-            width: 100%; 
-            padding: 15px 0; 
-            background: #DB5A24; 
-            color: white; 
-            text-align: center; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            margin-top: 10px; 
-            cursor: pointer; 
-            box-sizing: border-box;
-        }
-        label.btn:active { background: #C14B1A; transform: scale(0.98); }
+        label.btn, button.btn { display: block; width: 100%; padding: 15px 0; color: white; text-align: center; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; border: none; box-sizing: border-box; }
+        label.btn:active, button.btn:active { transform: scale(0.98); }
         input[type="file"] { display: none; }
         
-        /* หน้าจอ Log */
-        #logArea { 
-            background: #1e293b; 
-            color: #4ade80; 
-            padding: 12px; 
-            border-radius: 8px; 
-            height: 180px; 
-            overflow-y: auto; 
-            font-family: monospace; 
-            font-size: 12px; 
-            line-height: 1.5;
-        }
-        img#preview { 
-            max-width: 100%; 
-            margin-top: 15px; 
-            border-radius: 8px; 
-            border: 2px solid #e2e8f0;
-        }
+        #logArea { background: #1e293b; color: #4ade80; padding: 12px; border-radius: 8px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.5; }
+        
+        /* สัดส่วนจอวิดีโอสำหรับ WebRTC */
+        #video-container { display: none; margin-top: 15px; border-radius: 8px; overflow: hidden; border: 2px solid #DB5A24; }
+        video { width: 100%; background: black; display: block; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2 style="color: #19335A; margin-bottom: 5px;">FTC Camera Test</h2>
-        <p style="font-size: 14px; margin-top: 0; color: #666;">หน้าทดสอบการเรียกกล้องบน Android</p>
+        <h2 style="color: #19335A; margin-bottom: 5px;">FTC Camera Test V.2</h2>
+        <p style="font-size: 14px; margin-top: 0; color: #666;">ทดสอบกล้องคอมพิวเตอร์และมือถือ</p>
     </div>
 
-    <!-- ทฤษฎีที่ 1 -->
+    <!-- 💻 Test 4: WebRTC สำหรับคอมพิวเตอร์และมือถือ -->
     <div class="test-box">
-        <h3>Test 1: มาตรฐานสากล W3C</h3>
-        <p class="desc">accept="image/*" capture="environment"</p>
-        <label class="btn">
-            📸 กดทดสอบที่ 1
-            <input type="file" accept="image/*" capture="environment" onchange="handleFile(this, 1)">
-        </label>
+        <h3>Test 4: ระบบ WebRTC (กล้องสดหน้าเว็บ)</h3>
+        <p class="desc">navigator.mediaDevices.getUserMedia<br>*(รองรับกล้องคอมพิวเตอร์ Webcam และมือถือ)*</p>
+        <button class="btn" style="background: #DB5A24;" onclick="startWebRTC()">
+            🎥 เปิดกล้อง (WebRTC)
+        </button>
+        
+        <div id="video-container">
+            <video id="live-video" autoplay playsinline></video>
+            <button class="btn" style="background: #19335A; margin-top: 0; border-radius: 0 0 8px 8px;" onclick="stopWebRTC()">
+                ⏹️ ปิดกล้อง
+            </button>
+        </div>
     </div>
 
-    <!-- ทฤษฎีที่ 2 -->
+    <!-- 📱 Test 5: คำสั่งดั้งเดิมที่สุด -->
     <div class="test-box">
-        <h3>Test 2: เจาะจงนามสกุลไฟล์</h3>
-        <p class="desc">accept="image/jpeg, image/png" capture="camera"</p>
-        <label class="btn" style="background: #19335A;">
-            📸 กดทดสอบที่ 2
-            <input type="file" accept="image/jpeg, image/png" capture="camera" onchange="handleFile(this, 2)">
-        </label>
-    </div>
-
-    <!-- ทฤษฎีที่ 3 -->
-    <div class="test-box">
-        <h3>Test 3: ปล่อยว่าง (ไม่ใส่ Capture)</h3>
-        <p class="desc">accept="image/*"</p>
+        <h3>Test 5: HTML พื้นฐาน (Basic Capture)</h3>
+        <p class="desc">accept="image/*" capture</p>
         <label class="btn" style="background: #475569;">
-            📸 กดทดสอบที่ 3
-            <input type="file" accept="image/*" onchange="handleFile(this, 3)">
+            📸 กดทดสอบที่ 5
+            <input type="file" accept="image/*" capture onchange="handleFile(this, 5)">
         </label>
     </div>
 
-    <!-- หน้าจอแสดงผลลัพธ์ -->
     <div class="test-box" style="background: #f8fafc;">
-        <h3>💻 Console Log (สถานะการทำงาน)</h3>
+        <h3>💻 Console Log</h3>
         <div id="logArea">▶ ระบบพร้อมทำงาน...<br></div>
-        <img id="preview" style="display: none;">
     </div>
 
     <script>
-        // ฟังก์ชันสำหรับพิมพ์ข้อความลงหน้าจอ Log
         function logMsg(msg) {
             var logBox = document.getElementById('logArea');
             var time = new Date().toLocaleTimeString('th-TH');
             logBox.innerHTML += '<span style="color:#94a3b8">[' + time + ']</span> ' + msg + '<br>';
-            logBox.scrollTop = logBox.scrollHeight; // เลื่อนจอลงล่างสุดอัตโนมัติ
+            logBox.scrollTop = logBox.scrollHeight; 
         }
 
-        // ดักจับตอนที่ผู้ใช้เอานิ้วจิ้มปุ่ม
-        document.querySelectorAll('input[type="file"]').forEach(function(input, index) {
-            input.addEventListener('click', function() {
-                logMsg('🟡 เริ่มคลิกปุ่ม Test ' + (index + 1) + '...');
-                logMsg('⏳ กำลังรอระบบ OS ของมือถือตอบสนอง...');
-            });
-        });
-
-        // ฟังก์ชันประมวลผลเมื่อเลือกรูปหรือถ่ายรูปเสร็จ
         function handleFile(input, testNum) {
             if (input.files && input.files.length > 0) {
-                var file = input.files[0];
-                logMsg('🟢 Test ' + testNum + ': สำเร็จ! ระบบได้รับภาพแล้ว');
-                logMsg('📄 ชื่อไฟล์: ' + file.name);
-                logMsg('💾 ขนาด: ' + (file.size / 1024).toFixed(2) + ' KB');
-                
-                // เอารูปมาแสดงบนจอ
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var img = document.getElementById('preview');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    logMsg('🖼️ แสดงภาพตัวอย่างเรียบร้อย');
-                }
-                reader.readAsDataURL(file);
+                logMsg('🟢 Test ' + testNum + ': สำเร็จ! ได้รับไฟล์ ' + input.files[0].name);
             } else {
-                logMsg('🔴 Test ' + testNum + ': ผู้ใช้กดยกเลิก หรือระบบไม่ส่งไฟล์มาให้');
+                logMsg('🔴 Test ' + testNum + ': ยกเลิกการเลือกไฟล์');
             }
+        }
+
+        // ระบบควบคุม WebRTC (กล้องคอมพิวเตอร์/มือถือ)
+        let currentStream = null;
+
+        async function startWebRTC() {
+            logMsg('🟡 กำลังร้องขอสิทธิ์เข้าถึงกล้อง (Permission)...');
+            var videoContainer = document.getElementById('video-container');
+            var video = document.getElementById('live-video');
+
+            try {
+                // ขออนุญาตเปิดกล้อง
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                
+                currentStream = stream;
+                video.srcObject = stream;
+                videoContainer.style.display = 'block';
+                logMsg('🟢 เข้าถึงกล้องสำเร็จ! (สตรีมมิ่งเริ่มทำงาน)');
+
+            } catch (err) {
+                console.error(err);
+                if (err.name === 'NotAllowedError') {
+                    logMsg('🔴 ผู้ใช้หรือเบราว์เซอร์ "ปฏิเสธ" การเข้าถึงกล้อง');
+                } else if (err.name === 'NotFoundError') {
+                    logMsg('🔴 ไม่พบอุปกรณ์กล้องบนเครื่องนี้');
+                } else {
+                    logMsg('🔴 เกิดข้อผิดพลาด: ' + err.message);
+                }
+            }
+        }
+
+        function stopWebRTC() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            document.getElementById('video-container').style.display = 'none';
+            logMsg('⏹️ ปิดกล้อง WebRTC เรียบร้อย');
         }
     </script>
 
