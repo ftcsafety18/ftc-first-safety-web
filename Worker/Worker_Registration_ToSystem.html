@@ -274,7 +274,7 @@
                     </div>
                 </div>
 
-                <!-- 💡 โค้ดกล้องมาตรฐานสากล ที่เสถียรที่สุดสำหรับทุกอุปกรณ์ -->
+                <!-- 💡 โค้ดกล้องมาตรฐาน ไม่ใช้ WebRTC ให้ <label> คลุม <input> เพื่อความเข้ากันได้กับทุก OS -->
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -474,7 +474,7 @@
             }, 800);
         });
 
-        // 💡 ปลดล็อคระบบดีดเข้า Chrome และหยุดวนลูป กลับมาใช้ LIFF ปกติ
+        // 💡 ตัดการบังคับล็อกอินและดีดไป Chrome ออก กลับมาใช้ LIFF มาตรฐานครับ
         async function initializeLiff() {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
