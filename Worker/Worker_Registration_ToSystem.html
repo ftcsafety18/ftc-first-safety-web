@@ -479,19 +479,40 @@
         // สตรีมกล้องเองทั้งหมด จึงเสถียรกว่าและไม่ต้องพึ่ง getUserMedia permission
         // ในเบราว์เซอร์เลย (แลกกับการปรับแต่งกรอบ/overlay ระหว่างถ่ายเองไม่ได้เหมือน WebRTC)
         // ===============================================
+        // Android WebView / Samsung Internet รุ่นเก่าบางตัวไม่มี DataTransfer
+        // ถ้า new DataTransfer() throw จะเด้งออกก่อนถึง showSuccessUI() → ผู้ใช้ถ่ายรูป
+        // เสร็จแล้วหน้าจอเงียบ ไม่มีอะไรขึ้น และไปขั้นตอนที่ 3 ไม่ได้
+        // จึงเก็บไฟล์ไว้ในตัวแปรนี้เป็นแหล่งข้อมูลหลัก แล้วอ่านผ่าน getSelectedFile()
+        var capturedFiles = { main: null, wp: null };
+
         function handleCameraCapture(type, inputElement) {
             if (inputElement.files.length === 0) return;
             var file = inputElement.files[0];
+            capturedFiles[type] = file;
             // คัดลอกไฟล์จาก input กล้องไปไว้ที่ input-upload ตัวเดียวกับที่ใช้ตอน submit
             // เพื่อให้ validateStep2()/submitToSupabase() อ่านจากจุดเดียวเสมอ ไม่ว่าจะมาจากกล้องหรือแฟ้ม
-            var dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
+            try {
+                var dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
+            } catch (e) {
+                console.warn('เบราว์เซอร์นี้ไม่รองรับ DataTransfer ใช้ capturedFiles สำรองแทน:', e);
+            }
             showSuccessUI(type, file.name);
         }
 
+        // อ่านไฟล์จากกล้องก่อน ถ้าไม่มีค่อยอ่านจาก input ที่เลือกจากแฟ้ม
+        function getSelectedFile(type) {
+            if (capturedFiles[type]) return capturedFiles[type];
+            var input = document.getElementById('file-' + type + '-upload');
+            return input && input.files.length ? input.files[0] : null;
+        }
+
         function handleFileSelect(type, inputElement) {
-            if (inputElement.files.length > 0) showSuccessUI(type, inputElement.files[0].name);
+            if (inputElement.files.length > 0) {
+                capturedFiles[type] = null;   // เลือกจากแฟ้มทับรูปที่ถ่ายไว้ก่อนหน้า
+                showSuccessUI(type, inputElement.files[0].name);
+            }
         }
         function showSuccessUI(type, fileName) {
             document.getElementById(type + '-btn-group').classList.add('hidden');
@@ -500,6 +521,7 @@
             document.getElementById('text-' + type).innerText = "ไฟล์ที่เลือก: " + fileName;
         }
         function resetFile(type) {
+            capturedFiles[type] = null;
             document.getElementById('file-' + type + '-upload').value = '';
             var camInput = document.getElementById('file-' + type + '-camera');
             if (camInput) camInput.value = '';
@@ -598,10 +620,10 @@
         }
 
         function validateStep2() {
-            if (document.getElementById('file-main-upload').files.length === 0) {
+            if (!getSelectedFile('main')) {
                 Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนครับ', 'warning'); return false;
             }
-            if (currentNationality === 'foreigner' && document.getElementById('file-wp-upload').files.length === 0) {
+            if (currentNationality === 'foreigner' && !getSelectedFile('wp')) {
                 Swal.fire('ขาดรูปถ่าย', 'กรุณาอัปโหลดใบอนุญาตทำงาน (Work Permit)', 'warning'); return false;
             }
             return true;
@@ -664,7 +686,7 @@
 
                 Swal.update({ title: 'กำลังบันทึกข้อมูล...' });
 
-                var mainFile = document.getElementById('file-main-upload').files[0];
+                var mainFile = getSelectedFile('main');
                 var mainPath = 'id-cards/' + Date.now() + '_' + mainFile.name;
                 var upMain = await supabase.storage.from('worker-documents').upload(mainPath, mainFile);
                 if (upMain.error) throw upMain.error;
@@ -672,7 +694,7 @@
 
                 var wpUrl = null;
                 if (currentNationality === 'foreigner') {
-                    var wpFile = document.getElementById('file-wp-upload').files[0];
+                    var wpFile = getSelectedFile('wp');
                     if (wpFile) {
                         var wpPath = 'work-permits/' + Date.now() + '_' + wpFile.name;
                         var upWp = await supabase.storage.from('worker-documents').upload(wpPath, wpFile);
