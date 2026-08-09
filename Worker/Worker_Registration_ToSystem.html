@@ -37,7 +37,7 @@
         .consent-box { display:flex; align-items:flex-start; gap:10px; background:#F9FAFB; border:1px solid #E5E9F0; border-radius:12px; padding:12px 14px; }
         .consent-box input[type=checkbox] { width:19px; height:19px; margin-top:2px; accent-color:#19335A; border-radius:5px; flex-shrink:0; }
 
-        /* ===== ปุ่มเปิดกล้อง (label ครอบ input file capture="environment") ===== */
+        /* ===== ปุ่มเปิดกล้องแบบ Native ===== */
         .btn-camera {
             position: relative; display: flex; align-items: center; justify-content: center; gap: 10px;
             padding: 14px 20px; border-radius: 14px; border: none; cursor: pointer;
@@ -45,6 +45,7 @@
             background: linear-gradient(135deg, #E9662C 0%, #DB5A24 55%, #C14B1A 100%);
             box-shadow: 0 6px 16px -4px rgba(219, 90, 36, 0.55), inset 0 1px 0 rgba(255,255,255,0.25);
             transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+            width: 100%;
         }
         .btn-camera:hover { filter: brightness(1.05); }
         .btn-camera:active { transform: scale(0.97); }
@@ -56,30 +57,19 @@
             font-weight: 700; font-size: 0.9rem; color: #19335A;
             background: #fff; border: 1.5px solid #D9E1EC;
             transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+            width: 100%;
         }
         .btn-filepick:hover { border-color: #19335A; background: #F7F9FC; }
         .btn-filepick:active { transform: scale(0.97); }
     </style>
-    
 </head>
 <body class="min-h-screen text-gray-800">
 
     <header class="sticky top-0 z-40 bg-brand-navy shadow-md">
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
             <div class="flex items-center gap-3">
-                <div class="bg-white px-2 py-1.5 rounded flex items-center gap-1.5 h-11 shrink-0 shadow-sm border border-white/20">
-                    <div class="relative w-8 h-8 bg-[#0017e6] rounded-full flex items-center justify-center overflow-hidden shrink-0">
-                        <div class="absolute -right-0.5 top-1/2 -translate-y-1/2 text-white font-black italic text-3xl">1</div>
-                        <div class="absolute left-[3px] top-1/2 -translate-y-[45%] flex flex-col items-center">
-                            <svg width="10" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2h-1.5"/><path d="M14 4V3a2 2 0 0 0-2-2H9.5"/><path d="M10 1v3"/><path d="M6 4v7"/><path d="M18 11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8a2 2 0 0 1 2-2h1.5"/><path d="M10 6v5"/></svg>
-                            <span class="text-[3px] text-white font-bold leading-none mt-[1px]">FIRST</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col justify-center pb-0.5">
-                        <div class="text-[#0017e6] font-black italic text-2xl leading-none tracking-tight -mb-0.5">First</div>
-                        <div class="w-full h-[2px] bg-[#fff000] my-[3px]"></div>
-                        <div class="text-[#0017e6] font-bold text-[5px] tracking-widest leading-none">TECHNOLOGY CO.,LTD.</div>
-                    </div>
+                <div class="bg-white rounded p-1 flex items-center justify-center">
+                    <img src="logo.png" alt="First Logo" class="h-8 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
                 </div>
                 <div>
                     <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
@@ -97,9 +87,9 @@
             <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
                 <i data-lucide="shield-alert" class="w-10 h-10 text-red-500"></i>
             </div>
-            <h2 class="text-xl font-bold text-brand-navy mb-3">ระบบกล้องถ่ายภาพสด (e-KYC)</h2>
+            <h2 class="text-xl font-bold text-brand-navy mb-3">ระบบกล้องถ่ายภาพ (e-KYC)</h2>
             <p class="text-sm text-gray-600 mb-8 leading-relaxed">
-                เนื่องจากแอป LINE ไม่รองรับการเปิดกล้องโดยตรง<br>กรุณากดปุ่มด้านล่างเพื่อเปิดใช้งานผ่าน Google Chrome
+                เนื่องจากแอป LINE ไม่รองรับระบบกล้องบางประเภท<br>กรุณากดปุ่มด้านล่างเพื่อเปิดใช้งานผ่าน Google Chrome
             </p>
             <button onclick="openInExternalBrowser()" class="w-full sm:w-auto px-8 py-4 bg-brand-navy text-white font-bold rounded-xl shadow-lg hover:bg-brand-navy-light transition-all flex items-center justify-center gap-2">
                 <i data-lucide="chrome" class="w-5 h-5"></i> เปิดใช้งานผ่าน Google Chrome
@@ -159,7 +149,7 @@
 
                 <div id="foreigner-nationality-section" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">สัญชาติจริง (Actual Nationality) <span class="text-red-500">*</span></label>
-                    <select id="foreign-nationality-input" class="input-field cursor-pointer">
+                    <select id="foreign-nationality-input" class="input-field cursor-pointer" onchange="toggleNationalityOther()">
                         <option value="">-- เลือกสัญชาติ --</option>
                         <option value="Myanmar">Myanmar (เมียนมา)</option>
                         <option value="Cambodian">Cambodian (กัมพูชา)</option>
@@ -167,6 +157,7 @@
                         <option value="Vietnamese">Vietnamese (เวียดนาม)</option>
                         <option value="Other">Other (อื่นๆ)</option>
                     </select>
+                    <input type="text" id="foreign-nationality-other" placeholder="ระบุสัญชาติอื่นๆ..." class="input-field mt-2 hidden">
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -182,26 +173,26 @@
 
                 <div class="mb-4">
                     <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span></label>
-                    <input type="text" inputmode="text" id="id-input" placeholder="กรอกข้อมูล..." class="input-field font-mono" maxlength="20" oninput="validateIdInput(this)">
+                    <input type="text" inputmode="numeric" id="id-input" placeholder="กรอกเลข 13 หลัก..." class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
                 </div>
 
                 <!-- วันเกิด -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-3 gap-2">
-                        <select id="dob-day" class="input-field cursor-pointer"></select>
-                        <select id="dob-month" class="input-field cursor-pointer"></select>
-                        <select id="dob-year" class="input-field cursor-pointer"></select>
+                        <select id="dob-day" class="input-field cursor-pointer px-1 text-center"></select>
+                        <select id="dob-month" class="input-field cursor-pointer px-1"></select>
+                        <select id="dob-year" class="input-field cursor-pointer px-1 text-center"></select>
                     </div>
                 </div>
 
                 <!-- วันหมดอายุบัตร -->
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (ID/Document Expiry) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (Document Expiry) <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-3 gap-2">
-                        <select id="exp-day" class="input-field cursor-pointer"></select>
-                        <select id="exp-month" class="input-field cursor-pointer"></select>
-                        <select id="exp-year" class="input-field cursor-pointer"></select>
+                        <select id="exp-day" class="input-field cursor-pointer px-1 text-center"></select>
+                        <select id="exp-month" class="input-field cursor-pointer px-1"></select>
+                        <select id="exp-year" class="input-field cursor-pointer px-1 text-center"></select>
                     </div>
                 </div>
 
@@ -270,7 +261,7 @@
                     </div>
                 </div>
 
-                <!-- กล่องที่ 1: เอกสารยืนยันตัวตนหลัก -->
+                <!-- กล่องที่ 1 -->
                 <div class="mb-6">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสาร บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -293,15 +284,14 @@
                     </div>
                 </div>
 
-                <!-- กล่องที่ 2: เอกสารประกอบอื่นๆ -->
+                <!-- กล่องที่ 2 (Dropdown ให้เลือกเอกสาร) -->
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสารอื่นๆ ที่จำเป็นสำหรับขึ้นทะเบียน <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         
-                        <!-- เพิ่ม Dropdown เลือกประเภทเอกสารตรงนี้ -->
                         <div class="w-full max-w-xs mb-2">
-                            <select id="extra-doc-type" class="input-field cursor-pointer border-brand-orange text-brand-navy font-semibold">
-                                <option value="">-- กรุณาเลือกประเภทเอกสารก่อนอัปโหลด --</option>
+                            <select id="extra-doc-type" class="input-field cursor-pointer border-brand-orange text-brand-navy font-semibold text-sm">
+                                <option value="">-- กรุณาเลือกประเภทเอกสาร --</option>
                                 <option value="work_permit">ใบอนุญาตทำงาน (Work Permit)</option>
                                 <option value="training_cert">ใบผ่านการอบรมความปลอดภัย</option>
                                 <option value="crane_license">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
@@ -311,11 +301,11 @@
                         </div>
 
                         <div id="wp-btn-group" class="w-full max-w-xs flex flex-col gap-3">
-                            <label class="btn-camera">
+                            <label class="btn-camera" onclick="return validateDocTypeSelected()">
                                 <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
                                 <input type="file" id="file-wp-camera" class="hidden" accept="image/*" capture="environment" onchange="handleCameraCapture('wp', this)">
                             </label>
-                            <label class="btn-filepick">
+                            <label class="btn-filepick" onclick="return validateDocTypeSelected()">
                                 <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
                                 <input type="file" id="file-wp-upload" class="hidden" accept="image/*" onchange="handleFileSelect('wp', this)">
                             </label>
@@ -410,9 +400,7 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
 
             var thisYearBE = new Date().getFullYear() + 543;
-            // วันเกิด: ช่วงอายุทำงานโดยประมาณ 15-70 ปี (ใหม่สุดก่อน)
             populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
-            // วันหมดอายุบัตร: ปีปัจจุบันถึงอีก 15 ปีข้างหน้า
             populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
             await fetchVendors();
@@ -440,9 +428,6 @@
             liff.openWindow({ url: window.location.href, external: true });
         }
 
-        // ===============================================
-        // 🏢 Vendor Autocomplete (tb_vendors จริง)
-        // ===============================================
         async function fetchVendors() {
             if (!supabase) return;
             try {
@@ -487,36 +472,36 @@
             if (container && !container.contains(e.target)) document.getElementById('vendor-list').classList.add('hidden');
         });
 
-        // ===============================================
-        // 📷 ถ่ายภาพเอกสาร — ใช้ input[type=file][capture=environment] เรียกแอปกล้อง Native
-        // ของเครื่องโดยตรงแทน WebRTC (getUserMedia) ตามคำสั่งของ PM หลังพบปัญหาจอดำ
-        // บน Samsung Android จริง วิธีนี้ให้ระบบปฏิบัติการ/แอปกล้องของเครื่องจัดการ
-        // สตรีมกล้องเองทั้งหมด จึงเสถียรกว่าและไม่ต้องพึ่ง getUserMedia permission
-        // ในเบราว์เซอร์เลย (แลกกับการปรับแต่งกรอบ/overlay ระหว่างถ่ายเองไม่ได้เหมือน WebRTC)
-        // ===============================================
-        // Android WebView / Samsung Internet รุ่นเก่าบางตัวไม่มี DataTransfer
-        // ถ้า new DataTransfer() throw จะเด้งออกก่อนถึง showSuccessUI() → ผู้ใช้ถ่ายรูป
-        // เสร็จแล้วหน้าจอเงียบ ไม่มีอะไรขึ้น และไปขั้นตอนที่ 3 ไม่ได้
-        // จึงเก็บไฟล์ไว้ในตัวแปรนี้เป็นแหล่งข้อมูลหลัก แล้วอ่านผ่าน getSelectedFile()
+        // ================= กล้อง Native =================
         var capturedFiles = { main: null, wp: null };
 
+        function validateDocTypeSelected() {
+            var docType = document.getElementById('extra-doc-type').value;
+            if (!docType) {
+                Swal.fire('กรุณาเลือกประเภทเอกสาร', 'รบกวนเลือกประเภทเอกสารจาก Dropdown ก่อนทำการอัปโหลดครับ', 'warning');
+                return false; 
+            }
+            return true;
+        }
+
         function handleCameraCapture(type, inputElement) {
+            if (type === 'wp' && !document.getElementById('extra-doc-type').value) {
+                inputElement.value = ''; // รีเซ็ตถ้าไม่ได้เลือกประเภท
+                return; 
+            }
             if (inputElement.files.length === 0) return;
             var file = inputElement.files[0];
             capturedFiles[type] = file;
-            // คัดลอกไฟล์จาก input กล้องไปไว้ที่ input-upload ตัวเดียวกับที่ใช้ตอน submit
-            // เพื่อให้ validateStep2()/submitToSupabase() อ่านจากจุดเดียวเสมอ ไม่ว่าจะมาจากกล้องหรือแฟ้ม
             try {
                 var dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
             } catch (e) {
-                console.warn('เบราว์เซอร์นี้ไม่รองรับ DataTransfer ใช้ capturedFiles สำรองแทน:', e);
+                console.warn('DataTransfer fallback used');
             }
             showSuccessUI(type, file.name);
         }
 
-        // อ่านไฟล์จากกล้องก่อน ถ้าไม่มีค่อยอ่านจาก input ที่เลือกจากแฟ้ม
         function getSelectedFile(type) {
             if (capturedFiles[type]) return capturedFiles[type];
             var input = document.getElementById('file-' + type + '-upload');
@@ -524,8 +509,12 @@
         }
 
         function handleFileSelect(type, inputElement) {
+            if (type === 'wp' && !document.getElementById('extra-doc-type').value) {
+                inputElement.value = '';
+                return;
+            }
             if (inputElement.files.length > 0) {
-                capturedFiles[type] = null;   // เลือกจากแฟ้มทับรูปที่ถ่ายไว้ก่อนหน้า
+                capturedFiles[type] = null;
                 showSuccessUI(type, inputElement.files[0].name);
             }
         }
@@ -533,7 +522,10 @@
             document.getElementById(type + '-btn-group').classList.add('hidden');
             document.getElementById(type + '-success-status').classList.remove('hidden');
             document.getElementById('dropzone-' + type).classList.replace('border-brand-navy/30', 'border-green-500');
-            document.getElementById('text-' + type).innerText = "ไฟล์ที่เลือก: " + fileName;
+            
+            // เพิ่มชนิดเอกสารต่อท้ายชื่อไฟล์ให้ผู้ใช้เห็นถ้าเป็นกล่องที่ 2
+            var displayType = type === 'wp' ? ' (' + document.getElementById('extra-doc-type').options[document.getElementById('extra-doc-type').selectedIndex].text + ')' : '';
+            document.getElementById('text-' + type).innerText = "ไฟล์ที่เลือก: " + fileName + displayType;
         }
         function resetFile(type) {
             capturedFiles[type] = null;
@@ -543,17 +535,19 @@
             document.getElementById(type + '-success-status').classList.add('hidden');
             document.getElementById(type + '-btn-group').classList.remove('hidden');
             document.getElementById('dropzone-' + type).classList.replace('border-green-500', 'border-brand-navy/30');
+            if(type === 'wp') document.getElementById('extra-doc-type').value = ''; // รีเซ็ต Dropdown ด้วย
         }
 
-        // ================= Validation & Step control =================
-       function setNationality(nat) {
+        // ================= UI Validation =================
+        function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
             var btnForeign = document.getElementById('btn-foreign');
             var wp = document.getElementById('upload-workpermit');
             var docSec = document.getElementById('foreigner-doc-section');
             var natSec = document.getElementById('foreigner-nationality-section');
-            var idInput = document.getElementById('id-input'); // ดึงกล่องกรอกรหัสมาปรับแต่ง
+            var idInput = document.getElementById('id-input'); 
+            var idLabel = document.getElementById('id-label');
             
             var active = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors';
             var inactive = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
@@ -561,14 +555,17 @@
             if (nat === 'thai') {
                 wp.classList.add('hidden'); docSec.classList.add('hidden'); natSec.classList.add('hidden');
                 btnThai.className = active; btnForeign.className = inactive;
+                idLabel.innerHTML = 'เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span>';
                 idInput.maxLength = 13;
-                idInput.setAttribute('inputmode', 'numeric'); // บังคับเด้งแป้นพิมพ์ตัวเลข (Numpad) บนมือถือ
+                idInput.setAttribute('inputmode', 'numeric'); 
                 idInput.placeholder = "กรอกเลข 13 หลัก...";
+                idInput.value = idInput.value.replace(/[^0-9]/g, '').substring(0, 13);
             } else {
                 wp.classList.remove('hidden'); docSec.classList.remove('hidden'); natSec.classList.remove('hidden');
                 btnForeign.className = active; btnThai.className = inactive;
+                idLabel.innerHTML = 'เลขเอกสาร (Passport / Pink Card) <span class="text-red-500">*</span>';
                 idInput.maxLength = 20;
-                idInput.setAttribute('inputmode', 'text'); // บังคับเด้งแป้นพิมพ์ตัวอักษรสำหรับพาสปอร์ต
+                idInput.setAttribute('inputmode', 'text'); 
                 idInput.placeholder = "กรอกเลขเอกสารพาสปอร์ต...";
             }
         }
@@ -576,6 +573,28 @@
         function validateIdInput(obj) {
             if (currentNationality === 'thai') obj.value = obj.value.replace(/[^0-9]/g, '');
             else obj.value = obj.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        }
+
+        function toggleNationalityOther() {
+            var sel = document.getElementById('foreign-nationality-input').value;
+            var otherInput = document.getElementById('foreign-nationality-other');
+            if (sel === 'Other') otherInput.classList.remove('hidden');
+            else { otherInput.classList.add('hidden'); otherInput.value = ''; }
+        }
+
+        function toggleEmgRelationOther() {
+            var sel = document.getElementById('emg-relation').value;
+            var otherInput = document.getElementById('emg-relation-other');
+            if (sel === 'Other') otherInput.classList.remove('hidden');
+            else { otherInput.classList.add('hidden'); otherInput.value = ''; }
+        }
+
+        function formatPhoneInput(el) {
+            var digits = el.value.replace(/[^0-9]/g, '').slice(0, 10);
+            var formatted = digits;
+            if (digits.length > 6) formatted = digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
+            else if (digits.length > 3) formatted = digits.slice(0, 3) + '-' + digits.slice(3);
+            el.value = formatted;
         }
 
         function beToAdDate(day, month, yearBE) {
@@ -591,22 +610,6 @@
             return d.getFullYear() + '-' + mm + '-' + dd;
         }
 
-        function toggleEmgRelationOther() {
-            var sel = document.getElementById('emg-relation').value;
-            var otherInput = document.getElementById('emg-relation-other');
-            if (sel === 'Other') otherInput.classList.remove('hidden');
-            else { otherInput.classList.add('hidden'); otherInput.value = ''; }
-        }
-
-        // จัดรูปแบบเบอร์โทรอัตโนมัติแบบ 3-3-4 (เช่น 081-234-5678) ขณะพิมพ์
-        function formatPhoneInput(el) {
-            var digits = el.value.replace(/[^0-9]/g, '').slice(0, 10);
-            var formatted = digits;
-            if (digits.length > 6) formatted = digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
-            else if (digits.length > 3) formatted = digits.slice(0, 3) + '-' + digits.slice(3);
-            el.value = formatted;
-        }
-
         function validateStep1() {
             if (!document.getElementById('fname-input').value.trim() || !document.getElementById('lname-input').value.trim()) {
                 Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ-นามสกุล', 'warning'); return false;
@@ -615,8 +618,12 @@
             if (currentNationality === 'thai') {
                 if (idVal.length !== 13) { Swal.fire('เลขบัตรไม่ถูกต้อง', 'เลขบัตรประชาชนต้องมี 13 หลัก', 'warning'); return false; }
             } else {
-                if (!idVal) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขเอกสาร (Passport/Pink Card/Work Permit)', 'warning'); return false; }
-                if (!document.getElementById('foreign-nationality-input').value) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกสัญชาติ', 'warning'); return false; }
+                if (!idVal) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขเอกสาร', 'warning'); return false; }
+                var natInput = document.getElementById('foreign-nationality-input').value;
+                if (!natInput) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกสัญชาติจริง', 'warning'); return false; }
+                if (natInput === 'Other' && !document.getElementById('foreign-nationality-other').value.trim()) {
+                    Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุสัญชาติอื่นๆ', 'warning'); return false;
+                }
             }
 
             var dobDay = document.getElementById('dob-day').value, dobMonth = document.getElementById('dob-month').value, dobYear = document.getElementById('dob-year').value;
@@ -648,7 +655,7 @@
                 Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนครับ', 'warning'); return false;
             }
             if (currentNationality === 'foreigner' && !getSelectedFile('wp')) {
-                Swal.fire('ขาดรูปถ่าย', 'กรุณาอัปโหลดใบอนุญาตทำงาน (Work Permit)', 'warning'); return false;
+                Swal.fire('ขาดรูปถ่าย', 'กรุณาอัปโหลดเอกสารอื่นๆ ที่จำเป็นสำหรับการขึ้นทะเบียน', 'warning'); return false;
             }
             return true;
         }
@@ -657,7 +664,6 @@
             if (!document.getElementById('consent-truth').checked || !document.getElementById('consent-age').checked) {
                 Swal.fire('คำรับรอง', 'กรุณากดติ๊กถูกในช่องคำรับรองทั้ง 2 ข้อ', 'warning'); return false;
             }
-            // เช็คอายุจริงจากวันเกิดเป็นการยืนยันซ้ำ นอกเหนือจากการกดติ๊กยอมรับ
             var dobDate = beToAdDate(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value);
             if (dobDate) {
                 var age = (new Date() - dobDate) / (365.25 * 24 * 3600 * 1000);
@@ -680,13 +686,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ===============================================
-        // 💾 บันทึกข้อมูลลง Supabase
-        // ===============================================
         function generateWorkerId() {
-            // ⚠️ สมมติว่าคอลัมน์ worker_id เป็นชนิด text/uuid ไม่ใช่ serial integer
-            // ถ้า worker_id ในตารางจริงเป็น serial/identity ที่ auto-increment เอง
-            // ต้องเอาบรรทัด worker_id ออกจาก payload แล้วปล่อยให้ DB gen ให้แทน
             if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
             return 'WK-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase();
         }
@@ -696,7 +696,11 @@
             if (!supabase) { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); return; }
 
             var nationalId = document.getElementById('id-input').value.trim();
+            
             var nationalityValue = currentNationality === 'thai' ? 'Thai' : document.getElementById('foreign-nationality-input').value;
+            if (nationalityValue === 'Other') {
+                nationalityValue = 'Other: ' + document.getElementById('foreign-nationality-other').value.trim();
+            }
 
             Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -704,11 +708,11 @@
                 var dupCheck = await supabase.from('tb_workers').select('worker_id').eq('national_id', nationalId).limit(1);
                 if (dupCheck.error) throw dupCheck.error;
                 if (dupCheck.data && dupCheck.data.length > 0) {
-                    Swal.fire('เลขบัตรนี้ลงทะเบียนแล้ว', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
+                    Swal.fire('เลขเอกสารซ้ำ', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
                     return;
                 }
 
-                Swal.update({ title: 'กำลังบันทึกข้อมูล...' });
+                Swal.update({ title: 'กำลังอัปโหลดเอกสาร...' });
 
                 var mainFile = getSelectedFile('main');
                 var mainPath = 'id-cards/' + Date.now() + '_' + mainFile.name;
@@ -717,9 +721,11 @@
                 var mainUrl = supabase.storage.from('worker-documents').getPublicUrl(mainPath).data.publicUrl;
 
                 var wpUrl = null;
+                var extraDocType = null;
                 if (currentNationality === 'foreigner') {
                     var wpFile = getSelectedFile('wp');
                     if (wpFile) {
+                        extraDocType = document.getElementById('extra-doc-type').value;
                         var wpPath = 'work-permits/' + Date.now() + '_' + wpFile.name;
                         var upWp = await supabase.storage.from('worker-documents').upload(wpPath, wpFile);
                         if (upWp.error) throw upWp.error;
@@ -761,7 +767,7 @@
             } catch (err) {
                 console.error('submitToSupabase error:', err);
                 if (err && err.code === '23505') {
-                    Swal.fire('เลขบัตรนี้ลงทะเบียนแล้ว', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
+                    Swal.fire('เลขเอกสารซ้ำ', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
                 } else {
                     Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
                 }
