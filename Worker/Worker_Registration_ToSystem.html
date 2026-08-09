@@ -28,29 +28,29 @@
         body { background-color: #F4F6F8; }
         .input-field { width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #F9FAFB; font-size: 0.875rem; color: #1F2937; transition: all 0.2s; }
         .input-field:focus { outline: none; border-color: #19335A; background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
-        .doc-item { background: #f8fafc; border: 1px dashed #a0aec0; padding: 15px; margin-bottom: 15px; border-radius: 0.5rem; position: relative; }
-        .btn-remove { position: absolute; top: -10px; right: -10px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex: none; align-items: center; justify-content: center; display: flex; }
-        .btn-add { background-color: #19335A; color: #FFFFFF; padding: 12px; border-radius: 0.5rem; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; font-size: 0.875rem; border: none; box-shadow: 0 4px 6px rgba(25, 51, 90, 0.2); }
-        .btn-add:hover { background-color: #254B82; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(25, 51, 90, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* ===== ปุ่มเปิดกล้องถ่ายภาพสด (WebRTC UI) ===== */
+        .section-label { display:flex; align-items:center; gap:8px; font-size:0.78rem; font-weight:700; color:#19335A; text-transform:uppercase; letter-spacing:0.04em; margin: 28px 0 14px; }
+        .section-label .bar { width: 4px; height: 16px; border-radius: 4px; background: #DB5A24; }
+
+        .consent-box { display:flex; align-items:flex-start; gap:10px; background:#F9FAFB; border:1px solid #E5E9F0; border-radius:12px; padding:12px 14px; }
+        .consent-box input[type=checkbox] { width:19px; height:19px; margin-top:2px; accent-color:#19335A; border-radius:5px; flex-shrink:0; }
+
+        /* ===== ปุ่มเปิดกล้อง ===== */
         .btn-camera {
-            position: relative;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+            position: relative; display: flex; align-items: center; justify-content: center; gap: 10px;
             padding: 14px 20px; border-radius: 14px; border: none; cursor: pointer;
             font-weight: 700; font-size: 0.9rem; color: #fff;
             background: linear-gradient(135deg, #E9662C 0%, #DB5A24 55%, #C14B1A 100%);
             box-shadow: 0 6px 16px -4px rgba(219, 90, 36, 0.55), inset 0 1px 0 rgba(255,255,255,0.25);
             transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
         }
-        .btn-camera:hover { filter: brightness(1.05); box-shadow: 0 8px 20px -4px rgba(219, 90, 36, 0.6), inset 0 1px 0 rgba(255,255,255,0.25); }
-        .btn-camera:active { transform: scale(0.97); box-shadow: 0 3px 10px -2px rgba(219, 90, 36, 0.5); }
-        .btn-camera .icon-badge {
-            display: flex; align-items: center; justify-content: center;
-            width: 26px; height: 26px; border-radius: 999px; background: rgba(255,255,255,0.18);
-        }
+        .btn-camera:hover { filter: brightness(1.05); }
+        .btn-camera:active { transform: scale(0.97); }
+        .btn-camera .icon-badge { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:999px; background: rgba(255,255,255,0.18); }
+        .btn-camera:disabled { opacity: 0.55; cursor: not-allowed; }
+
         .btn-filepick {
             display: flex; align-items: center; justify-content: center; gap: 10px;
             padding: 13px 20px; border-radius: 14px; cursor: pointer;
@@ -61,39 +61,25 @@
         .btn-filepick:hover { border-color: #19335A; background: #F7F9FC; }
         .btn-filepick:active { transform: scale(0.97); }
 
-        /* ===== กรอบกล้องถ่ายภาพสด (Viewfinder ใหม่) ===== */
-        .camera-container {
-            display: none; width: 100%; max-width: 420px; margin: 0 auto;
-            border-radius: 18px; overflow: hidden; background: #0B1220;
-            position: relative; box-shadow: 0 12px 30px -8px rgba(0,0,0,0.45);
-        }
+        /* ===== กรอบกล้องถ่ายภาพสด ===== */
+        .camera-container { display: none; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 18px; overflow: hidden; background: #0B1220; position: relative; box-shadow: 0 12px 30px -8px rgba(0,0,0,0.45); }
         .camera-container video { width: 100%; display: block; aspect-ratio: 4 / 3; object-fit: cover; background: #000; }
         .camera-container .overlay { position: absolute; inset: 0; pointer-events: none; margin: 22px; }
         .camera-container .overlay .corner { position: absolute; width: 28px; height: 28px; border: 3px solid #fff; opacity: 0.9; }
-        .camera-container .overlay .corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
-        .camera-container .overlay .corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
-        .camera-container .overlay .corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
-        .camera-container .overlay .corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
-
-        .camera-container .live-badge {
-            position: absolute; top: 14px; left: 14px; display: flex; align-items: center; gap: 6px;
-            background: rgba(0,0,0,0.45); backdrop-filter: blur(2px);
-            padding: 4px 10px 4px 8px; border-radius: 999px; color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
-        }
-        .camera-container .live-badge .dot { width: 7px; height: 7px; border-radius: 999px; background: #FF4D4D; animation: pulse-dot 1.4s ease-in-out infinite; }
-        @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
-
-        .camera-container .hint-text { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.85); font-size: 0.72rem; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
-
-        .camera-controls { padding: 14px; background: #101827; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .shutter-btn {
-            width: 62px; height: 62px; border-radius: 999px; border: 4px solid rgba(255,255,255,0.85);
-            background: #DB5A24; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 14px rgba(219, 90, 36, 0.5); transition: transform 0.12s ease;
-        }
+        .camera-container .overlay .corner.tl { top:0; left:0; border-right:none; border-bottom:none; border-top-left-radius:8px; }
+        .camera-container .overlay .corner.tr { top:0; right:0; border-left:none; border-bottom:none; border-top-right-radius:8px; }
+        .camera-container .overlay .corner.bl { bottom:0; left:0; border-right:none; border-top:none; border-bottom-left-radius:8px; }
+        .camera-container .overlay .corner.br { bottom:0; right:0; border-left:none; border-top:none; border-bottom-right-radius:8px; }
+        .camera-container .live-badge { position:absolute; top:14px; left:14px; display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.45); padding:4px 10px 4px 8px; border-radius:999px; color:#fff; font-size:0.68rem; font-weight:700; letter-spacing:0.04em; }
+        .camera-container .live-badge .dot { width:7px; height:7px; border-radius:999px; background:#FF4D4D; animation: pulse-dot 1.4s ease-in-out infinite; }
+        @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1);} 50% { opacity:0.4; transform:scale(0.8);} }
+        .camera-container .hint-text { position:absolute; bottom:14px; left:0; right:0; text-align:center; color:rgba(255,255,255,0.85); font-size:0.72rem; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.6); }
+        .camera-controls { padding:14px; background:#101827; display:flex; flex-direction:column; align-items:center; gap:10px; }
+        .shutter-btn { width:62px; height:62px; border-radius:999px; border:4px solid rgba(255,255,255,0.85); background:#DB5A24; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(219,90,36,0.5); transition: transform 0.12s ease; }
         .shutter-btn:active { transform: scale(0.9); }
-        .cancel-link { background: none; border: none; color: rgba(255,255,255,0.65); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 4px 8px; }
-        .cancel-link:hover { color: #fff; }
+        .cancel-link { background:none; border:none; color:rgba(255,255,255,0.65); font-size:0.78rem; font-weight:600; cursor:pointer; padding:4px 8px; }
+        .cancel-link:hover { color:#fff; }
+        .camera-loading { padding: 40px 14px; text-align:center; color:#9FB0C9; font-size:0.8rem; }
     </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -102,7 +88,18 @@
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
             <div class="flex items-center gap-3">
                 <div class="bg-white px-2 py-1.5 rounded flex items-center gap-1.5 h-11 shrink-0 shadow-sm border border-white/20">
-                    <div class="text-[#0017e6] font-black italic text-2xl leading-none tracking-tight">First</div>
+                    <div class="relative w-8 h-8 bg-[#0017e6] rounded-full flex items-center justify-center overflow-hidden shrink-0">
+                        <div class="absolute -right-0.5 top-1/2 -translate-y-1/2 text-white font-black italic text-3xl">1</div>
+                        <div class="absolute left-[3px] top-1/2 -translate-y-[45%] flex flex-col items-center">
+                            <svg width="10" height="12" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2h-1.5"/><path d="M14 4V3a2 2 0 0 0-2-2H9.5"/><path d="M10 1v3"/><path d="M6 4v7"/><path d="M18 11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8a2 2 0 0 1 2-2h1.5"/><path d="M10 6v5"/></svg>
+                            <span class="text-[3px] text-white font-bold leading-none mt-[1px]">FIRST</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center pb-0.5">
+                        <div class="text-[#0017e6] font-black italic text-2xl leading-none tracking-tight -mb-0.5">First</div>
+                        <div class="w-full h-[2px] bg-[#fff000] my-[3px]"></div>
+                        <div class="text-[#0017e6] font-bold text-[5px] tracking-widest leading-none">TECHNOLOGY CO.,LTD.</div>
+                    </div>
                 </div>
                 <div>
                     <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
@@ -110,14 +107,11 @@
                 </div>
             </div>
             <div class="shrink-0 flex items-start h-full">
-                <span class="text-[9px] sm:text-[10px] font-mono font-semibold text-brand-navy bg-white/90 px-2 py-1 rounded shadow-sm tracking-wider">
-                    FM-SAF-01
-                </span>
+                <span class="text-[9px] sm:text-[10px] font-mono font-semibold text-brand-navy bg-white/90 px-2 py-1 rounded shadow-sm tracking-wider">FM-SAF-01</span>
             </div>
         </div>
     </header>
 
-    <!-- หน้าจอดีดออก Chrome -->
     <div id="liff-blocker" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <div class="bg-white rounded-2xl border border-red-200 shadow-xl p-8 text-center flex flex-col items-center">
             <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
@@ -128,36 +122,29 @@
                 เนื่องจากแอป LINE ไม่รองรับการเปิดกล้องโดยตรง<br>กรุณากดปุ่มด้านล่างเพื่อเปิดใช้งานผ่าน Google Chrome
             </p>
             <button onclick="openInExternalBrowser()" class="w-full sm:w-auto px-8 py-4 bg-brand-navy text-white font-bold rounded-xl shadow-lg hover:bg-brand-navy-light transition-all flex items-center justify-center gap-2">
-                <i data-lucide="chrome" class="w-5 h-5"></i>
-                เปิดใช้งานผ่าน Google Chrome
+                <i data-lucide="chrome" class="w-5 h-5"></i> เปิดใช้งานผ่าน Google Chrome
             </button>
         </div>
     </div>
 
-    <!-- ฟอร์มหลัก -->
     <main id="main-form" class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12 hidden">
 
-        <!-- Progress Indicator -->
         <div id="step-indicator" class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-6">
             <div class="flex items-center justify-center gap-0">
                 <div class="flex items-center w-full max-w-sm">
                     <div class="flex flex-col items-center gap-2 relative z-10">
                         <div id="ind-1" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-orange text-white ring-4 ring-brand-orange/20">1</div>
-                        <p id="ind-text-1" class="text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap">1. ข้อมูลส่วนตัว</p>
+                        <p class="text-[10px] font-semibold text-brand-orange absolute top-12 whitespace-nowrap">1. ข้อมูลส่วนตัว</p>
                     </div>
                     <div id="line-1" class="flex-1 h-0.5 mx-2 bg-gray-200"></div>
                     <div class="flex flex-col items-center gap-2 relative z-10">
-                        <div id="ind-2" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200">
-                            <i data-lucide="lock" class="w-4 h-4 opacity-50" id="lock-icon-2"></i>
-                        </div>
-                        <p id="ind-text-2" class="text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap">2. อัปโหลดเอกสาร</p>
+                        <div id="ind-2" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200"><i data-lucide="lock" class="w-4 h-4 opacity-50"></i></div>
+                        <p class="text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap">2. อัปโหลดเอกสาร</p>
                     </div>
                     <div id="line-2" class="flex-1 h-0.5 mx-2 bg-gray-200"></div>
                     <div class="flex flex-col items-center gap-2 relative z-10">
-                        <div id="ind-3" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200">
-                            <i data-lucide="lock" class="w-4 h-4 opacity-50" id="lock-icon-3"></i>
-                        </div>
-                        <p id="ind-text-3" class="text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap">3. ยืนยันตัวตน</p>
+                        <div id="ind-3" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-white text-gray-400 border-2 border-gray-200"><i data-lucide="lock" class="w-4 h-4 opacity-50"></i></div>
+                        <p class="text-[10px] font-semibold text-gray-400 absolute top-12 whitespace-nowrap">3. ยืนยันตัวตน</p>
                     </div>
                 </div>
             </div>
@@ -166,7 +153,7 @@
 
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
 
-            <!-- ================= STEP 1: ข้อมูลส่วนตัว ================= -->
+            <!-- ================= STEP 1 ================= -->
             <div id="step-1" class="block">
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">1</div>
@@ -174,14 +161,13 @@
                 </div>
 
                 <div class="mb-5">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">กลุ่มสัญชาติ (Nationality Group) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">สัญชาติ (Nationality) <span class="text-red-500">*</span></label>
                     <div class="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1 gap-1 w-full sm:w-auto">
                         <button type="button" id="btn-thai" onclick="setNationality('thai')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors">Thai (ไทย)</button>
                         <button type="button" id="btn-foreign" onclick="setNationality('foreigner')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors">Foreigner (ต่างชาติ)</button>
                     </div>
                 </div>
 
-                <!-- เฉพาะคนต่างชาติ: สัญชาติจริง และ ประเภทเอกสาร -->
                 <div id="foreigner-doc-section" class="mb-4 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">ประเภทเอกสาร (Document Type) <span class="text-red-500">*</span></label>
                     <select id="doc-type" class="input-field cursor-pointer">
@@ -198,6 +184,7 @@
                         <option value="Myanmar">Myanmar (เมียนมา)</option>
                         <option value="Cambodian">Cambodian (กัมพูชา)</option>
                         <option value="Lao">Lao (ลาว)</option>
+                        <option value="Vietnamese">Vietnamese (เวียดนาม)</option>
                         <option value="Other">Other (อื่นๆ)</option>
                     </select>
                 </div>
@@ -214,36 +201,96 @@
                 </div>
 
                 <div class="mb-4">
-                    <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน / เลขเอกสาร <span class="text-red-500">*</span></label>
-                    <input type="text" id="id-input" placeholder="กรอกข้อมูล..." class="input-field font-mono" maxlength="13" oninput="validateIdInput(this)">
+                    <label id="id-label" class="block text-sm font-semibold text-gray-800 mb-1.5">เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span></label>
+                    <input type="text" inputmode="text" id="id-input" placeholder="กรอกข้อมูล..." class="input-field font-mono" maxlength="20" oninput="validateIdInput(this)">
                 </div>
 
-                <!-- เลือกระบบผู้รับเหมา (Vendor) จาก Supabase -->
-                <div class="mb-6 relative" id="vendor-container">
-                    <label class="block text-sm font-semibold text-gray-800 mb-1.5 mt-6">บริษัท / ผู้รับเหมา (Vendor) <span class="text-red-500">*</span></label>
+                <!-- วันเกิด -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="dob-day" class="input-field cursor-pointer"></select>
+                        <select id="dob-month" class="input-field cursor-pointer"></select>
+                        <select id="dob-year" class="input-field cursor-pointer"></select>
+                    </div>
+                </div>
+
+                <!-- วันหมดอายุบัตร -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (ID/Document Expiry) <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="exp-day" class="input-field cursor-pointer"></select>
+                        <select id="exp-month" class="input-field cursor-pointer"></select>
+                        <select id="exp-year" class="input-field cursor-pointer"></select>
+                    </div>
+                </div>
+
+                <div class="mb-2 relative" id="vendor-container">
+                    <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor) <span class="text-red-500">*</span></label>
                     <input type="text" id="vendor-input" placeholder="-- พิมพ์ค้นหา / เลือกบริษัท --" class="input-field cursor-text" autocomplete="off" onfocus="showVendorList()" oninput="filterVendors()">
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto no-scrollbar hidden"></ul>
                 </div>
 
+                <!-- ผู้ติดต่อฉุกเฉิน -->
+                <div class="section-label"><span class="bar"></span> ผู้ติดต่อในภาวะฉุกเฉิน</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">ชื่อ-สกุล <span class="text-red-500">*</span></label>
+                        <input type="text" id="emg-name" placeholder="ชื่อผู้ติดต่อฉุกเฉิน" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">ความสัมพันธ์ <span class="text-red-500">*</span></label>
+                        <select id="emg-relation" class="input-field cursor-pointer">
+                            <option value="">-- เลือก --</option>
+                            <option value="Spouse">คู่สมรส</option>
+                            <option value="Parent">บิดา/มารดา</option>
+                            <option value="Child">บุตร</option>
+                            <option value="Sibling">พี่/น้อง</option>
+                            <option value="Relative">ญาติ</option>
+                            <option value="Friend">เพื่อน</option>
+                            <option value="Other">อื่นๆ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
+                        <input type="text" inputmode="numeric" id="emg-phone" placeholder="08XXXXXXXX" maxlength="10" class="input-field" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    </div>
+                </div>
+
+                <!-- PDPA -->
+                <div class="section-label"><span class="bar"></span> การยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
+                <div class="flex flex-col gap-3 mb-2">
+                    <label class="consent-box cursor-pointer">
+                        <input type="checkbox" id="pdpa-biometric">
+                        <span class="text-sm text-gray-700 leading-relaxed">ยินยอมให้จัดเก็บข้อมูลชีวมิติ (ภาพใบหน้า/ลายนิ้วมือ) เพื่อการยืนยันตัวตนเข้าปฏิบัติงาน</span>
+                    </label>
+                    <label class="consent-box cursor-pointer">
+                        <input type="checkbox" id="pdpa-health">
+                        <span class="text-sm text-gray-700 leading-relaxed">ยินยอมให้จัดเก็บข้อมูลสุขภาพ/กรุ๊ปเลือด เพื่อใช้ในกรณีฉุกเฉินด้านความปลอดภัย</span>
+                    </label>
+                    <label class="consent-box cursor-pointer">
+                        <input type="checkbox" id="pdpa-gps">
+                        <span class="text-sm text-gray-700 leading-relaxed">ยินยอมให้จัดเก็บตำแหน่ง GPS ขณะลงทะเบียน/ปฏิบัติงานในพื้นที่ควบคุม</span>
+                    </label>
+                </div>
+
                 <button type="button" onclick="if(validateStep1()) goToStep(2)" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg mt-8">
-                    ถัดไป — ขั้นตอนที่ 2: อัปโหลดเอกสาร
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    ถัดไป — ขั้นตอนที่ 2: อัปโหลดเอกสาร <i data-lucide="chevron-right" class="w-4 h-4"></i>
                 </button>
             </div>
 
-            <!-- ================= STEP 2: ถ่ายภาพเอกสาร ================= -->
+            <!-- ================= STEP 2 ================= -->
             <div id="step-2" class="hidden">
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">2</div>
                     <div>
                         <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: ถ่ายภาพยืนยันเอกสาร</p>
-                        <p class="text-xs text-gray-500 mt-0.5">กรุณาถ่ายภาพสดผ่านกล้อง หรือ เลือกจากไฟล์</p>
+                        <p class="text-xs text-gray-500 mt-0.5">กรุณาเลือกวิธีการอัปโหลดภาพ (ถ่ายสดผ่านกล้อง หรือ เลือกจากไฟล์)</p>
                     </div>
                 </div>
 
-                <!-- เอกสารหลัก -->
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดบัตรประชาชน / พาสปอร์ต <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="main-btn-group" class="w-full max-w-xs flex flex-col gap-3">
                             <button type="button" onclick="startLiveCamera('main')" class="btn-camera">
@@ -263,12 +310,13 @@
                                 <p class="hint-text">วางบัตรให้อยู่ในกรอบ แสงสว่างเพียงพอ</p>
                             </div>
                             <div class="camera-controls">
-                                <button type="button" onclick="takeSnapshot('main')" class="shutter-btn"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>
+                                <button type="button" onclick="takeSnapshot('main')" class="shutter-btn" aria-label="ถ่ายภาพ"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>
                                 <button type="button" onclick="stopLiveCamera('main')" class="cancel-link">ยกเลิก</button>
                             </div>
                         </div>
 
                         <canvas id="main-canvas" class="hidden"></canvas>
+
                         <div id="main-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
                             <p id="text-main" class="text-sm font-bold text-green-600">รับภาพถ่ายเรียบร้อยแล้ว</p>
@@ -277,7 +325,6 @@
                     </div>
                 </div>
 
-                <!-- Work Permit (ซ่อนไว้สำหรับคนไทย) -->
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -299,12 +346,13 @@
                                 <p class="hint-text">วางเอกสารให้อยู่ในกรอบ แสงสว่างเพียงพอ</p>
                             </div>
                             <div class="camera-controls">
-                                <button type="button" onclick="takeSnapshot('wp')" class="shutter-btn"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>
+                                <button type="button" onclick="takeSnapshot('wp')" class="shutter-btn" aria-label="ถ่ายภาพ"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>
                                 <button type="button" onclick="stopLiveCamera('wp')" class="cancel-link">ยกเลิก</button>
                             </div>
                         </div>
 
                         <canvas id="wp-canvas" class="hidden"></canvas>
+
                         <div id="wp-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
                             <p id="text-wp" class="text-sm font-bold text-green-600">รับภาพถ่ายเรียบร้อยแล้ว</p>
@@ -314,50 +362,40 @@
                 </div>
 
                 <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2 border-t border-gray-200 mt-8">
-                    <button type="button" onclick="goToStep(1)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
-                    </button>
-                    <button type="button" onclick="if(validateStep2()) goToStep(3)" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
-                        ถัดไป — ขั้นตอนที่ 3: ยืนยันตัวตน
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
+                    <button type="button" onclick="goToStep(1)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"><i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ</button>
+                    <button type="button" onclick="if(validateStep2()) goToStep(3)" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">ถัดไป — ขั้นตอนที่ 3: ยืนยันตัวตน <i data-lucide="chevron-right" class="w-4 h-4"></i></button>
                 </div>
             </div>
 
-            <!-- ================= STEP 3: ยืนยันข้อมูล ================= -->
+            <!-- ================= STEP 3 ================= -->
             <div id="step-3" class="hidden">
                 <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-6 flex items-start gap-3">
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">3</div>
                     <div><p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 3: ยืนยันข้อมูล</p></div>
                 </div>
 
-                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 mb-6 flex flex-col gap-3">
-                    <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" id="consent-final" class="w-5 h-5 rounded border-gray-300 mt-0.5 accent-brand-navy">
-                        <div class="text-sm text-gray-700 leading-relaxed">
-                            <p>ข้าพเจ้ายืนยันว่าภาพถ่ายที่อัปโหลดเป็นภาพถ่ายปัจจุบันจริง และข้อมูลทั้งหมดถูกต้อง <span class="text-red-500">*</span></p>
-                        </div>
+                <div class="flex flex-col gap-3 mb-6">
+                    <label class="consent-box cursor-pointer">
+                        <input type="checkbox" id="consent-truth">
+                        <span class="text-sm text-gray-700 leading-relaxed">ข้าพเจ้ายืนยันว่าข้อมูลทั้งหมดเป็นความจริง และยอมรับการบันทึกภาพถ่าย/ตำแหน่ง GPS ตามที่ระบุไว้ข้างต้น <span class="text-red-500">*</span></span>
+                    </label>
+                    <label class="consent-box cursor-pointer">
+                        <input type="checkbox" id="consent-age">
+                        <span class="text-sm text-gray-700 leading-relaxed">ข้าพเจ้ายืนยันว่ามีอายุไม่ต่ำกว่า 18 ปีบริบูรณ์ <span class="text-red-500">*</span></span>
                     </label>
                 </div>
 
                 <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-                    <button type="button" onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ
-                    </button>
-                    <button type="button" id="btnSubmit" onclick="if(validateStep3()) submitToSupabase()" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i> ส่งข้อมูลลงทะเบียน
-                    </button>
+                    <button type="button" onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-4 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"><i data-lucide="chevron-left" class="w-4 h-4"></i> ย้อนกลับ</button>
+                    <button type="button" id="btnSubmit" onclick="if(validateStep3()) submitToSupabase()" class="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg"><i data-lucide="shield-check" class="w-4 h-4"></i> ส่งข้อมูลลงทะเบียน</button>
                 </div>
             </div>
 
-            <!-- ================= SUCCESS ================= -->
             <div id="step-success" class="hidden flex-col items-center justify-center gap-6 py-10 text-center">
-                <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-                    <i data-lucide="check" class="w-10 h-10 text-white"></i>
-                </div>
+                <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg"><i data-lucide="check" class="w-10 h-10 text-white"></i></div>
                 <div>
                     <h2 class="text-2xl font-bold text-brand-navy">ยืนยันตัวตนสำเร็จ!</h2>
-                    <p class="text-sm text-gray-600 mt-2">ข้อมูลของคุณถูกจัดเก็บเข้าระบบเรียบร้อยแล้ว รอการอนุมัติเพื่อเริ่มงาน</p>
+                    <p class="text-sm text-gray-600 mt-2">ข้อมูลของคุณถูกจัดเก็บเข้าระบบเรียบร้อยแล้ว</p>
                 </div>
             </div>
 
@@ -370,12 +408,40 @@
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
         var currentNationality = 'thai';
-        var selectedVendorId = null; 
-        var vendorsMasterData = []; 
-        var lineUserId = null; 
+        var selectedVendorId = null;
+        var vendorsMasterData = [];
+        var lineUserId = null;
+
+        var THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+        function populateDateDropdowns(prefix, yearFrom, yearTo) {
+            var daySel = document.getElementById(prefix + '-day');
+            var monthSel = document.getElementById(prefix + '-month');
+            var yearSel = document.getElementById(prefix + '-year');
+
+            daySel.innerHTML = '<option value="">วัน</option>';
+            for (var d = 1; d <= 31; d++) daySel.innerHTML += '<option value="' + d + '">' + d + '</option>';
+
+            monthSel.innerHTML = '<option value="">เดือน</option>';
+            THAI_MONTHS.forEach(function(m, idx) { monthSel.innerHTML += '<option value="' + (idx + 1) + '">' + m + '</option>'; });
+
+            yearSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
+            if (yearFrom > yearTo) {
+                for (var y = yearFrom; y >= yearTo; y--) yearSel.innerHTML += '<option value="' + y + '">' + y + '</option>';
+            } else {
+                for (var y2 = yearFrom; y2 <= yearTo; y2++) yearSel.innerHTML += '<option value="' + y2 + '">' + y2 + '</option>';
+            }
+        }
 
         window.addEventListener('load', async function() {
             if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            var thisYearBE = new Date().getFullYear() + 543;
+            // วันเกิด: ช่วงอายุทำงานโดยประมาณ 15-70 ปี (ใหม่สุดก่อน)
+            populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
+            // วันหมดอายุบัตร: ปีปัจจุบันถึงอีก 15 ปีข้างหน้า
+            populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
+
             await fetchVendors();
 
             setTimeout(function() {
@@ -389,10 +455,8 @@
                             document.getElementById('main-form').classList.remove('hidden');
                         }
                         if (liff.isLoggedIn && liff.isLoggedIn()) {
-                            try {
-                                var profile = await liff.getProfile();
-                                lineUserId = profile.userId;
-                            } catch (e) { console.error('liff.getProfile error:', e); }
+                            try { var profile = await liff.getProfile(); lineUserId = profile.userId; }
+                            catch (e) { console.error('liff.getProfile error:', e); }
                         }
                     }).catch((err) => { console.error("LIFF Error:", err); });
                 }
@@ -404,21 +468,18 @@
         });
 
         function openInExternalBrowser() {
-            var currentUrl = window.location.href;
-            liff.openWindow({ url: currentUrl, external: true });
+            liff.openWindow({ url: window.location.href, external: true });
         }
 
         // ===============================================
-        // 🏢 Vendor Autocomplete 
+        // 🏢 Vendor Autocomplete (tb_vendors จริง)
         // ===============================================
         async function fetchVendors() {
             if (!supabase) return;
             try {
                 var res = await supabase.from('tb_vendors').select('vendor_id, vendor_name').order('vendor_name');
                 if (res.error) throw res.error;
-                vendorsMasterData = (res.data || []).map(function(v) {
-                    return { id: v.vendor_id, name: v.vendor_name };
-                });
+                vendorsMasterData = (res.data || []).map(function(v) { return { id: v.vendor_id, name: v.vendor_name }; });
             } catch (e) {
                 console.error('fetchVendors error:', e);
                 vendorsMasterData = [];
@@ -441,35 +502,46 @@
             }
             list.classList.remove('hidden');
         }
-
         function showVendorList() { renderVendorList(vendorsMasterData); }
-
         function filterVendors() {
             var q = document.getElementById('vendor-input').value.trim().toLowerCase();
-            var filtered = !q ? vendorsMasterData : vendorsMasterData.filter(function(v) {
-                return v.name.toLowerCase().indexOf(q) !== -1;
-            });
+            var filtered = !q ? vendorsMasterData : vendorsMasterData.filter(function(v) { return v.name.toLowerCase().indexOf(q) !== -1; });
             renderVendorList(filtered);
         }
-
         function selectVendor(v) {
             selectedVendorId = v.id;
             document.getElementById('vendor-input').value = v.name;
             document.getElementById('vendor-list').classList.add('hidden');
         }
-
         document.addEventListener('click', function(e) {
             var container = document.getElementById('vendor-container');
-            if (container && !container.contains(e.target)) {
-                document.getElementById('vendor-list').classList.add('hidden');
-            }
+            if (container && !container.contains(e.target)) document.getElementById('vendor-list').classList.add('hidden');
         });
 
         // ===============================================
-        // 📷 ระบบถ่ายภาพสด WebRTC & จัดการไฟล์
+        // 📷 กล้องถ่ายภาพสด WebRTC — แก้ปัญหาจอดำบน Android/Samsung
+        // แนวทางที่เลือก: (1) ไล่ลอง constraints จากเข้มงวด→หลวมเป็นลำดับ กันเคส
+        //   OverconstrainedError ที่กล้องบางรุ่นไม่รองรับ facingMode/ความละเอียดที่ขอ
+        // (2) เรียก video.play() เองแบบ explicit หลัง assign srcObject เพราะสาเหตุ
+        //   "จอดำ" ที่พบบ่อยที่สุดคือ autoplay policy บาง WebView บล็อกไม่ให้เล่นอัตโนมัติ
+        //   ทั้งที่ attribute autoplay ใส่ไว้แล้ว (stream ต่อสำเร็จแต่ภาพไม่ขึ้น)
         // ===============================================
         let activeStream = null;
         let activeCameraType = null;
+
+        async function getStreamWithFallback() {
+            var attempts = [
+                { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+                { video: { facingMode: 'environment' }, audio: false },
+                { video: true, audio: false }
+            ];
+            var lastErr;
+            for (var i = 0; i < attempts.length; i++) {
+                try { return await navigator.mediaDevices.getUserMedia(attempts[i]); }
+                catch (e) { lastErr = e; console.warn('getUserMedia attempt ' + i + ' failed:', e.name); }
+            }
+            throw lastErr;
+        }
 
         async function startLiveCamera(type) {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -478,70 +550,94 @@
             }
             if (activeStream) stopLiveCamera(activeCameraType);
 
+            var btnGroup = document.getElementById(type + '-btn-group');
+            var camView = document.getElementById(type + '-camera-view');
+            var camBtn = btnGroup.querySelector('.btn-camera');
+
+            btnGroup.classList.add('hidden');
+            camView.style.display = 'block';
+            camView.innerHTML = '<div class="camera-loading">กำลังเปิดกล้อง...</div>';
+
             try {
-                document.getElementById(type + '-btn-group').classList.add('hidden');
-                document.getElementById(type + '-camera-view').style.display = 'block';
-
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: 'environment' } }, 
-                    audio: false
-                });
-
+                var stream = await getStreamWithFallback();
                 activeStream = stream;
                 activeCameraType = type;
-                document.getElementById(type + '-video').srcObject = stream;
+
+                // สร้าง video/overlay/controls กลับเข้าไปใหม่ (เผื่อโดน innerHTML ล้างตอน loading)
+                rebuildCameraView(type);
+
+                var video = document.getElementById(type + '-video');
+                video.muted = true;
+                video.setAttribute('playsinline', 'true');
+                video.srcObject = stream;
+
+                // FIX จอดำ: บังคับ play() ตรงๆ แทนที่จะพึ่ง autoplay attribute อย่างเดียว
+                var tryPlay = function() { video.play().catch(function(err){ console.warn('video.play() blocked:', err); }); };
+                video.onloadedmetadata = tryPlay;
+                tryPlay();
 
             } catch (err) {
                 console.error(err);
                 stopLiveCamera(type);
-                Swal.fire('กล้องถูกบล็อก', 'กรุณาอนุญาตให้เบราว์เซอร์เข้าถึงกล้องก่อนครับ', 'error');
+                Swal.fire('เปิดกล้องไม่สำเร็จ', 'กรุณาอนุญาตให้เบราว์เซอร์เข้าถึงกล้อง หรือใช้ปุ่ม "เลือกรูปจากแฟ้ม" แทนครับ', 'error');
             }
+        }
+
+        function rebuildCameraView(type) {
+            var hint = type === 'main' ? 'วางบัตรให้อยู่ในกรอบ แสงสว่างเพียงพอ' : 'วางเอกสารให้อยู่ในกรอบ แสงสว่างเพียงพอ';
+            document.getElementById(type + '-camera-view').innerHTML =
+                '<div class="relative">' +
+                    '<video id="' + type + '-video" autoplay playsinline muted></video>' +
+                    '<div class="overlay"><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div></div>' +
+                    '<div class="live-badge"><span class="dot"></span>LIVE</div>' +
+                    '<p class="hint-text">' + hint + '</p>' +
+                '</div>' +
+                '<div class="camera-controls">' +
+                    '<button type="button" onclick="takeSnapshot(\'' + type + '\')" class="shutter-btn" aria-label="ถ่ายภาพ"><i data-lucide="scan" class="w-6 h-6 text-white"></i></button>' +
+                    '<button type="button" onclick="stopLiveCamera(\'' + type + '\')" class="cancel-link">ยกเลิก</button>' +
+                '</div>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function stopLiveCamera(type) {
             if (activeStream) {
-                activeStream.getTracks().forEach(track => track.stop());
+                activeStream.getTracks().forEach(function(t){ t.stop(); });
                 activeStream = null;
                 activeCameraType = null;
             }
-            document.getElementById(type + '-camera-view').style.display = 'none';
+            var camView = document.getElementById(type + '-camera-view');
+            camView.style.display = 'none';
+            camView.innerHTML = '';
             document.getElementById(type + '-btn-group').classList.remove('hidden');
         }
 
         function takeSnapshot(type) {
             if (!activeStream) return;
-            const video = document.getElementById(type + '-video');
-            const canvas = document.getElementById(type + '-canvas');
+            var video = document.getElementById(type + '-video');
+            var canvas = document.getElementById(type + '-canvas');
+            canvas.width = video.videoWidth || 1280;
+            canvas.height = video.videoHeight || 960;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-
-            canvas.toBlob((blob) => {
-                const file = new File([blob], "FTC_Snap_" + Date.now() + ".jpg", { type: "image/jpeg" });
-                const dataTransfer = new DataTransfer();
+            canvas.toBlob(function(blob) {
+                var file = new File([blob], "FTC_Snap_" + Date.now() + ".jpg", { type: "image/jpeg" });
+                var dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
-
                 stopLiveCamera(type);
                 showSuccessUI(type, file.name);
             }, 'image/jpeg', 0.85);
         }
 
         function handleFileSelect(type, inputElement) {
-            if (inputElement.files.length > 0) {
-                showSuccessUI(type, inputElement.files[0].name);
-            }
+            if (inputElement.files.length > 0) showSuccessUI(type, inputElement.files[0].name);
         }
-
         function showSuccessUI(type, fileName) {
             document.getElementById(type + '-btn-group').classList.add('hidden');
-            document.getElementById(type + '-camera-view').style.display = 'none';
             document.getElementById(type + '-success-status').classList.remove('hidden');
             document.getElementById('dropzone-' + type).classList.replace('border-brand-navy/30', 'border-green-500');
-            document.getElementById('text-' + type).innerText = "ไฟล์ที่บันทึก: " + fileName;
+            document.getElementById('text-' + type).innerText = "ไฟล์ที่เลือก: " + fileName;
         }
-
         function resetFile(type) {
             document.getElementById('file-' + type + '-upload').value = '';
             document.getElementById(type + '-success-status').classList.add('hidden');
@@ -549,58 +645,63 @@
             document.getElementById('dropzone-' + type).classList.replace('border-green-500', 'border-brand-navy/30');
         }
 
-        // ================= ฟังก์ชัน Validation & Step =================
+        // ================= Validation & Step control =================
         function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
             var btnForeign = document.getElementById('btn-foreign');
-            var fNat = document.getElementById('foreigner-nationality-section');
+            var wp = document.getElementById('upload-workpermit');
+            var docSec = document.getElementById('foreigner-doc-section');
+            var natSec = document.getElementById('foreigner-nationality-section');
+            var active = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors';
+            var inactive = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
             if (nat === 'thai') {
-                document.getElementById('upload-workpermit').classList.add('hidden');
-                document.getElementById('foreigner-doc-section').classList.add('hidden');
-                document.getElementById('id-input').maxLength = 13; // กลับมาล็อค 13 หลักของคนไทย
-                fNat.classList.add('hidden');
-                btnThai.className = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors';
-                btnForeign.className = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
+                wp.classList.add('hidden'); docSec.classList.add('hidden'); natSec.classList.add('hidden');
+                btnThai.className = active; btnForeign.className = inactive;
             } else {
-                document.getElementById('upload-workpermit').classList.remove('hidden');
-                document.getElementById('foreigner-doc-section').classList.remove('hidden');
-                document.getElementById('id-input').maxLength = 20; // พาสปอร์ตอาจจะยาวได้
-                fNat.classList.remove('hidden');
-                btnForeign.className = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors';
-                btnThai.className = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
+                wp.classList.remove('hidden'); docSec.classList.remove('hidden'); natSec.classList.remove('hidden');
+                btnForeign.className = active; btnThai.className = inactive;
             }
         }
 
-        // อนุญาตให้ต่างชาติพิมพ์ตัวอักษรได้
         function validateIdInput(obj) {
-            if (currentNationality === 'thai') {
-                obj.value = obj.value.replace(/[^0-9]/g, '');       
-            } else {
-                obj.value = obj.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); 
-            }
+            if (currentNationality === 'thai') obj.value = obj.value.replace(/[^0-9]/g, '');
+            else obj.value = obj.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        }
+
+        function beToAdDate(day, month, yearBE) {
+            if (!day || !month || !yearBE) return null;
+            return new Date(parseInt(yearBE) - 543, parseInt(month) - 1, parseInt(day));
         }
 
         function validateStep1() {
             if (!document.getElementById('fname-input').value.trim() || !document.getElementById('lname-input').value.trim()) {
                 Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ-นามสกุล', 'warning'); return false;
             }
-            if (!selectedVendorId) {
-                Swal.fire('ยังไม่ได้เลือกบริษัท', 'กรุณาเลือกบริษัท/ผู้รับเหมาจากรายการ', 'warning'); return false;
-            }
             var idVal = document.getElementById('id-input').value.trim();
             if (currentNationality === 'thai') {
-                if (idVal.length !== 13) {
-                    Swal.fire('เลขบัตรไม่ถูกต้อง', 'เลขบัตรประชาชนต้องมี 13 หลัก', 'warning'); return false;
-                }
+                if (idVal.length !== 13) { Swal.fire('เลขบัตรไม่ถูกต้อง', 'เลขบัตรประชาชนต้องมี 13 หลัก', 'warning'); return false; }
             } else {
-                if (!idVal) {
-                    Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขพาสปอร์ต หรือเอกสารที่ระบุ', 'warning'); return false;
-                }
-                if (!document.getElementById('foreign-nationality-input').value) {
-                    Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกสัญชาติ', 'warning'); return false;
-                }
+                if (!idVal) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขเอกสาร (Passport/Pink Card/Work Permit)', 'warning'); return false; }
+                if (!document.getElementById('foreign-nationality-input').value) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกสัญชาติ', 'warning'); return false; }
             }
+
+            var dobDay = document.getElementById('dob-day').value, dobMonth = document.getElementById('dob-month').value, dobYear = document.getElementById('dob-year').value;
+            if (!dobDay || !dobMonth || !dobYear) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกวันเกิดให้ครบ', 'warning'); return false; }
+
+            var expDay = document.getElementById('exp-day').value, expMonth = document.getElementById('exp-month').value, expYear = document.getElementById('exp-year').value;
+            if (!expDay || !expMonth || !expYear) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกวันหมดอายุของบัตรให้ครบ', 'warning'); return false; }
+
+            if (!selectedVendorId) { Swal.fire('ยังไม่ได้เลือกบริษัท', 'กรุณาเลือกบริษัท/ผู้รับเหมาจากรายการ', 'warning'); return false; }
+
+            if (!document.getElementById('emg-name').value.trim() || !document.getElementById('emg-relation').value || document.getElementById('emg-phone').value.trim().length < 9) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลผู้ติดต่อฉุกเฉินให้ครบถ้วน', 'warning'); return false;
+            }
+
+            if (!document.getElementById('pdpa-biometric').checked || !document.getElementById('pdpa-health').checked || !document.getElementById('pdpa-gps').checked) {
+                Swal.fire('ต้องยินยอมก่อน', 'กรุณากดยินยอมการเก็บข้อมูลส่วนบุคคลทั้ง 3 ข้อก่อนดำเนินการต่อ', 'warning'); return false;
+            }
+
             return true;
         }
 
@@ -615,9 +716,16 @@
         }
 
         function validateStep3() {
-            if (!document.getElementById('consent-final').checked) {
-                Swal.fire('คำรับรอง', "กรุณากดติ๊กถูกในช่องรับรองข้อมูล", 'warning'); return false;
-            } return true;
+            if (!document.getElementById('consent-truth').checked || !document.getElementById('consent-age').checked) {
+                Swal.fire('คำรับรอง', 'กรุณากดติ๊กถูกในช่องคำรับรองทั้ง 2 ข้อ', 'warning'); return false;
+            }
+            // เช็คอายุจริงจากวันเกิดเป็นการยืนยันซ้ำ นอกเหนือจากการกดติ๊กยอมรับ
+            var dobDate = beToAdDate(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value);
+            if (dobDate) {
+                var age = (new Date() - dobDate) / (365.25 * 24 * 3600 * 1000);
+                if (age < 18) { Swal.fire('อายุไม่ถึงเกณฑ์', 'ระบบตรวจพบว่าอายุยังไม่ถึง 18 ปีบริบูรณ์ตามวันเกิดที่ระบุ', 'error'); return false; }
+            }
+            return true;
         }
 
         function goToStep(stepNumber) {
@@ -626,7 +734,6 @@
             document.getElementById('step-2').classList.add('hidden');
             document.getElementById('step-3').classList.add('hidden');
             document.getElementById('step-success').classList.add('hidden');
-
             if (stepNumber === 'success') {
                 document.getElementById('step-success').classList.remove('hidden');
                 document.getElementById('step-success').classList.add('flex');
@@ -637,8 +744,16 @@
         }
 
         // ===============================================
-        // 💾 บันทึกข้อมูลจริงลง Supabase
+        // 💾 บันทึกข้อมูลลง Supabase
         // ===============================================
+        function generateWorkerId() {
+            // ⚠️ สมมติว่าคอลัมน์ worker_id เป็นชนิด text/uuid ไม่ใช่ serial integer
+            // ถ้า worker_id ในตารางจริงเป็น serial/identity ที่ auto-increment เอง
+            // ต้องเอาบรรทัด worker_id ออกจาก payload แล้วปล่อยให้ DB gen ให้แทน
+            if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+            return 'WK-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+        }
+
         async function submitToSupabase() {
             if (!validateStep3()) return;
             if (!supabase) { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); return; }
@@ -649,24 +764,21 @@
             Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                // 1) เช็คเลข ปชช ซ้ำ (ดัก Error 23505 ล่วงหน้าเพื่อ UX ที่ดี)
                 var dupCheck = await supabase.from('tb_workers').select('worker_id').eq('national_id', nationalId).limit(1);
                 if (dupCheck.error) throw dupCheck.error;
                 if (dupCheck.data && dupCheck.data.length > 0) {
-                    Swal.fire('เลขเอกสารซ้ำ', 'รหัส/เลขบัตรนี้มีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
+                    Swal.fire('เลขบัตรนี้ลงทะเบียนแล้ว', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
                     return;
                 }
 
-                Swal.update({ title: 'กำลังบันทึกและอัปโหลดรูป...' });
+                Swal.update({ title: 'กำลังบันทึกข้อมูล...' });
 
-                // 2) อัปโหลดรูปบัตรหลัก
                 var mainFile = document.getElementById('file-main-upload').files[0];
                 var mainPath = 'id-cards/' + Date.now() + '_' + mainFile.name;
                 var upMain = await supabase.storage.from('worker-documents').upload(mainPath, mainFile);
                 if (upMain.error) throw upMain.error;
                 var mainUrl = supabase.storage.from('worker-documents').getPublicUrl(mainPath).data.publicUrl;
 
-                // 3) อัปโหลด Work Permit (ถ้ามี)
                 var wpUrl = null;
                 if (currentNationality === 'foreigner') {
                     var wpFile = document.getElementById('file-wp-upload').files[0];
@@ -678,11 +790,8 @@
                     }
                 }
 
-                // 4) สร้าง worker_id อัตโนมัติและประกอบ Payload 
-                var newWorkerId = 'W-' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000);
-
                 var payload = {
-                    worker_id: newWorkerId,
+                    worker_id: generateWorkerId(),
                     vendor_id: selectedVendorId,
                     full_name: document.getElementById('fname-input').value.trim() + ' ' + document.getElementById('lname-input').value.trim(),
                     national_id: nationalId,
@@ -691,9 +800,10 @@
                     line_user_id: lineUserId,
                     id_card_photo_url: mainUrl,
                     work_permit_photo_url: wpUrl
+                    // หมายเหตุ: date_of_birth, id_expiry_date, emergency_contact_*, pdpa_* ยังไม่มีคอลัมน์
+                    // รองรับในสกีม่า tb_workers ที่ PM ยืนยันไว้ ต้องขอเพิ่มคอลัมน์ก่อนจึงจะบันทึกฟิลด์เหล่านี้ได้จริง
                 };
 
-                // 5) ส่งเข้า Supabase
                 var insertRes = await supabase.from('tb_workers').insert(payload);
                 if (insertRes.error) throw insertRes.error;
 
@@ -703,7 +813,7 @@
             } catch (err) {
                 console.error('submitToSupabase error:', err);
                 if (err && err.code === '23505') {
-                    Swal.fire('เลขเอกสารซ้ำ', 'รหัส/เลขบัตรนี้มีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
+                    Swal.fire('เลขบัตรนี้ลงทะเบียนแล้ว', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
                 } else {
                     Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
                 }
