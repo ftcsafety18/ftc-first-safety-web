@@ -270,8 +270,9 @@
                     </div>
                 </div>
 
+                <!-- กล่องที่ 1: เอกสารยืนยันตัวตนหลัก -->
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสาร บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="main-btn-group" class="w-full max-w-xs flex flex-col gap-3">
                             <label class="btn-camera">
@@ -292,9 +293,23 @@
                     </div>
                 </div>
 
+                <!-- กล่องที่ 2: เอกสารประกอบอื่นๆ -->
                 <div id="upload-workpermit" class="mb-6 hidden">
-                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสารอื่นๆ ที่จำเป็นสำหรับขึ้นทะเบียน <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
+                        
+                        <!-- เพิ่ม Dropdown เลือกประเภทเอกสารตรงนี้ -->
+                        <div class="w-full max-w-xs mb-2">
+                            <select id="extra-doc-type" class="input-field cursor-pointer border-brand-orange text-brand-navy font-semibold">
+                                <option value="">-- กรุณาเลือกประเภทเอกสารก่อนอัปโหลด --</option>
+                                <option value="work_permit">ใบอนุญาตทำงาน (Work Permit)</option>
+                                <option value="training_cert">ใบผ่านการอบรมความปลอดภัย</option>
+                                <option value="crane_license">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
+                                <option value="medical_cert">ใบรับรองแพทย์</option>
+                                <option value="other">เอกสารอื่นๆ</option>
+                            </select>
+                        </div>
+
                         <div id="wp-btn-group" class="w-full max-w-xs flex flex-col gap-3">
                             <label class="btn-camera">
                                 <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
@@ -531,21 +546,30 @@
         }
 
         // ================= Validation & Step control =================
-        function setNationality(nat) {
+       function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
             var btnForeign = document.getElementById('btn-foreign');
             var wp = document.getElementById('upload-workpermit');
             var docSec = document.getElementById('foreigner-doc-section');
             var natSec = document.getElementById('foreigner-nationality-section');
+            var idInput = document.getElementById('id-input'); // ดึงกล่องกรอกรหัสมาปรับแต่ง
+            
             var active = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold bg-brand-navy text-white shadow transition-colors';
             var inactive = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
+            
             if (nat === 'thai') {
                 wp.classList.add('hidden'); docSec.classList.add('hidden'); natSec.classList.add('hidden');
                 btnThai.className = active; btnForeign.className = inactive;
+                idInput.maxLength = 13;
+                idInput.setAttribute('inputmode', 'numeric'); // บังคับเด้งแป้นพิมพ์ตัวเลข (Numpad) บนมือถือ
+                idInput.placeholder = "กรอกเลข 13 หลัก...";
             } else {
                 wp.classList.remove('hidden'); docSec.classList.remove('hidden'); natSec.classList.remove('hidden');
                 btnForeign.className = active; btnThai.className = inactive;
+                idInput.maxLength = 20;
+                idInput.setAttribute('inputmode', 'text'); // บังคับเด้งแป้นพิมพ์ตัวอักษรสำหรับพาสปอร์ต
+                idInput.placeholder = "กรอกเลขเอกสารพาสปอร์ต...";
             }
         }
 
