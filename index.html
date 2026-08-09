@@ -21,11 +21,10 @@
 </head>
 <body class="text-gray-800 min-h-screen relative pb-10">
 
-    <!-- Header & Logo ตามภาพ image_fcb854.png -->
+    <!-- Header & Logo -->
     <div class="bg-[#1a237e] text-white py-3 px-4 flex items-center justify-between shadow-md relative">
         <div class="flex items-center gap-2 z-10">
             <div class="bg-white rounded p-1 flex items-center justify-center">
-                <!-- 💡 พี่ณัฐธัญสามารถเปลี่ยนชื่อไฟล์ src="logo.png" ให้ตรงกับไฟล์รูปโลโก้ First ของพี่ได้เลยครับ -->
                 <img src="logo.png" alt="First Logo" class="h-7 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
             </div>
         </div>
@@ -35,7 +34,7 @@
         <div class="w-10 z-10"></div> <!-- Spacer ให้อักษรตรงกลางสมดุล -->
     </div>
 
-    <!-- Main Content ตามภาพ image_fcbb5a.jpg -->
+    <!-- Main Content -->
     <div class="px-4 mt-6 max-w-md mx-auto space-y-4">
         
         <!-- Welcome Card -->
@@ -74,7 +73,7 @@
         </div>
     </div>
 
-    <!-- Modal (Pop-up) สำหรับ Sub-menu ดีไซน์ใหม่ -->
+    <!-- Modal (Pop-up) สำหรับ Sub-menu -->
     <div id="submenuModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md overflow-hidden shadow-2xl modal-animate pb-6">
             <div class="flex justify-center pt-3 pb-2">
@@ -102,7 +101,6 @@
                         title: 'ลงทะเบียนพนักงานใหม่', 
                         subtitle: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA ภาคบังคับ',
                         icon: '👤',
-                        // เปลี่ยนลิงก์เป็นแบบ Relative Path ชี้ไปหาโฟลเดอร์ในบ้านเดียวกัน
                         link: './Worker/Worker_Registration_ToSystem.html', 
                         style: 'normal'
                     },
@@ -124,7 +122,13 @@
                     }
                 ]
             },
-            { id: '2', title: 'ขอใบอนุญาตทำงาน', subtitle: 'PTW (Permit To Work)', icon: '🦺', link: 'https://ftcsafety18.github.io/ftc-first-safety-web/permit_form.html' },
+            { 
+                id: '2', 
+                title: 'ขอใบอนุญาตทำงาน', 
+                subtitle: 'PTW (Permit To Work)', 
+                icon: '🦺', 
+                link: 'https://ftcsafety18.github.io/ftc-first-safety-web/permit_form.html' 
+            },
             { id: '3', title: 'ประชุมหน้างาน & จุดเสี่ยง', subtitle: 'TBT & Near Miss', icon: '👷', link: '#' },
             { id: '4', title: 'ปิดใบงาน 5ส', subtitle: 'Secure Close-out', icon: '🏁', link: '#' },
             { id: '5', title: 'บัตรดิจิทัลของฉัน', subtitle: 'My E-Badge', icon: '🪪', link: '#' },
