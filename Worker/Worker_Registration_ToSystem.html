@@ -396,39 +396,47 @@
             }
         }
 
-        window.addEventListener('load', async function() {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+ window.addEventListener('load', function() {
+            // 1. จัดเตรียม Dropdown วันเกิดและวันหมดอายุ
+            try {
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                var thisYearBE = new Date().getFullYear() + 543;
+                populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
+                populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
+            } catch (err) {
+                console.error("UI Setup Error:", err);
+            }
 
-            var thisYearBE = new Date().getFullYear() + 543;
-            populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
-            populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
+            // 2. โหลดรายชื่อผู้รับเหมาเบื้องหลัง (ไม่ให้บล็อกการแสดงผลหน้าเว็บ)
+            fetchVendors();
 
-            await fetchVendors();
-
-            setTimeout(function() {
-                if (typeof liff !== 'undefined') {
-                    liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
-                        if (liff.isInClient()) {
-                            document.getElementById('main-form').classList.add('hidden');
-                            document.getElementById('liff-blocker').classList.remove('hidden');
-                        } else {
-                            document.getElementById('liff-blocker').classList.add('hidden');
-                            document.getElementById('main-form').classList.remove('hidden');
-                        }
-                        if (liff.isLoggedIn && liff.isLoggedIn()) {
-                            try { var profile = await liff.getProfile(); lineUserId = profile.userId; }
-                            catch (e) { console.error('liff.getProfile error:', e); }
-                        }
-                    }).catch((err) => { 
-                        console.error("LIFF Error:", err); 
-                        // Fallback สำหรับกรณีเปิดไฟล์ตรงๆ บนเครื่องคอมพิวเตอร์ (file:///)
+            // 3. ระบบเช็ค LIFF พร้อม Fail-Safe ป้องกันหน้าจอขาว
+            if (typeof liff !== 'undefined') {
+                liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
+                    if (liff.isInClient()) {
+                        // ถ้าเปิดในแอป LINE ให้โชว์หน้าบล็อก
+                        document.getElementById('main-form').classList.add('hidden');
+                        document.getElementById('liff-blocker').classList.remove('hidden');
+                    } else {
+                        // ถ้าเปิดใน Chrome/Safari ให้โชว์ฟอร์มหลัก
                         document.getElementById('liff-blocker').classList.add('hidden');
                         document.getElementById('main-form').classList.remove('hidden');
-                    });
-                } else {
+                    }
+                    if (liff.isLoggedIn && liff.isLoggedIn()) {
+                        try { var profile = await liff.getProfile(); lineUserId = profile.userId; }
+                        catch (e) { console.error('liff.getProfile error:', e); }
+                    }
+                }).catch((err) => { 
+                    console.error("LIFF Error:", err); 
+                    // 🛡️ Fail-Safe: ถ้า LIFF พัง (เช่น เน็ตตัด/โดนบล็อกคุกกี้) ให้บังคับเปิดฟอร์มทันที!
+                    document.getElementById('liff-blocker').classList.add('hidden');
                     document.getElementById('main-form').classList.remove('hidden');
-                }
-            }, 500);
+                });
+            } else {
+                // 🛡️ Fail-Safe: ถ้าโหลดสคริปต์ LIFF ไม่สำเร็จ ให้บังคับเปิดฟอร์มทันที!
+                document.getElementById('liff-blocker').classList.add('hidden');
+                document.getElementById('main-form').classList.remove('hidden');
+            }
         });
 
         function openInExternalBrowser() {
