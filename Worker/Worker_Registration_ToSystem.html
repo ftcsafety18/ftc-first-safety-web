@@ -81,23 +81,24 @@
         </div>
     </header>
 
+    <!-- 🚀 หน้าต่าง Loading สีฟ้า (โชว์เฉพาะแอนดรอยด์ที่เปิดใน LINE) -->
     <div id="liff-blocker" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-12">
-        <div class="bg-white rounded-2xl border border-red-200 shadow-xl p-8 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-                <i data-lucide="shield-alert" class="w-10 h-10 text-red-500"></i>
-            </div>
-            <h2 class="text-xl font-bold text-brand-navy mb-3">ระบบกล้องถ่ายภาพ (e-KYC)</h2>
-            <p class="text-sm text-gray-600 mb-8 leading-relaxed">
-                เนื่องจากแอป LINE ไม่รองรับระบบกล้องบางประเภท<br>กรุณากดปุ่มด้านล่างเพื่อเปิดใช้งานผ่าน Google Chrome
+        <div class="bg-white rounded-2xl border border-blue-200 shadow-xl p-8 text-center flex flex-col items-center">
+            <!-- อนิเมชันหมุนๆ -->
+            <div class="w-16 h-16 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mb-6"></div>
+            <h2 class="text-xl font-bold text-brand-navy mb-3">กำลังเตรียมระบบกล้อง...</h2>
+            <p class="text-sm text-gray-600 leading-relaxed">
+                กรุณารอสักครู่ ระบบกำลังเปิดหน้าต่าง Google Chrome อัตโนมัติ<br>เพื่อให้คุณใช้งานกล้องได้อย่างเสถียรที่สุดครับ
             </p>
-            <button onclick="openInExternalBrowser()" class="w-full sm:w-auto px-8 py-4 bg-brand-navy text-white font-bold rounded-xl shadow-lg hover:bg-brand-navy-light transition-all flex items-center justify-center gap-2">
-                <i data-lucide="chrome" class="w-5 h-5"></i> เปิดใช้งานผ่าน Google Chrome
+            <!-- ซ่อนปุ่มกดไว้เป็นทางเลือกสำรองเผื่อเน็ตช้าหรือระบบดีดอัตโนมัติไม่ทำงาน -->
+            <button onclick="openInExternalBrowser()" id="fallback-btn" class="mt-8 px-6 py-3 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-all hidden">
+                คลิกที่นี่ หากระบบไม่เปลี่ยนหน้าอัตโนมัติ
             </button>
         </div>
     </div>
 
-    <!-- 🚀 ถอด class="hidden" ออกแล้ว ฟอร์มจะโชว์ทันที 100% ไม่มีทางจอขาว -->
-    <main id="main-form" class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12">
+    <!-- ฟอร์มหลัก (โชว์ทันทีสำหรับ Chrome และ iOS) -->
+    <main id="main-form" class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12 hidden">
 
         <div id="step-indicator" class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-6">
             <div class="flex items-center justify-center gap-0">
@@ -376,7 +377,6 @@
                 <h2 class="text-2xl font-bold text-brand-navy">ลงทะเบียนสำเร็จ!</h2>
                 <p class="text-sm text-gray-600 mt-2 mb-6">ข้อมูลและเอกสารของคุณถูกจัดเก็บเข้าระบบเรียบร้อยแล้ว</p>
                 
-                <!-- กล่องข้อความแจ้งเตือนขั้นตอนถัดไป -->
                 <div class="w-full bg-blue-50 border border-blue-200 rounded-xl p-5 text-left mb-6 shadow-sm">
                     <p class="text-sm font-bold text-brand-navy mb-3 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-blue-600"></i> ขั้นตอนต่อไป (Next Steps):</p>
                     <ul class="text-sm text-gray-700 list-disc pl-5 space-y-2">
@@ -385,7 +385,6 @@
                     </ul>
                 </div>
 
-                <!-- ปุ่มลิงก์ไปหน้าฝึกอบรม -->
                 <button type="button" onclick="window.location.href='Training_Menu.html'" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg">
                     เข้าสู่เมนูฝึกอบรมความปลอดภัย <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
                 </button>
@@ -430,7 +429,7 @@
             }
         }
 
-        // 🚀 ฟังก์ชันนี้จะทำงานแบบทันที (Synchronous) ดึงหน้าจอขึ้นมาก่อนที่เน็ตจะโหลดเสร็จ
+        // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ (ทำงานทันที)
         (function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -440,25 +439,45 @@
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
                 var isLineApp = /Line/i.test(navigator.userAgent);
+                var isAndroid = /Android/i.test(navigator.userAgent);
                 var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
 
-                // ถ้าคนงานเปิดใน LINE โล่แดงจะเด้งขึ้นมาบังฟอร์ม / ถ้าเปิดใน Chrome ฟอร์มจะโชว์ปกติ
-                if (isLineApp && !isExternalRequested) {
-                    document.getElementById('main-form').style.display = 'none'; // ซ่อนฟอร์ม
-                    document.getElementById('liff-blocker').classList.remove('hidden'); // โชว์โล่แดง
+                // ตรวจจับเฉพาะมือถือแอนดรอยด์ที่เปิดผ่านแอป LINE เท่านั้น
+                if (isLineApp && isAndroid && !isExternalRequested) {
+                    // ปิดฟอร์มหลัก และแสดงหน้าต่างหมุนโหลด
+                    document.getElementById('main-form').style.display = 'none';
+                    document.getElementById('liff-blocker').classList.remove('hidden');
+
+                    // เผื่อเหนียว: ถ้าผ่านไป 3 วินาทีระบบยังไม่ดีดออก ให้แสดงปุ่มกดเปิดเอง
+                    setTimeout(function() {
+                        var fallbackBtn = document.getElementById('fallback-btn');
+                        if(fallbackBtn) fallbackBtn.classList.remove('hidden');
+                    }, 3000);
+                } else {
+                    // ถ้าเป็น iPhone, เปิดใน Chrome แล้ว, หรือเบราว์เซอร์ปกติ ให้โชว์ฟอร์มทันที
+                    document.getElementById('liff-blocker').classList.add('hidden');
+                    document.getElementById('main-form').style.display = 'block';
                 }
             } catch (e) {
                 console.error("UI Init Error:", e);
             }
         })();
 
-        // แอบไปดึงข้อมูลบริษัทจากฐานข้อมูลเงียบๆ ไม่ขวางหน้าจอ
         fetchVendors();
 
-        // หน่วงเวลาโหลดสมองกล LINE นิดนึง เพื่อไม่ให้ดึงเน็ตตอนเปิดหน้าเว็บ
+        // 🚀 โหลด LIFF และสั่งดีดออกอัตโนมัติ (ถ้ารองรับ)
         setTimeout(function() {
             if (typeof liff !== 'undefined') {
                 liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
+                    var isLineApp = /Line/i.test(navigator.userAgent);
+                    var isAndroid = /Android/i.test(navigator.userAgent);
+                    var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
+
+                    // ถ้าพร้อมแล้ว และเป็นแอนดรอยด์ในไลน์ สั่งเปิด Chrome ทันที
+                    if (isLineApp && isAndroid && !isExternalRequested) {
+                        liff.openWindow({ url: window.location.href, external: true });
+                    }
+
                     if (liff.isLoggedIn && liff.isLoggedIn()) {
                         try { 
                             var profile = await liff.getProfile(); 
@@ -468,7 +487,7 @@
                     }
                 }).catch((err) => { console.error("LIFF Error:", err); });
             }
-        }, 500);
+        }, 300);
 
         function openInExternalBrowser() {
             if (typeof liff !== 'undefined' && liff.id) {
