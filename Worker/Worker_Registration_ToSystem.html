@@ -419,7 +419,14 @@
                             try { var profile = await liff.getProfile(); lineUserId = profile.userId; }
                             catch (e) { console.error('liff.getProfile error:', e); }
                         }
-                    }).catch((err) => { console.error("LIFF Error:", err); });
+                    }).catch((err) => { 
+                        console.error("LIFF Error:", err); 
+                        // Fallback สำหรับกรณีเปิดไฟล์ตรงๆ บนเครื่องคอมพิวเตอร์ (file:///)
+                        document.getElementById('liff-blocker').classList.add('hidden');
+                        document.getElementById('main-form').classList.remove('hidden');
+                    });
+                } else {
+                    document.getElementById('main-form').classList.remove('hidden');
                 }
             }, 500);
         });
@@ -737,7 +744,7 @@
                 if (emgRelationValue === 'Other') {
                     emgRelationValue = 'Other: ' + document.getElementById('emg-relation-other').value.trim();
                 }
- 
+
                 var payload = {
                     worker_id: generateWorkerId(),
                     vendor_id: selectedVendorId,
