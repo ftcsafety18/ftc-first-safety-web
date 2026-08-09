@@ -270,54 +270,49 @@
                     <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">2</div>
                     <div>
                         <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: อัปโหลดเอกสาร</p>
-                        <p class="text-xs text-gray-500 mt-0.5">อัปโหลดสำเนาเอกสารประจำตัว (รองรับไฟล์รูปภาพและ PDF)</p>
+                        <p class="text-xs text-gray-500 mt-0.5">ระบบรองรับการถ่ายภาพผ่านมือถือ หรือ เลือกไฟล์จากในเครื่อง</p>
                     </div>
                 </div>
 
-                <!-- 💡 โค้ดกล้องมาตรฐาน ไม่ใช้ WebRTC ให้ <label> คลุม <input> เพื่อความเข้ากันได้กับทุก OS -->
+                <!-- 💡 ปุ่มเดียวจบ ครอบจักรวาล (สำหรับเอกสารหลัก) -->
                 <div class="mb-6">
                     <label id="upload-label" class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดสำเนาบัตรประชาชน (ID Card Copy) <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shadow-sm">
                             <i data-lucide="camera" class="w-6 h-6 text-brand-navy"></i>
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
-                            <div class="flex gap-2 justify-center">
-                                <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
-                                    <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-main-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('main', this)">
-                                </label>
-                                <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
-                                    <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                                    <input type="file" id="file-main-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
-                                </label>
-                            </div>
+                        <div class="w-full max-w-xs">
+                            <p class="text-sm font-bold text-brand-navy mb-3">โปรดเตรียมเอกสารตัวจริงเพื่อถ่ายภาพ</p>
+                            <label class="px-6 py-4 bg-brand-navy text-white text-sm font-bold rounded-xl shadow-md hover:bg-brand-navy-light flex items-center gap-2 cursor-pointer w-full justify-center transition-all active:scale-95">
+                                <i data-lucide="camera" class="w-5 h-5"></i>
+                                <i data-lucide="folder-open" class="w-5 h-5"></i>
+                                แตะเพื่อ ถ่ายรูป / เลือกไฟล์
+                                <!-- ปุ่มไม้ตายก้นหีบ (ไม่มี capture) รับทั้งรูปและ PDF -->
+                                <input type="file" id="file-main-upload" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('main', this)">
+                            </label>
+                            <p class="text-[10px] text-gray-500 mt-3">* เมื่อกดปุ่ม หากมีเมนูเด้งขึ้นมา ให้เลือก "กล้องถ่ายรูป" หรือ "คลังภาพ"</p>
                         </div>
-                        <p id="text-main" class="text-xs text-gray-500 mt-2 font-medium"></p>
+                        <p id="text-main" class="text-xs text-brand-orange mt-2 font-bold"></p>
                     </div>
                 </div>
 
+                <!-- 💡 ปุ่มเดียวจบ ครอบจักรวาล (สำหรับ Work Permit) -->
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดใบอนุญาตทำงาน (Work Permit) <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shadow-sm">
                             <i data-lucide="file-text" class="w-6 h-6 text-brand-navy"></i>
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-brand-navy mb-3">อัปโหลดภาพถ่าย หรือ ไฟล์เอกสาร</p>
-                            <div class="flex gap-2 justify-center">
-                                <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 cursor-pointer">
-                                    <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                                    <input type="file" id="file-wp-cam" class="hidden" accept="image/*" capture="environment" onchange="updateFileUI('wp', this)">
-                                </label>
-                                <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 cursor-pointer">
-                                    <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                                    <input type="file" id="file-wp-doc" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
-                                </label>
-                            </div>
+                        <div class="w-full max-w-xs">
+                            <p class="text-sm font-bold text-brand-navy mb-3">โปรดเตรียมเอกสารตัวจริงเพื่อถ่ายภาพ</p>
+                            <label class="px-6 py-4 bg-brand-navy text-white text-sm font-bold rounded-xl shadow-md hover:bg-brand-navy-light flex items-center gap-2 cursor-pointer w-full justify-center transition-all active:scale-95">
+                                <i data-lucide="camera" class="w-5 h-5"></i>
+                                <i data-lucide="folder-open" class="w-5 h-5"></i>
+                                แตะเพื่อ ถ่ายรูป / เลือกไฟล์
+                                <input type="file" id="file-wp-upload" class="hidden" accept="image/*,application/pdf" onchange="updateFileUI('wp', this)">
+                            </label>
                         </div>
-                        <p id="text-wp" class="text-xs text-gray-500 mt-2 font-medium"></p>
+                        <p id="text-wp" class="text-xs text-brand-orange mt-2 font-bold"></p>
                     </div>
                 </div>
 
@@ -474,7 +469,7 @@
             }, 800);
         });
 
-        // 💡 ตัดการบังคับล็อกอินและดีดไป Chrome ออก กลับมาใช้ LIFF มาตรฐานครับ
+        // 💡 ตัดการบังคับล็อกอินและดีดไป Chrome ออก กลับมาใช้ LIFF มาตรฐาน 100%
         async function initializeLiff() {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
@@ -634,12 +629,14 @@
             }
         }
 
+        // 💡 ฟังก์ชันประมวลผลไฟล์ (ถูกปรับให้รองรับ input ตัวเดียว)
         function updateFileUI(type, inputElement) {
             var textElement = document.getElementById('text-' + type);
             var dropzone = document.getElementById('dropzone-' + type);
             
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
+                var fileName = inputElement.files[0].name;
+                textElement.innerHTML = "✅ รับไฟล์แล้ว: <span class='text-brand-navy'>" + fileName + "</span>";
                 dropzone.classList.add('border-green-500', 'bg-green-50');
             }
         }
@@ -647,10 +644,12 @@
         function updateDynamicFileUI(id, inputElement) {
             var textElement = document.getElementById('text-doc-' + id);
             if(inputElement.files.length > 0) {
-                textElement.innerHTML = "<span class='text-green-600 font-bold'>✅ รูปภาพพร้อมอัปโหลด: " + inputElement.files[0].name + "</span>";
+                var fileName = inputElement.files[0].name;
+                textElement.innerHTML = "✅ รับไฟล์แล้ว: <span class='text-brand-navy'>" + fileName + "</span>";
             }
         }
 
+        // 💡 เปลี่ยนแปลงโครงสร้างการเพิ่มเอกสาร ให้ใช้ปุ่มเดียวจบเหมือนกัน
         function addDocument() {
             docCounter++;
             var container = document.getElementById('dynamicDocsContainer');
@@ -666,18 +665,16 @@
                         <option value="other">อื่นๆ</option>
                     </select>
                     
-                    <div class="flex gap-2 justify-center mt-3 mb-1">
-                        <label class="px-4 py-2 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-1 w-full justify-center cursor-pointer">
-                            <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายภาพ
-                            <input type="file" id="file-doc-cam-${docCounter}" class="hidden doc-file" accept="image/*" capture="environment" onchange="updateDynamicFileUI(${docCounter}, this)" required>
-                        </label>
-                        <label class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-1 w-full justify-center cursor-pointer">
-                            <i data-lucide="folder-open" class="w-4 h-4"></i> เลือกไฟล์
-                            <input type="file" id="file-doc-doc-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
+                    <div class="mt-3 mb-1">
+                        <label class="px-4 py-3 bg-brand-navy text-white text-xs font-bold rounded-lg shadow hover:bg-brand-navy-light flex items-center gap-2 w-full justify-center cursor-pointer transition-all active:scale-95">
+                            <i data-lucide="camera" class="w-4 h-4"></i>
+                            <i data-lucide="folder-open" class="w-4 h-4"></i>
+                            แตะเพื่อ ถ่ายรูป / เลือกไฟล์
+                            <input type="file" id="file-doc-upload-${docCounter}" class="hidden doc-file" accept="image/*,application/pdf" onchange="updateDynamicFileUI(${docCounter}, this)" required>
                         </label>
                     </div>
                     
-                    <p id="text-doc-${docCounter}" class="text-xs text-gray-500 mt-2 text-center"></p>
+                    <p id="text-doc-${docCounter}" class="text-xs text-brand-orange mt-2 text-center font-bold"></p>
                 </div>`;
             container.insertAdjacentHTML('beforeend', docHtml);
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -752,19 +749,18 @@
             return true;
         }
 
+        // 💡 ปรับปรุงระบบตรวจสอบเอกสาร ให้เช็คจาก input เดียว
         function validateStep2() {
-            var mainCam = document.getElementById('file-main-cam').files.length;
-            var mainDoc = document.getElementById('file-main-doc').files.length;
+            var mainFile = document.getElementById('file-main-upload').files.length;
             
-            if(mainCam === 0 && mainDoc === 0) {
+            if(mainFile === 0) {
                 showAlert('ขาดเอกสาร', 'กรุณาอัปโหลดเอกสารหลัก (บัตรประชาชน/พาสปอร์ต) เพื่อยืนยันตัวตน');
                 return false;
             }
             
             if(currentNationality !== 'thai') {
-                var wpCam = document.getElementById('file-wp-cam').files.length;
-                var wpDoc = document.getElementById('file-wp-doc').files.length;
-                if(wpCam === 0 && wpDoc === 0) {
+                var wpFile = document.getElementById('file-wp-upload').files.length;
+                if(wpFile === 0) {
                     showAlert('ขาดเอกสาร Work Permit', 'กรุณาอัปโหลดใบอนุญาตทำงาน (Work Permit) ให้ครบถ้วน');
                     return false;
                 }
