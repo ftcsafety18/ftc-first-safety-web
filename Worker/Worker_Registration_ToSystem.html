@@ -96,7 +96,8 @@
         </div>
     </div>
 
-    <main id="main-form" class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12 hidden">
+    <!-- 🚀 ถอด class="hidden" ออกแล้ว ฟอร์มจะโชว์ทันที 100% ไม่มีทางจอขาว -->
+    <main id="main-form" class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-12">
 
         <div id="step-indicator" class="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-6">
             <div class="flex items-center justify-center gap-0">
@@ -429,28 +430,33 @@
             }
         }
 
-        // 🚀 ปลดล็อกหน้าจอขาว: ให้รันหน้าจอขึ้นมาทันทีโดยไม่ต้องรอฐานข้อมูล
-        window.addEventListener('load', function() {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+        // 🚀 ฟังก์ชันนี้จะทำงานแบบทันที (Synchronous) ดึงหน้าจอขึ้นมาก่อนที่เน็ตจะโหลดเสร็จ
+        (function initApp() {
+            try {
+                if (typeof lucide !== 'undefined') lucide.createIcons();
 
-            var thisYearBE = new Date().getFullYear() + 543;
-            populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
-            populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
+                var thisYearBE = new Date().getFullYear() + 543;
+                populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
+                populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-            var isLineApp = /Line/i.test(navigator.userAgent);
-            var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
+                var isLineApp = /Line/i.test(navigator.userAgent);
+                var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
 
-            if (isLineApp && !isExternalRequested) {
-                document.getElementById('main-form').classList.add('hidden');
-                document.getElementById('liff-blocker').classList.remove('hidden');
-            } else {
-                document.getElementById('liff-blocker').classList.add('hidden');
-                document.getElementById('main-form').classList.remove('hidden');
+                // ถ้าคนงานเปิดใน LINE โล่แดงจะเด้งขึ้นมาบังฟอร์ม / ถ้าเปิดใน Chrome ฟอร์มจะโชว์ปกติ
+                if (isLineApp && !isExternalRequested) {
+                    document.getElementById('main-form').style.display = 'none'; // ซ่อนฟอร์ม
+                    document.getElementById('liff-blocker').classList.remove('hidden'); // โชว์โล่แดง
+                }
+            } catch (e) {
+                console.error("UI Init Error:", e);
             }
+        })();
 
-            // แอบดึงข้อมูลบริษัทอยู่หลังบ้าน ไม่ขวางการเปิดหน้าจอหลัก
-            fetchVendors();
+        // แอบไปดึงข้อมูลบริษัทจากฐานข้อมูลเงียบๆ ไม่ขวางหน้าจอ
+        fetchVendors();
 
+        // หน่วงเวลาโหลดสมองกล LINE นิดนึง เพื่อไม่ให้ดึงเน็ตตอนเปิดหน้าเว็บ
+        setTimeout(function() {
             if (typeof liff !== 'undefined') {
                 liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
                     if (liff.isLoggedIn && liff.isLoggedIn()) {
@@ -462,7 +468,7 @@
                     }
                 }).catch((err) => { console.error("LIFF Error:", err); });
             }
-        });
+        }, 500);
 
         function openInExternalBrowser() {
             if (typeof liff !== 'undefined' && liff.id) {
