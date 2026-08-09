@@ -156,7 +156,7 @@
                         <option value="Vietnamese">Vietnamese (เวียดนาม)</option>
                         <option value="Other">Other (อื่นๆ)</option>
                     </select>
-                    <!-- เพิ่มช่องระบุสัญชาติอื่นๆ -->
+                    <!-- ช่องระบุสัญชาติอื่นๆ -->
                     <input type="text" id="foreign-nationality-other" placeholder="โปรดระบุสัญชาติ..." class="input-field mt-2 hidden">
                 </div>
 
@@ -429,14 +429,13 @@
             }
         }
 
-        window.addEventListener('load', async function() {
+        // 🚀 ปลดล็อกหน้าจอขาว: ให้รันหน้าจอขึ้นมาทันทีโดยไม่ต้องรอฐานข้อมูล
+        window.addEventListener('load', function() {
             if (typeof lucide !== 'undefined') lucide.createIcons();
 
             var thisYearBE = new Date().getFullYear() + 543;
             populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
             populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
-
-            await fetchVendors();
 
             var isLineApp = /Line/i.test(navigator.userAgent);
             var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
@@ -448,6 +447,9 @@
                 document.getElementById('liff-blocker').classList.add('hidden');
                 document.getElementById('main-form').classList.remove('hidden');
             }
+
+            // แอบดึงข้อมูลบริษัทอยู่หลังบ้าน ไม่ขวางการเปิดหน้าจอหลัก
+            fetchVendors();
 
             if (typeof liff !== 'undefined') {
                 liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
@@ -817,8 +819,8 @@
                     national_id: nationalId,
                     nationality: nationalityValue,
                     is_active: true,
-                    line_user_id: lineUserId, // ข้อมูล LINE ID ส่งเข้าฐานข้อมูลแล้ว
-                    blood_group: document.getElementById('blood-group').value, // เพิ่มกรุ๊ปเลือดเข้าฐานข้อมูล
+                    line_user_id: lineUserId, 
+                    blood_group: document.getElementById('blood-group').value,
                     id_card_photo_url: mainUrl,
                     work_permit_photo_url: wpUrl,
                     date_of_birth: beToIsoString(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value),
