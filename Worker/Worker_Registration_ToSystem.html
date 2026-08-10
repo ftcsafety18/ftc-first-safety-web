@@ -429,35 +429,17 @@
             }
         }
 
-        // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ (ทำงานทันที)
+        // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ
         (function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
-
                 var thisYearBE = new Date().getFullYear() + 543;
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                var isLineApp = /Line/i.test(navigator.userAgent);
-                var isAndroid = /Android/i.test(navigator.userAgent);
-                var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
-
-                // ตรวจจับเฉพาะมือถือแอนดรอยด์ที่เปิดผ่านแอป LINE เท่านั้น
-                if (isLineApp && isAndroid && !isExternalRequested) {
-                    // ปิดฟอร์มหลัก และแสดงหน้าต่างหมุนโหลด
-                    document.getElementById('main-form').style.display = 'none';
-                    document.getElementById('liff-blocker').classList.remove('hidden');
-
-                    // เผื่อเหนียว: ถ้าผ่านไป 3 วินาทีระบบยังไม่ดีดออก ให้แสดงปุ่มกดเปิดเอง
-                    setTimeout(function() {
-                        var fallbackBtn = document.getElementById('fallback-btn');
-                        if(fallbackBtn) fallbackBtn.classList.remove('hidden');
-                    }, 3000);
-                } else {
-                    // ถ้าเป็น iPhone, เปิดใน Chrome แล้ว, หรือเบราว์เซอร์ปกติ ให้โชว์ฟอร์มทันที
-                    document.getElementById('liff-blocker').classList.add('hidden');
-                    document.getElementById('main-form').style.display = 'block';
-                }
+                // 🌟 แก้ไข: ยกเลิกการบล็อกหน้าจอ Android ให้เปิดโชว์ฟอร์มหลักทันที!
+                document.getElementById('liff-blocker').classList.add('hidden');
+                document.getElementById('main-form').style.display = 'block';
             } catch (e) {
                 console.error("UI Init Error:", e);
             }
@@ -465,29 +447,18 @@
 
         fetchVendors();
 
-        // 🚀 โหลด LIFF และสั่งดีดออกอัตโนมัติ (ถ้ารองรับ)
-        setTimeout(function() {
-            if (typeof liff !== 'undefined') {
-                liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
-                    var isLineApp = /Line/i.test(navigator.userAgent);
-                    var isAndroid = /Android/i.test(navigator.userAgent);
-                    var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
-
-                    // ถ้าพร้อมแล้ว และเป็นแอนดรอยด์ในไลน์ สั่งเปิด Chrome ทันที
-                    if (isLineApp && isAndroid && !isExternalRequested) {
-                        liff.openWindow({ url: window.location.href, external: true });
+        // 🚀 โหลด LIFF แบบปลอดภัย ไม่บังคับเด้งออก Chrome แล้ว
+        if (typeof liff !== 'undefined') {
+            liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
+                if (liff.isLoggedIn && liff.isLoggedIn()) {
+                    try { 
+                        var profile = await liff.getProfile(); 
+                        lineUserId = profile.userId; 
                     }
-
-                    if (liff.isLoggedIn && liff.isLoggedIn()) {
-                        try { 
-                            var profile = await liff.getProfile(); 
-                            lineUserId = profile.userId; 
-                        }
-                        catch (e) { console.error('liff.getProfile error:', e); }
-                    }
-                }).catch((err) => { console.error("LIFF Error:", err); });
-            }
-        }, 300);
+                    catch (e) { console.error('liff.getProfile error:', e); }
+                }
+            }).catch((err) => { console.error("LIFF Error:", err); });
+        }
 
         function openInExternalBrowser() {
             if (typeof liff !== 'undefined' && liff.id) {
