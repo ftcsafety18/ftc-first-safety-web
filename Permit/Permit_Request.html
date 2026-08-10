@@ -90,7 +90,7 @@
                     <input type="text" id="manual-id-input" placeholder="เลขบัตรประชาชน / พาสปอร์ต" class="input-field">
                     <button onclick="manualLookup()" class="px-5 py-2.5 bg-brand-navy text-white text-sm font-bold rounded-lg shrink-0">ค้นหา</button>
                 </div>
-                <a href="Worker_Registration_ToSystem.html" class="text-xs text-brand-orange underline font-semibold">ยังไม่เคยลงทะเบียน? กดที่นี่</a>
+                <a href="../Worker/Worker_Registration_ToSystem.html" class="text-xs text-brand-orange underline font-semibold">ยังไม่เคยลงทะเบียน? กดที่นี่</a>
             </div>
         </div>
 
@@ -245,19 +245,31 @@
         });
 
         // ===============================================
-        // ระบุตัวตนผู้ขอ (เหมือน Training_Exam.html)
+        // ระบุตัวตนผู้ขอ (พร้อมระบบ Fail-safe 3 วินาที)
         // ===============================================
         async function identifyRequester() {
+            // 🌟 แก้ไข: ใส่ระบบจับเวลา (Fail-safe) ถ้า LINE ค้างเกิน 3 วินาที ให้ตัดจบโชว์หน้าค้นหาเลย
+            var fallbackTimer = setTimeout(function() {
+                document.getElementById('identify-loading').classList.add('hidden');
+                document.getElementById('identify-notfound').classList.remove('hidden');
+            }, 3000);
+
             try {
                 if (typeof liff !== 'undefined') {
                     await liff.init({ liffId: LIFF_ID });
                     if (liff.isLoggedIn && liff.isLoggedIn()) {
                         var profile = await liff.getProfile();
                         var found = await lookupWorker('line_user_id', profile.userId);
-                        if (found) { onIdentified(found); return; }
+                        if (found) { 
+                            clearTimeout(fallbackTimer); // ปิดตัวจับเวลาถ้าเจอข้อมูล
+                            onIdentified(found); 
+                            return; 
+                        }
                     }
                 }
             } catch (e) { console.error('LIFF identify error:', e); }
+            
+            clearTimeout(fallbackTimer);
             document.getElementById('identify-loading').classList.add('hidden');
             document.getElementById('identify-notfound').classList.remove('hidden');
         }
@@ -290,8 +302,7 @@
         }
 
         // ===============================================
-        // ดึงแผนงาน (WBS Task) — ⚠️ ต้องมีข้อมูลใน tb_wbs_tasks ก่อน (มาจาก Module 1
-        // Project Setup ที่ยังไม่ได้สร้าง UI) เพราะ tb_work_permits.task_id เป็น NOT NULL FK
+        // ดึงแผนงาน (WBS Task)
         // ===============================================
         async function fetchTasks() {
             if (!supabase) return;
@@ -324,7 +335,6 @@
             } else {
                 warn.classList.add('hidden');
             }
-            // งานนี้ผูกโซนความเสี่ยงไว้แล้วตั้งแต่ตอนตั้งค่า WBS — auto-select ให้ตรงกันเสมอ
             if (selectedTask && selectedTask.risk_area_class) {
                 selectZone(selectedTask.risk_area_class);
             }
@@ -415,8 +425,7 @@
         }
 
         // ===============================================
-        // ส่งคำขอเข้า tb_work_permits — Interlock ที่ไม่มีคอลัมน์เฉพาะ (harness, hole watch ฯลฯ)
-        // จะถูกรวมไว้ใน specific_data (jsonb) ตามที่ schema จริงออกแบบไว้ให้ยืดหยุ่น
+        // ส่งคำขอเข้า tb_work_permits
         // ===============================================
         async function submitPermit() {
             if (!validatePermit()) return;
@@ -460,9 +469,6 @@
 
                 var insertRes = await supabase.from('tb_work_permits').insert(payload);
                 if (insertRes.error) throw insertRes.error;
-
-                // 🔔 TODO (ยังไม่ implement ในไฟล์นี้): เรียก Supabase Edge Function ที่นี่
-                // เพื่อยิง LINE Flex Message ไปหา จป. ดูคำอธิบายแนวทางในข้อความตอบกลับ
 
                 Swal.close();
                 document.getElementById('step-form').classList.add('hidden');
