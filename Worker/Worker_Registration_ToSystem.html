@@ -430,6 +430,7 @@
         }
 
         // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ
+        // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ + ระบบเด้งออก Chrome อัจฉริยะ
         (function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -437,9 +438,38 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                // 🌟 แก้ไข: ยกเลิกการบล็อกหน้าจอ Android ให้เปิดโชว์ฟอร์มหลักทันที!
+                // ปิดจอหมุนติ้ว และโชว์หน้าฟอร์มขึ้นมาทันที
                 document.getElementById('liff-blocker').classList.add('hidden');
                 document.getElementById('main-form').style.display = 'block';
+
+                // 🌟 Smart Bouncer: ตรวจจับมือถือ Android ที่เปิดผ่านแอป LINE
+                var isLineApp = /Line/i.test(navigator.userAgent);
+                var isAndroid = /Android/i.test(navigator.userAgent);
+                var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
+
+                if (isLineApp && isAndroid && !isExternalRequested) {
+                    // หน่วงเวลา 1 วินาทีให้ฟอร์มโหลดเสร็จ แล้วเด้ง Popup แจ้งเตือน
+                    setTimeout(function() {
+                        Swal.fire({
+                            title: 'จำเป็นต้องใช้งานกล้อง',
+                            text: 'แอป LINE ไม่รองรับการเปิดกล้องโดยตรงครับ ระบบจะพาคุณไปเปิดใน Google Chrome เพื่อให้ถ่ายภาพได้ตามปกติครับ',
+                            icon: 'info',
+                            confirmButtonText: 'เปิดใน Google Chrome',
+                            confirmButtonColor: '#DB5A24',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                if (typeof liff !== 'undefined') {
+                                    liff.openWindow({ url: window.location.href, external: true });
+                                } else {
+                                    var sep = window.location.href.indexOf('?') !== -1 ? '&' : '?';
+                                    window.location.href = window.location.href + sep + 'openExternalBrowser=1';
+                                }
+                            }
+                        });
+                    }, 800);
+                }
             } catch (e) {
                 console.error("UI Init Error:", e);
             }
