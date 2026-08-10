@@ -3,79 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FTC First Safety - E-Permit Approval</title>
+    <title>FTC First Safety - อนุมัติใบขอทำงาน (E-Permit Approval)</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { background-color: #F0F4F8; font-family: 'Sarabun', sans-serif; }</style>
-</head>
-<body class="text-gray-800 pb-16">
 
-    <header class="bg-[#19335A] px-4 py-4 shadow-md sticky top-0 z-40">
-        <div class="max-w-3xl mx-auto flex items-center gap-3">
-            <div class="bg-white rounded p-1"><img src="../logo.png" alt="Logo" class="h-8 w-auto" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'"></div>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' } }, fontFamily: { sans: ['Sarabun', 'sans-serif'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
+        .info-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid #F0F2F5; }
+        .info-row:last-child { border-bottom:none; }
+        .info-label { font-size:0.75rem; color:#9CA3AF; font-weight:600; white-space:nowrap; }
+        .info-value { font-size:0.85rem; color:#1F2937; font-weight:700; text-align:right; }
+        .zone-tag { display:inline-block; padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:700; }
+        .zone-tag.danger { background:#FEE2E2; color:#B91C1C; }
+        .zone-tag.control { background:#FEF3C7; color:#92400E; }
+        .zone-tag.safe { background:#DCFCE7; color:#15803D; }
+        .interlock-item { display:flex; align-items:flex-start; gap:8px; padding:8px 0; }
+        .btn-approve { background: linear-gradient(135deg, #22C55E, #16A34A); }
+        .btn-reject { background: linear-gradient(135deg, #EF4444, #B91C1C); }
+        .btn-action { width:100%; padding:16px; border-radius:14px; border:none; color:#fff; font-weight:700; font-size:0.95rem; box-shadow:0 6px 16px -4px rgba(0,0,0,0.25); transition: transform 0.15s ease;}
+        .btn-action:active { transform: scale(0.97); }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+    <header class="sticky top-0 z-40 bg-brand-navy shadow-md">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+            <div class="bg-white rounded p-1 flex items-center justify-center">
+                <img src="../logo.png" alt="First Logo" class="h-8 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
+            </div>
             <div>
-                <h1 class="text-white font-bold text-sm leading-tight">FTC First Safety</h1>
-                <p class="text-white/70 text-[11px] leading-tight">อนุมัติใบขอทำงาน (E-Permit Approval)</p>
+                <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
+                <p class="text-[9px] sm:text-xs text-white/70 leading-tight">อนุมัติใบขอทำงาน (E-Permit Approval)</p>
             </div>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-6">
-        
-        <!-- Loading State -->
-        <div id="loading-state" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
-            <div class="w-12 h-12 border-4 border-[#DB5A24] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-500">กำลังโหลดข้อมูลใบขออนุญาต...</p>
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-16">
+
+        <div id="loading-state" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
+            <div class="w-10 h-10 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-sm text-gray-500">กำลังโหลดข้อมูลใบขออนุญาต...</p>
         </div>
 
-        <!-- Details State -->
-        <div id="details-state" class="hidden">
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-                <div class="bg-[#19335A] px-5 py-3 text-white flex justify-between items-center">
-                    <span class="font-bold text-sm">เลขที่: <span id="ptw-id-text">PTW-XXX</span></span>
-                    <span id="status-badge" class="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded">รออนุมัติ</span>
+        <div id="error-state" class="hidden bg-white rounded-2xl border border-red-200 shadow-sm p-8 text-center">
+            <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="file-x" class="w-7 h-7 text-red-500"></i></div>
+            <h2 class="text-base font-bold text-brand-navy mb-1">ไม่พบข้อมูล</h2>
+            <p id="error-text" class="text-sm text-gray-500">ไม่พบใบขออนุญาตที่ระบุ หรือลิงก์ไม่ถูกต้อง</p>
+        </div>
+
+        <div id="permit-detail" class="hidden">
+
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs text-gray-400 font-mono" id="ptw-id-text">-</p>
+                    <span id="status-badge" class="text-[10px] font-bold px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">-</span>
                 </div>
-                <div class="p-5 space-y-4">
-                    <div>
-                        <p class="text-xs text-gray-500">แผนงาน (Task)</p>
-                        <p id="task-name" class="font-bold text-[#19335A]">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500">บริษัทผู้รับเหมา</p>
-                        <p id="vendor-name" class="font-bold text-gray-800">-</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <p class="text-xs text-gray-500">ผู้ขออนุญาต</p>
-                            <p id="requester-name" class="font-bold text-gray-800">-</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500">ประเภทงาน</p>
-                            <p id="permit-type" class="font-bold text-[#DB5A24]">-</p>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500">โซนพื้นที่</p>
-                        <p id="zone-text" class="font-bold">-</p>
-                    </div>
-                    
-                    <!-- ส่วนข้อมูลเฉพาะ (Interlock) -->
-                    <div id="specific-data-box" class="bg-orange-50 p-4 rounded-xl border border-orange-100 hidden">
-                        <p class="text-sm font-bold text-[#19335A] mb-2">ข้อมูลความปลอดภัย (Interlock)</p>
-                        <div id="specific-content" class="text-sm text-gray-700 space-y-1"></div>
-                    </div>
-                </div>
+                <h2 id="ptw-type-text" class="text-lg font-bold text-brand-navy mb-1">-</h2>
+                <span id="zone-tag" class="zone-tag">-</span>
             </div>
 
-            <!-- Action Buttons -->
-            <div id="action-buttons" class="grid grid-cols-2 gap-3 hidden">
-                <button onclick="updateStatus('Rejected')" class="py-4 bg-white border-2 border-red-500 text-red-600 font-bold rounded-xl shadow-sm hover:bg-red-50">ไม่อนุมัติ (Reject)</button>
-                <button onclick="updateStatus('Approved')" class="py-4 bg-[#22C55E] text-white font-bold rounded-xl shadow-lg hover:bg-green-600">อนุมัติ (Approve)</button>
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+                <p class="text-xs font-bold text-brand-navy uppercase tracking-wide mb-1">ข้อมูลทั่วไป</p>
+                <div class="info-row"><span class="info-label">แผนงาน (Task)</span><span class="info-value" id="task-name-text">-</span></div>
+                <div class="info-row"><span class="info-label">ผู้รับเหมา</span><span class="info-value" id="vendor-name-text">-</span></div>
+                <div class="info-row"><span class="info-label">ผู้ขออนุญาต</span><span class="info-value" id="requester-name-text">-</span></div>
+                <div class="info-row"><span class="info-label">เวลาเริ่ม - สิ้นสุด</span><span class="info-value" id="time-range-text">-</span></div>
             </div>
+
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+                <p class="text-xs font-bold text-brand-navy uppercase tracking-wide mb-2">รายละเอียดงาน</p>
+                <p id="work-desc-text" class="text-sm text-gray-700 leading-relaxed">-</p>
+            </div>
+
+            <div id="interlock-detail-card" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+                <p class="text-xs font-bold text-brand-navy uppercase tracking-wide mb-2">เงื่อนไขความปลอดภัยเฉพาะประเภทงาน</p>
+                <div id="interlock-detail-content"></div>
+            </div>
+
+            <div id="action-area" class="grid grid-cols-2 gap-3 mt-6">
+                <button type="button" class="btn-action btn-reject" onclick="actOnPermit('Rejected')"><i data-lucide="x" class="w-4 h-4 inline mr-1"></i> ไม่อนุมัติ</button>
+                <button type="button" class="btn-action btn-approve" onclick="actOnPermit('Approved')"><i data-lucide="check" class="w-4 h-4 inline mr-1"></i> อนุมัติ</button>
+            </div>
+            <p id="already-actioned-text" class="hidden text-center text-sm text-gray-500 mt-6">ใบขออนุญาตนี้ถูกดำเนินการแล้ว</p>
         </div>
 
     </main>
@@ -84,93 +101,161 @@
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-        var ptwId = null;
+        var LIFF_ID = '2010907761-KrJ8PgNN';
 
-        window.addEventListener('load', async function() {
-            lucide.createIcons();
-            const urlParams = new URLSearchParams(window.location.search);
-            ptwId = urlParams.get('ptw_id');
-            if(!ptwId) {
-                Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสใบขออนุญาตใน URL', 'error');
-                return;
-            }
-            await fetchPermitDetails();
+        var currentPermit = null;
+        var currentApprover = null; 
+
+        window.addEventListener('load', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            init();
         });
 
-        async function fetchPermitDetails() {
+        async function init() {
+            var params = new URLSearchParams(window.location.search);
+            var ptwId = params.get('ptw_id');
+            if (!ptwId) { showError('ลิงก์นี้ไม่มีรหัสใบขออนุญาต (ptw_id)'); return; }
+
             try {
-                // ดึงข้อมูล Permit
-                let { data: permit, error } = await supabase.from('tb_work_permits').select('*').eq('ptw_id', ptwId).single();
-                if(error || !permit) throw new Error("ไม่พบข้อมูลใบขออนุญาต");
-
-                // ดึงข้อมูลประกอบ (แยก Query ตามที่คาลูดแนะนำเพราะไม่มี View)
-                let { data: task } = await supabase.from('tb_wbs_tasks').select('task_name').eq('task_id', permit.task_id).single();
-                let { data: vendor } = await supabase.from('tb_vendors').select('vendor_name').eq('vendor_id', permit.vendor_id).single();
-                let { data: worker } = await supabase.from('tb_workers').select('full_name').eq('worker_id', permit.requester_id).single();
-
-                // แสดงผลบน UI
-                document.getElementById('ptw-id-text').innerText = permit.ptw_id;
-                document.getElementById('task-name').innerText = task ? task.task_name : permit.task_id;
-                document.getElementById('vendor-name').innerText = vendor ? vendor.vendor_name : '-';
-                document.getElementById('requester-name').innerText = worker ? worker.full_name : '-';
-                document.getElementById('permit-type').innerText = permit.ptw_type;
-                document.getElementById('zone-text').innerText = permit.risk_area_class;
-
-                // จัดการ Status Badge
-                let badge = document.getElementById('status-badge');
-                if(permit.status === 'Approved') { badge.className = 'px-2 py-1 bg-green-500 text-white text-xs font-bold rounded'; badge.innerText = 'อนุมัติแล้ว'; }
-                else if(permit.status === 'Rejected') { badge.className = 'px-2 py-1 bg-red-500 text-white text-xs font-bold rounded'; badge.innerText = 'ไม่อนุมัติ'; }
-
-                // แสดงปุ่มอนุมัติเฉพาะสถานะ Requested
-                if(permit.status === 'Requested') {
-                    document.getElementById('action-buttons').classList.remove('hidden');
-                }
-
-                // แกะข้อมูล Interlock (specific_data)
-                if(permit.specific_data) {
-                    let specBox = document.getElementById('specific-data-box');
-                    let specContent = document.getElementById('specific-content');
-                    let spec = typeof permit.specific_data === 'string' ? JSON.parse(permit.specific_data) : permit.specific_data;
-                    let html = '';
-
-                    if(permit.ptw_type === 'Height') {
-                        html += `<p>ความสูง: <b>${spec.height_m} เมตร</b></p>`;
-                        html += `<p>มีนั่งร้าน/ราวกันตก: <b>${spec.scaffold_confirmed ? '✅ ยืนยัน' : '❌ ไม่มึ'}</b></p>`;
-                        html += `<p>สวม Full Body Harness: <b>${spec.harness_confirmed ? '✅ ยืนยัน' : '❌ ไม่มี'}</b></p>`;
-                    } else if(permit.ptw_type === 'HotWork') {
-                        if(spec.fire_extinguisher_photo_url) {
-                            html += `<p class="mb-2">ภาพถังดับเพลิงหน้างาน:</p><img src="${spec.fire_extinguisher_photo_url}" class="w-full h-32 object-cover rounded-lg border border-gray-300">`;
-                        } else { html += '<p>ไม่พบรูปถ่ายถังดับเพลิง</p>'; }
-                    } else if(permit.ptw_type === 'ConfinedSpace') {
-                        html += `<p>ผู้เฝ้าระวัง (Hole Watch): <b>${spec.hole_watch_name || '-'}</b></p>`;
-                    }
-
-                    if(html !== '') {
-                        specContent.innerHTML = html;
-                        specBox.classList.remove('hidden');
+                if (typeof liff !== 'undefined') {
+                    await liff.init({ liffId: LIFF_ID });
+                    if (liff.isLoggedIn && liff.isLoggedIn()) {
+                        var profile = await liff.getProfile();
+                        var staffRes = await supabase.from('tb_internal_staff')
+                                .select('staff_id, full_name, role_level')
+                                .eq('line_uid', profile.userId)
+                                // เจนนี่เตรียมคอมเมนต์นี้ไว้ให้ครับ เมื่อระบบ Role ชัดเจน ให้ปลดล็อกคอมเมนต์บรรทัดนี้ได้เลยครับ:
+                                // .in('role_level', ['จป.', 'QHSE', 'Executive']) 
+                                .limit(1);
+                        if (!staffRes.error && staffRes.data && staffRes.data.length > 0) currentApprover = staffRes.data[0];
                     }
                 }
+            } catch (e) { console.error('LIFF staff identify error:', e); }
 
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('details-state').classList.remove('hidden');
+            await loadPermit(ptwId);
+        }
 
-            } catch (err) {
-                Swal.fire('ข้อผิดพลาด', err.message, 'error');
-                document.getElementById('loading-state').innerHTML = '<p class="text-red-500">เกิดข้อผิดพลาดในการดึงข้อมูล</p>';
+        async function loadPermit(ptwId) {
+            if (!supabase) { showError('ไม่สามารถเชื่อมต่อฐานข้อมูลได้'); return; }
+            try {
+                var res = await supabase.from('tb_work_permits').select('*').eq('ptw_id', ptwId).limit(1);
+                if (res.error) throw res.error;
+                if (!res.data || res.data.length === 0) { showError('ไม่พบใบขออนุญาตรหัส ' + ptwId); return; }
+                currentPermit = res.data[0];
+                await renderPermit(currentPermit);
+            } catch (e) {
+                console.error('loadPermit error:', e);
+                showError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
             }
         }
 
-        async function updateStatus(newStatus) {
-            Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
-            // ใช้ .eq('status', 'Requested') ป้องกัน Race condition อนุมัติซ้อน
-            let { data, error } = await supabase.from('tb_work_permits').update({ status: newStatus }).eq('ptw_id', ptwId).eq('status', 'Requested').select();
-            
-            if(error) { Swal.fire('Error', error.message, 'error'); return; }
-            if(data && data.length === 0) { Swal.fire('อัปเดตไม่สำเร็จ', 'ใบขออนุญาตนี้อาจถูกอนุมัติไปแล้วโดยบุคคลอื่น', 'warning'); return; }
+        async function renderPermit(p) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('permit-detail').classList.remove('hidden');
 
-            Swal.fire('สำเร็จ', `อัปเดตสถานะเป็น ${newStatus} เรียบร้อยแล้ว`, 'success').then(() => {
-                location.reload();
-            });
+            document.getElementById('ptw-id-text').innerText = '#' + p.ptw_id;
+            document.getElementById('ptw-type-text').innerText = p.ptw_type;
+            document.getElementById('work-desc-text').innerText = p.work_description;
+            document.getElementById('time-range-text').innerText = formatDateTime(p.start_time) + ' — ' + formatDateTime(p.end_time);
+
+            var statusBadge = document.getElementById('status-badge');
+            statusBadge.innerText = p.status;
+            if (p.status === 'Approved') statusBadge.className = 'text-[10px] font-bold px-3 py-1 rounded-full bg-green-100 text-green-800';
+            else if (p.status === 'Rejected') statusBadge.className = 'text-[10px] font-bold px-3 py-1 rounded-full bg-red-100 text-red-800';
+            else statusBadge.className = 'text-[10px] font-bold px-3 py-1 rounded-full bg-yellow-100 text-yellow-800';
+
+            var zoneTag = document.getElementById('zone-tag');
+            zoneTag.innerText = p.risk_area_class;
+            zoneTag.className = 'zone-tag ' + (p.risk_area_class === 'เขตอันตราย' ? 'danger' : p.risk_area_class === 'เขตควบคุม' ? 'control' : 'safe');
+
+            var [taskRes, vendorRes, requesterRes] = await Promise.all([
+                supabase.from('tb_wbs_tasks').select('task_name').eq('task_id', p.task_id).limit(1),
+                supabase.from('tb_vendors').select('vendor_name').eq('vendor_id', p.vendor_id).limit(1),
+                supabase.from('tb_workers').select('full_name').eq('worker_id', p.requester_id).limit(1)
+            ]);
+            document.getElementById('task-name-text').innerText = (taskRes.data && taskRes.data[0]) ? taskRes.data[0].task_name : '-';
+            document.getElementById('vendor-name-text').innerText = (vendorRes.data && vendorRes.data[0]) ? vendorRes.data[0].vendor_name : '-';
+            document.getElementById('requester-name-text').innerText = (requesterRes.data && requesterRes.data[0]) ? requesterRes.data[0].full_name : '-';
+
+            renderInterlockDetail(p);
+
+            if (p.status !== 'Requested') {
+                document.getElementById('action-area').classList.add('hidden');
+                document.getElementById('already-actioned-text').classList.remove('hidden');
+            }
+        }
+
+        function renderInterlockDetail(p) {
+            var container = document.getElementById('interlock-detail-content');
+            var data = {};
+            try { data = typeof p.specific_data === 'string' ? JSON.parse(p.specific_data) : (p.specific_data || {}); } catch (e) { data = {}; }
+
+            var html = '';
+            if (data.permit_subtype === 'Height') {
+                html += interlockRow('ความสูงจุดทำงาน', data.height_m + ' เมตร');
+                html += interlockRow('ยืนยันนั่งร้าน/ราวกันตก', data.scaffold_confirmed ? '✅ ยืนยันแล้ว' : '❌ ยังไม่ยืนยัน');
+                html += interlockRow('ยืนยัน Full Body Harness', data.harness_confirmed ? '✅ ยืนยันแล้ว' : '❌ ยังไม่ยืนยัน');
+            } else if (data.permit_subtype === 'HotWork') {
+                html += interlockRow('ผ้าใบ/ถังดับเพลิงหน้างาน', data.fire_extinguisher_photo_url ? '✅ แนบรูปแล้ว' : '❌ ไม่มีรูป');
+                if (data.fire_extinguisher_photo_url) {
+                    html += '<img src="' + data.fire_extinguisher_photo_url + '" class="w-full rounded-xl mt-2 border border-gray-200" />';
+                }
+            } else if (data.permit_subtype === 'ConfinedSpace') {
+                html += interlockRow('ผู้เฝ้าระวัง (Hole Watch)', data.hole_watch_name || '-');
+            } else {
+                html = '<p class="text-xs text-gray-400">ไม่มีเงื่อนไขเฉพาะสำหรับประเภทงานนี้</p>';
+            }
+            container.innerHTML = html;
+        }
+
+        function interlockRow(label, value) {
+            return '<div class="interlock-item"><span class="text-xs text-gray-500 w-40 shrink-0">' + label + '</span><span class="text-sm font-semibold text-gray-800">' + value + '</span></div>';
+        }
+
+        function formatDateTime(iso) {
+            if (!iso) return '-';
+            var d = new Date(iso);
+            return d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function showError(msg) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+            document.getElementById('error-text').innerText = msg;
+        }
+
+        async function actOnPermit(newStatus) {
+            if (!currentApprover) {
+                Swal.fire('ไม่มีสิทธิ์ดำเนินการ', 'บัญชี LINE นี้ไม่ได้ลงทะเบียนเป็นเจ้าหน้าที่ในระบบ (tb_internal_staff) จึงไม่สามารถอนุมัติ/ไม่อนุมัติได้', 'error');
+                return;
+            }
+            var confirmText = newStatus === 'Approved' ? 'ยืนยันอนุมัติใบขออนุญาตนี้ใช่หรือไม่?' : 'ยืนยันไม่อนุมัติใบขออนุญาตนี้ใช่หรือไม่?';
+            var confirmRes = await Swal.fire({ title: confirmText, showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', confirmButtonColor: newStatus === 'Approved' ? '#22C55E' : '#EF4444' });
+            if (!confirmRes.isConfirmed) return;
+
+            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                var updateRes = await supabase.from('tb_work_permits').update({
+                    status: newStatus,
+                    approver_id: currentApprover.staff_id,
+                    approved_at: new Date().toISOString()
+                }).eq('ptw_id', currentPermit.ptw_id).eq('status', 'Requested'); 
+
+                if (updateRes.error) throw updateRes.error;
+
+                Swal.fire(newStatus === 'Approved' ? 'อนุมัติสำเร็จ' : 'บันทึกการไม่อนุมัติแล้ว', '', 'success');
+                currentPermit.status = newStatus;
+                document.getElementById('action-area').classList.add('hidden');
+                document.getElementById('already-actioned-text').classList.remove('hidden');
+                var statusBadge = document.getElementById('status-badge');
+                statusBadge.innerText = newStatus;
+                statusBadge.className = 'text-[10px] font-bold px-3 py-1 rounded-full ' + (newStatus === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+
+            } catch (err) {
+                console.error('actOnPermit error:', err);
+                Swal.fire('ดำเนินการไม่สำเร็จ', 'อาจมีผู้ดำเนินการไปแล้ว หรือเกิดข้อผิดพลาด กรุณารีเฟรชหน้าใหม่', 'error');
+            }
         }
     </script>
 </body>
