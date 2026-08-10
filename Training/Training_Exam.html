@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC First Safety - แบบทดสอบความปลอดภัย</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' }
+                    },
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'], }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
+        .input-field { width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #F9FAFB; font-size: 0.875rem; color: #1F2937; transition: all 0.2s; }
+        .input-field:focus { outline: none; border-color: #19335A; background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
+
+        .q-card { background: #fff; border: 1px solid #E7EBF1; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+        .q-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 999px; background: #19335A; color: #fff; font-size: 0.75rem; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+        .opt-label { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #E7EBF1; cursor: pointer; transition: all 0.15s ease; margin-top: 8px; }
+        .opt-label:hover { border-color: #DB5A24; }
+        .opt-label input[type=radio] { margin-top: 3px; accent-color: #19335A; width: 17px; height: 17px; flex-shrink: 0; }
+        .opt-label.selected { border-color: #19335A; background: #F0F4FA; }
+
+        .progress-track { height: 8px; border-radius: 999px; background: #E7EBF1; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #DB5A24, #E9662C); transition: width 0.25s ease; }
+
+        .btn-camera {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 16px 20px; border-radius: 16px; border: none; cursor: pointer;
+            font-weight: 700; font-size: 0.95rem; color: #fff; width: 100%;
+            background: linear-gradient(135deg, #E9662C 0%, #DB5A24 55%, #C14B1A 100%);
+            box-shadow: 0 6px 16px -4px rgba(219, 90, 36, 0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .btn-camera:active { transform: scale(0.97); }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+    <header class="sticky top-0 z-40 bg-brand-navy shadow-md">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <div class="bg-white rounded p-1 flex items-center justify-center">
+                    <img src="logo.png" alt="First Logo" class="h-8 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
+                </div>
+                <div>
+                    <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
+                    <p class="text-[9px] sm:text-xs text-white/70 leading-tight">แบบทดสอบความปลอดภัย (E-Proctoring)</p>
+                </div>
+            </div>
+            <span class="text-[9px] sm:text-[10px] font-mono font-semibold text-brand-navy bg-white/90 px-2 py-1 rounded shadow-sm tracking-wider">FM-SAF-02</span>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-16">
+
+        <!-- ================= STEP 0: ระบุตัวตนผู้เข้าสอบ ================= -->
+        <div id="step-identify" class="block">
+            <div id="identify-loading" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
+                <div class="w-10 h-10 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-sm text-gray-500">กำลังตรวจสอบข้อมูลผู้เข้าสอบ...</p>
+            </div>
+
+            <div id="identify-found" class="hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 text-center">
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="user-check" class="w-8 h-8 text-brand-navy"></i>
+                </div>
+                <p class="text-xs text-gray-400 mb-1">ผู้เข้าสอบ</p>
+                <h2 id="found-name" class="text-lg font-bold text-brand-navy mb-6">-</h2>
+                <p class="text-sm text-gray-600 mb-6 leading-relaxed">แบบทดสอบนี้มีทั้งหมด <b id="q-total-1">-</b> ข้อ เมื่อตอบครบทุกข้อแล้ว ระบบจะขอให้ท่าน<br><b>ถ่ายภาพเซลฟี่ยืนยันตัวตน (E-Proctoring)</b> ก่อนส่งคำตอบ</p>
+                <button onclick="startExam()" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg">
+                    เริ่มทำแบบทดสอบ <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div id="identify-notfound" class="hidden bg-white rounded-2xl border border-red-200 shadow-sm p-6 sm:p-8 text-center">
+                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="user-x" class="w-8 h-8 text-red-500"></i>
+                </div>
+                <h2 class="text-lg font-bold text-brand-navy mb-2">ไม่พบข้อมูลการลงทะเบียนของท่าน</h2>
+                <p class="text-sm text-gray-600 mb-6">กรุณาลงทะเบียนเข้าปฏิบัติงานก่อน หรือกรอกเลขบัตรประชาชน/พาสปอร์ตเพื่อค้นหาด้วยตนเอง</p>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="manual-id-input" placeholder="เลขบัตรประชาชน / พาสปอร์ต" class="input-field">
+                    <button onclick="manualLookup()" class="px-5 py-2.5 bg-brand-navy text-white text-sm font-bold rounded-lg shrink-0">ค้นหา</button>
+                </div>
+                <a href="Worker_Registration_ToSystem.html" class="text-xs text-brand-orange underline font-semibold">ยังไม่เคยลงทะเบียน? กดที่นี่</a>
+            </div>
+        </div>
+
+        <!-- ================= STEP 1: แบบทดสอบ ================= -->
+        <div id="step-exam" class="hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-5 sticky top-[68px] z-30">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs font-semibold text-brand-navy">ความคืบหน้า</p>
+                    <p class="text-xs font-semibold text-gray-500"><span id="answered-count">0</span> / <span id="q-total-2">-</span> ข้อ</p>
+                </div>
+                <div class="progress-track"><div id="progress-bar" class="progress-fill" style="width:0%"></div></div>
+            </div>
+
+            <div id="question-list"></div>
+
+            <button onclick="onSubmitClick()" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg mt-4">
+                <i data-lucide="send" class="w-4 h-4"></i> ส่งคำตอบ (ถ่ายเซลฟี่ยืนยันตัวตน)
+            </button>
+        </div>
+
+        <!-- ================= STEP 2: E-Proctoring Selfie ================= -->
+        <div id="step-proctoring" class="hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 text-center">
+                <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="scan-face" class="w-8 h-8 text-brand-orange"></i>
+                </div>
+                <h2 class="text-lg font-bold text-brand-navy mb-2">ยืนยันตัวตนก่อนส่งคำตอบ</h2>
+                <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                    เพื่อเป็นหลักฐานว่าท่านเป็นผู้ทำแบบทดสอบด้วยตนเอง (E-Proctoring)<br>
+                    กรุณาถ่ายภาพเซลฟี่หน้าตรงผ่านกล้องหน้าของเครื่อง
+                </p>
+
+                <div id="proctoring-btn-group">
+                    <label class="btn-camera">
+                        <i data-lucide="camera" class="w-5 h-5"></i> ถ่ายภาพเซลฟี่ยืนยันตัวตน
+                        <input type="file" id="file-selfie-camera" class="hidden" accept="image/*" capture="user" onchange="handleSelfieCapture(this)">
+                    </label>
+                </div>
+
+                <div id="proctoring-preview" class="hidden flex flex-col items-center gap-3 mt-4">
+                    <img id="selfie-preview-img" class="w-32 h-32 rounded-2xl object-cover border-2 border-brand-navy shadow" />
+                    <p class="text-sm font-bold text-green-600 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> รับภาพเซลฟี่เรียบร้อยแล้ว</p>
+                    <button onclick="confirmSubmitExam()" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg">
+                        ยืนยันและส่งคำตอบ <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="resetSelfie()" class="text-xs text-red-500 underline">ถ่ายใหม่</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= STEP 3: ผลสอบ ================= -->
+        <div id="step-result" class="hidden flex-col items-center justify-center py-8 text-center">
+            <div id="result-pass" class="hidden flex-col items-center">
+                <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg mb-4"><i data-lucide="check" class="w-10 h-10 text-white"></i></div>
+                <h2 class="text-2xl font-bold text-brand-navy">สอบผ่าน!</h2>
+                <p class="text-sm text-gray-600 mt-2">ได้คะแนน <b id="score-pass">-</b> — ระบบบันทึกผลการอบรมเรียบร้อยแล้ว</p>
+            </div>
+            <div id="result-fail" class="hidden flex-col items-center">
+                <div class="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center shadow-lg mb-4"><i data-lucide="x" class="w-10 h-10 text-white"></i></div>
+                <h2 class="text-2xl font-bold text-brand-navy">ยังไม่ผ่านเกณฑ์</h2>
+                <p class="text-sm text-gray-600 mt-2 mb-6">ได้คะแนน <b id="score-fail">-</b> (ต้องผ่านอย่างน้อย <span id="pass-threshold-text">-</span>) กรุณาทบทวนเนื้อหาแล้วลองใหม่อีกครั้ง</p>
+                <button onclick="location.reload()" class="px-8 py-3 bg-brand-orange text-white font-bold rounded-xl shadow-lg">ทำแบบทดสอบใหม่</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        var LIFF_ID = '2010907761-KrJ8PgNN';
+
+        var currentWorker = null; // { worker_id, full_name }
+        var selfieFile = null;
+
+        // ⚠️ หมายเหตุสำคัญ: schema จริงของ tb_workers ไม่มีตารางคลังข้อสอบ/บันทึกการทำข้อสอบ
+        // (ไม่มี tb_training_exams / tb_exam_questions / tb_exam_attempts) จึงเก็บชุดคำถามไว้ใน
+        // ไฟล์นี้ชั่วคราวก่อน — เนื้อหาอิงจากคู่มือความปลอดภัย FTC-SAF-STM-001 (เช่น เกณฑ์ทำงานที่สูง
+        // เกิน 4 เมตรต้องสวมเข็มขัดนิรภัย) ถ้าต้องการสุ่มคำถาม/เก็บประวัติการทำข้อสอบราย worker
+        // จะต้องสร้างตารางเพิ่มก่อน
+        var QUESTIONS = [
+            { q: 'การทำงานบนที่สูงตั้งแต่กี่เมตรขึ้นไป ต้องสวมเข็มขัดนิรภัยเสมอ?', choices: ['2 เมตร', '4 เมตร', '6 เมตร', '10 เมตร'], correct: 1 },
+            { q: 'งานที่มีประกายไฟ (Hot Work) ก่อนเริ่มงานต้องเตรียมอะไรเพื่อป้องกันไฟลาม?', choices: ['ถังดับเพลิงเท่านั้น', 'ถาดรอง/ผ้าใบกันไฟ', 'พัดลมระบายอากาศ', 'หน้ากากกันฝุ่น'], correct: 1 },
+            { q: 'งานในพื้นที่อับอากาศ (Confined Space) ต้องมีใครเฝ้าระวังอยู่เสมอ?', choices: ['หัวหน้างานเท่านั้น', 'ผู้เฝ้าระวัง (Hole Watch)', 'รปภ. หน้าประตู', 'ไม่จำเป็นต้องมีคนเฝ้า'], correct: 1 },
+            { q: 'พนักงานต้องหยุดพักและถูกบังคับ Check-out เมื่อทำงานติดต่อกันครบกี่ชั่วโมง?', choices: ['8 ชั่วโมง', '10 ชั่วโมง', '12 ชั่วโมง', '16 ชั่วโมง'], correct: 2 },
+            { q: 'อุปกรณ์ที่สแกนแล้วขึ้น "ป้ายแดง" หมายความว่าอย่างไร?', choices: ['พร้อมใช้งานปกติ', 'ชำรุด ห้ามใช้งาน/ห้ามออก Permit', 'อยู่ระหว่างการยืม', 'เพิ่งผ่านการตรวจสอบ'], correct: 1 },
+            { q: 'การทำงานบนที่สูงตั้งแต่ 2 เมตรขึ้นไป (แต่ไม่ถึง 4 เมตร) ต้องมีอะไรเป็นอย่างน้อย?', choices: ['ไม่ต้องมีมาตรการใด', 'นั่งร้านและราวกันตกที่ได้มาตรฐาน', 'เข็มขัดนิรภัยเท่านั้น', 'ตาข่ายรองรับการตกเท่านั้น'], correct: 1 },
+            { q: 'ผู้รับเหมาประเภท "บุคคลธรรมดา" จะถูกระบบบล็อกไม่ให้ทำสิ่งใด?', choices: ['เข้าไซต์งาน', 'ขอ E-Permit งานเสี่ยงสูง', 'ทำแบบทดสอบ', 'สแกนเข้าออก'], correct: 1 },
+            { q: 'เมื่อเกิดเหตุฉุกเฉินและกดปุ่ม SOS ระบบจะทำอะไรเป็นลำดับแรก?', choices: ['บันทึกไว้ดูภายหลัง', 'ส่งพิกัด GPS ทะลุคิวตรงถึงทีมตอบโต้ทันที', 'แจ้งเตือนเฉพาะหัวหน้างาน', 'รอการยืนยันจาก จป. ก่อน'], correct: 1 }
+        ];
+        var PASS_THRESHOLD = 0.8; // 80%
+        var userAnswers = new Array(QUESTIONS.length).fill(null);
+
+        window.addEventListener('load', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            document.getElementById('q-total-1').innerText = QUESTIONS.length;
+            document.getElementById('q-total-2').innerText = QUESTIONS.length;
+            document.getElementById('pass-threshold-text').innerText = Math.round(PASS_THRESHOLD * 100) + '%';
+            identifyWorker();
+        });
+
+        // ===============================================
+        // ระบุตัวตนผู้เข้าสอบ: ดึง LINE UID จาก LIFF แล้วค้นหาใน tb_workers.line_user_id
+        // ===============================================
+        async function identifyWorker() {
+            try {
+                if (typeof liff !== 'undefined') {
+                    await liff.init({ liffId: LIFF_ID });
+                    if (liff.isLoggedIn && liff.isLoggedIn()) {
+                        var profile = await liff.getProfile();
+                        var found = await lookupWorkerByLineUid(profile.userId);
+                        if (found) { showIdentifyFound(found); return; }
+                    }
+                }
+            } catch (e) {
+                console.error('LIFF identify error:', e);
+            }
+            showIdentifyNotFound();
+        }
+
+        async function lookupWorkerByLineUid(lineUid) {
+            if (!supabase) return null;
+            try {
+                var res = await supabase.from('tb_workers').select('worker_id, full_name').eq('line_user_id', lineUid).limit(1);
+                if (res.error) throw res.error;
+                return (res.data && res.data.length > 0) ? res.data[0] : null;
+            } catch (e) {
+                console.error('lookupWorkerByLineUid error:', e);
+                return null;
+            }
+        }
+
+        async function manualLookup() {
+            var idVal = document.getElementById('manual-id-input').value.trim();
+            if (!idVal) { Swal.fire('กรุณากรอกเลขบัตร', '', 'warning'); return; }
+            if (!supabase) return;
+            try {
+                var res = await supabase.from('tb_workers').select('worker_id, full_name').eq('national_id', idVal).limit(1);
+                if (res.error) throw res.error;
+                if (res.data && res.data.length > 0) { showIdentifyFound(res.data[0]); }
+                else { Swal.fire('ไม่พบข้อมูล', 'ไม่พบเลขบัตรนี้ในระบบ กรุณาตรวจสอบอีกครั้ง', 'error'); }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถค้นหาข้อมูลได้ในขณะนี้', 'error');
+            }
+        }
+
+        function showIdentifyFound(worker) {
+            currentWorker = worker;
+            document.getElementById('identify-loading').classList.add('hidden');
+            document.getElementById('identify-notfound').classList.add('hidden');
+            document.getElementById('identify-found').classList.remove('hidden');
+            document.getElementById('found-name').innerText = worker.full_name;
+        }
+
+        function showIdentifyNotFound() {
+            document.getElementById('identify-loading').classList.add('hidden');
+            document.getElementById('identify-notfound').classList.remove('hidden');
+        }
+
+        // ===============================================
+        // แบบทดสอบ
+        // ===============================================
+        function startExam() {
+            renderQuestions();
+            document.getElementById('step-identify').classList.add('hidden');
+            document.getElementById('step-exam').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderQuestions() {
+            var container = document.getElementById('question-list');
+            container.innerHTML = '';
+            QUESTIONS.forEach(function(item, qIdx) {
+                var card = document.createElement('div');
+                card.className = 'q-card';
+                var html = '<p class="text-sm font-bold text-gray-800 mb-1"><span class="q-num">' + (qIdx + 1) + '</span>' + item.q + '</p>';
+                item.choices.forEach(function(choice, cIdx) {
+                    var id = 'q' + qIdx + '_c' + cIdx;
+                    html += '<label class="opt-label" id="label_' + id + '">' +
+                        '<input type="radio" name="q' + qIdx + '" value="' + cIdx + '" onchange="onAnswer(' + qIdx + ',' + cIdx + ')">' +
+                        '<span class="text-sm text-gray-700">' + choice + '</span>' +
+                        '</label>';
+                });
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        function onAnswer(qIdx, cIdx) {
+            userAnswers[qIdx] = cIdx;
+            for (var i = 0; i < QUESTIONS[qIdx].choices.length; i++) {
+                document.getElementById('label_q' + qIdx + '_c' + i).classList.toggle('selected', i === cIdx);
+            }
+            var answeredCount = userAnswers.filter(function(a) { return a !== null; }).length;
+            document.getElementById('answered-count').innerText = answeredCount;
+            document.getElementById('progress-bar').style.width = Math.round((answeredCount / QUESTIONS.length) * 100) + '%';
+        }
+
+        function onSubmitClick() {
+            var unanswered = userAnswers.findIndex(function(a) { return a === null; });
+            if (unanswered !== -1) {
+                Swal.fire('ยังตอบไม่ครบ', 'กรุณาตอบคำถามข้อที่ ' + (unanswered + 1) + ' ก่อนส่งคำตอบ', 'warning');
+                return;
+            }
+            document.getElementById('step-exam').classList.add('hidden');
+            document.getElementById('step-proctoring').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===============================================
+        // E-Proctoring: ถ่ายเซลฟี่ผ่านกล้องหน้า native
+        // ใช้เทคนิคเดียวกับหน้า Worker Registration (input[type=file][capture])
+        // แต่เปลี่ยนเป็น capture="user" เพื่อบังคับกล้อง "หน้า" แทนกล้องหลัง
+        // เพราะ e-Proctoring ต้องเห็นใบหน้าคนสอบ ไม่ใช่ถ่ายเอกสาร
+        // ===============================================
+        function handleSelfieCapture(inputElement) {
+            if (inputElement.files.length === 0) return;
+            selfieFile = inputElement.files[0];
+            document.getElementById('proctoring-btn-group').classList.add('hidden');
+            document.getElementById('proctoring-preview').classList.remove('hidden');
+            document.getElementById('selfie-preview-img').src = URL.createObjectURL(selfieFile);
+        }
+
+        function resetSelfie() {
+            selfieFile = null;
+            document.getElementById('file-selfie-camera').value = '';
+            document.getElementById('proctoring-preview').classList.add('hidden');
+            document.getElementById('proctoring-btn-group').classList.remove('hidden');
+        }
+
+        // ===============================================
+        // ส่งผลสอบจริง: อัปโหลดเซลฟี่ + คำนวณคะแนน + อัปเดต tb_workers
+        // ===============================================
+        async function confirmSubmitExam() {
+            if (!selfieFile || !currentWorker || !supabase) return;
+
+            Swal.fire({ title: 'กำลังส่งคำตอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                var correctCount = 0;
+                QUESTIONS.forEach(function(item, idx) { if (userAnswers[idx] === item.correct) correctCount++; });
+                var scorePct = correctCount / QUESTIONS.length;
+                var passed = scorePct >= PASS_THRESHOLD;
+
+                var selfiePath = 'training-selfies/' + currentWorker.worker_id + '_' + Date.now() + '.jpg';
+                var upSelfie = await supabase.storage.from('worker-documents').upload(selfiePath, selfieFile);
+                if (upSelfie.error) throw upSelfie.error;
+                var selfieUrl = supabase.storage.from('worker-documents').getPublicUrl(selfiePath).data.publicUrl;
+
+                if (passed) {
+                    var expiry = new Date();
+                    expiry.setFullYear(expiry.getFullYear() + 1); // ⚠️ สมมติอายุใบเซอร์ 1 ปี — ยังไม่มีการยืนยันจาก PM
+                    var expiryIso = expiry.toISOString().slice(0, 10);
+
+                    var updateRes = await supabase.from('tb_workers').update({
+                        face_photo_url: selfieUrl,
+                        // ⚠️ training_cert_url ควรเป็นลิงก์ใบเซอร์ (PDF) ที่ระบบสร้างให้ ไม่ใช่รูปเซลฟี่ตรงๆ
+                        // ตอนนี้ยังไม่มีระบบสร้างใบเซอร์ จึงใส่ลิงก์รูปเซลฟี่ไว้ชั่วคราวเป็น placeholder
+                        training_cert_url: selfieUrl,
+                        training_cert_expiry: expiryIso
+                    }).eq('worker_id', currentWorker.worker_id);
+                    if (updateRes.error) throw updateRes.error;
+                }
+
+                Swal.close();
+                showResult(passed, correctCount, scorePct);
+
+            } catch (err) {
+                console.error('confirmSubmitExam error:', err);
+                Swal.fire('ส่งคำตอบไม่สำเร็จ', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง', 'error');
+            }
+        }
+
+        function showResult(passed, correctCount, scorePct) {
+            document.getElementById('step-proctoring').classList.add('hidden');
+            var resultStep = document.getElementById('step-result');
+            resultStep.classList.remove('hidden');
+            resultStep.classList.add('flex');
+
+            var scoreText = correctCount + ' / ' + QUESTIONS.length + ' (' + Math.round(scorePct * 100) + '%)';
+            if (passed) {
+                document.getElementById('result-pass').classList.remove('hidden');
+                document.getElementById('result-pass').classList.add('flex');
+                document.getElementById('score-pass').innerText = scoreText;
+            } else {
+                document.getElementById('result-fail').classList.remove('hidden');
+                document.getElementById('result-fail').classList.add('flex');
+                document.getElementById('score-fail').innerText = scoreText;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
