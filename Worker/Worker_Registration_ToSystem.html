@@ -275,6 +275,7 @@
                     <div>
                         <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: ถ่ายภาพยืนยันเอกสาร</p>
                         <p class="text-xs text-gray-500 mt-0.5">กรุณาเลือกวิธีการอัปโหลดภาพ (ถ่ายสดผ่านกล้อง หรือ เลือกจากไฟล์)</p>
+                        <button type="button" onclick="openInExternalBrowser()" class="text-xs text-brand-orange underline font-semibold mt-2">กล้องเปิดไม่ได้? กดที่นี่เพื่อเปิดหน้านี้ผ่าน Google Chrome</button>
                     </div>
                 </div>
 
@@ -439,29 +440,21 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                // ⚠️ FIX (กล้องเปิดไม่ได้บน Samsung/Android แม้กดปุ่ม "เปิดใน Google Chrome" แล้ว):
-                // เดิมโค้ดโชว์ popup ผ่าน Swal.fire() แล้วเรียก liff.openWindow() จากข้างใน
-                // Promise .then() ของมัน — WebView ของ LINE บน Android (โดยเฉพาะ Samsung)
-                // เข้มงวดเรื่อง "user gesture" มาก การเรียกผ่าน Promise/async แบบนี้มีโอกาสสูงที่
-                // เบราว์เซอร์จะไม่นับว่าเป็นการแตะโดยตรงของผู้ใช้อีกต่อไป แล้วเงียบๆ บล็อกไม่ให้
-                // เปิด Chrome จริง จึงเปลี่ยนมาใช้ปุ่ม HTML ธรรมดา (#liff-blocker ที่มีอยู่แล้วในไฟล์)
-                // ที่กดแล้วเรียก liff.openWindow() แบบ synchronous ตรงๆ ทันที ไม่ผ่าน Promise ใดๆ เลย
-                // ซึ่งรักษาสถานะ "user gesture" ไว้ได้แน่นอนกว่ามาก
-                var isLineApp = /Line/i.test(navigator.userAgent);
-                var isAndroid = /Android/i.test(navigator.userAgent);
-
-                if (isLineApp && isAndroid) {
-                    document.getElementById('main-form').style.display = 'none';
-                    document.getElementById('liff-blocker').classList.remove('hidden');
-                } else {
-                    document.getElementById('liff-blocker').classList.add('hidden');
-                    document.getElementById('main-form').style.display = 'block';
-                }
+                // ⚠️ FIX รอบใหม่ (กล้องเปิดไม่ได้บน Samsung/Android แม้เปลี่ยนมาใช้ปุ่มตรงแล้ว):
+                // สองรอบก่อนหน้ายังพึ่งพากลไก "ดีดออกจาก LINE ไป Chrome ก่อน" (liff.openWindow)
+                // ซึ่งพิสูจน์แล้วว่าไม่เสถียรพอบน Samsung/Android จริง ไม่ว่าจะเรียกแบบ async
+                // ผ่าน Swal หรือ sync ตรงๆ จากปุ่ม HTML ก็ตาม จึงเปลี่ยนแนวทางทั้งหมด:
+                // <input capture="environment"> ไม่ได้พึ่ง getUserMedia/สิทธิ์กล้องในหน้าเว็บเลย
+                // แต่ส่งผ่านระบบ Intent ของ Android ให้แอปกล้อง native เปิดขึ้นตรงๆ (คนละกลไก
+                // กับ WebRTC ที่เคยมีปัญหาแต่แรก) จึงควรทำงานได้เองแม้อยู่ใน LINE in-app browser
+                // โดยไม่ต้องบังคับดีดออกไป Chrome ก่อนเลย — เอาการกั้นหน้าจอออกทั้งหมด ให้เข้าฟอร์ม
+                // ได้ทันทีเสมอ เหลือไว้แค่ลิงก์สำรองเล็กๆ ไม่บังคับ เผื่อใครเจอปัญหาจริงๆ ค่อยกดเอง
+                document.getElementById('liff-blocker').classList.add('hidden');
+                document.getElementById('main-form').style.display = 'block';
 
                 await fetchVendors();
 
-                // โหลด LIFF และดึง LINE userId ต่อไปตามปกติ (ไม่เกี่ยวกับการตัดสินใจโชว์ UI ข้างบน
-                // แล้ว จึงไม่ทำให้การแสดงผลหน้าจอต้องรอ liff.init() อีกต่อไป)
+                // โหลด LIFF และดึง LINE userId ต่อไปตามปกติ (ไม่เกี่ยวกับการแสดงผลหน้าจอข้างบนแล้ว)
                 if (typeof liff !== 'undefined') {
                     try {
                         await liff.init({ liffId: '2010907761-KrJ8PgNN' });
