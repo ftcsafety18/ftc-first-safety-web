@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC First Safety - ขออนุญาตทำงาน (E-Permit)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' }
+                    },
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'], }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
+        .input-field { width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #F9FAFB; font-size: 0.875rem; color: #1F2937; transition: all 0.2s; }
+        .input-field:focus { outline: none; border-color: #19335A; background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
+        .section-label { display:flex; align-items:center; gap:8px; font-size:0.78rem; font-weight:700; color:#19335A; text-transform:uppercase; letter-spacing:0.04em; margin: 26px 0 14px; }
+        .section-label .bar { width: 4px; height: 16px; border-radius: 4px; background: #DB5A24; }
+
+        .type-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border-radius: 14px; border: 1.5px solid #E7EBF1; background: #fff; cursor: pointer; transition: all 0.15s ease; text-align: center; }
+        .type-card:active { transform: scale(0.96); }
+        .type-card.selected { border-color: #DB5A24; background: #FFF6F1; box-shadow: 0 4px 12px -4px rgba(219,90,36,0.3); }
+        .type-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #F0F4FA; }
+        .type-card.selected .type-icon { background: #DB5A24; }
+        .type-card.selected .type-icon i { color: #fff !important; }
+
+        .zone-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1.5px solid #E7EBF1; background: #fff; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }
+        .zone-btn.zone-danger.selected { background: #FEE2E2; border-color: #EF4444; color: #B91C1C; }
+        .zone-btn.zone-control.selected { background: #FEF3C7; border-color: #F59E0B; color: #92400E; }
+        .zone-btn.zone-safe.selected { background: #DCFCE7; border-color: #22C55E; color: #15803D; }
+
+        .interlock-box { background: #FFF6F1; border: 1.5px dashed #DB5A24; border-radius: 14px; padding: 16px; margin-top: 14px; }
+        .consent-box { display:flex; align-items:flex-start; gap:10px; background:#fff; border:1px solid #E5E9F0; border-radius:12px; padding:12px 14px; }
+        .consent-box input[type=checkbox] { width:19px; height:19px; margin-top:2px; accent-color:#DB5A24; border-radius:5px; flex-shrink:0; }
+
+        .btn-camera {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 14px 20px; border-radius: 14px; border: none; cursor: pointer;
+            font-weight: 700; font-size: 0.9rem; color: #fff; width: 100%;
+            background: linear-gradient(135deg, #E9662C 0%, #DB5A24 55%, #C14B1A 100%);
+            box-shadow: 0 6px 16px -4px rgba(219, 90, 36, 0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .btn-camera:active { transform: scale(0.97); }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+    <header class="sticky top-0 z-40 bg-brand-navy shadow-md">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <div class="bg-white rounded p-1 flex items-center justify-center">
+                    <img src="logo.png" alt="First Logo" class="h-8 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
+                </div>
+                <div>
+                    <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety</h1>
+                    <p class="text-[9px] sm:text-xs text-white/70 leading-tight">ขออนุญาตทำงาน (E-Permit to Work)</p>
+                </div>
+            </div>
+            <span class="text-[9px] sm:text-[10px] font-mono font-semibold text-brand-navy bg-white/90 px-2 py-1 rounded shadow-sm tracking-wider">FM-SAF-22</span>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-16">
+
+        <!-- ================= STEP 0: ระบุตัวตนผู้ขอ ================= -->
+        <div id="step-identify" class="block">
+            <div id="identify-loading" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
+                <div class="w-10 h-10 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-sm text-gray-500">กำลังตรวจสอบข้อมูลผู้ขออนุญาต...</p>
+            </div>
+            <div id="identify-notfound" class="hidden bg-white rounded-2xl border border-red-200 shadow-sm p-6 sm:p-8 text-center">
+                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="user-x" class="w-8 h-8 text-red-500"></i></div>
+                <h2 class="text-lg font-bold text-brand-navy mb-2">ไม่พบข้อมูลการลงทะเบียนของท่าน</h2>
+                <p class="text-sm text-gray-600 mb-6">กรุณาลงทะเบียนเข้าปฏิบัติงานก่อนจึงจะขอ E-Permit ได้</p>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="manual-id-input" placeholder="เลขบัตรประชาชน / พาสปอร์ต" class="input-field">
+                    <button onclick="manualLookup()" class="px-5 py-2.5 bg-brand-navy text-white text-sm font-bold rounded-lg shrink-0">ค้นหา</button>
+                </div>
+                <a href="Worker_Registration_ToSystem.html" class="text-xs text-brand-orange underline font-semibold">ยังไม่เคยลงทะเบียน? กดที่นี่</a>
+            </div>
+        </div>
+
+        <!-- ================= STEP 1: ฟอร์มขออนุญาต ================= -->
+        <div id="step-form" class="hidden">
+
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-5 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-brand-navy flex items-center justify-center shrink-0"><i data-lucide="user" class="w-4 h-4 text-white"></i></div>
+                <div>
+                    <p class="text-xs text-gray-400">ผู้ขออนุญาต (Requester)</p>
+                    <p id="requester-name" class="text-sm font-bold text-brand-navy">-</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
+
+                <div class="section-label"><span class="bar"></span> แผนงาน (WBS Task) ที่จะขอ Permit</div>
+                <select id="task-select" class="input-field cursor-pointer" onchange="onTaskSelected()">
+                    <option value="">-- เลือกแผนงาน --</option>
+                </select>
+                <p id="task-empty-warning" class="hidden text-xs text-red-500 mt-2">⚠️ ยังไม่มีข้อมูลแผนงาน (WBS Task) ในระบบสำหรับโครงการนี้ กรุณาให้ทีมงานสร้างข้อมูลใน Module การตั้งค่าโครงการก่อน จึงจะขอ Permit ได้</p>
+                <p id="vendor-mismatch-warning" class="hidden text-xs text-red-500 mt-2">⚠️ แผนงานนี้ไม่ได้อยู่ภายใต้บริษัทของท่าน ไม่สามารถขอ Permit ให้งานนี้ได้</p>
+
+                <div class="section-label"><span class="bar"></span> ประเภทงานเสี่ยง (Permit Type)</div>
+                <div class="grid grid-cols-3 gap-3" id="type-grid">
+                    <div class="type-card" data-type="Height" onclick="selectPermitType('Height')">
+                        <div class="type-icon"><i data-lucide="mountain-snow" class="w-5 h-5 text-brand-navy"></i></div>
+                        <p class="text-xs font-bold text-gray-700">Work at Height</p>
+                    </div>
+                    <div class="type-card" data-type="HotWork" onclick="selectPermitType('HotWork')">
+                        <div class="type-icon"><i data-lucide="flame" class="w-5 h-5 text-brand-navy"></i></div>
+                        <p class="text-xs font-bold text-gray-700">Hot Work</p>
+                    </div>
+                    <div class="type-card" data-type="ConfinedSpace" onclick="selectPermitType('ConfinedSpace')">
+                        <div class="type-icon"><i data-lucide="box" class="w-5 h-5 text-brand-navy"></i></div>
+                        <p class="text-xs font-bold text-gray-700">Confined Space</p>
+                    </div>
+                    <div class="type-card" data-type="Lifting" onclick="selectPermitType('Lifting')">
+                        <div class="type-icon"><i data-lucide="crane" class="w-5 h-5 text-brand-navy"></i></div>
+                        <p class="text-xs font-bold text-gray-700">Lifting</p>
+                    </div>
+                    <div class="type-card" data-type="Electrical" onclick="selectPermitType('Electrical')">
+                        <div class="type-icon"><i data-lucide="zap" class="w-5 h-5 text-brand-navy"></i></div>
+                        <p class="text-xs font-bold text-gray-700">Electrical</p>
+                    </div>
+                    <div class="type-card" data-type="Cold" onclick="selectPermitType('Cold')">
+                        <div class="type-icon"><i data-lucide="clipboard-list" class="w-5 h-5 text-brand-navy"></i></div>
+                        <p class="text-xs font-bold text-gray-700">งานทั่วไป (Cold Work)</p>
+                    </div>
+                </div>
+
+                <!-- ===== Interlock: Work at Height ===== -->
+                <div id="interlock-height" class="interlock-box hidden">
+                    <p class="text-sm font-bold text-brand-navy mb-2 flex items-center gap-2"><i data-lucide="shield-alert" class="w-4 h-4 text-brand-orange"></i> เงื่อนไขบังคับ: งานที่สูง</p>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">ความสูงโดยประมาณของจุดทำงาน (เมตร) <span class="text-red-500">*</span></label>
+                    <input type="number" id="height-input" min="0" step="0.1" placeholder="เช่น 5" class="input-field mb-3" oninput="onHeightInput()">
+                    <div id="harness-required-box" class="hidden">
+                        <label class="consent-box cursor-pointer">
+                            <input type="checkbox" id="harness-checkbox">
+                            <span class="text-sm text-gray-700 leading-relaxed">ยืนยันว่าผู้ปฏิบัติงานทุกคนจะสวม <b>Full Body Harness (เข็มขัดนิรภัยแบบเต็มตัว)</b> และเกี่ยวคล้องกับโครงสร้างที่มั่นคงตลอดเวลาที่ทำงาน (บังคับเนื่องจากความสูงเกิน 4 เมตร) <span class="text-red-500">*</span></span>
+                        </label>
+                    </div>
+                    <div id="scaffold-required-box" class="hidden mt-2">
+                        <label class="consent-box cursor-pointer">
+                            <input type="checkbox" id="scaffold-checkbox">
+                            <span class="text-sm text-gray-700 leading-relaxed">ยืนยันว่ามีนั่งร้านและราวกันตกที่ได้มาตรฐาน (บังคับเนื่องจากความสูงตั้งแต่ 2 เมตรขึ้นไป) <span class="text-red-500">*</span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ===== Interlock: Hot Work ===== -->
+                <div id="interlock-hotwork" class="interlock-box hidden">
+                    <p class="text-sm font-bold text-brand-navy mb-2 flex items-center gap-2"><i data-lucide="shield-alert" class="w-4 h-4 text-brand-orange"></i> เงื่อนไขบังคับ: งานที่มีประกายไฟ</p>
+                    <p class="text-xs text-gray-600 mb-3">กรุณาถ่ายภาพยืนยันการติดตั้ง <b>ถังดับเพลิง และผ้าใบ/ถาดรองกันไฟ</b> ณ จุดทำงานจริง ก่อนเริ่มงาน (บังคับตาม FTC-SWI-001, 002)</p>
+                    <div id="hotwork-btn-group">
+                        <label class="btn-camera">
+                            <i data-lucide="camera" class="w-4 h-4"></i> ถ่ายรูปถังดับเพลิง/ผ้าใบกันไฟ
+                            <input type="file" id="file-hotwork-camera" class="hidden" accept="image/*" capture="environment" onchange="handleHotworkCapture(this)">
+                        </label>
+                    </div>
+                    <div id="hotwork-preview" class="hidden flex items-center gap-3 mt-3">
+                        <img id="hotwork-preview-img" class="w-16 h-16 rounded-lg object-cover border-2 border-brand-orange" />
+                        <div>
+                            <p class="text-xs font-bold text-green-600 flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> รับภาพเรียบร้อยแล้ว</p>
+                            <button onclick="resetHotworkPhoto()" class="text-xs text-red-500 underline">ถ่ายใหม่</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Interlock: Confined Space ===== -->
+                <div id="interlock-confined" class="interlock-box hidden">
+                    <p class="text-sm font-bold text-brand-navy mb-2 flex items-center gap-2"><i data-lucide="shield-alert" class="w-4 h-4 text-brand-orange"></i> เงื่อนไขบังคับ: พื้นที่อับอากาศ</p>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">ชื่อผู้เฝ้าระวัง (Hole Watch) <span class="text-red-500">*</span></label>
+                    <input type="text" id="holewatch-input" placeholder="ชื่อ-นามสกุลผู้เฝ้าระวัง" class="input-field">
+                    <p class="text-xs text-gray-500 mt-2">* ต้องมีผู้เฝ้าระวังประจำจุดตลอดเวลาที่มีคนทำงานอยู่ในพื้นที่ ตามข้อกำหนดใน FTC-SWI-005</p>
+                </div>
+
+                <div class="section-label"><span class="bar"></span> รายละเอียดงาน</div>
+                <textarea id="work-description" rows="3" placeholder="อธิบายลักษณะงานที่จะปฏิบัติ..." class="input-field"></textarea>
+
+                <div class="section-label"><span class="bar"></span> โซนพื้นที่ปฏิบัติงาน (Risk Area Zone)</div>
+                <div class="flex gap-2" id="zone-group">
+                    <button type="button" class="zone-btn zone-danger" onclick="selectZone('เขตอันตราย')">🔴 เขตอันตราย</button>
+                    <button type="button" class="zone-btn zone-control" onclick="selectZone('เขตควบคุม')">🟡 เขตควบคุม</button>
+                    <button type="button" class="zone-btn zone-safe" onclick="selectZone('เขตปลอดภัย')">🟢 เขตปลอดภัย</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">เวลาเริ่มงาน <span class="text-red-500">*</span></label>
+                        <input type="datetime-local" id="start-time" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">เวลาสิ้นสุด (คาดการณ์) <span class="text-red-500">*</span></label>
+                        <input type="datetime-local" id="end-time" class="input-field">
+                    </div>
+                </div>
+
+                <button type="button" onclick="submitPermit()" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg mt-8">
+                    <i data-lucide="send" class="w-4 h-4"></i> ส่งคำขออนุญาตทำงาน
+                </button>
+                <p class="text-xs text-gray-400 text-center mt-3">เมื่อส่งคำขอแล้ว ระบบจะแจ้งเตือน จป./วิศวกรควบคุมงานผ่าน LINE โดยอัตโนมัติ</p>
+            </div>
+        </div>
+
+        <!-- ================= STEP 2: ส่งสำเร็จ ================= -->
+        <div id="step-success" class="hidden flex-col items-center justify-center py-10 text-center">
+            <div class="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg mb-4"><i data-lucide="check" class="w-10 h-10 text-white"></i></div>
+            <h2 class="text-2xl font-bold text-brand-navy">ส่งคำขอสำเร็จ!</h2>
+            <p class="text-sm text-gray-600 mt-2">เลขที่ใบขออนุญาต: <b id="ptw-id-display">-</b></p>
+            <p class="text-sm text-gray-600 mt-1">สถานะ: รอ จป. อนุมัติ — ระบบได้แจ้งเตือนผ่าน LINE ให้แล้ว</p>
+        </div>
+
+    </main>
+
+    <script>
+        var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        var LIFF_ID = '2010907761-KrJ8PgNN';
+
+        var currentWorker = null; // { worker_id, full_name, vendor_id }
+        var tasksMasterData = [];
+        var selectedTask = null;
+        var selectedPermitType = null;
+        var selectedZone = null;
+        var hotworkPhotoFile = null;
+
+        window.addEventListener('load', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            identifyRequester();
+        });
+
+        // ===============================================
+        // ระบุตัวตนผู้ขอ (เหมือน Training_Exam.html)
+        // ===============================================
+        async function identifyRequester() {
+            try {
+                if (typeof liff !== 'undefined') {
+                    await liff.init({ liffId: LIFF_ID });
+                    if (liff.isLoggedIn && liff.isLoggedIn()) {
+                        var profile = await liff.getProfile();
+                        var found = await lookupWorker('line_user_id', profile.userId);
+                        if (found) { onIdentified(found); return; }
+                    }
+                }
+            } catch (e) { console.error('LIFF identify error:', e); }
+            document.getElementById('identify-loading').classList.add('hidden');
+            document.getElementById('identify-notfound').classList.remove('hidden');
+        }
+
+        async function lookupWorker(column, value) {
+            if (!supabase) return null;
+            try {
+                var res = await supabase.from('tb_workers').select('worker_id, full_name, vendor_id').eq(column, value).limit(1);
+                if (res.error) throw res.error;
+                return (res.data && res.data.length > 0) ? res.data[0] : null;
+            } catch (e) { console.error('lookupWorker error:', e); return null; }
+        }
+
+        async function manualLookup() {
+            var idVal = document.getElementById('manual-id-input').value.trim();
+            if (!idVal) { Swal.fire('กรุณากรอกเลขบัตร', '', 'warning'); return; }
+            var found = await lookupWorker('national_id', idVal);
+            if (found) onIdentified(found);
+            else Swal.fire('ไม่พบข้อมูล', 'ไม่พบเลขบัตรนี้ในระบบ กรุณาตรวจสอบอีกครั้ง', 'error');
+        }
+
+        async function onIdentified(worker) {
+            currentWorker = worker;
+            document.getElementById('identify-loading').classList.add('hidden');
+            document.getElementById('identify-notfound').classList.add('hidden');
+            document.getElementById('requester-name').innerText = worker.full_name;
+            document.getElementById('step-identify').classList.add('hidden');
+            document.getElementById('step-form').classList.remove('hidden');
+            await fetchTasks();
+        }
+
+        // ===============================================
+        // ดึงแผนงาน (WBS Task) — ⚠️ ต้องมีข้อมูลใน tb_wbs_tasks ก่อน (มาจาก Module 1
+        // Project Setup ที่ยังไม่ได้สร้าง UI) เพราะ tb_work_permits.task_id เป็น NOT NULL FK
+        // ===============================================
+        async function fetchTasks() {
+            if (!supabase) return;
+            try {
+                var res = await supabase.from('tb_wbs_tasks').select('task_id, task_name, vendor_id, risk_area_class').order('created_at', { ascending: false });
+                if (res.error) throw res.error;
+                tasksMasterData = res.data || [];
+                var select = document.getElementById('task-select');
+                tasksMasterData.forEach(function(t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.task_id;
+                    opt.textContent = t.task_name;
+                    select.appendChild(opt);
+                });
+                if (tasksMasterData.length === 0) {
+                    document.getElementById('task-empty-warning').classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error('fetchTasks error:', e);
+                document.getElementById('task-empty-warning').classList.remove('hidden');
+            }
+        }
+
+        function onTaskSelected() {
+            var taskId = document.getElementById('task-select').value;
+            selectedTask = tasksMasterData.find(function(t) { return t.task_id === taskId; }) || null;
+            var warn = document.getElementById('vendor-mismatch-warning');
+            if (selectedTask && currentWorker && selectedTask.vendor_id !== currentWorker.vendor_id) {
+                warn.classList.remove('hidden');
+            } else {
+                warn.classList.add('hidden');
+            }
+            // งานนี้ผูกโซนความเสี่ยงไว้แล้วตั้งแต่ตอนตั้งค่า WBS — auto-select ให้ตรงกันเสมอ
+            if (selectedTask && selectedTask.risk_area_class) {
+                selectZone(selectedTask.risk_area_class);
+            }
+        }
+
+        // ===============================================
+        // เลือกประเภทงานเสี่ยง + แสดง Interlock ที่เกี่ยวข้อง
+        // ===============================================
+        function selectPermitType(type) {
+            selectedPermitType = type;
+            document.querySelectorAll('.type-card').forEach(function(el) {
+                el.classList.toggle('selected', el.getAttribute('data-type') === type);
+            });
+            document.getElementById('interlock-height').classList.toggle('hidden', type !== 'Height');
+            document.getElementById('interlock-hotwork').classList.toggle('hidden', type !== 'HotWork');
+            document.getElementById('interlock-confined').classList.toggle('hidden', type !== 'ConfinedSpace');
+        }
+
+        function onHeightInput() {
+            var h = parseFloat(document.getElementById('height-input').value) || 0;
+            document.getElementById('scaffold-required-box').classList.toggle('hidden', h < 2);
+            document.getElementById('harness-required-box').classList.toggle('hidden', h < 4);
+        }
+
+        function handleHotworkCapture(inputElement) {
+            if (inputElement.files.length === 0) return;
+            hotworkPhotoFile = inputElement.files[0];
+            document.getElementById('hotwork-btn-group').classList.add('hidden');
+            document.getElementById('hotwork-preview').classList.remove('hidden');
+            document.getElementById('hotwork-preview-img').src = URL.createObjectURL(hotworkPhotoFile);
+        }
+        function resetHotworkPhoto() {
+            hotworkPhotoFile = null;
+            document.getElementById('file-hotwork-camera').value = '';
+            document.getElementById('hotwork-preview').classList.add('hidden');
+            document.getElementById('hotwork-btn-group').classList.remove('hidden');
+        }
+
+        function selectZone(zone) {
+            selectedZone = zone;
+            document.querySelectorAll('.zone-btn').forEach(function(btn) { btn.classList.remove('selected'); });
+            if (zone === 'เขตอันตราย') document.querySelector('.zone-danger').classList.add('selected');
+            if (zone === 'เขตควบคุม') document.querySelector('.zone-control').classList.add('selected');
+            if (zone === 'เขตปลอดภัย') document.querySelector('.zone-safe').classList.add('selected');
+        }
+
+        // ===============================================
+        // Validation รวม Interlock ทั้งหมดก่อนอนุญาตให้ส่ง
+        // ===============================================
+        function validatePermit() {
+            if (!document.getElementById('task-select').value) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกแผนงาน (WBS Task)', 'warning'); return false; }
+            if (selectedTask && currentWorker && selectedTask.vendor_id !== currentWorker.vendor_id) {
+                Swal.fire('ไม่ได้รับอนุญาต', 'แผนงานนี้ไม่ได้อยู่ภายใต้บริษัทของท่าน ไม่สามารถขอ Permit ได้', 'error'); return false;
+            }
+            if (!selectedPermitType) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกประเภทงานเสี่ยง', 'warning'); return false; }
+
+            if (selectedPermitType === 'Height') {
+                var h = parseFloat(document.getElementById('height-input').value);
+                if (!h || h <= 0) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกความสูงโดยประมาณของจุดทำงาน', 'warning'); return false; }
+                if (h >= 2 && !document.getElementById('scaffold-checkbox').checked) {
+                    Swal.fire('ต้องยืนยันก่อน', 'กรุณายืนยันว่ามีนั่งร้าน/ราวกันตกที่ได้มาตรฐาน (บังคับสำหรับความสูง 2 เมตรขึ้นไป)', 'warning'); return false;
+                }
+                if (h >= 4 && !document.getElementById('harness-checkbox').checked) {
+                    Swal.fire('ต้องยืนยันก่อน', 'กรุณายืนยันการสวม Full Body Harness (บังคับสำหรับความสูงเกิน 4 เมตร)', 'warning'); return false;
+                }
+            }
+            if (selectedPermitType === 'HotWork' && !hotworkPhotoFile) {
+                Swal.fire('ขาดรูปถ่าย', 'กรุณาถ่ายรูปถังดับเพลิง/ผ้าใบกันไฟ ณ จุดทำงานก่อนส่งคำขอ', 'warning'); return false;
+            }
+            if (selectedPermitType === 'ConfinedSpace' && !document.getElementById('holewatch-input').value.trim()) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุชื่อผู้เฝ้าระวัง (Hole Watch)', 'warning'); return false;
+            }
+
+            if (!document.getElementById('work-description').value.trim()) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกรายละเอียดงาน', 'warning'); return false; }
+            if (!selectedZone) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกโซนพื้นที่ปฏิบัติงาน', 'warning'); return false; }
+            if (!document.getElementById('start-time').value || !document.getElementById('end-time').value) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุเวลาเริ่มงานและเวลาสิ้นสุด', 'warning'); return false;
+            }
+            if (document.getElementById('end-time').value <= document.getElementById('start-time').value) {
+                Swal.fire('เวลาไม่ถูกต้อง', 'เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่มงาน', 'warning'); return false;
+            }
+            return true;
+        }
+
+        function generatePtwId() {
+            if (window.crypto && crypto.randomUUID) return 'PTW-' + crypto.randomUUID().slice(0, 8).toUpperCase();
+            return 'PTW-' + Date.now();
+        }
+
+        // ===============================================
+        // ส่งคำขอเข้า tb_work_permits — Interlock ที่ไม่มีคอลัมน์เฉพาะ (harness, hole watch ฯลฯ)
+        // จะถูกรวมไว้ใน specific_data (jsonb) ตามที่ schema จริงออกแบบไว้ให้ยืดหยุ่น
+        // ===============================================
+        async function submitPermit() {
+            if (!validatePermit()) return;
+            if (!supabase) { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); return; }
+
+            Swal.fire({ title: 'กำลังส่งคำขอ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                var specificData = { permit_subtype: selectedPermitType };
+
+                if (selectedPermitType === 'Height') {
+                    specificData.height_m = parseFloat(document.getElementById('height-input').value);
+                    specificData.scaffold_confirmed = document.getElementById('scaffold-checkbox').checked;
+                    specificData.harness_confirmed = document.getElementById('harness-checkbox').checked;
+                }
+                if (selectedPermitType === 'ConfinedSpace') {
+                    specificData.hole_watch_name = document.getElementById('holewatch-input').value.trim();
+                }
+                if (selectedPermitType === 'HotWork') {
+                    var photoPath = 'hotwork-evidence/' + Date.now() + '_' + hotworkPhotoFile.name;
+                    var upPhoto = await supabase.storage.from('worker-documents').upload(photoPath, hotworkPhotoFile);
+                    if (upPhoto.error) throw upPhoto.error;
+                    specificData.fire_extinguisher_photo_url = supabase.storage.from('worker-documents').getPublicUrl(photoPath).data.publicUrl;
+                }
+
+                var ptwId = generatePtwId();
+                var payload = {
+                    ptw_id: ptwId,
+                    task_id: document.getElementById('task-select').value,
+                    vendor_id: currentWorker.vendor_id,
+                    requester_id: currentWorker.worker_id,
+                    ptw_type: selectedPermitType,
+                    work_description: document.getElementById('work-description').value.trim(),
+                    risk_area_class: selectedZone,
+                    start_time: document.getElementById('start-time').value,
+                    end_time: document.getElementById('end-time').value,
+                    workers_list: JSON.stringify([currentWorker.worker_id]),
+                    specific_data: JSON.stringify(specificData),
+                    status: 'Requested'
+                };
+
+                var insertRes = await supabase.from('tb_work_permits').insert(payload);
+                if (insertRes.error) throw insertRes.error;
+
+                // 🔔 TODO (ยังไม่ implement ในไฟล์นี้): เรียก Supabase Edge Function ที่นี่
+                // เพื่อยิง LINE Flex Message ไปหา จป. ดูคำอธิบายแนวทางในข้อความตอบกลับ
+
+                Swal.close();
+                document.getElementById('step-form').classList.add('hidden');
+                document.getElementById('ptw-id-display').innerText = ptwId;
+                var successStep = document.getElementById('step-success');
+                successStep.classList.remove('hidden');
+                successStep.classList.add('flex');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (err) {
+                console.error('submitPermit error:', err);
+                Swal.fire('ส่งคำขอไม่สำเร็จ', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
