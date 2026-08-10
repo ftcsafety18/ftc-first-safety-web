@@ -6,28 +6,40 @@
     <title>FTC E-Training System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>body { background-color: #F4F6F8; font-family: sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { background-color: #F8FAFC; font-family: 'Sarabun', sans-serif; }</style>
 </head>
-<body class="p-4 sm:p-6 max-w-3xl mx-auto">
-    <div class="mb-6 flex items-center gap-3">
-        <button onclick="window.location.href='index.html'" class="p-2 bg-white rounded-lg shadow-sm"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-        <h1 class="text-xl font-bold text-[#19335A]">ระบบฝึกอบรมความปลอดภัย</h1>
+<body class="max-w-3xl mx-auto text-gray-800">
+
+    <!-- Top Navigation Bar -->
+    <div class="bg-white sticky top-0 z-40 border-b border-gray-100 px-4 py-4 flex items-center gap-4 shadow-sm">
+        <button onclick="window.location.href='../index.html'" class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5 text-[#19335A]"></i>
+        </button>
+        <h1 class="text-lg font-bold text-[#19335A]">ระบบฝึกอบรมความปลอดภัย</h1>
     </div>
 
-    <div class="grid grid-cols-1 gap-4">
-        <!-- Course 1 -->
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex justify-between items-center">
+    <div class="p-4 sm:p-6 mt-2">
+        <!-- Course Card 1 -->
+        <div class="bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgb(0,0,0,0.04)] border border-gray-50 flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center"><i data-lucide="shield" class="text-blue-600"></i></div>
+                <!-- Icon -->
+                <div class="w-12 h-12 rounded-full bg-[#F0F4F8] flex items-center justify-center shrink-0">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-[#19335A]"></i>
+                </div>
+                <!-- Text -->
                 <div>
-                    <h2 class="font-bold text-[#19335A]">ความปลอดภัยพื้นฐาน (Basic Safety)</h2>
-                    <p class="text-xs text-gray-500 mt-1">ข้อสอบ 10 ข้อ • มีการถ่ายภาพยืนยันตัวตน</p>
+                    <h2 class="font-bold text-[#19335A] text-base leading-tight mb-1">ความปลอดภัยพื้นฐาน<br>(Basic Safety)</h2>
+                    <p class="text-xs text-gray-500">ข้อสอบ 10 ข้อ • มีการถ่ายภาพยืนยันตัวตน</p>
                 </div>
             </div>
-            <button onclick="alert('ระบบเปิดกล้องสอบ (E-Proctoring) กำลังเชื่อมต่อฐานข้อมูล')" class="px-4 py-2 bg-[#DB5A24] text-white text-sm font-bold rounded-lg shadow-md hover:bg-[#C14B1A]">เข้าสอบ</button>
+            <!-- Action Button (แก้ลิงก์ไปหน้าข้อสอบแล้ว!) -->
+            <button onclick="window.location.href='Training_Exam.html'" class="px-5 py-4 bg-[#C14B1A] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#DB5A24] active:scale-95 transition-all shrink-0">
+                เข้าสอบ
+            </button>
         </div>
-        <!-- เพิ่ม Course อื่นๆ ตาม Database -->
     </div>
+
     <script>lucide.createIcons();</script>
 </body>
 </html>
