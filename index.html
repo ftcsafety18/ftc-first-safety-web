@@ -101,11 +101,10 @@
                 <p class="text-sm font-bold text-brand-navy text-center leading-tight">2. ระบบฝึกอบรม<br>ความปลอดภัย</p>
             </div>
 
-            <!-- 3. ระบบขออนุญาต (E-Permit) -->
-            <div class="menu-card disabled" onclick="showComingSoon()">
-                <div class="menu-icon bg-gray-100"><i data-lucide="clipboard-check" class="w-7 h-7 text-gray-400"></i></div>
-                <p class="text-sm font-bold text-gray-400 text-center leading-tight">3. ระบบขออนุญาต<br>(E-Permit)</p>
-                <span class="badge-soon">เร็วๆ นี้</span>
+            <!-- 3. ระบบขออนุญาต (E-Permit) - เปิดใช้งานแล้ว! -->
+            <div class="menu-card" onclick="openModule('Permit/Permit_Request.html')">
+                <div class="menu-icon bg-[#E6F4EA]"><i data-lucide="clipboard-check" class="w-8 h-8 text-[#15803D]"></i></div>
+                <p class="text-[13px] font-bold text-[#19335A] text-center leading-tight">3. ระบบขออนุญาต<br>(E-Permit)</p>
             </div>
 
             <!-- 4. ประชุมหน้างาน (TBT & Check-in) -->
@@ -130,16 +129,16 @@
             </div>
         </div>
 
-        <!-- 7. Dynamic Admin Button -->
-        <div id="admin-menu" class="bg-brand-navy rounded-2xl p-4 flex items-center justify-between shadow-lg cursor-not-allowed opacity-80" onclick="showComingSoon()">
+     <!-- 7. Dynamic Admin Button (เปิดใช้งานแล้ว!) -->
+        <div id="admin-menu" class="bg-brand-navy rounded-2xl p-4 flex items-center justify-between shadow-lg cursor-pointer hover:bg-brand-navy-light transition-colors" onclick="openModule('Admin/Task_Setup.html')">
             <div class="flex items-center gap-3">
                 <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="shield" class="w-6 h-6 text-white"></i></div>
                 <div>
                     <p class="text-white font-bold text-sm">สำหรับผู้คุมงาน (Vendor Admin)</p>
-                    <p class="text-white/70 text-xs">อนุมัติใบงาน / จัดการทีม</p>
+                    <p class="text-white/70 text-xs">จัดการแผนงาน (WBS Task) / อนุมัติ</p>
                 </div>
             </div>
-            <i data-lucide="chevron-right" class="w-5 h-5 text-white/50"></i>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-white"></i>
         </div>
 
         <p class="text-center text-xs text-gray-400 mt-8">FTC First Safety Paperless System • FM-SAF-MENU-01</p>
