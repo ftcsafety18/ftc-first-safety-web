@@ -439,18 +439,29 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                // 🌟 โชว์หน้าฟอร์มเสมอ ป้องกันปัญหาจอขาว 100%
-                var blocker = document.getElementById('liff-blocker');
-                if (blocker) blocker.classList.add('hidden');
-                document.getElementById('main-form').style.display = 'block';
-
-                await fetchVendors();
-
-                // เช็ก Environment ว่าเปิดจากเครื่องและแอปอะไร
+                // ⚠️ FIX (กล้องเปิดไม่ได้บน Samsung/Android แม้กดปุ่ม "เปิดใน Google Chrome" แล้ว):
+                // เดิมโค้ดโชว์ popup ผ่าน Swal.fire() แล้วเรียก liff.openWindow() จากข้างใน
+                // Promise .then() ของมัน — WebView ของ LINE บน Android (โดยเฉพาะ Samsung)
+                // เข้มงวดเรื่อง "user gesture" มาก การเรียกผ่าน Promise/async แบบนี้มีโอกาสสูงที่
+                // เบราว์เซอร์จะไม่นับว่าเป็นการแตะโดยตรงของผู้ใช้อีกต่อไป แล้วเงียบๆ บล็อกไม่ให้
+                // เปิด Chrome จริง จึงเปลี่ยนมาใช้ปุ่ม HTML ธรรมดา (#liff-blocker ที่มีอยู่แล้วในไฟล์)
+                // ที่กดแล้วเรียก liff.openWindow() แบบ synchronous ตรงๆ ทันที ไม่ผ่าน Promise ใดๆ เลย
+                // ซึ่งรักษาสถานะ "user gesture" ไว้ได้แน่นอนกว่ามาก
                 var isLineApp = /Line/i.test(navigator.userAgent);
                 var isAndroid = /Android/i.test(navigator.userAgent);
 
-                // 🌟 รอให้ LIFF โหลดเสร็จสมบูรณ์ก่อนเสมอ ป้องกันการกดปุ่มแล้วไม่ทำงาน
+                if (isLineApp && isAndroid) {
+                    document.getElementById('main-form').style.display = 'none';
+                    document.getElementById('liff-blocker').classList.remove('hidden');
+                } else {
+                    document.getElementById('liff-blocker').classList.add('hidden');
+                    document.getElementById('main-form').style.display = 'block';
+                }
+
+                await fetchVendors();
+
+                // โหลด LIFF และดึง LINE userId ต่อไปตามปกติ (ไม่เกี่ยวกับการตัดสินใจโชว์ UI ข้างบน
+                // แล้ว จึงไม่ทำให้การแสดงผลหน้าจอต้องรอ liff.init() อีกต่อไป)
                 if (typeof liff !== 'undefined') {
                     try {
                         await liff.init({ liffId: '2010907761-KrJ8PgNN' });
@@ -461,37 +472,6 @@
                     } catch (err) {
                         console.error("LIFF Init Error:", err);
                     }
-                }
-
-                // 🌟 ถ้าเป็น Android + เปิดผ่าน LINE ให้แสดง Popup อย่างเดียว
-                if (isLineApp && isAndroid) {
-                    Swal.fire({
-                        title: 'จำเป็นต้องใช้งานกล้อง',
-                        text: 'แอป LINE ไม่รองรับการเปิดกล้องโดยตรงครับ ระบบจะพาคุณไปเปิดใน Google Chrome เพื่อให้ถ่ายภาพได้ตามปกติครับ',
-                        icon: 'info',
-                        confirmButtonText: 'เปิดใน Google Chrome',
-                        confirmButtonColor: '#DB5A24',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // FIX (Android/Samsung เปิดกล้องไม่ได้): เดิมเช็ค `liff.id` ซึ่งไม่ใช่
-                            // property จริงของ LIFF SDK เลย (undefined เสมอ) ทำให้เงื่อนไขนี้เป็นเท็จ
-                            // ทุกครั้ง และไม่เคยเรียก liff.openWindow() จริงเลยสักครั้ง — ผู้ใช้เลยติดอยู่
-                            // ใน LINE in-app browser ตลอด เปิดกล้อง native ไม่ได้ จึงเปลี่ยนมาเช็คแค่ว่า
-                            // SDK โหลดมาแล้วหรือยัง (typeof liff !== 'undefined') พร้อม try/catch กันพลาด
-                            if (typeof liff !== 'undefined') {
-                                try {
-                                    liff.openWindow({ url: window.location.href, external: true });
-                                } catch (e) {
-                                    console.error('liff.openWindow failed:', e);
-                                    Swal.fire('คำแนะนำ', 'กรุณากดปุ่ม 3 จุดที่มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์" เพื่อใช้งานกล้องครับ', 'warning');
-                                }
-                            } else {
-                                Swal.fire('คำแนะนำ', 'กรุณากดปุ่ม 3 จุดที่มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์" เพื่อใช้งานกล้องครับ', 'warning');
-                            }
-                        }
-                    });
                 }
             } catch (e) {
                 console.error("UI Init Error:", e);
