@@ -440,17 +440,22 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                // ⚠️ FIX รอบใหม่ (กล้องเปิดไม่ได้บน Samsung/Android แม้เปลี่ยนมาใช้ปุ่มตรงแล้ว):
-                // สองรอบก่อนหน้ายังพึ่งพากลไก "ดีดออกจาก LINE ไป Chrome ก่อน" (liff.openWindow)
-                // ซึ่งพิสูจน์แล้วว่าไม่เสถียรพอบน Samsung/Android จริง ไม่ว่าจะเรียกแบบ async
-                // ผ่าน Swal หรือ sync ตรงๆ จากปุ่ม HTML ก็ตาม จึงเปลี่ยนแนวทางทั้งหมด:
-                // <input capture="environment"> ไม่ได้พึ่ง getUserMedia/สิทธิ์กล้องในหน้าเว็บเลย
-                // แต่ส่งผ่านระบบ Intent ของ Android ให้แอปกล้อง native เปิดขึ้นตรงๆ (คนละกลไก
-                // กับ WebRTC ที่เคยมีปัญหาแต่แรก) จึงควรทำงานได้เองแม้อยู่ใน LINE in-app browser
-                // โดยไม่ต้องบังคับดีดออกไป Chrome ก่อนเลย — เอาการกั้นหน้าจอออกทั้งหมด ให้เข้าฟอร์ม
-                // ได้ทันทีเสมอ เหลือไว้แค่ลิงก์สำรองเล็กๆ ไม่บังคับ เผื่อใครเจอปัญหาจริงๆ ค่อยกดเอง
-                document.getElementById('liff-blocker').classList.add('hidden');
-                document.getElementById('main-form').style.display = 'block';
+                // ⚠️ FIX รอบล่าสุด (ทดสอบแล้วพบว่า capture="environment" ถูก LINE WebView
+                // เพิกเฉยจริง เปิด Google Photos แทนกล้อง): ยืนยันว่ายังจำเป็นต้องกั้นหน้าจอ +
+                // บังคับดีดออกไป Chrome ก่อนอยู่ดี (สมมติฐานรอบก่อนที่ลองปล่อยให้ทำงานตรงๆ ใน LINE
+                // ผิด) จึงกลับมาเช็ค LINE+Android แล้วโชว์ #liff-blocker เหมือนเดิม แต่เปลี่ยนกลไก
+                // การดีดออกเป็น Android Intent URL (ดู openInExternalBrowser()) แทน liff.openWindow
+                // ที่พิสูจน์แล้วว่าไม่เสถียรพอบนเครื่องนี้
+                var isLineApp = /Line/i.test(navigator.userAgent);
+                var isAndroid = /Android/i.test(navigator.userAgent);
+
+                if (isLineApp && isAndroid) {
+                    document.getElementById('main-form').style.display = 'none';
+                    document.getElementById('liff-blocker').classList.remove('hidden');
+                } else {
+                    document.getElementById('liff-blocker').classList.add('hidden');
+                    document.getElementById('main-form').style.display = 'block';
+                }
 
                 await fetchVendors();
 
@@ -479,21 +484,27 @@
         }
 
         function openInExternalBrowser() {
-            // FIX เดียวกัน: ใช้ `typeof liff !== 'undefined'` แทน `liff.id` ที่ไม่มีจริง
-            if (typeof liff !== 'undefined') {
-                try {
-                    liff.openWindow({ url: window.location.href, external: true });
-                    return;
-                } catch (e) {
-                    console.error('liff.openWindow failed:', e);
+            // ⚠️ FIX รอบใหม่ (กล้อง native ไม่เปิด แต่ไปเปิด Google Photos แทน):
+            // เทสต์แล้วพบว่า capture="environment" ถูก WebView ของ LINE เพิกเฉยจริง (attribute นี้
+            // เป็นแค่ "คำแนะนำ" ตามสเปก ไม่ใช่คำสั่งบังคับ) แปลว่ายังจำเป็นต้องดีดออกไป Chrome จริงๆ
+            // อยู่ดี แต่ liff.openWindow() ไม่เสถียรพอบนเครื่องนี้ไม่ว่าจะเรียกแบบไหนก็ตาม
+            // จึงเปลี่ยนไปใช้ Android Intent URL (intent://) แทน — เป็นกลไกระดับ OS ที่สั่งเปิด Chrome
+            // โดยตรง ไม่ผ่าน LIFF SDK เลย เป็นเทคนิคมาตรฐานที่ใช้หนีออกจาก in-app browser ทั่วไป
+            var withoutScheme = window.location.href.replace(/^https?:\/\//, '');
+            var intentUrl = 'intent://' + withoutScheme + '#Intent;scheme=https;package=com.android.chrome;end';
+            try {
+                window.location.href = intentUrl;
+            } catch (e) {
+                console.error('intent redirect failed:', e);
+            }
+            // เผื่อ intent:// ใช้ไม่ได้ (เช่นเครื่องไม่มี Chrome ติดตั้ง) — ถ้าเปิดสำเร็จหน้านี้จะ
+            // ถูก unload ไปแล้ว โค้ดข้างล่างนี้จะไม่ทำงาน แต่ถ้ายังอยู่หน้าเดิมหลัง 1.5 วินาที
+            // แปลว่า intent ใช้ไม่ได้จริง ให้ทางเลือกสำรองสุดท้ายไว้
+            setTimeout(function() {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('คำแนะนำ', 'กรุณาแตะเมนู "⋮" มุมขวาบน แล้วเลือก "เปิดด้วยเบราว์เซอร์อื่น" เพื่อใช้งานกล้องครับ', 'info');
                 }
-            }
-            // ไม้ตายสำรองกรณี LIFF ไม่ทำงานจริงๆ
-            var currentUrl = window.location.href;
-            if (currentUrl.indexOf('openExternalBrowser=1') === -1) {
-                var separator = currentUrl.indexOf('?') !== -1 ? '&' : '?';
-                window.location.href = currentUrl + separator + 'openExternalBrowser=1';
-            }
+            }, 1500);
         }
 
         // สถานะการดึงข้อมูล vendor เพื่อแยกสาเหตุตอน dropdown ว่างเปล่า:
