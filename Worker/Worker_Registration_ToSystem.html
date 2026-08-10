@@ -432,46 +432,71 @@
         }
 
         // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ (ดึงสูตรสำเร็จมาใช้)
-        window.addEventListener('load', async function() {
+      // 🚀 ฟังก์ชันหลักจัดการ UI + ระบบ Bouncer (แก้ปัญหาจอขาวและวนลูป 100%)
+        async function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
                 var thisYearBE = new Date().getFullYear() + 543;
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
+                // 🌟 โชว์หน้าฟอร์มเสมอ ป้องกันปัญหาจอขาว 100%
+                var blocker = document.getElementById('liff-blocker');
+                if (blocker) blocker.classList.add('hidden');
+                document.getElementById('main-form').style.display = 'block';
+
                 await fetchVendors();
 
-                // 🌟 ตรวจจับ Android + LINE
+                // เช็ก Environment ว่าเปิดจากเครื่องและแอปอะไร
                 var isLineApp = /Line/i.test(navigator.userAgent);
                 var isAndroid = /Android/i.test(navigator.userAgent);
-                var isExternalRequested = window.location.href.indexOf('openExternalBrowser=1') !== -1;
 
-                if (isLineApp && isAndroid && !isExternalRequested) {
-                    // ปิดฟอร์มหลัก โชว์หน้าต่าง Bouncer
-                    document.getElementById('main-form').style.display = 'none';
-                    document.getElementById('liff-blocker').classList.remove('hidden');
-                } else {
-                    // เปิดใน Chrome หรือ iOS ให้โชว์ฟอร์มปกติ
-                    document.getElementById('liff-blocker').classList.add('hidden');
-                    document.getElementById('main-form').style.display = 'block';
+                // 🌟 รอให้ LIFF โหลดเสร็จสมบูรณ์ก่อนเสมอ ป้องกันการกดปุ่มแล้วไม่ทำงาน
+                if (typeof liff !== 'undefined') {
+                    try {
+                        await liff.init({ liffId: '2010907761-KrJ8PgNN' });
+                        if (liff.isLoggedIn && liff.isLoggedIn()) {
+                            var profile = await liff.getProfile();
+                            lineUserId = profile.userId;
+                        }
+                    } catch (err) {
+                        console.error("LIFF Init Error:", err);
+                    }
                 }
 
-                // 🌟 เตรียม LIFF ให้พร้อม (URL ต้องตรงกับ Endpoint URL หลังบ้าน)
-                if (typeof liff !== 'undefined') {
-                    liff.init({ liffId: '2010907761-KrJ8PgNN' }).then(async () => {
-                        if (liff.isLoggedIn && liff.isLoggedIn()) {
-                            try { 
-                                var profile = await liff.getProfile(); 
-                                lineUserId = profile.userId; 
+                // 🌟 ถ้าเป็น Android + เปิดผ่าน LINE ให้แสดง Popup อย่างเดียว
+                if (isLineApp && isAndroid) {
+                    Swal.fire({
+                        title: 'จำเป็นต้องใช้งานกล้อง',
+                        text: 'แอป LINE ไม่รองรับการเปิดกล้องโดยตรงครับ ระบบจะพาคุณไปเปิดใน Google Chrome เพื่อให้ถ่ายภาพได้ตามปกติครับ',
+                        icon: 'info',
+                        confirmButtonText: 'เปิดใน Google Chrome',
+                        confirmButtonColor: '#DB5A24',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (typeof liff !== 'undefined' && liff.id) {
+                                // ใช้ LIFF แท้ดีดออกไป Chrome ปลอดภัยที่สุด ไม่เกิดอาการวนลูป
+                                liff.openWindow({ url: window.location.href, external: true });
+                            } else {
+                                // แผนสำรองกรณีฉุกเฉินสุดๆ (กันระบบวนลูป) 
+                                Swal.fire('คำแนะนำ', 'กรุณากดปุ่ม 3 จุดที่มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์" เพื่อใช้งานกล้องครับ', 'warning');
                             }
-                            catch (e) { console.error('liff.getProfile error:', e); }
                         }
-                    }).catch((err) => { console.error("LIFF Error:", err); });
+                    });
                 }
             } catch (e) {
                 console.error("UI Init Error:", e);
             }
-        });
+        }
+
+        // สั่งให้ระบบเริ่มทำงานทันทีที่โครงสร้างหน้าเว็บโหลดเสร็จ (ไวกว่าเดิม)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
 
         function openInExternalBrowser() {
             // 🌟 ใช้คำสั่ง LIFF ของแท้ในการดีดออก Chrome เพื่อป้องกัน Netlify ตัดลิงก์ลูป
