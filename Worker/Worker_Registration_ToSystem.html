@@ -47,7 +47,7 @@
         }
         .btn-camera:hover { filter: brightness(1.05); }
         .btn-camera:active { transform: scale(0.97); }
-        .btn-camera .icon-badge { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:999px; background: rgba(255,255,255,0.18); flex-shrink: 0;}
+        .btn-camera .icon-badge { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:999px; background: rgba(255,255,255,0.18); }
 
         .btn-filepick {
             display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -80,21 +80,21 @@
         </div>
     </header>
 
-    <!-- 🚀 หน้าต่างต้อนรับและเปิดเบราว์เซอร์หลัก (Smart Gateway) -->
+    <!-- 🚀 หน้าต่างเตือนให้เปิด Chrome (Smart Bouncer) -->
     <div id="liff-blocker" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <div class="bg-white rounded-2xl border border-blue-200 shadow-xl p-8 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-brand-navy/10 rounded-full flex items-center justify-center mb-6">
-                <i data-lucide="clipboard-check" class="w-10 h-10 text-brand-navy"></i>
+            <!-- เปลี่ยนจากตัวหมุนๆ เป็นไอคอนกล้อง -->
+            <div class="w-16 h-16 bg-brand-orange/10 rounded-full flex items-center justify-center mb-6">
+                <i data-lucide="camera" class="w-8 h-8 text-brand-orange"></i>
             </div>
-            <h2 class="text-xl font-bold text-brand-navy mb-1">ยินดีต้อนรับสู่ระบบลงทะเบียน</h2>
-            <h3 class="text-md font-semibold text-brand-orange mb-5">FTC First Safety (Paperless)</h3>
+            <h2 class="text-xl font-bold text-brand-navy mb-3">จำเป็นต้องใช้งานกล้อง</h2>
             <p class="text-sm text-gray-600 leading-relaxed">
-                เพื่อประสิทธิภาพสูงสุดในการใช้งานระบบกล้องถ่ายภาพ (e-KYC) <br>และเพื่อความปลอดภัยของข้อมูล กรุณากดปุ่มด้านล่างเพื่อเริ่มใช้งานครับ
+                แอป LINE ในระบบ Android ไม่รองรับการเปิดกล้องโดยตรงครับ<br>ระบบจะพาคุณไปเปิดใน Google Chrome เพื่อให้ถ่ายภาพได้ตามปกติครับ
             </p>
-            <button onclick="openInExternalBrowser()" id="fallback-btn" class="mt-8 w-full flex items-center justify-center gap-2 py-4 bg-brand-navy text-white text-sm font-bold rounded-xl hover:bg-brand-navy-light shadow-md transition-all">
-                กดเพื่อลงทะเบียน <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
+            <!-- ปุ่มกดเรียกใช้ LIFF ของแท้เพื่อเด้งออก -->
+            <button onclick="openInExternalBrowser()" id="fallback-btn" class="mt-8 w-full py-4 bg-brand-orange text-white text-sm font-bold rounded-xl hover:bg-brand-orange-hover shadow-md transition-all">
+                เปิดใน Google Chrome
             </button>
-            <p class="text-[11px] text-gray-400 mt-4">* ระบบจะเปิดหน้าต่างนี้ในเบราว์เซอร์หลักของท่านอัตโนมัติ</p>
         </div>
     </div>
 
@@ -159,6 +159,7 @@
                         <option value="Vietnamese">Vietnamese (เวียดนาม)</option>
                         <option value="Other">Other (อื่นๆ)</option>
                     </select>
+                    <!-- ช่องระบุสัญชาติอื่นๆ -->
                     <input type="text" id="foreign-nationality-other" placeholder="โปรดระบุสัญชาติ..." class="input-field mt-2 hidden">
                 </div>
 
@@ -179,6 +180,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- วันเกิด -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
                         <div class="grid grid-cols-3 gap-2">
@@ -187,6 +189,7 @@
                             <select id="dob-year" class="input-field cursor-pointer px-1 text-center"></select>
                         </div>
                     </div>
+                    <!-- กรุ๊ปเลือด -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">กรุ๊ปเลือด (Blood Group) <span class="text-red-500">*</span></label>
                         <select id="blood-group" class="input-field cursor-pointer">
@@ -200,6 +203,7 @@
                     </div>
                 </div>
 
+                <!-- วันหมดอายุบัตร -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (Document Expiry) <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-3 gap-2">
@@ -215,6 +219,7 @@
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto no-scrollbar hidden"></ul>
                 </div>
 
+                <!-- ผู้ติดต่อฉุกเฉิน -->
                 <div class="section-label"><span class="bar"></span> ผู้ติดต่อในภาวะฉุกเฉิน</div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                     <div>
@@ -241,6 +246,7 @@
                     </div>
                 </div>
 
+                <!-- PDPA -->
                 <div class="section-label"><span class="bar"></span> การยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
                 <div class="flex flex-col gap-3 mb-2">
                     <label class="consent-box cursor-pointer">
@@ -269,45 +275,72 @@
                     <div>
                         <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: ถ่ายภาพยืนยันเอกสาร</p>
                         <p class="text-xs text-gray-500 mt-0.5">กรุณาเลือกวิธีการอัปโหลดภาพ (ถ่ายสดผ่านกล้อง หรือ เลือกจากไฟล์)</p>
+                        <button type="button" onclick="openInExternalBrowser()" class="text-xs text-brand-orange underline font-semibold mt-2">กล้องเปิดไม่ได้? กดที่นี่เพื่อเปิดหน้านี้ผ่าน Google Chrome</button>
                     </div>
                 </div>
 
-                <!-- กล่องที่ 1 (บัตรหลัก) -->
-                <div class="mb-8">
+                <!-- กล่องที่ 1 -->
+                <div class="mb-6">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสาร บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="main-btn-group" class="w-full max-w-xs flex flex-col gap-3">
-                            <label class="btn-camera leading-tight">
-                                <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span> 
-                                <span class="text-[12px] sm:text-sm">เปิดกล้องถ่ายภาพ บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู</span>
-                                <input type="file" id="file-main-camera" class="hidden" accept="image/*" capture="environment" onchange="handleMainCameraCapture(this)">
+                            <label class="btn-camera">
+                                <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
+                                <input type="file" id="file-main-camera" class="hidden" accept="image/*" capture="environment" onchange="handleCameraCapture('main', this)">
                             </label>
                             <label class="btn-filepick">
                                 <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
-                                <input type="file" id="file-main-upload" class="hidden" accept="image/*" onchange="handleMainFileSelect(this)">
+                                <input type="file" id="file-main-upload" class="hidden" accept="image/*" onchange="handleFileSelect('main', this)">
                             </label>
                         </div>
 
                         <div id="main-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
                             <p id="text-main" class="text-sm font-bold text-green-600">รับภาพถ่ายเรียบร้อยแล้ว</p>
-                            <button type="button" onclick="resetMainFile()" class="text-xs text-red-500 underline mt-1">ถ่ายใหม่ / ลบรูปนี้</button>
+                            <button type="button" onclick="resetFile('main')" class="text-xs text-red-500 underline mt-1">ถ่ายใหม่ / ลบรูปนี้</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- กล่องที่ 2 (เอกสารอื่นๆ แบบไม่จำกัด) -->
-                <div class="mb-6 w-full pt-4 border-t border-gray-200">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-sm font-bold text-brand-navy">อัปโหลดเอกสารความปลอดภัยอื่นๆ <span class="text-xs text-gray-500 font-normal">(ถ้ามี)</span></label>
+                <!-- กล่องที่ 2 (เพิ่มลิสต์เอกสารแบบจัดเต็ม) -->
+                <div id="upload-workpermit" class="mb-6 hidden">
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสารอื่นๆ ที่จำเป็นสำหรับขึ้นทะเบียน <span class="text-red-500">*</span></label>
+                    <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
+                        
+                        <div class="w-full max-w-xs mb-2">
+                            <select id="extra-doc-type" class="input-field cursor-pointer border-brand-orange text-brand-navy font-semibold text-sm" onchange="toggleExtraDocOther()">
+                                <option value="">-- กรุณาเลือกประเภทเอกสาร --</option>
+                                <option value="work_permit">ใบอนุญาตทำงาน (Work Permit)</option>
+                                <option value="training_cert">ใบผ่านการอบรมความปลอดภัยพื้นฐาน</option>
+                                <option value="driving_license">ใบอนุญาตขับขี่รถยนต์/เครื่องจักร</option>
+                                <option value="crane_license">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
+                                <option value="confined_space">ใบอนุญาตทำงานที่อับอากาศ (Confined Space)</option>
+                                <option value="hot_work">ใบอนุญาตทำงานที่มีประกายไฟ (Hot Work)</option>
+                                <option value="work_at_height">ใบอนุญาตทำงานบนที่สูง (Work at Height)</option>
+                                <option value="medical_cert">ใบรับรองแพทย์</option>
+                                <option value="Other">อื่นๆ (Other)</option>
+                            </select>
+                            <!-- ช่องระบุเอกสารอื่นๆ -->
+                            <input type="text" id="extra-doc-other" placeholder="โปรดระบุชื่อเอกสาร..." class="input-field mt-2 hidden">
+                        </div>
+
+                        <div id="wp-btn-group" class="w-full max-w-xs flex flex-col gap-3">
+                            <label class="btn-camera" onclick="return validateDocTypeSelected()">
+                                <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
+                                <input type="file" id="file-wp-camera" class="hidden" accept="image/*" capture="environment" onchange="handleCameraCapture('wp', this)">
+                            </label>
+                            <label class="btn-filepick" onclick="return validateDocTypeSelected()">
+                                <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
+                                <input type="file" id="file-wp-upload" class="hidden" accept="image/*" onchange="handleFileSelect('wp', this)">
+                            </label>
+                        </div>
+
+                        <div id="wp-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
+                            <p id="text-wp" class="text-sm font-bold text-green-600">รับภาพถ่ายเรียบร้อยแล้ว</p>
+                            <button type="button" onclick="resetFile('wp')" class="text-xs text-red-500 underline mt-1">ถ่ายใหม่ / ลบรูปนี้</button>
+                        </div>
                     </div>
-                    <p class="text-[12px] text-gray-500 mb-4">* ระบบรองรับการเพิ่มเอกสารแบบไม่จำกัด กรุณากดปุ่ม <b>"+ เพิ่มเอกสาร"</b> ด้านล่าง</p>
-
-                    <div id="extra-docs-container"></div>
-
-                    <button type="button" onclick="addExtraDocBlock()" class="w-full py-3 mt-2 border-2 border-dashed border-brand-orange text-brand-orange rounded-xl font-bold text-sm hover:bg-brand-orange/10 transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="plus-circle" class="w-5 h-5"></i> เพิ่มเอกสารความปลอดภัยอื่นๆ
-                    </button>
                 </div>
 
                 <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2 border-t border-gray-200 mt-8">
@@ -349,19 +382,13 @@
                 <div class="w-full bg-blue-50 border border-blue-200 rounded-xl p-5 text-left mb-6 shadow-sm">
                     <p class="text-sm font-bold text-brand-navy mb-3 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-blue-600"></i> ขั้นตอนต่อไป (Next Steps):</p>
                     <ul class="text-sm text-gray-700 list-disc pl-5 space-y-2">
-                        <!-- แก้ไขข้อความตามคำสั่ง PM -->
-                        <li>กรุณาติดต่อขอรับบัตรเข้าพื้นที่ได้จากเจ้าหน้าที่ความปลอดภัยที่เกี่ยวข้อง</li>
+                        <li>กรุณาติดต่อขอรับบัตรเข้าพื้นที่ ณ ป้อม รปภ. (Security Gate)</li>
                         <li>ผู้ปฏิบัติงานใหม่ทุกท่าน <b>ต้องเข้ารับการฝึกอบรมความปลอดภัย</b> ตามหัวข้อที่กำหนด ก่อนเริ่มงาน</li>
                     </ul>
                 </div>
 
-                <button type="button" onclick="window.location.href='Training_Menu.html'" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg mb-3">
+                <button type="button" onclick="window.location.href='Training_Menu.html'" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg">
                     เข้าสู่เมนูฝึกอบรมความปลอดภัย <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
-                </button>
-                
-                <!-- ปุ่มออกจากโปรแกรม กรณีไม่พร้อมอบรม -->
-                <button type="button" onclick="exitApp()" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm">
-                    ออกจากโปรแกรม (กรณีจะอบรมตอนหลัง)  <i data-lucide="log-out" class="w-5 h-5"></i>
                 </button>
             </div>
 
@@ -404,6 +431,8 @@
             }
         }
 
+        // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ (ดึงสูตรสำเร็จมาใช้)
+      // 🚀 ฟังก์ชันหลักจัดการ UI + ระบบ Bouncer (แก้ปัญหาจอขาวและวนลูป 100%)
         async function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -411,6 +440,12 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
+                // ⚠️ FIX รอบล่าสุด (ทดสอบแล้วพบว่า capture="environment" ถูก LINE WebView
+                // เพิกเฉยจริง เปิด Google Photos แทนกล้อง): ยืนยันว่ายังจำเป็นต้องกั้นหน้าจอ +
+                // บังคับดีดออกไป Chrome ก่อนอยู่ดี (สมมติฐานรอบก่อนที่ลองปล่อยให้ทำงานตรงๆ ใน LINE
+                // ผิด) จึงกลับมาเช็ค LINE+Android แล้วโชว์ #liff-blocker เหมือนเดิม แต่เปลี่ยนกลไก
+                // การดีดออกเป็น Android Intent URL (ดู openInExternalBrowser()) แทน liff.openWindow
+                // ที่พิสูจน์แล้วว่าไม่เสถียรพอบนเครื่องนี้
                 var isLineApp = /Line/i.test(navigator.userAgent);
                 var isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -423,9 +458,8 @@
                 }
 
                 await fetchVendors();
-                
-                addExtraDocBlock();
 
+                // โหลด LIFF และดึง LINE userId ต่อไปตามปกติ (ไม่เกี่ยวกับการแสดงผลหน้าจอข้างบนแล้ว)
                 if (typeof liff !== 'undefined') {
                     try {
                         await liff.init({ liffId: '2010907761-KrJ8PgNN' });
@@ -442,6 +476,7 @@
             }
         }
 
+        // สั่งให้ระบบเริ่มทำงานทันทีที่โครงสร้างหน้าเว็บโหลดเสร็จ (ไวกว่าเดิม)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initApp);
         } else {
@@ -449,6 +484,12 @@
         }
 
         function openInExternalBrowser() {
+            // ⚠️ FIX รอบใหม่ (กล้อง native ไม่เปิด แต่ไปเปิด Google Photos แทน):
+            // เทสต์แล้วพบว่า capture="environment" ถูก WebView ของ LINE เพิกเฉยจริง (attribute นี้
+            // เป็นแค่ "คำแนะนำ" ตามสเปก ไม่ใช่คำสั่งบังคับ) แปลว่ายังจำเป็นต้องดีดออกไป Chrome จริงๆ
+            // อยู่ดี แต่ liff.openWindow() ไม่เสถียรพอบนเครื่องนี้ไม่ว่าจะเรียกแบบไหนก็ตาม
+            // จึงเปลี่ยนไปใช้ Android Intent URL (intent://) แทน — เป็นกลไกระดับ OS ที่สั่งเปิด Chrome
+            // โดยตรง ไม่ผ่าน LIFF SDK เลย เป็นเทคนิคมาตรฐานที่ใช้หนีออกจาก in-app browser ทั่วไป
             var withoutScheme = window.location.href.replace(/^https?:\/\//, '');
             var intentUrl = 'intent://' + withoutScheme + '#Intent;scheme=https;package=com.android.chrome;end';
             try {
@@ -456,18 +497,20 @@
             } catch (e) {
                 console.error('intent redirect failed:', e);
             }
-            // ❌ ถอนรากถอนโคนคำสั่ง Swal.fire (คำแนะนำให้เปิดด้วยเบราว์เซอร์อื่น) ออกตามที่ PM สั่งครับ
+            // เผื่อ intent:// ใช้ไม่ได้ (เช่นเครื่องไม่มี Chrome ติดตั้ง) — ถ้าเปิดสำเร็จหน้านี้จะ
+            // ถูก unload ไปแล้ว โค้ดข้างล่างนี้จะไม่ทำงาน แต่ถ้ายังอยู่หน้าเดิมหลัง 1.5 วินาที
+            // แปลว่า intent ใช้ไม่ได้จริง ให้ทางเลือกสำรองสุดท้ายไว้
+            setTimeout(function() {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('คำแนะนำ', 'กรุณาแตะเมนู "⋮" มุมขวาบน แล้วเลือก "เปิดด้วยเบราว์เซอร์อื่น" เพื่อใช้งานกล้องครับ', 'info');
+                }
+            }, 1500);
         }
 
-        // ฟังก์ชันสำหรับกดปิดแอป
-        function exitApp() {
-            if (typeof liff !== 'undefined' && liff.isInClient()) {
-                liff.closeWindow(); // ปิดหน้าต่าง LINE LIFF
-            } else {
-                window.location.href = 'index.html'; // ถ้าไม่ใช่ LINE ให้เตะกลับหน้าเมนูหลัก
-            }
-        }
-
+        // สถานะการดึงข้อมูล vendor เพื่อแยกสาเหตุตอน dropdown ว่างเปล่า:
+        // 'loading' = ยังโหลดอยู่, 'error' = query ล้มเหลวจริง (network/permission),
+        // 'ok_empty' = query สำเร็จแต่ไม่มีแถวข้อมูลเลย (ตารางว่าง หรือโดน RLS กรองจนเหลือ 0 แถว),
+        // 'ok_has_data' = ดึงมาได้ปกติ มีข้อมูลอยู่
         var vendorFetchStatus = 'loading';
 
         async function fetchVendors() {
@@ -520,10 +563,89 @@
             if (container && !container.contains(e.target)) document.getElementById('vendor-list').classList.add('hidden');
         });
 
+        // ================= กล้อง Native =================
+        var capturedFiles = { main: null, wp: null };
+
+        function validateDocTypeSelected() {
+            var docType = document.getElementById('extra-doc-type').value;
+            if (!docType) {
+                Swal.fire('กรุณาเลือกประเภทเอกสาร', 'รบกวนเลือกประเภทเอกสารจาก Dropdown ก่อนทำการอัปโหลดครับ', 'warning');
+                return false; 
+            }
+            return true;
+        }
+
+        function handleCameraCapture(type, inputElement) {
+            if (type === 'wp' && !document.getElementById('extra-doc-type').value) {
+                inputElement.value = ''; 
+                return; 
+            }
+            if (inputElement.files.length === 0) return;
+            var file = inputElement.files[0];
+            capturedFiles[type] = file;
+            try {
+                var dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('file-' + type + '-upload').files = dataTransfer.files;
+            } catch (e) {
+                console.warn('DataTransfer fallback used');
+            }
+            showSuccessUI(type, file.name);
+        }
+
+        function getSelectedFile(type) {
+            if (capturedFiles[type]) return capturedFiles[type];
+            var input = document.getElementById('file-' + type + '-upload');
+            return input && input.files.length ? input.files[0] : null;
+        }
+
+        function handleFileSelect(type, inputElement) {
+            if (type === 'wp' && !document.getElementById('extra-doc-type').value) {
+                inputElement.value = '';
+                return;
+            }
+            if (inputElement.files.length > 0) {
+                capturedFiles[type] = null;
+                showSuccessUI(type, inputElement.files[0].name);
+            }
+        }
+        
+        function showSuccessUI(type, fileName) {
+            document.getElementById(type + '-btn-group').classList.add('hidden');
+            document.getElementById(type + '-success-status').classList.remove('hidden');
+            document.getElementById('dropzone-' + type).classList.replace('border-brand-navy/30', 'border-green-500');
+            
+            var displayType = '';
+            if(type === 'wp') {
+                var sel = document.getElementById('extra-doc-type');
+                var text = sel.options[sel.selectedIndex].text;
+                if(sel.value === 'Other') text = 'เอกสารอื่นๆ';
+                displayType = ' (' + text + ')';
+            }
+            document.getElementById('text-' + type).innerText = "ไฟล์ที่เลือก: " + fileName + displayType;
+        }
+        
+        function resetFile(type) {
+            capturedFiles[type] = null;
+            document.getElementById('file-' + type + '-upload').value = '';
+            var camInput = document.getElementById('file-' + type + '-camera');
+            if (camInput) camInput.value = '';
+            document.getElementById(type + '-success-status').classList.add('hidden');
+            document.getElementById(type + '-btn-group').classList.remove('hidden');
+            document.getElementById('dropzone-' + type).classList.replace('border-green-500', 'border-brand-navy/30');
+            if(type === 'wp') {
+                document.getElementById('extra-doc-type').value = ''; 
+                document.getElementById('extra-doc-other').classList.add('hidden');
+                document.getElementById('extra-doc-other').value = '';
+            }
+        }
+
+        // ================= UI Validation =================
         function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
             var btnForeign = document.getElementById('btn-foreign');
+            var wp = document.getElementById('upload-workpermit');
             var docSec = document.getElementById('foreigner-doc-section');
             var natSec = document.getElementById('foreigner-nationality-section');
             var idInput = document.getElementById('id-input'); 
@@ -533,7 +655,7 @@
             var inactive = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
             
             if (nat === 'thai') {
-                docSec.classList.add('hidden'); natSec.classList.add('hidden');
+                wp.classList.add('hidden'); docSec.classList.add('hidden'); natSec.classList.add('hidden');
                 btnThai.className = active; btnForeign.className = inactive;
                 idLabel.innerHTML = 'เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span>';
                 idInput.maxLength = 13;
@@ -541,7 +663,7 @@
                 idInput.placeholder = "กรอกเลข 13 หลัก...";
                 idInput.value = idInput.value.replace(/[^0-9]/g, '').substring(0, 13);
             } else {
-                docSec.classList.remove('hidden'); natSec.classList.remove('hidden');
+                wp.classList.remove('hidden'); docSec.classList.remove('hidden'); natSec.classList.remove('hidden');
                 btnForeign.className = active; btnThai.className = inactive;
                 idLabel.innerHTML = 'เลขเอกสาร (Passport / Pink Card) <span class="text-red-500">*</span>';
                 idInput.maxLength = 20;
@@ -558,6 +680,13 @@
         function toggleNationalityOther() {
             var sel = document.getElementById('foreign-nationality-input').value;
             var otherInput = document.getElementById('foreign-nationality-other');
+            if (sel === 'Other') otherInput.classList.remove('hidden');
+            else { otherInput.classList.add('hidden'); otherInput.value = ''; }
+        }
+
+        function toggleExtraDocOther() {
+            var sel = document.getElementById('extra-doc-type').value;
+            var otherInput = document.getElementById('extra-doc-other');
             if (sel === 'Other') otherInput.classList.remove('hidden');
             else { otherInput.classList.add('hidden'); otherInput.value = ''; }
         }
@@ -588,218 +717,6 @@
             var mm = String(d.getMonth() + 1).padStart(2, '0');
             var dd = String(d.getDate()).padStart(2, '0');
             return d.getFullYear() + '-' + mm + '-' + dd;
-        }
-
-        function compressImage(file, maxWidth = 1200, quality = 0.7) {
-            return new Promise((resolve, reject) => {
-                if (!file.type.match(/image.*/)) {
-                    resolve(file); 
-                    return;
-                }
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = event => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob(blob => {
-                            if (!blob) {
-                                resolve(file); 
-                                return;
-                            }
-                            const newFileName = file.name.replace(/\.[^/.]+$/, "") + "_compressed.jpg";
-                            const newFile = new File([blob], newFileName, {
-                                type: 'image/jpeg',
-                                lastModified: Date.now()
-                            });
-                            resolve(newFile);
-                        }, 'image/jpeg', quality);
-                    };
-                    img.onerror = error => reject(error);
-                };
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        var capturedMainFile = null;
-
-        function handleMainCameraCapture(inputElement) {
-            if (inputElement.files.length === 0) return;
-            var file = inputElement.files[0];
-            capturedMainFile = file;
-            try {
-                var dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                document.getElementById('file-main-upload').files = dataTransfer.files;
-            } catch (e) {}
-            showMainSuccessUI(file.name);
-        }
-
-        function handleMainFileSelect(inputElement) {
-            if (inputElement.files.length > 0) {
-                capturedMainFile = null;
-                showMainSuccessUI(inputElement.files[0].name);
-            }
-        }
-
-        function getSelectedMainFile() {
-            if (capturedMainFile) return capturedMainFile;
-            var input = document.getElementById('file-main-upload');
-            return input && input.files.length ? input.files[0] : null;
-        }
-        
-        function showMainSuccessUI(fileName) {
-            document.getElementById('main-btn-group').classList.add('hidden');
-            document.getElementById('main-success-status').classList.remove('hidden');
-            document.getElementById('dropzone-main').classList.replace('border-brand-navy/30', 'border-green-500');
-            document.getElementById('text-main').innerText = "ไฟล์ที่เลือก: " + fileName;
-        }
-        
-        function resetMainFile() {
-            capturedMainFile = null;
-            document.getElementById('file-main-upload').value = '';
-            var camInput = document.getElementById('file-main-camera');
-            if (camInput) camInput.value = '';
-            document.getElementById('main-success-status').classList.add('hidden');
-            document.getElementById('main-btn-group').classList.remove('hidden');
-            document.getElementById('dropzone-main').classList.replace('border-green-500', 'border-brand-navy/30');
-        }
-
-        var extraDocCount = 0;
-        var capturedExtraFiles = {};
-
-        function addExtraDocBlock() {
-            extraDocCount++;
-            var id = extraDocCount;
-            
-            var html = `
-            <div id="extra-doc-block-${id}" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-6 text-center transition-colors mb-4">
-                ${id > 1 ? `<button type="button" onclick="removeExtraDocBlock(${id})" class="absolute top-3 right-3 text-red-400 hover:text-red-600 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
-
-                <div class="w-full max-w-xs mb-2">
-                    <select id="extra-doc-type-${id}" class="input-field cursor-pointer border-brand-orange text-brand-navy font-semibold text-sm" onchange="toggleExtraDocOther(${id})">
-                        <option value="">-- กรุณาเลือกประเภทเอกสาร --</option>
-                        <option value="work_permit">ใบอนุญาตทำงาน (Work Permit)</option>
-                        <option value="training_cert">ใบผ่านการอบรมความปลอดภัยพื้นฐาน</option>
-                        <option value="driving_license">ใบอนุญาตขับขี่รถยนต์/เครื่องจักร</option>
-                        <option value="crane_license">ใบอนุญาตผู้บังคับปั้นจั่น/เครน</option>
-                        <option value="confined_space">ใบอนุญาตทำงานที่อับอากาศ (Confined Space)</option>
-                        <option value="hot_work">ใบอนุญาตทำงานที่มีประกายไฟ (Hot Work)</option>
-                        <option value="work_at_height">ใบอนุญาตทำงานบนที่สูง (Work at Height)</option>
-                        <option value="medical_cert">ใบรับรองแพทย์</option>
-                        <option value="Other">อื่นๆ (Other)</option>
-                    </select>
-                    <input type="text" id="extra-doc-other-${id}" placeholder="โปรดระบุชื่อเอกสาร..." class="input-field mt-2 hidden">
-                </div>
-
-                <div id="wp-btn-group-${id}" class="w-full max-w-xs flex flex-col gap-3">
-                    <label class="btn-camera" onclick="return validateExtraDocType(${id})">
-                        <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span> 
-                        <span class="text-sm">เปิดกล้อง ถ่ายภาพเอกสารความปลอดภัย</span>
-                        <input type="file" id="file-wp-camera-${id}" class="hidden" accept="image/*" capture="environment" onchange="handleExtraCameraCapture(${id}, this)">
-                    </label>
-                    <label class="btn-filepick" onclick="return validateExtraDocType(${id})">
-                        <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
-                        <input type="file" id="file-wp-upload-${id}" class="hidden" accept="image/*" onchange="handleExtraFileSelect(${id}, this)">
-                    </label>
-                </div>
-
-                <div id="wp-success-status-${id}" class="hidden flex flex-col items-center gap-2 mt-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i></div>
-                    <p id="text-wp-${id}" class="text-sm font-bold text-green-600">รับภาพถ่ายเรียบร้อยแล้ว</p>
-                    <button type="button" onclick="resetExtraFile(${id})" class="text-xs text-red-500 underline mt-1">ถ่ายใหม่ / ลบรูปนี้</button>
-                </div>
-            </div>`;
-            
-            document.getElementById('extra-docs-container').insertAdjacentHTML('beforeend', html);
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function removeExtraDocBlock(id) {
-            var block = document.getElementById('extra-doc-block-' + id);
-            if (block) block.remove();
-            delete capturedExtraFiles[id];
-        }
-
-        function toggleExtraDocOther(id) {
-            var sel = document.getElementById('extra-doc-type-' + id).value;
-            var otherInput = document.getElementById('extra-doc-other-' + id);
-            if (sel === 'Other') otherInput.classList.remove('hidden');
-            else { otherInput.classList.add('hidden'); otherInput.value = ''; }
-        }
-
-        function validateExtraDocType(id) {
-            var docType = document.getElementById('extra-doc-type-' + id).value;
-            if (!docType) {
-                Swal.fire('กรุณาเลือกประเภทเอกสาร', 'รบกวนเลือกประเภทเอกสารจากรายการก่อนทำการอัปโหลดครับ', 'warning');
-                return false; 
-            }
-            return true;
-        }
-
-        function handleExtraCameraCapture(id, inputElement) {
-            if (!document.getElementById('extra-doc-type-' + id).value) { inputElement.value = ''; return; }
-            if (inputElement.files.length === 0) return;
-            var file = inputElement.files[0];
-            capturedExtraFiles[id] = file;
-            try {
-                var dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                document.getElementById('file-wp-upload-' + id).files = dataTransfer.files;
-            } catch (e) {}
-            showExtraSuccessUI(id, file.name);
-        }
-
-        function handleExtraFileSelect(id, inputElement) {
-            if (!document.getElementById('extra-doc-type-' + id).value) { inputElement.value = ''; return; }
-            if (inputElement.files.length > 0) {
-                capturedExtraFiles[id] = null;
-                showExtraSuccessUI(id, inputElement.files[0].name);
-            }
-        }
-
-        function getSelectedExtraFile(id) {
-            if (capturedExtraFiles[id]) return capturedExtraFiles[id];
-            var input = document.getElementById('file-wp-upload-' + id);
-            return input && input.files.length ? input.files[0] : null;
-        }
-
-        function showExtraSuccessUI(id, fileName) {
-            document.getElementById('wp-btn-group-' + id).classList.add('hidden');
-            document.getElementById('wp-success-status-' + id).classList.remove('hidden');
-            document.getElementById('extra-doc-block-' + id).classList.replace('border-brand-navy/30', 'border-green-500');
-            
-            var sel = document.getElementById('extra-doc-type-' + id);
-            var text = sel.options[sel.selectedIndex].text;
-            if(sel.value === 'Other') text = 'เอกสารอื่นๆ';
-            document.getElementById('text-wp-' + id).innerText = "ไฟล์ที่เลือก: " + fileName + " (" + text + ")";
-        }
-
-        function resetExtraFile(id) {
-            capturedExtraFiles[id] = null;
-            document.getElementById('file-wp-upload-' + id).value = '';
-            var camInput = document.getElementById('file-wp-camera-' + id);
-            if (camInput) camInput.value = '';
-            document.getElementById('wp-success-status-' + id).classList.add('hidden');
-            document.getElementById('wp-btn-group-' + id).classList.remove('hidden');
-            document.getElementById('extra-doc-block-' + id).classList.replace('border-green-500', 'border-brand-navy/30');
-            document.getElementById('extra-doc-type-' + id).value = ''; 
-            document.getElementById('extra-doc-other-' + id).classList.add('hidden');
-            document.getElementById('extra-doc-other-' + id).value = '';
         }
 
         function validateStep1() {
@@ -846,29 +763,15 @@
         }
 
         function validateStep2() {
-            if (!getSelectedMainFile()) {
-                Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนบัตรหลัก', 'warning'); return false;
+            if (!getSelectedFile('main')) {
+                Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนครับ', 'warning'); return false;
             }
-
-            var hasAtLeastOneExtra = false;
-            var extraBlocks = document.querySelectorAll('[id^="extra-doc-block-"]');
-            for (let block of extraBlocks) {
-                let id = block.id.replace('extra-doc-block-', '');
-                let file = getSelectedExtraFile(id);
-                let typeVal = document.getElementById('extra-doc-type-' + id).value;
-
-                if (file) {
-                    hasAtLeastOneExtra = true;
-                    if (typeVal === 'Other' && !document.getElementById('extra-doc-other-' + id).value.trim()) {
-                        Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุชื่อเอกสารอื่นๆ ในช่องที่กำหนด', 'warning'); return false;
-                    }
-                } else if (typeVal) {
-                    Swal.fire('ยังไม่ได้อัปโหลดรูป', 'คุณเลือกประเภทเอกสารความปลอดภัยไว้ แต่ยังไม่ได้อัปโหลดรูปภาพครับ', 'warning'); return false;
-                }
+            if (currentNationality === 'foreigner' && !getSelectedFile('wp')) {
+                Swal.fire('ขาดรูปถ่าย', 'กรุณาอัปโหลดเอกสารอื่นๆ ที่จำเป็นสำหรับการขึ้นทะเบียน', 'warning'); return false;
             }
-
-            if (currentNationality === 'foreigner' && !hasAtLeastOneExtra) {
-                Swal.fire('ขาดรูปถ่าย', 'พนักงานต่างชาติ จำเป็นต้องอัปโหลดเอกสาร Work Permit หรือเอกสารอื่นๆ ที่เกี่ยวข้อง', 'warning'); return false;
+            var extraDocVal = document.getElementById('extra-doc-type').value;
+            if (getSelectedFile('wp') && extraDocVal === 'Other' && !document.getElementById('extra-doc-other').value.trim()) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุชื่อเอกสารอื่นๆ ในช่องที่กำหนด', 'warning'); return false;
             }
             return true;
         }
@@ -925,37 +828,25 @@
                     return;
                 }
 
-                Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารหลัก...' });
+                Swal.update({ title: 'กำลังอัปโหลดเอกสาร...' });
 
-                var originalMainFile = getSelectedMainFile();
-                var compressedMainFile = await compressImage(originalMainFile, 1200, 0.7); 
-                
-                var mainPath = 'id-cards/' + Date.now() + '_' + compressedMainFile.name;
-                var upMain = await supabase.storage.from('worker-documents').upload(mainPath, compressedMainFile);
+                var mainFile = getSelectedFile('main');
+                var mainPath = 'id-cards/' + Date.now() + '_' + mainFile.name;
+                var upMain = await supabase.storage.from('worker-documents').upload(mainPath, mainFile);
                 if (upMain.error) throw upMain.error;
                 var mainUrl = supabase.storage.from('worker-documents').getPublicUrl(mainPath).data.publicUrl;
 
-                Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารเพิ่มเติม...' });
-                let uploadedWpUrls = [];
-                let extraDocTypes = [];
-
-                var extraBlocks = document.querySelectorAll('[id^="extra-doc-block-"]');
-                for (let block of extraBlocks) {
-                    let id = block.id.replace('extra-doc-block-', '');
-                    let originalExtraFile = getSelectedExtraFile(id);
-                    if (originalExtraFile) {
-                        let docType = document.getElementById('extra-doc-type-' + id).value;
-                        if (docType === 'Other') docType = 'Other: ' + document.getElementById('extra-doc-other-' + id).value.trim();
-
-                        let compressedExtraFile = await compressImage(originalExtraFile, 1200, 0.7);
-
-                        let wpPath = 'work-permits/' + Date.now() + '_' + id + '_' + compressedExtraFile.name;
-                        var upWp = await supabase.storage.from('worker-documents').upload(wpPath, compressedExtraFile);
+                var wpUrl = null;
+                var extraDocType = null;
+                if (currentNationality === 'foreigner' || getSelectedFile('wp')) {
+                    var wpFile = getSelectedFile('wp');
+                    if (wpFile) {
+                        extraDocType = document.getElementById('extra-doc-type').value;
+                        if(extraDocType === 'Other') extraDocType = 'Other: ' + document.getElementById('extra-doc-other').value.trim();
+                        var wpPath = 'work-permits/' + Date.now() + '_' + wpFile.name;
+                        var upWp = await supabase.storage.from('worker-documents').upload(wpPath, wpFile);
                         if (upWp.error) throw upWp.error;
-                        let wpUrl = supabase.storage.from('worker-documents').getPublicUrl(wpPath).data.publicUrl;
-
-                        uploadedWpUrls.push(wpUrl);
-                        extraDocTypes.push(docType);
+                        wpUrl = supabase.storage.from('worker-documents').getPublicUrl(wpPath).data.publicUrl;
                     }
                 }
 
@@ -974,8 +865,7 @@
                     line_user_id: lineUserId, 
                     blood_group: document.getElementById('blood-group').value,
                     id_card_photo_url: mainUrl,
-                    work_permit_photo_url: uploadedWpUrls.length > 0 ? uploadedWpUrls.join(', ') : null,
-                    additional_document_type: extraDocTypes.length > 0 ? extraDocTypes.join(', ') : null,
+                    work_permit_photo_url: wpUrl,
                     date_of_birth: beToIsoString(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value),
                     id_expiry_date: beToIsoString(document.getElementById('exp-day').value, document.getElementById('exp-month').value, document.getElementById('exp-year').value),
                     emergency_contact_name: document.getElementById('emg-name').value.trim(),
