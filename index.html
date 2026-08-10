@@ -3,215 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FTC Safety - Main Menu</title>
+    <title>FTC First Safety - Safety Management System</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #F8F9FA; }
-        .menu-card { transition: all 0.2s ease-in-out; }
-        .menu-card:active { transform: scale(0.96); }
-        
-        /* Animation สำหรับ Modal ให้เด้งขึ้นมาจากด้านล่างแบบมือถือ */
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .modal-animate { animation: slideUp 0.3s ease-out forwards; }
-    </style>
-</head>
-<body class="text-gray-800 min-h-screen relative pb-10">
-
-    <!-- Header & Logo -->
-    <div class="bg-[#1a237e] text-white py-3 px-4 flex items-center justify-between shadow-md relative">
-        <div class="flex items-center gap-2 z-10">
-            <div class="bg-white rounded p-1 flex items-center justify-center">
-                <img src="logo.png" alt="First Logo" class="h-7 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
-            </div>
-        </div>
-        <div class="text-center font-bold text-lg absolute left-1/2 transform -translate-x-1/2 w-full">
-            เมนูที่ 0 Main Menu
-        </div>
-        <div class="w-10 z-10"></div> <!-- Spacer ให้อักษรตรงกลางสมดุล -->
-    </div>
-
-    <!-- Main Content -->
-    <div class="px-4 mt-6 max-w-md mx-auto space-y-4">
-        
-        <!-- Welcome Card -->
-        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-400 text-center">
-            <h2 class="text-[#1a237e] font-bold text-lg">ยินดีต้อนรับสู่ระบบความปลอดภัย</h2>
-            <p class="text-sm text-gray-600 mt-1">บริษัท เฟิร์ส เทคโนโลยี คอนสตรัคชั่น</p>
-            <p class="text-xs text-orange-500 font-medium mt-1">"เพราะความปลอดภัยเป็นหน้าที่ของทุกคน"</p>
-        </div>
-
-        <!-- User Profile Card -->
-        <div class="bg-[#3949ab] rounded-2xl p-4 shadow-md flex items-center text-white">
-            <div class="mr-4">
-                <div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-white">
-                    <span class="text-3xl">👨‍🦳</span>
-                </div>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg">ณัฐธัญ ละอองทอง</h3>
-                <p class="text-sm text-blue-100">ผู้บริหาร (Admin / PM)</p>
-            </div>
-        </div>
-
-        <!-- Menu Section -->
-        <div class="mt-6">
-            <h3 class="text-gray-500 font-bold mb-3 text-sm px-1">เมนูการปฏิบัติงาน (OPERATIONS)</h3>
-            
-            <div id="menuGrid" class="grid grid-cols-2 gap-4">
-                <!-- JavaScript จะดึงข้อมูลเมนูมาสร้างปุ่มตรงนี้ -->
-            </div>
-            
-            <!-- SOS Button -->
-            <button class="w-full mt-4 bg-[#c62828] hover:bg-red-800 text-white rounded-xl py-4 shadow-md flex flex-col items-center justify-center transition-transform active:scale-95">
-                <span class="text-3xl mb-1">🚨</span>
-                <span class="font-bold">7. แจ้งเหตุฉุกเฉินด่วน (SOS)</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal (Pop-up) สำหรับ Sub-menu -->
-    <div id="submenuModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md overflow-hidden shadow-2xl modal-animate pb-6">
-            <div class="flex justify-center pt-3 pb-2">
-                <div class="w-10 h-1.5 bg-gray-300 rounded-full"></div>
-            </div>
-            <div class="px-6 py-2 flex justify-between items-start">
-                <h3 id="modalTitle" class="text-[#1a237e] font-bold text-lg leading-tight pr-2"></h3>
-                <button onclick="closeModal()" class="bg-gray-100 text-gray-500 hover:bg-gray-300 rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl flex-shrink-0">&times;</button>
-            </div>
-            <div id="modalContent" class="px-5 py-4"></div>
-        </div>
-    </div>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <script>
-        // โครงสร้างเมนูที่ปรับปรุงใหม่ให้ตรงกับ Flow หน้าไซต์งาน (40+ Forms)
-        const menuData = [
-            {
-                id: '1',
-                title: 'ลงทะเบียน & อบรม',
-                subtitle: 'Onboarding & Training',
-                icon: '📝', 
-                modalTitle: '1. ลงทะเบียนและอบรมความปลอดภัย',
-                submenus: [
-                    { 
-                        id: '1.1', 
-                        title: 'ลงทะเบียนพนักงานใหม่', 
-                        subtitle: 'ยืนยันตัวตนผ่านบัตรประชาชน (KYC) และยอมรับข้อตกลง PDPA',
-                        icon: '👤',
-                        link: './Worker/Worker_Registration_ToSystem.html', 
-                        style: 'normal'
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' }
                     },
-                    { 
-                        id: '1.2', 
-                        title: 'อบรมความปลอดภัย (E-Training)', 
-                        subtitle: 'ทดสอบความรู้และถ่าย Live Selfie ป้องกันการสวมรอย',
-                        icon: '🎓',
-                        link: '#',
-                        style: 'normal'
-                    },
-                    { 
-                        id: '1.3', 
-                        title: 'อนุมัติพนักงาน (Vendor/PM)', 
-                        subtitle: 'ตรวจสอบและยืนยันยอดคนงานที่ได้รับอนุญาตเข้าไซต์งานจริง',
-                        icon: '✅',
-                        link: '#',
-                        style: 'highlight'
-                    }
-                ]
-            },
-            { 
-                id: '2', 
-                title: 'ขอใบอนุญาตทำงาน', 
-                subtitle: 'E-Permit (PTW)', 
-                icon: '🦺', 
-                link: 'https://ftcsafety18.github.io/ftc-first-safety-web/permit_form.html' 
-            },
-            { 
-                id: '3', 
-                title: 'เข้าพื้นที่ & ประชุม TBT', 
-                subtitle: 'Check-in & Toolbox Talk', 
-                icon: '👷', 
-                link: '#' 
-            },
-            { 
-                id: '4', 
-                title: 'ออกพื้นที่ & ปิดใบงาน 5ส', 
-                subtitle: 'Check-out & 5S Close-out', 
-                icon: '🏁', 
-                link: '#' 
-            },
-            { 
-                id: '5', 
-                title: 'รายงานจุดเสี่ยง', 
-                subtitle: 'Near Miss & Observation', 
-                icon: '🔍', 
-                link: '#' 
-            },
-            { 
-                id: '6', 
-                title: 'บัตรดิจิทัล & เครื่องมือ', 
-                subtitle: 'E-Badge & E-Tagging', 
-                icon: '🪪', 
-                link: '#' 
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'], }
+                }
             }
-        ];
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
 
-        const grid = document.getElementById('menuGrid');
-        menuData.forEach(menu => {
-            const btn = document.createElement('button');
-            btn.className = 'bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center menu-card';
-            btn.onclick = () => handleMenuClick(menu);
-            btn.innerHTML = `
-                <div class="text-4xl mb-2">${menu.icon}</div>
-                <h4 class="font-bold text-gray-800 text-[13px] leading-tight">${menu.id}. ${menu.title}</h4>
-                <p class="text-[10px] text-gray-400 mt-1">${menu.subtitle}</p>
-            `;
-            grid.appendChild(btn);
+        .hero-bg {
+            background: linear-gradient(160deg, #19335A 0%, #254B82 60%, #19335A 100%);
+        }
+
+        .menu-card {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+            padding: 22px 14px; border-radius: 20px; background: #fff;
+            border: 1px solid #E7EBF1; box-shadow: 0 4px 14px -6px rgba(25,51,90,0.12);
+            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .menu-card:active { transform: scale(0.96); }
+        .menu-card:hover { border-color: #DB5A24; box-shadow: 0 8px 20px -6px rgba(219,90,36,0.25); }
+
+        .menu-icon {
+            width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .menu-card.disabled { cursor: not-allowed; opacity: 0.6; }
+        .menu-card.disabled:active { transform: none; }
+        .menu-card.disabled:hover { border-color: #E7EBF1; box-shadow: 0 4px 14px -6px rgba(25,51,90,0.12); }
+
+        .badge-soon {
+            font-size: 0.6rem; font-weight: 700; color: #fff; background: #9CA3AF;
+            padding: 2px 8px; border-radius: 999px; letter-spacing: 0.03em;
+        }
+
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 600;
+            color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.12);
+            padding: 5px 12px; border-radius: 999px;
+        }
+        .status-pill .dot { width: 6px; height: 6px; border-radius: 999px; background: #4ADE80; }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800">
+
+    <!-- Header / Hero -->
+    <header class="hero-bg pb-16 pt-6 px-4 sm:px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white rounded-xl p-1.5 flex items-center justify-center shadow-md">
+                        <img src="logo.png" alt="First Logo" class="h-9 w-auto object-contain" onerror="this.src='https://via.placeholder.com/90x36?text=FIRST'">
+                    </div>
+                    <div>
+                        <h1 class="text-white font-bold text-base sm:text-lg leading-tight">FTC First Safety</h1>
+                        <p class="text-white/70 text-[11px] sm:text-xs leading-tight">Safety Management System</p>
+                    </div>
+                </div>
+                <span id="env-pill" class="status-pill"><span class="dot"></span><span id="env-pill-text">กำลังตรวจสอบ...</span></span>
+            </div>
+
+            <div>
+                <p class="text-white/70 text-xs sm:text-sm mb-1">สวัสดีครับ 👋</p>
+                <h2 class="text-white font-bold text-xl sm:text-2xl leading-snug">เลือกระบบที่ต้องการใช้งาน</h2>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menu Grid -->
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 -mt-10 pb-12">
+        <div class="grid grid-cols-2 gap-4 sm:gap-5 mb-6">
+            
+            <!-- 1. ลงทะเบียนเข้าปฏิบัติงาน (โฟลเดอร์ Worker) -->
+            <div class="menu-card" onclick="openModule('Worker/Worker_Registration_ToSystem.html')">
+                <div class="menu-icon bg-brand-orange/10"><i data-lucide="user-check" class="w-7 h-7 text-brand-orange"></i></div>
+                <p class="text-sm font-bold text-brand-navy text-center leading-tight">1. ลงทะเบียน<br>เข้าปฏิบัติงาน</p>
+            </div>
+
+            <!-- 2. ระบบฝึกอบรมความปลอดภัย (โฟลเดอร์ Training) - อัปเดต Path แล้ว! -->
+            <div class="menu-card" onclick="openModule('Training/Training_Menu.html')">
+                <div class="menu-icon bg-blue-50"><i data-lucide="graduation-cap" class="w-7 h-7 text-brand-navy"></i></div>
+                <p class="text-sm font-bold text-brand-navy text-center leading-tight">2. ระบบฝึกอบรม<br>ความปลอดภัย</p>
+            </div>
+
+            <!-- 3. ระบบขออนุญาต (E-Permit) -->
+            <div class="menu-card disabled" onclick="showComingSoon()">
+                <div class="menu-icon bg-gray-100"><i data-lucide="clipboard-check" class="w-7 h-7 text-gray-400"></i></div>
+                <p class="text-sm font-bold text-gray-400 text-center leading-tight">3. ระบบขออนุญาต<br>(E-Permit)</p>
+                <span class="badge-soon">เร็วๆ นี้</span>
+            </div>
+
+            <!-- 4. ประชุมหน้างาน (TBT & Check-in) -->
+            <div class="menu-card disabled" onclick="showComingSoon()">
+                <div class="menu-icon bg-gray-100"><i data-lucide="users" class="w-7 h-7 text-gray-400"></i></div>
+                <p class="text-sm font-bold text-gray-400 text-center leading-tight">4. ประชุมหน้างาน<br>(TBT & Check-in)</p>
+                <span class="badge-soon">เร็วๆ นี้</span>
+            </div>
+
+            <!-- 5. ปิดใบงาน (5S Close-out) -->
+            <div class="menu-card disabled" onclick="showComingSoon()">
+                <div class="menu-icon bg-gray-100"><i data-lucide="sparkles" class="w-7 h-7 text-gray-400"></i></div>
+                <p class="text-sm font-bold text-gray-400 text-center leading-tight">5. ปิดใบงาน<br>(5S Close-out)</p>
+                <span class="badge-soon">เร็วๆ นี้</span>
+            </div>
+
+            <!-- 6. แจ้งเหตุฉุกเฉิน (SOS / Near Miss) -->
+            <div class="menu-card disabled" onclick="showComingSoon()">
+                <div class="menu-icon bg-red-50"><i data-lucide="triangle-alert" class="w-7 h-7 text-red-400"></i></div>
+                <p class="text-sm font-bold text-gray-400 text-center leading-tight">6. แจ้งเหตุฉุกเฉิน<br>(SOS / Near Miss)</p>
+                <span class="badge-soon">เร็วๆ นี้</span>
+            </div>
+        </div>
+
+        <!-- 7. Dynamic Admin Button -->
+        <div id="admin-menu" class="bg-brand-navy rounded-2xl p-4 flex items-center justify-between shadow-lg cursor-not-allowed opacity-80" onclick="showComingSoon()">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="shield" class="w-6 h-6 text-white"></i></div>
+                <div>
+                    <p class="text-white font-bold text-sm">สำหรับผู้คุมงาน (Vendor Admin)</p>
+                    <p class="text-white/70 text-xs">อนุมัติใบงาน / จัดการทีม</p>
+                </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-white/50"></i>
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mt-8">FTC First Safety Paperless System • FM-SAF-MENU-01</p>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
-        function handleMenuClick(menu) {
-            if (menu.submenus && menu.submenus.length > 0) {
-                openModal(menu);
-            } else if (menu.link && menu.link !== '#') {
-                window.location.href = menu.link;
+        // ===============================================
+        // 🚉 "สถานีขนส่ง" — จุดกระจายไปยังทุกฟอร์มในระบบ
+        // ===============================================
+        var LIFF_ID = '2010907761-KrJ8PgNN';
+        var isInLineClient = false;
+
+        if (typeof liff !== 'undefined') {
+            liff.init({ liffId: LIFF_ID }).then(function() {
+                isInLineClient = liff.isInClient();
+                setEnvPill(isInLineClient ? 'เปิดผ่าน LINE' : 'เปิดผ่านเบราว์เซอร์');
+            }).catch(function(err) {
+                console.error('LIFF Error:', err);
+                setEnvPill('เปิดผ่านเบราว์เซอร์');
+            });
+        } else {
+            setEnvPill('เปิดผ่านเบราว์เซอร์');
+        }
+
+        function setEnvPill(text) {
+            document.getElementById('env-pill-text').innerText = text;
+        }
+
+        function openModule(targetUrl) {
+            var targetFullUrl;
+            try {
+                targetFullUrl = new URL(targetUrl, window.location.href).href;
+            } catch (error) {
+                console.warn("URL construction fallback triggered");
+                targetFullUrl = targetUrl; 
+            }
+
+            if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient() === true) {
+                liff.openWindow({ url: targetFullUrl, external: true });
+            } else {
+                window.location.href = targetFullUrl;
             }
         }
 
-        function openModal(menu) {
-            document.getElementById('modalTitle').innerHTML = menu.modalTitle ? menu.modalTitle : `${menu.id}. ${menu.title}`;
-            const content = document.getElementById('modalContent');
-            content.innerHTML = ''; 
-
-            menu.submenus.forEach(sub => {
-                const isHighlight = sub.style === 'highlight';
-                const bgClass = isHighlight ? 'bg-[#fffae8] border-[#fcefc7]' : 'bg-white border-gray-100 hover:bg-gray-50';
-                const titleColor = isHighlight ? 'text-[#b7791f]' : 'text-[#1a237e]';
-
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left p-4 mb-3 border rounded-xl shadow-sm flex items-start transition-colors ${bgClass}`;
-                btn.onclick = () => {
-                    if(sub.link !== '#') window.location.href = sub.link;
-                };
-                
-                btn.innerHTML = `
-                    <div class="text-3xl mr-4 mt-1 opacity-90">${sub.icon}</div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-[15px] ${titleColor} mb-1">${sub.id} ${sub.title}</h4>
-                        <p class="text-[11px] text-gray-500 leading-snug">${sub.subtitle}</p>
-                    </div>
-                `;
-                content.appendChild(btn);
-            });
-            
-            document.getElementById('submenuModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('submenuModal').classList.add('hidden');
+        function showComingSoon() {
+            alert('ระบบนี้อยู่ระหว่างการพัฒนา จะเปิดให้ใช้งานเร็วๆ นี้ครับ');
         }
     </script>
 </body>
