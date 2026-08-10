@@ -80,21 +80,21 @@
         </div>
     </header>
 
-    <!-- 🚀 หน้าต่างเตือนให้เปิด Chrome (Smart Bouncer) -->
+    <!-- 🚀 หน้าต่างต้อนรับและเปิดเบราว์เซอร์หลัก (Smart Gateway) -->
     <div id="liff-blocker" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <div class="bg-white rounded-2xl border border-blue-200 shadow-xl p-8 text-center flex flex-col items-center">
-            <!-- เปลี่ยนจากตัวหมุนๆ เป็นไอคอนกล้อง -->
-            <div class="w-16 h-16 bg-brand-orange/10 rounded-full flex items-center justify-center mb-6">
-                <i data-lucide="camera" class="w-8 h-8 text-brand-orange"></i>
+            <div class="w-20 h-20 bg-brand-navy/10 rounded-full flex items-center justify-center mb-6">
+                <i data-lucide="clipboard-check" class="w-10 h-10 text-brand-navy"></i>
             </div>
-            <h2 class="text-xl font-bold text-brand-navy mb-3">จำเป็นต้องใช้งานกล้อง</h2>
+            <h2 class="text-xl font-bold text-brand-navy mb-1">ยินดีต้อนรับสู่ระบบลงทะเบียน</h2>
+            <h3 class="text-md font-semibold text-brand-orange mb-5">FTC First Safety (Paperless)</h3>
             <p class="text-sm text-gray-600 leading-relaxed">
-                แอป LINE ในระบบ Android ไม่รองรับการเปิดกล้องโดยตรงครับ<br>ระบบจะพาคุณไปเปิดใน Google Chrome เพื่อให้ถ่ายภาพได้ตามปกติครับ
+                เพื่อประสิทธิภาพสูงสุดในการใช้งานระบบกล้องถ่ายภาพ (e-KYC) <br>และเพื่อความปลอดภัยของข้อมูล กรุณากดปุ่มด้านล่างเพื่อเริ่มใช้งานครับ
             </p>
-            <!-- ปุ่มกดเรียกใช้ LIFF ของแท้เพื่อเด้งออก -->
-            <button onclick="openInExternalBrowser()" id="fallback-btn" class="mt-8 w-full py-4 bg-brand-orange text-white text-sm font-bold rounded-xl hover:bg-brand-orange-hover shadow-md transition-all">
-                เปิดใน Google Chrome
+            <button onclick="openInExternalBrowser()" id="fallback-btn" class="mt-8 w-full flex items-center justify-center gap-2 py-4 bg-brand-navy text-white text-sm font-bold rounded-xl hover:bg-brand-navy-light shadow-md transition-all">
+                กดเพื่อลงทะเบียน <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
             </button>
+            <p class="text-[11px] text-gray-400 mt-4">* ระบบจะเปิดหน้าต่างนี้ในเบราว์เซอร์หลักของท่านอัตโนมัติ</p>
         </div>
     </div>
 
@@ -159,7 +159,6 @@
                         <option value="Vietnamese">Vietnamese (เวียดนาม)</option>
                         <option value="Other">Other (อื่นๆ)</option>
                     </select>
-                    <!-- ช่องระบุสัญชาติอื่นๆ -->
                     <input type="text" id="foreign-nationality-other" placeholder="โปรดระบุสัญชาติ..." class="input-field mt-2 hidden">
                 </div>
 
@@ -302,7 +301,7 @@
                     </div>
                 </div>
 
-                <!-- กล่องที่ 2 (เพิ่มลิสต์เอกสารแบบจัดเต็ม) -->
+                <!-- กล่องที่ 2 -->
                 <div id="upload-workpermit" class="mb-6 hidden">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสารอื่นๆ ที่จำเป็นสำหรับขึ้นทะเบียน <span class="text-red-500">*</span></label>
                     <div id="dropzone-wp" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
@@ -320,7 +319,6 @@
                                 <option value="medical_cert">ใบรับรองแพทย์</option>
                                 <option value="Other">อื่นๆ (Other)</option>
                             </select>
-                            <!-- ช่องระบุเอกสารอื่นๆ -->
                             <input type="text" id="extra-doc-other" placeholder="โปรดระบุชื่อเอกสาร..." class="input-field mt-2 hidden">
                         </div>
 
@@ -431,8 +429,6 @@
             }
         }
 
-        // 🚀 ฟังก์ชันหลักจัดการ UI อัตโนมัติ (ดึงสูตรสำเร็จมาใช้)
-      // 🚀 ฟังก์ชันหลักจัดการ UI + ระบบ Bouncer (แก้ปัญหาจอขาวและวนลูป 100%)
         async function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -440,12 +436,6 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                // ⚠️ FIX รอบล่าสุด (ทดสอบแล้วพบว่า capture="environment" ถูก LINE WebView
-                // เพิกเฉยจริง เปิด Google Photos แทนกล้อง): ยืนยันว่ายังจำเป็นต้องกั้นหน้าจอ +
-                // บังคับดีดออกไป Chrome ก่อนอยู่ดี (สมมติฐานรอบก่อนที่ลองปล่อยให้ทำงานตรงๆ ใน LINE
-                // ผิด) จึงกลับมาเช็ค LINE+Android แล้วโชว์ #liff-blocker เหมือนเดิม แต่เปลี่ยนกลไก
-                // การดีดออกเป็น Android Intent URL (ดู openInExternalBrowser()) แทน liff.openWindow
-                // ที่พิสูจน์แล้วว่าไม่เสถียรพอบนเครื่องนี้
                 var isLineApp = /Line/i.test(navigator.userAgent);
                 var isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -459,7 +449,6 @@
 
                 await fetchVendors();
 
-                // โหลด LIFF และดึง LINE userId ต่อไปตามปกติ (ไม่เกี่ยวกับการแสดงผลหน้าจอข้างบนแล้ว)
                 if (typeof liff !== 'undefined') {
                     try {
                         await liff.init({ liffId: '2010907761-KrJ8PgNN' });
@@ -476,7 +465,6 @@
             }
         }
 
-        // สั่งให้ระบบเริ่มทำงานทันทีที่โครงสร้างหน้าเว็บโหลดเสร็จ (ไวกว่าเดิม)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initApp);
         } else {
@@ -484,12 +472,6 @@
         }
 
         function openInExternalBrowser() {
-            // ⚠️ FIX รอบใหม่ (กล้อง native ไม่เปิด แต่ไปเปิด Google Photos แทน):
-            // เทสต์แล้วพบว่า capture="environment" ถูก WebView ของ LINE เพิกเฉยจริง (attribute นี้
-            // เป็นแค่ "คำแนะนำ" ตามสเปก ไม่ใช่คำสั่งบังคับ) แปลว่ายังจำเป็นต้องดีดออกไป Chrome จริงๆ
-            // อยู่ดี แต่ liff.openWindow() ไม่เสถียรพอบนเครื่องนี้ไม่ว่าจะเรียกแบบไหนก็ตาม
-            // จึงเปลี่ยนไปใช้ Android Intent URL (intent://) แทน — เป็นกลไกระดับ OS ที่สั่งเปิด Chrome
-            // โดยตรง ไม่ผ่าน LIFF SDK เลย เป็นเทคนิคมาตรฐานที่ใช้หนีออกจาก in-app browser ทั่วไป
             var withoutScheme = window.location.href.replace(/^https?:\/\//, '');
             var intentUrl = 'intent://' + withoutScheme + '#Intent;scheme=https;package=com.android.chrome;end';
             try {
@@ -497,9 +479,6 @@
             } catch (e) {
                 console.error('intent redirect failed:', e);
             }
-            // เผื่อ intent:// ใช้ไม่ได้ (เช่นเครื่องไม่มี Chrome ติดตั้ง) — ถ้าเปิดสำเร็จหน้านี้จะ
-            // ถูก unload ไปแล้ว โค้ดข้างล่างนี้จะไม่ทำงาน แต่ถ้ายังอยู่หน้าเดิมหลัง 1.5 วินาที
-            // แปลว่า intent ใช้ไม่ได้จริง ให้ทางเลือกสำรองสุดท้ายไว้
             setTimeout(function() {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire('คำแนะนำ', 'กรุณาแตะเมนู "⋮" มุมขวาบน แล้วเลือก "เปิดด้วยเบราว์เซอร์อื่น" เพื่อใช้งานกล้องครับ', 'info');
@@ -507,10 +486,6 @@
             }, 1500);
         }
 
-        // สถานะการดึงข้อมูล vendor เพื่อแยกสาเหตุตอน dropdown ว่างเปล่า:
-        // 'loading' = ยังโหลดอยู่, 'error' = query ล้มเหลวจริง (network/permission),
-        // 'ok_empty' = query สำเร็จแต่ไม่มีแถวข้อมูลเลย (ตารางว่าง หรือโดน RLS กรองจนเหลือ 0 แถว),
-        // 'ok_has_data' = ดึงมาได้ปกติ มีข้อมูลอยู่
         var vendorFetchStatus = 'loading';
 
         async function fetchVendors() {
