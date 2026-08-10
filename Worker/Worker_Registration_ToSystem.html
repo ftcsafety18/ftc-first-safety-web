@@ -475,11 +475,19 @@
                         allowEscapeKey: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            if (typeof liff !== 'undefined' && liff.id) {
-                                // ใช้ LIFF แท้ดีดออกไป Chrome ปลอดภัยที่สุด ไม่เกิดอาการวนลูป
-                                liff.openWindow({ url: window.location.href, external: true });
+                            // FIX (Android/Samsung เปิดกล้องไม่ได้): เดิมเช็ค `liff.id` ซึ่งไม่ใช่
+                            // property จริงของ LIFF SDK เลย (undefined เสมอ) ทำให้เงื่อนไขนี้เป็นเท็จ
+                            // ทุกครั้ง และไม่เคยเรียก liff.openWindow() จริงเลยสักครั้ง — ผู้ใช้เลยติดอยู่
+                            // ใน LINE in-app browser ตลอด เปิดกล้อง native ไม่ได้ จึงเปลี่ยนมาเช็คแค่ว่า
+                            // SDK โหลดมาแล้วหรือยัง (typeof liff !== 'undefined') พร้อม try/catch กันพลาด
+                            if (typeof liff !== 'undefined') {
+                                try {
+                                    liff.openWindow({ url: window.location.href, external: true });
+                                } catch (e) {
+                                    console.error('liff.openWindow failed:', e);
+                                    Swal.fire('คำแนะนำ', 'กรุณากดปุ่ม 3 จุดที่มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์" เพื่อใช้งานกล้องครับ', 'warning');
+                                }
                             } else {
-                                // แผนสำรองกรณีฉุกเฉินสุดๆ (กันระบบวนลูป) 
                                 Swal.fire('คำแนะนำ', 'กรุณากดปุ่ม 3 จุดที่มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์" เพื่อใช้งานกล้องครับ', 'warning');
                             }
                         }
@@ -498,28 +506,40 @@
         }
 
         function openInExternalBrowser() {
-            // 🌟 ใช้คำสั่ง LIFF ของแท้ในการดีดออก Chrome เพื่อป้องกัน Netlify ตัดลิงก์ลูป
-            if (typeof liff !== 'undefined' && liff.id) {
-                liff.openWindow({ url: window.location.href, external: true });
-            } else {
-                // ไม้ตายสำรองกรณี LIFF ไม่ทำงาน
-                var currentUrl = window.location.href;
-                if (currentUrl.indexOf('openExternalBrowser=1') === -1) {
-                    var separator = currentUrl.indexOf('?') !== -1 ? '&' : '?';
-                    window.location.href = currentUrl + separator + 'openExternalBrowser=1';
+            // FIX เดียวกัน: ใช้ `typeof liff !== 'undefined'` แทน `liff.id` ที่ไม่มีจริง
+            if (typeof liff !== 'undefined') {
+                try {
+                    liff.openWindow({ url: window.location.href, external: true });
+                    return;
+                } catch (e) {
+                    console.error('liff.openWindow failed:', e);
                 }
+            }
+            // ไม้ตายสำรองกรณี LIFF ไม่ทำงานจริงๆ
+            var currentUrl = window.location.href;
+            if (currentUrl.indexOf('openExternalBrowser=1') === -1) {
+                var separator = currentUrl.indexOf('?') !== -1 ? '&' : '?';
+                window.location.href = currentUrl + separator + 'openExternalBrowser=1';
             }
         }
 
+        // สถานะการดึงข้อมูล vendor เพื่อแยกสาเหตุตอน dropdown ว่างเปล่า:
+        // 'loading' = ยังโหลดอยู่, 'error' = query ล้มเหลวจริง (network/permission),
+        // 'ok_empty' = query สำเร็จแต่ไม่มีแถวข้อมูลเลย (ตารางว่าง หรือโดน RLS กรองจนเหลือ 0 แถว),
+        // 'ok_has_data' = ดึงมาได้ปกติ มีข้อมูลอยู่
+        var vendorFetchStatus = 'loading';
+
         async function fetchVendors() {
-            if (!supabase) return;
+            if (!supabase) { vendorFetchStatus = 'error'; return; }
             try {
                 var res = await supabase.from('tb_vendors').select('vendor_id, vendor_name').order('vendor_name');
                 if (res.error) throw res.error;
                 vendorsMasterData = (res.data || []).map(function(v) { return { id: v.vendor_id, name: v.vendor_name }; });
+                vendorFetchStatus = vendorsMasterData.length > 0 ? 'ok_has_data' : 'ok_empty';
             } catch (e) {
                 console.error('fetchVendors error:', e);
                 vendorsMasterData = [];
+                vendorFetchStatus = 'error';
             }
         }
 
@@ -527,7 +547,11 @@
             var list = document.getElementById('vendor-list');
             list.innerHTML = '';
             if (!items.length) {
-                list.innerHTML = '<li class="px-4 py-3 text-sm text-gray-400">ไม่พบบริษัทที่ค้นหา</li>';
+                var emptyMsg = 'ไม่พบบริษัทที่ตรงกับคำค้นหา';
+                if (vendorFetchStatus === 'loading') emptyMsg = 'กำลังโหลดรายชื่อบริษัท...';
+                else if (vendorFetchStatus === 'error') emptyMsg = '⚠️ เชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่ หรือแจ้งผู้ดูแลระบบ';
+                else if (vendorFetchStatus === 'ok_empty') emptyMsg = '⚠️ ยังไม่มีข้อมูลบริษัทในระบบ (ตาราง tb_vendors ว่าง หรือสิทธิ์การเข้าถึงยังไม่ได้เปิด) กรุณาแจ้งผู้ดูแลระบบ';
+                list.innerHTML = '<li class="px-4 py-3 text-sm text-gray-400">' + emptyMsg + '</li>';
             } else {
                 items.forEach(function(v) {
                     var li = document.createElement('li');
