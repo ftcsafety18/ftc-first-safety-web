@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC Admin - WBS Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
+        .input-field { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #fff; font-size: 0.875rem; color: #1F2937; margin-top: 4px; }
+        .input-field:focus { outline: none; border-color: #19335A; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
+        .zone-btn { flex: 1; padding: 12px 8px; border-radius: 8px; border: 1px solid #E5E7EB; background: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .zone-btn.selected { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .zone-danger.selected { background: #fff; border-color: #EF4444; color: #B91C1C; }
+        .zone-control.selected { background: #fff; border-color: #F59E0B; color: #92400E; }
+        .zone-safe.selected { background: #fff; border-color: #22C55E; color: #15803D; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+    </style>
+</head>
+<body class="text-gray-800 pb-16">
+
+    <!-- Header -->
+    <header class="bg-[#19335A] px-4 py-4 shadow-md sticky top-0 z-40">
+        <div class="max-w-3xl mx-auto flex items-center gap-3">
+            <button onclick="window.location.href='../index.html'" class="text-white hover:bg-white/20 p-1 rounded"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <div class="bg-white rounded p-1"><img src="../logo.png" alt="Logo" class="h-8 w-auto" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'"></div>
+            <div>
+                <h1 class="text-white font-bold text-sm leading-tight">FTC First Safety — Admin</h1>
+                <p class="text-white/70 text-[11px] leading-tight">ตั้งค่าแผนงาน (WBS Task Setup)</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-6">
+        <!-- Form Section -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-7 mb-6">
+            <h2 class="text-[#19335A] font-bold text-base flex items-center gap-2 mb-5"><i data-lucide="plus" class="w-5 h-5 text-indigo-600"></i> สร้างแผนงานใหม่ (WBS Task)</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">โครงการ (Project) <span class="text-red-500">*</span></label>
+                    <select id="project-select" class="input-field cursor-pointer" onchange="loadBOQs()"><option value="">-- กำลังโหลด... --</option></select>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">รายการ BOQ อ้างอิง (BOQ Item) <span class="text-red-500">*</span></label>
+                    <select id="boq-select" class="input-field cursor-pointer"><option value="">-- เลือกโครงการก่อน --</option></select>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">บริษัทผู้รับผิดชอบแผนงาน (Vendor) <span class="text-red-500">*</span></label>
+                    <select id="vendor-select" class="input-field cursor-pointer"><option value="">-- กำลังโหลด... --</option></select>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-700">ชื่อแผนงาน (Task Name) <span class="text-red-500">*</span></label>
+                    <input type="text" id="task-name" placeholder="เช่น งานติดตั้งโครงเหล็กหลังคา โซน A" class="input-field">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">วันที่เริ่มงาน <span class="text-red-500">*</span></label>
+                        <input type="date" id="start-date" class="input-field">
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">วันที่จบงาน <span class="text-red-500">*</span></label>
+                        <input type="date" id="end-date" class="input-field">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">สัดส่วนน้ำหนักงาน (% Weight) <span class="text-red-500">*</span></label>
+                        <input type="number" id="weight-pct" placeholder="เช่น 5.0" step="0.1" class="input-field">
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">ตำแหน่งที่ตั้ง (โซน/อาคาร/ชั้น)</label>
+                        <input type="text" id="location" placeholder="เช่น อาคาร A ชั้น 3" class="input-field">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-sm font-semibold text-gray-700 mb-2 block">ประเภทพื้นที่ความเสี่ยง (Risk Area Class) <span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                        <button type="button" class="zone-btn zone-danger" onclick="selectZone('เขตอันตราย')"><div class="dot bg-[#EF4444]"></div> เขตอันตราย</button>
+                        <button type="button" class="zone-btn zone-control" onclick="selectZone('เขตควบคุม')"><div class="dot bg-[#F59E0B]"></div> เขตควบคุม</button>
+                        <button type="button" class="zone-btn zone-safe" onclick="selectZone('เขตปลอดภัย')"><div class="dot bg-[#22C55E]"></div> เขตปลอดภัย</button>
+                    </div>
+                </div>
+
+                <button onclick="submitWBS()" class="w-full mt-4 py-3.5 bg-[#DB5A24] text-white font-bold rounded-xl shadow-md hover:bg-[#C14B1A] transition-all">สร้างแผนงาน</button>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-7">
+            <h2 class="text-[#19335A] font-bold text-base flex items-center gap-2 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-[#DB5A24]"></i> แผนงานที่มีอยู่แล้ว (ล่าสุดก่อน)</h2>
+            <div id="task-list" class="space-y-3"><p class="text-sm text-gray-400">กำลังโหลด...</p></div>
+        </div>
+    </main>
+
+    <script>
+        var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        var selectedZone = null;
+
+        window.addEventListener('load', async function() {
+            lucide.createIcons();
+            await loadDropdowns();
+            await loadExistingTasks();
+        });
+
+        async function loadDropdowns() {
+            if(!supabase) return;
+            // Load Projects
+            let { data: projects } = await supabase.from('tb_projects').select('project_id, project_name').eq('is_active', true);
+            let pSelect = document.getElementById('project-select');
+            pSelect.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
+            (projects||[]).forEach(p => pSelect.innerHTML += `<option value="${p.project_id}">${p.project_name}</option>`);
+
+            // Load Vendors
+            let { data: vendors } = await supabase.from('tb_vendors').select('vendor_id, vendor_name');
+            let vSelect = document.getElementById('vendor-select');
+            vSelect.innerHTML = '<option value="">-- เลือกบริษัท --</option>';
+            (vendors||[]).forEach(v => vSelect.innerHTML += `<option value="${v.vendor_id}">${v.vendor_name}</option>`);
+        }
+
+        async function loadBOQs() {
+            let pId = document.getElementById('project-select').value;
+            let bSelect = document.getElementById('boq-select');
+            bSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
+            if(!pId) { bSelect.innerHTML = '<option value="">-- เลือกโครงการก่อน --</option>'; return; }
+            
+            let { data: boqs } = await supabase.from('tb_boq_items').select('boq_id, item_description').eq('project_id', pId);
+            bSelect.innerHTML = '<option value="">-- เลือก BOQ --</option>';
+            (boqs||[]).forEach(b => bSelect.innerHTML += `<option value="${b.boq_id}">${b.item_description}</option>`);
+        }
+
+        function selectZone(zone) {
+            selectedZone = zone;
+            document.querySelectorAll('.zone-btn').forEach(btn => btn.classList.remove('selected'));
+            if(zone === 'เขตอันตราย') document.querySelector('.zone-danger').classList.add('selected');
+            if(zone === 'เขตควบคุม') document.querySelector('.zone-control').classList.add('selected');
+            if(zone === 'เขตปลอดภัย') document.querySelector('.zone-safe').classList.add('selected');
+        }
+
+        async function submitWBS() {
+            let payload = {
+                task_id: 'TASK-' + Date.now(),
+                boq_id: document.getElementById('boq-select').value,
+                vendor_id: document.getElementById('vendor-select').value,
+                task_name: document.getElementById('task-name').value.trim(),
+                weight_pct: parseFloat(document.getElementById('weight-pct').value),
+                start_date: document.getElementById('start-date').value,
+                end_date: document.getElementById('end-date').value,
+                location_desc: document.getElementById('location').value.trim(),
+                risk_area_class: selectedZone,
+                status: 'Not Started'
+            };
+
+            if(!payload.boq_id || !payload.vendor_id || !payload.task_name || !payload.start_date || !payload.end_date || isNaN(payload.weight_pct) || !selectedZone) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน', 'warning'); return;
+            }
+
+            Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+            let { error } = await supabase.from('tb_wbs_tasks').insert(payload);
+            
+            if(error) {
+                Swal.fire('Error', error.message, 'error');
+            } else {
+                Swal.fire('สำเร็จ!', 'สร้างแผนงานเรียบร้อยแล้ว', 'success');
+                loadExistingTasks(); // โหลดข้อมูลใหม่
+                document.getElementById('task-name').value = '';
+            }
+        }
+
+        async function loadExistingTasks() {
+            if(!supabase) return;
+            let { data } = await supabase.from('tb_wbs_tasks').select('task_name, vendor_id, risk_area_class, start_date').order('created_at', { ascending: false }).limit(5);
+            let list = document.getElementById('task-list');
+            list.innerHTML = '';
+            if(!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400">ยังไม่มีแผนงาน</p>'; return; }
+            
+            data.forEach(t => {
+                let badgeColor = t.risk_area_class === 'เขตอันตราย' ? 'bg-red-100 text-red-700' : (t.risk_area_class === 'เขตควบคุม' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700');
+                list.innerHTML += `
+                    <div class="p-3 border border-gray-100 rounded-lg bg-gray-50 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-bold text-[#19335A]">${t.task_name}</p>
+                            <p class="text-xs text-gray-500 mt-1">เริ่ม: ${t.start_date} | รหัสผู้รับเหมา: ${t.vendor_id}</p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${t.risk_area_class}</span>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
+</html>
