@@ -47,7 +47,7 @@
         }
         .btn-camera:hover { filter: brightness(1.05); }
         .btn-camera:active { transform: scale(0.97); }
-        .btn-camera .icon-badge { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:999px; background: rgba(255,255,255,0.18); }
+        .btn-camera .icon-badge { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:999px; background: rgba(255,255,255,0.18); flex-shrink: 0;}
 
         .btn-filepick {
             display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -179,7 +179,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- วันเกิด -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันเกิด (Date of Birth) <span class="text-red-500">*</span></label>
                         <div class="grid grid-cols-3 gap-2">
@@ -188,7 +187,6 @@
                             <select id="dob-year" class="input-field cursor-pointer px-1 text-center"></select>
                         </div>
                     </div>
-                    <!-- กรุ๊ปเลือด -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">กรุ๊ปเลือด (Blood Group) <span class="text-red-500">*</span></label>
                         <select id="blood-group" class="input-field cursor-pointer">
@@ -202,7 +200,6 @@
                     </div>
                 </div>
 
-                <!-- วันหมดอายุบัตร -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">วันหมดอายุของบัตร (Document Expiry) <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-3 gap-2">
@@ -218,7 +215,6 @@
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto no-scrollbar hidden"></ul>
                 </div>
 
-                <!-- ผู้ติดต่อฉุกเฉิน -->
                 <div class="section-label"><span class="bar"></span> ผู้ติดต่อในภาวะฉุกเฉิน</div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                     <div>
@@ -245,7 +241,6 @@
                     </div>
                 </div>
 
-                <!-- PDPA -->
                 <div class="section-label"><span class="bar"></span> การยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
                 <div class="flex flex-col gap-3 mb-2">
                     <label class="consent-box cursor-pointer">
@@ -274,7 +269,6 @@
                     <div>
                         <p class="text-sm font-bold text-brand-navy">ขั้นตอนที่ 2: ถ่ายภาพยืนยันเอกสาร</p>
                         <p class="text-xs text-gray-500 mt-0.5">กรุณาเลือกวิธีการอัปโหลดภาพ (ถ่ายสดผ่านกล้อง หรือ เลือกจากไฟล์)</p>
-                        <button type="button" onclick="openInExternalBrowser()" class="text-xs text-brand-orange underline font-semibold mt-2">กล้องเปิดไม่ได้? กดที่นี่เพื่อเปิดหน้านี้ผ่าน Google Chrome</button>
                     </div>
                 </div>
 
@@ -283,8 +277,9 @@
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสาร บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="main-btn-group" class="w-full max-w-xs flex flex-col gap-3">
-                            <label class="btn-camera">
-                                <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
+                            <label class="btn-camera leading-tight">
+                                <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span> 
+                                <span class="text-[12px] sm:text-sm">เปิดกล้องถ่ายภาพ บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู</span>
                                 <input type="file" id="file-main-camera" class="hidden" accept="image/*" capture="environment" onchange="handleMainCameraCapture(this)">
                             </label>
                             <label class="btn-filepick">
@@ -301,17 +296,15 @@
                     </div>
                 </div>
 
-                <!-- 🚀 กล่องที่ 2 (ระบบอัปโหลดเอกสารอื่นๆ แบบไม่จำกัดจำนวน) -->
+                <!-- กล่องที่ 2 (เอกสารอื่นๆ แบบไม่จำกัด) -->
                 <div class="mb-6 w-full pt-4 border-t border-gray-200">
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-sm font-bold text-brand-navy">อัปโหลดเอกสารความปลอดภัยอื่นๆ <span class="text-xs text-gray-500 font-normal">(ถ้ามี)</span></label>
                     </div>
                     <p class="text-[12px] text-gray-500 mb-4">* ระบบรองรับการเพิ่มเอกสารแบบไม่จำกัด กรุณากดปุ่ม <b>"+ เพิ่มเอกสาร"</b> ด้านล่าง</p>
 
-                    <!-- คอนเทนเนอร์สำหรับใส่กล่องเอกสารแบบ Dynamic -->
                     <div id="extra-docs-container"></div>
 
-                    <!-- ปุ่มสำหรับเพิ่มกล่องอัปโหลด -->
                     <button type="button" onclick="addExtraDocBlock()" class="w-full py-3 mt-2 border-2 border-dashed border-brand-orange text-brand-orange rounded-xl font-bold text-sm hover:bg-brand-orange/10 transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="plus-circle" class="w-5 h-5"></i> เพิ่มเอกสารความปลอดภัยอื่นๆ
                     </button>
@@ -356,13 +349,19 @@
                 <div class="w-full bg-blue-50 border border-blue-200 rounded-xl p-5 text-left mb-6 shadow-sm">
                     <p class="text-sm font-bold text-brand-navy mb-3 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-blue-600"></i> ขั้นตอนต่อไป (Next Steps):</p>
                     <ul class="text-sm text-gray-700 list-disc pl-5 space-y-2">
-                        <li>กรุณาติดต่อขอรับบัตรเข้าพื้นที่ ณ ป้อม รปภ. (Security Gate)</li>
+                        <!-- แก้ไขข้อความตามคำสั่ง PM -->
+                        <li>กรุณาติดต่อขอรับบัตรเข้าพื้นที่ได้จากเจ้าหน้าที่ความปลอดภัยที่เกี่ยวข้อง</li>
                         <li>ผู้ปฏิบัติงานใหม่ทุกท่าน <b>ต้องเข้ารับการฝึกอบรมความปลอดภัย</b> ตามหัวข้อที่กำหนด ก่อนเริ่มงาน</li>
                     </ul>
                 </div>
 
-                <button type="button" onclick="window.location.href='Training_Menu.html'" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg">
+                <button type="button" onclick="window.location.href='Training_Menu.html'" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-brand-navy text-white hover:bg-brand-navy-light shadow-lg mb-3">
                     เข้าสู่เมนูฝึกอบรมความปลอดภัย <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
+                </button>
+                
+                <!-- ปุ่มออกจากโปรแกรม กรณีไม่พร้อมอบรม -->
+                <button type="button" onclick="exitApp()" class="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm">
+                    ออกจากโปรแกรม (กรณียังไม่พร้อมอบรม) <i data-lucide="log-out" class="w-5 h-5"></i>
                 </button>
             </div>
 
@@ -425,7 +424,6 @@
 
                 await fetchVendors();
                 
-                // สร้างกล่องเอกสารอื่นๆ รอไว้ 1 กล่องโดยอัตโนมัติ
                 addExtraDocBlock();
 
                 if (typeof liff !== 'undefined') {
@@ -458,11 +456,16 @@
             } catch (e) {
                 console.error('intent redirect failed:', e);
             }
-            setTimeout(function() {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire('คำแนะนำ', 'กรุณาแตะเมนู "⋮" มุมขวาบน แล้วเลือก "เปิดด้วยเบราว์เซอร์อื่น" เพื่อใช้งานกล้องครับ', 'info');
-                }
-            }, 1500);
+            // ❌ ถอนรากถอนโคนคำสั่ง Swal.fire (คำแนะนำให้เปิดด้วยเบราว์เซอร์อื่น) ออกตามที่ PM สั่งครับ
+        }
+
+        // ฟังก์ชันสำหรับกดปิดแอป
+        function exitApp() {
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                liff.closeWindow(); // ปิดหน้าต่าง LINE LIFF
+            } else {
+                window.location.href = 'index.html'; // ถ้าไม่ใช่ LINE ให้เตะกลับหน้าเมนูหลัก
+            }
         }
 
         var vendorFetchStatus = 'loading';
@@ -517,7 +520,6 @@
             if (container && !container.contains(e.target)) document.getElementById('vendor-list').classList.add('hidden');
         });
 
-        // ================= UI Validation =================
         function setNationality(nat) {
             currentNationality = nat;
             var btnThai = document.getElementById('btn-thai');
@@ -531,7 +533,6 @@
             var inactive = 'flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors';
             
             if (nat === 'thai') {
-                // สำหรับคนไทย ซ่อนแค่ช่องพาสปอร์ต ไม่ซ่อนกล่องอัปโหลดเอกสารความปลอดภัยอีกต่อไป!
                 docSec.classList.add('hidden'); natSec.classList.add('hidden');
                 btnThai.className = active; btnForeign.className = inactive;
                 idLabel.innerHTML = 'เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span>';
@@ -589,7 +590,51 @@
             return d.getFullYear() + '-' + mm + '-' + dd;
         }
 
-        // ================= ระบบกล้อง Native สำหรับบัตรหลัก =================
+        function compressImage(file, maxWidth = 1200, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                if (!file.type.match(/image.*/)) {
+                    resolve(file); 
+                    return;
+                }
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(blob => {
+                            if (!blob) {
+                                resolve(file); 
+                                return;
+                            }
+                            const newFileName = file.name.replace(/\.[^/.]+$/, "") + "_compressed.jpg";
+                            const newFile = new File([blob], newFileName, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(newFile);
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = error => reject(error);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
         var capturedMainFile = null;
 
         function handleMainCameraCapture(inputElement) {
@@ -634,7 +679,6 @@
             document.getElementById('dropzone-main').classList.replace('border-green-500', 'border-brand-navy/30');
         }
 
-        // ================= 🚀 ระบบอัปโหลดเอกสารความปลอดภัยอื่นๆ (แบบ Dynamic ไม่จำกัด) =================
         var extraDocCount = 0;
         var capturedExtraFiles = {};
 
@@ -664,7 +708,8 @@
 
                 <div id="wp-btn-group-${id}" class="w-full max-w-xs flex flex-col gap-3">
                     <label class="btn-camera" onclick="return validateExtraDocType(${id})">
-                        <span class="icon-badge"><i data-lucide="camera" class="w-4 h-4"></i></span> เปิดกล้องถ่ายภาพสด
+                        <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span> 
+                        <span class="text-sm">เปิดกล้อง ถ่ายภาพเอกสารความปลอดภัย</span>
                         <input type="file" id="file-wp-camera-${id}" class="hidden" accept="image/*" capture="environment" onchange="handleExtraCameraCapture(${id}, this)">
                     </label>
                     <label class="btn-filepick" onclick="return validateExtraDocType(${id})">
@@ -757,8 +802,6 @@
             document.getElementById('extra-doc-other-' + id).value = '';
         }
 
-        // ======================================================================
-
         function validateStep1() {
             if (!document.getElementById('fname-input').value.trim() || !document.getElementById('lname-input').value.trim()) {
                 Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ-นามสกุล', 'warning'); return false;
@@ -804,10 +847,9 @@
 
         function validateStep2() {
             if (!getSelectedMainFile()) {
-                Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนบัตรหลักครับ', 'warning'); return false;
+                Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนบัตรหลัก', 'warning'); return false;
             }
 
-            // ตรวจสอบเอกสารความปลอดภัยอื่นๆ ว่าถ้าเลือกประเภทไว้แต่ไม่อัปโหลดรูปให้แจ้งเตือน
             var hasAtLeastOneExtra = false;
             var extraBlocks = document.querySelectorAll('[id^="extra-doc-block-"]');
             for (let block of extraBlocks) {
@@ -825,7 +867,6 @@
                 }
             }
 
-            // สำหรับชาวต่างชาติ บังคับว่าต้องมีเอกสาร Work Permit (หรือเอกสารเพิ่มเติมอย่างน้อย 1 ใบ)
             if (currentNationality === 'foreigner' && !hasAtLeastOneExtra) {
                 Swal.fire('ขาดรูปถ่าย', 'พนักงานต่างชาติ จำเป็นต้องอัปโหลดเอกสาร Work Permit หรือเอกสารอื่นๆ ที่เกี่ยวข้อง', 'warning'); return false;
             }
@@ -884,29 +925,32 @@
                     return;
                 }
 
-                Swal.update({ title: 'กำลังอัปโหลดเอกสารหลัก...' });
+                Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารหลัก...' });
 
-                var mainFile = getSelectedMainFile();
-                var mainPath = 'id-cards/' + Date.now() + '_' + mainFile.name;
-                var upMain = await supabase.storage.from('worker-documents').upload(mainPath, mainFile);
+                var originalMainFile = getSelectedMainFile();
+                var compressedMainFile = await compressImage(originalMainFile, 1200, 0.7); 
+                
+                var mainPath = 'id-cards/' + Date.now() + '_' + compressedMainFile.name;
+                var upMain = await supabase.storage.from('worker-documents').upload(mainPath, compressedMainFile);
                 if (upMain.error) throw upMain.error;
                 var mainUrl = supabase.storage.from('worker-documents').getPublicUrl(mainPath).data.publicUrl;
 
-                // 🚀 ลูปรวบรวมไฟล์เอกสารความปลอดภัยอื่นๆ ทั้งหมดส่งขึ้น Storage และรวม URL เป็นก้อนเดียว
-                Swal.update({ title: 'กำลังอัปโหลดเอกสารเพิ่มเติม...' });
+                Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารเพิ่มเติม...' });
                 let uploadedWpUrls = [];
                 let extraDocTypes = [];
 
                 var extraBlocks = document.querySelectorAll('[id^="extra-doc-block-"]');
                 for (let block of extraBlocks) {
                     let id = block.id.replace('extra-doc-block-', '');
-                    let file = getSelectedExtraFile(id);
-                    if (file) {
+                    let originalExtraFile = getSelectedExtraFile(id);
+                    if (originalExtraFile) {
                         let docType = document.getElementById('extra-doc-type-' + id).value;
                         if (docType === 'Other') docType = 'Other: ' + document.getElementById('extra-doc-other-' + id).value.trim();
 
-                        let wpPath = 'work-permits/' + Date.now() + '_' + id + '_' + file.name;
-                        var upWp = await supabase.storage.from('worker-documents').upload(wpPath, file);
+                        let compressedExtraFile = await compressImage(originalExtraFile, 1200, 0.7);
+
+                        let wpPath = 'work-permits/' + Date.now() + '_' + id + '_' + compressedExtraFile.name;
+                        var upWp = await supabase.storage.from('worker-documents').upload(wpPath, compressedExtraFile);
                         if (upWp.error) throw upWp.error;
                         let wpUrl = supabase.storage.from('worker-documents').getPublicUrl(wpPath).data.publicUrl;
 
@@ -930,7 +974,6 @@
                     line_user_id: lineUserId, 
                     blood_group: document.getElementById('blood-group').value,
                     id_card_photo_url: mainUrl,
-                    // รวม URL และประเภทไฟล์คั่นด้วยลูกน้ำ (Comma-separated) เพื่อเก็บเข้าตารางเดิมได้พอดี
                     work_permit_photo_url: uploadedWpUrls.length > 0 ? uploadedWpUrls.join(', ') : null,
                     additional_document_type: extraDocTypes.length > 0 ? extraDocTypes.join(', ') : null,
                     date_of_birth: beToIsoString(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value),
