@@ -3,197 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FTC Admin - WBS Setup</title>
+    <title>FTC First Safety - ตั้งค่าแผนงาน (WBS Task Setup)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' } }, fontFamily: { sans: ['Sarabun', 'sans-serif'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
-        .input-field { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #fff; font-size: 0.875rem; color: #1F2937; margin-top: 4px; }
-        .input-field:focus { outline: none; border-color: #19335A; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
-        .zone-btn { flex: 1; padding: 12px 8px; border-radius: 8px; border: 1px solid #E5E7EB; background: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .zone-btn.selected { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .zone-danger.selected { background: #fff; border-color: #EF4444; color: #B91C1C; }
-        .zone-control.selected { background: #fff; border-color: #F59E0B; color: #92400E; }
-        .zone-safe.selected { background: #fff; border-color: #22C55E; color: #15803D; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .input-field { width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.5rem; border: 1px solid #D1D5DB; background-color: #F9FAFB; font-size: 0.875rem; color: #1F2937; }
+        .input-field:focus { outline: none; border-color: #19335A; background-color: #FFFFFF; box-shadow: 0 0 0 3px rgba(25, 51, 90, 0.1); }
+        .zone-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1.5px solid #E7EBF1; background: #fff; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+        .zone-btn.zone-danger.selected { background: #FEE2E2; border-color: #EF4444; color: #B91C1C; }
+        .zone-btn.zone-control.selected { background: #FEF3C7; border-color: #F59E0B; color: #92400E; }
+        .zone-btn.zone-safe.selected { background: #DCFCE7; border-color: #22C55E; color: #15803D; }
+        .task-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:10px; background:#F9FAFB; border:1px solid #EEF1F5; margin-bottom:8px; }
+        .warn-box { background:#FEF3C7; border:1px solid #F59E0B; color:#92400E; border-radius:10px; padding:10px 14px; font-size:0.78rem; margin-top:8px; }
     </style>
 </head>
-<body class="text-gray-800 pb-16">
+<body class="min-h-screen text-gray-800">
 
-    <!-- Header -->
-    <header class="bg-[#19335A] px-4 py-4 shadow-md sticky top-0 z-40">
-        <div class="max-w-3xl mx-auto flex items-center gap-3">
-            <button onclick="window.location.href='../index.html'" class="text-white hover:bg-white/20 p-1 rounded"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-            <div class="bg-white rounded p-1"><img src="../logo.png" alt="Logo" class="h-8 w-auto" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'"></div>
+    <header class="sticky top-0 z-40 bg-brand-navy shadow-md">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+            <div class="bg-white rounded p-1 flex items-center justify-center">
+                <img src="../logo.png" alt="First Logo" class="h-8 w-auto object-contain" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'">
+            </div>
             <div>
-                <h1 class="text-white font-bold text-sm leading-tight">FTC First Safety — Admin</h1>
-                <p class="text-white/70 text-[11px] leading-tight">ตั้งค่าแผนงาน (WBS Task Setup)</p>
+                <h1 class="text-[13px] sm:text-base font-bold text-white leading-tight">FTC First Safety — Admin</h1>
+                <p class="text-[9px] sm:text-xs text-white/70 leading-tight">ตั้งค่าแผนงาน (WBS Task Setup)</p>
             </div>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-6">
-        <!-- Form Section -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-7 mb-6">
-            <h2 class="text-[#19335A] font-bold text-base flex items-center gap-2 mb-5"><i data-lucide="plus" class="w-5 h-5 text-indigo-600"></i> สร้างแผนงานใหม่ (WBS Task)</h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-sm font-semibold text-gray-700">โครงการ (Project) <span class="text-red-500">*</span></label>
-                    <select id="project-select" class="input-field cursor-pointer" onchange="loadBOQs()"><option value="">-- กำลังโหลด... --</option></select>
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-gray-700">รายการ BOQ อ้างอิง (BOQ Item) <span class="text-red-500">*</span></label>
-                    <select id="boq-select" class="input-field cursor-pointer"><option value="">-- เลือกโครงการก่อน --</option></select>
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-gray-700">บริษัทผู้รับผิดชอบแผนงาน (Vendor) <span class="text-red-500">*</span></label>
-                    <select id="vendor-select" class="input-field cursor-pointer"><option value="">-- กำลังโหลด... --</option></select>
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-gray-700">ชื่อแผนงาน (Task Name) <span class="text-red-500">*</span></label>
-                    <input type="text" id="task-name" placeholder="เช่น งานติดตั้งโครงเหล็กหลังคา โซน A" class="input-field">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700">วันที่เริ่มงาน <span class="text-red-500">*</span></label>
-                        <input type="date" id="start-date" class="input-field">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700">วันที่จบงาน <span class="text-red-500">*</span></label>
-                        <input type="date" id="end-date" class="input-field">
-                    </div>
-                </div>
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-16">
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700">สัดส่วนน้ำหนักงาน (% Weight) <span class="text-red-500">*</span></label>
-                        <input type="number" id="weight-pct" placeholder="เช่น 5.0" step="0.1" class="input-field">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700">ตำแหน่งที่ตั้ง (โซน/อาคาร/ชั้น)</label>
-                        <input type="text" id="location" placeholder="เช่น อาคาร A ชั้น 3" class="input-field">
-                    </div>
-                </div>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 mb-6">
+            <h2 class="text-sm font-bold text-brand-navy mb-4">➕ สร้างแผนงานใหม่ (WBS Task)</h2>
 
+            <label class="block text-xs font-semibold text-gray-700 mb-1.5">โครงการ (Project) <span class="text-red-500">*</span></label>
+            <select id="project-select" class="input-field cursor-pointer mb-1" onchange="onProjectChange()"><option value="">-- เลือกโครงการ --</option></select>
+            <p id="project-empty-warning" class="hidden warn-box">⚠️ ยังไม่มีข้อมูลโครงการในระบบ กรุณาเพิ่มข้อมูล tb_projects ผ่าน Supabase</p>
+
+            <label class="block text-xs font-semibold text-gray-700 mb-1.5 mt-4">รายการ BOQ อ้างอิง (BOQ Item) <span class="text-red-500">*</span></label>
+            <select id="boq-select" class="input-field cursor-pointer mb-1"><option value="">-- เลือกโครงการก่อน --</option></select>
+            <p id="boq-empty-warning" class="hidden warn-box">⚠️ โครงการนี้ยังไม่มีข้อมูล BOQ</p>
+
+            <label class="block text-xs font-semibold text-gray-700 mb-1.5 mt-4">บริษัทผู้รับผิดชอบแผนงาน (Vendor) <span class="text-red-500">*</span></label>
+            <select id="vendor-select" class="input-field cursor-pointer mb-1"><option value="">-- เลือกบริษัท --</option></select>
+            <p id="vendor-empty-warning" class="hidden warn-box">⚠️ ยังไม่มีข้อมูลบริษัทผู้รับเหมาในระบบ</p>
+
+            <label class="block text-xs font-semibold text-gray-700 mb-1.5 mt-4">ชื่อแผนงาน (Task Name) <span class="text-red-500">*</span></label>
+            <input type="text" id="task-name-input" placeholder="เช่น งานติดตั้งโครงเหล็กหลังคา โซน A" class="input-field">
+
+            <div class="grid grid-cols-2 gap-3 mt-4">
                 <div>
-                    <label class="text-sm font-semibold text-gray-700 mb-2 block">ประเภทพื้นที่ความเสี่ยง (Risk Area Class) <span class="text-red-500">*</span></label>
-                    <div class="flex gap-2">
-                        <button type="button" class="zone-btn zone-danger" onclick="selectZone('เขตอันตราย')"><div class="dot bg-[#EF4444]"></div> เขตอันตราย</button>
-                        <button type="button" class="zone-btn zone-control" onclick="selectZone('เขตควบคุม')"><div class="dot bg-[#F59E0B]"></div> เขตควบคุม</button>
-                        <button type="button" class="zone-btn zone-safe" onclick="selectZone('เขตปลอดภัย')"><div class="dot bg-[#22C55E]"></div> เขตปลอดภัย</button>
-                    </div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">วันที่เริ่มงาน <span class="text-red-500">*</span></label>
+                    <input type="date" id="start-date-input" class="input-field">
                 </div>
-
-                <button onclick="submitWBS()" class="w-full mt-4 py-3.5 bg-[#DB5A24] text-white font-bold rounded-xl shadow-md hover:bg-[#C14B1A] transition-all">สร้างแผนงาน</button>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">วันที่จบงาน <span class="text-red-500">*</span></label>
+                    <input type="date" id="end-date-input" class="input-field">
+                </div>
             </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">สัดส่วนน้ำหนักงาน (% Weight) <span class="text-red-500">*</span></label>
+                    <input type="number" id="weight-pct-input" min="0" max="100" step="0.1" placeholder="เช่น 5.0" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">ตำแหน่งที่ตั้ง (โซน/อาคาร/ชั้น)</label>
+                    <input type="text" id="location-input" placeholder="เช่น อาคาร A ชั้น 3" class="input-field">
+                </div>
+            </div>
+
+            <label class="block text-xs font-semibold text-gray-700 mb-1.5 mt-4">ประเภทพื้นที่ความเสี่ยง (Risk Area Class) <span class="text-red-500">*</span></label>
+            <div class="flex gap-2" id="zone-group">
+                <button type="button" class="zone-btn zone-danger" onclick="selectZone('เขตอันตราย')">🔴 เขตอันตราย</button>
+                <button type="button" class="zone-btn zone-control" onclick="selectZone('เขตควบคุม')">🟡 เขตควบคุม</button>
+                <button type="button" class="zone-btn zone-safe" onclick="selectZone('เขตปลอดภัย')">🟢 เขตปลอดภัย</button>
+            </div>
+
+            <button type="button" onclick="submitTask()" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm bg-brand-orange text-white hover:bg-brand-orange-hover shadow-lg mt-6">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> สร้างแผนงาน
+            </button>
         </div>
 
-        <!-- List Section -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-7">
-            <h2 class="text-[#19335A] font-bold text-base flex items-center gap-2 mb-4"><i data-lucide="clipboard-list" class="w-5 h-5 text-[#DB5A24]"></i> แผนงานที่มีอยู่แล้ว (ล่าสุดก่อน)</h2>
-            <div id="task-list" class="space-y-3"><p class="text-sm text-gray-400">กำลังโหลด...</p></div>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
+            <h2 class="text-sm font-bold text-brand-navy mb-4">📋 แผนงานที่มีอยู่แล้ว (ล่าสุดก่อน)</h2>
+            <div id="task-list"><p class="text-xs text-gray-400">กำลังโหลด...</p></div>
         </div>
+
     </main>
 
     <script>
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
         var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
         var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        var boqMasterData = [];
         var selectedZone = null;
 
-        window.addEventListener('load', async function() {
-            lucide.createIcons();
-            await loadDropdowns();
-            await loadExistingTasks();
+        window.addEventListener('load', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            fetchProjects();
+            fetchVendors();
+            refreshTaskList();
         });
 
-        async function loadDropdowns() {
-            if(!supabase) return;
-            // Load Projects
-            let { data: projects } = await supabase.from('tb_projects').select('project_id, project_name').eq('is_active', true);
-            let pSelect = document.getElementById('project-select');
-            pSelect.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
-            (projects||[]).forEach(p => pSelect.innerHTML += `<option value="${p.project_id}">${p.project_name}</option>`);
-
-            // Load Vendors
-            let { data: vendors } = await supabase.from('tb_vendors').select('vendor_id, vendor_name');
-            let vSelect = document.getElementById('vendor-select');
-            vSelect.innerHTML = '<option value="">-- เลือกบริษัท --</option>';
-            (vendors||[]).forEach(v => vSelect.innerHTML += `<option value="${v.vendor_id}">${v.vendor_name}</option>`);
+        async function fetchProjects() {
+            if (!supabase) return;
+            try {
+                var res = await supabase.from('tb_projects').select('project_id, project_name').order('created_at', { ascending: false });
+                if (res.error) throw res.error;
+                var select = document.getElementById('project-select');
+                (res.data || []).forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.project_id; opt.textContent = p.project_name;
+                    select.appendChild(opt);
+                });
+                if (!res.data || res.data.length === 0) document.getElementById('project-empty-warning').classList.remove('hidden');
+            } catch (e) { console.error('fetchProjects error:', e); document.getElementById('project-empty-warning').classList.remove('hidden'); }
         }
 
-        async function loadBOQs() {
-            let pId = document.getElementById('project-select').value;
-            let bSelect = document.getElementById('boq-select');
-            bSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
-            if(!pId) { bSelect.innerHTML = '<option value="">-- เลือกโครงการก่อน --</option>'; return; }
-            
-            let { data: boqs } = await supabase.from('tb_boq_items').select('boq_id, item_description').eq('project_id', pId);
-            bSelect.innerHTML = '<option value="">-- เลือก BOQ --</option>';
-            (boqs||[]).forEach(b => bSelect.innerHTML += `<option value="${b.boq_id}">${b.item_description}</option>`);
+        async function onProjectChange() {
+            var projectId = document.getElementById('project-select').value;
+            var boqSelect = document.getElementById('boq-select');
+            boqSelect.innerHTML = '<option value="">-- เลือกรายการ BOQ --</option>';
+            document.getElementById('boq-empty-warning').classList.add('hidden');
+            boqMasterData = [];
+            if (!projectId || !supabase) return;
+            try {
+                var res = await supabase.from('tb_boq_master').select('boq_id, category, description').eq('project_id', projectId);
+                if (res.error) throw res.error;
+                boqMasterData = res.data || [];
+                boqMasterData.forEach(function(b) {
+                    var opt = document.createElement('option');
+                    opt.value = b.boq_id; opt.textContent = b.category + ' — ' + b.description;
+                    boqSelect.appendChild(opt);
+                });
+                if (boqMasterData.length === 0) document.getElementById('boq-empty-warning').classList.remove('hidden');
+            } catch (e) { console.error('fetch BOQ error:', e); document.getElementById('boq-empty-warning').classList.remove('hidden'); }
+        }
+
+        async function fetchVendors() {
+            if (!supabase) return;
+            try {
+                var res = await supabase.from('tb_vendors').select('vendor_id, vendor_name').order('vendor_name');
+                if (res.error) throw res.error;
+                var select = document.getElementById('vendor-select');
+                (res.data || []).forEach(function(v) {
+                    var opt = document.createElement('option');
+                    opt.value = v.vendor_id; opt.textContent = v.vendor_name;
+                    select.appendChild(opt);
+                });
+                if (!res.data || res.data.length === 0) document.getElementById('vendor-empty-warning').classList.remove('hidden');
+            } catch (e) { console.error('fetchVendors error:', e); document.getElementById('vendor-empty-warning').classList.remove('hidden'); }
         }
 
         function selectZone(zone) {
             selectedZone = zone;
-            document.querySelectorAll('.zone-btn').forEach(btn => btn.classList.remove('selected'));
-            if(zone === 'เขตอันตราย') document.querySelector('.zone-danger').classList.add('selected');
-            if(zone === 'เขตควบคุม') document.querySelector('.zone-control').classList.add('selected');
-            if(zone === 'เขตปลอดภัย') document.querySelector('.zone-safe').classList.add('selected');
+            document.querySelectorAll('.zone-btn').forEach(function(btn) { btn.classList.remove('selected'); });
+            if (zone === 'เขตอันตราย') document.querySelector('.zone-danger').classList.add('selected');
+            if (zone === 'เขตควบคุม') document.querySelector('.zone-control').classList.add('selected');
+            if (zone === 'เขตปลอดภัย') document.querySelector('.zone-safe').classList.add('selected');
         }
 
-        async function submitWBS() {
-            let payload = {
-                task_id: 'TASK-' + Date.now(),
-                boq_id: document.getElementById('boq-select').value,
-                vendor_id: document.getElementById('vendor-select').value,
-                task_name: document.getElementById('task-name').value.trim(),
-                weight_pct: parseFloat(document.getElementById('weight-pct').value),
-                start_date: document.getElementById('start-date').value,
-                end_date: document.getElementById('end-date').value,
-                location_desc: document.getElementById('location').value.trim(),
-                risk_area_class: selectedZone,
-                status: 'Not Started'
-            };
-
-            if(!payload.boq_id || !payload.vendor_id || !payload.task_name || !payload.start_date || !payload.end_date || isNaN(payload.weight_pct) || !selectedZone) {
-                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน', 'warning'); return;
+        // เจนนี่อัปเกรดการสร้าง ID ให้ปลอดภัยจากการชนกัน 100%
+        function generateTaskId() {
+            if (window.crypto && crypto.randomUUID) {
+                return 'WBS-' + crypto.randomUUID().slice(0, 8).toUpperCase();
             }
+            return 'WBS-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
+        }
 
-            Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
-            let { error } = await supabase.from('tb_wbs_tasks').insert(payload);
-            
-            if(error) {
-                Swal.fire('Error', error.message, 'error');
-            } else {
-                Swal.fire('สำเร็จ!', 'สร้างแผนงานเรียบร้อยแล้ว', 'success');
-                loadExistingTasks(); // โหลดข้อมูลใหม่
-                document.getElementById('task-name').value = '';
+        async function submitTask() {
+            var boqId = document.getElementById('boq-select').value;
+            var vendorId = document.getElementById('vendor-select').value;
+            var taskName = document.getElementById('task-name-input').value.trim();
+            var startDate = document.getElementById('start-date-input').value;
+            var endDate = document.getElementById('end-date-input').value;
+            var weightPct = document.getElementById('weight-pct-input').value;
+            var location = document.getElementById('location-input').value.trim();
+
+            if (!boqId || !vendorId || !taskName || !startDate || !endDate || !weightPct || !selectedZone) { 
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน', 'warning'); return; 
+            }
+            if (endDate < startDate) { Swal.fire('วันที่ไม่ถูกต้อง', 'วันที่จบงานต้องอยู่หลังวันที่เริ่มงาน', 'warning'); return; }
+            if (!supabase) { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); return; }
+
+            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                var payload = {
+                    task_id: generateTaskId(),
+                    boq_id: boqId,
+                    vendor_id: vendorId,
+                    task_name: taskName,
+                    weight_pct: parseFloat(weightPct),
+                    start_date: startDate,
+                    end_date: endDate,
+                    location_detail: location || null,
+                    risk_area_class: selectedZone
+                };
+                var insertRes = await supabase.from('tb_wbs_tasks').insert(payload);
+                if (insertRes.error) throw insertRes.error;
+
+                Swal.fire('สร้างสำเร็จ', 'แผนงานนี้จะไปปรากฏในหน้า E-Permit ทันที', 'success');
+                document.getElementById('task-name-input').value = '';
+                document.getElementById('location-input').value = '';
+                document.getElementById('weight-pct-input').value = '';
+                refreshTaskList();
+            } catch (err) {
+                console.error('submitTask error:', err);
+                Swal.fire('บันทึกไม่สำเร็จ', err.message || 'เกิดข้อผิดพลาด', 'error');
             }
         }
 
-        async function loadExistingTasks() {
-            if(!supabase) return;
-            let { data } = await supabase.from('tb_wbs_tasks').select('task_name, vendor_id, risk_area_class, start_date').order('created_at', { ascending: false }).limit(5);
-            let list = document.getElementById('task-list');
-            list.innerHTML = '';
-            if(!data || data.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400">ยังไม่มีแผนงาน</p>'; return; }
-            
-            data.forEach(t => {
-                let badgeColor = t.risk_area_class === 'เขตอันตราย' ? 'bg-red-100 text-red-700' : (t.risk_area_class === 'เขตควบคุม' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700');
-                list.innerHTML += `
-                    <div class="p-3 border border-gray-100 rounded-lg bg-gray-50 flex justify-between items-center">
-                        <div>
-                            <p class="text-sm font-bold text-[#19335A]">${t.task_name}</p>
-                            <p class="text-xs text-gray-500 mt-1">เริ่ม: ${t.start_date} | รหัสผู้รับเหมา: ${t.vendor_id}</p>
-                        </div>
-                        <span class="px-2 py-1 rounded text-[10px] font-bold ${badgeColor}">${t.risk_area_class}</span>
-                    </div>`;
-            });
+        async function refreshTaskList() {
+            var container = document.getElementById('task-list');
+            if (!supabase) return;
+            try {
+                var res = await supabase.from('tb_wbs_tasks').select('task_id, task_name, risk_area_class, vendor_id').order('created_at', { ascending: false }).limit(20);
+                if (res.error) throw res.error;
+                if (!res.data || res.data.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-gray-400">ยังไม่มีแผนงานในระบบ</p>'; return;
+                }
+                container.innerHTML = '';
+                res.data.forEach(function(t) {
+                    var row = document.createElement('div');
+                    row.className = 'task-row';
+                    row.innerHTML = '<div><p class="text-sm font-semibold text-gray-800">' + t.task_name + '</p><p class="text-xs text-gray-400">' + t.task_id + '</p></div><span class="text-xs font-bold text-brand-navy">' + t.risk_area_class + '</span>';
+                    container.appendChild(row);
+                });
+            } catch (e) { console.error('refreshTaskList error:', e); container.innerHTML = '<p class="text-xs text-red-500">โหลดรายการไม่สำเร็จ</p>'; }
         }
     </script>
 </body>
