@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC First Safety - E-Permit Approval</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { background-color: #F0F4F8; font-family: 'Sarabun', sans-serif; }</style>
+</head>
+<body class="text-gray-800 pb-16">
+
+    <header class="bg-[#19335A] px-4 py-4 shadow-md sticky top-0 z-40">
+        <div class="max-w-3xl mx-auto flex items-center gap-3">
+            <div class="bg-white rounded p-1"><img src="../logo.png" alt="Logo" class="h-8 w-auto" onerror="this.src='https://via.placeholder.com/80x28?text=FIRST'"></div>
+            <div>
+                <h1 class="text-white font-bold text-sm leading-tight">FTC First Safety</h1>
+                <p class="text-white/70 text-[11px] leading-tight">อนุมัติใบขอทำงาน (E-Permit Approval)</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 mt-6">
+        
+        <!-- Loading State -->
+        <div id="loading-state" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
+            <div class="w-12 h-12 border-4 border-[#DB5A24] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-500">กำลังโหลดข้อมูลใบขออนุญาต...</p>
+        </div>
+
+        <!-- Details State -->
+        <div id="details-state" class="hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+                <div class="bg-[#19335A] px-5 py-3 text-white flex justify-between items-center">
+                    <span class="font-bold text-sm">เลขที่: <span id="ptw-id-text">PTW-XXX</span></span>
+                    <span id="status-badge" class="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded">รออนุมัติ</span>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <p class="text-xs text-gray-500">แผนงาน (Task)</p>
+                        <p id="task-name" class="font-bold text-[#19335A]">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">บริษัทผู้รับเหมา</p>
+                        <p id="vendor-name" class="font-bold text-gray-800">-</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-xs text-gray-500">ผู้ขออนุญาต</p>
+                            <p id="requester-name" class="font-bold text-gray-800">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">ประเภทงาน</p>
+                            <p id="permit-type" class="font-bold text-[#DB5A24]">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">โซนพื้นที่</p>
+                        <p id="zone-text" class="font-bold">-</p>
+                    </div>
+                    
+                    <!-- ส่วนข้อมูลเฉพาะ (Interlock) -->
+                    <div id="specific-data-box" class="bg-orange-50 p-4 rounded-xl border border-orange-100 hidden">
+                        <p class="text-sm font-bold text-[#19335A] mb-2">ข้อมูลความปลอดภัย (Interlock)</p>
+                        <div id="specific-content" class="text-sm text-gray-700 space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="action-buttons" class="grid grid-cols-2 gap-3 hidden">
+                <button onclick="updateStatus('Rejected')" class="py-4 bg-white border-2 border-red-500 text-red-600 font-bold rounded-xl shadow-sm hover:bg-red-50">ไม่อนุมัติ (Reject)</button>
+                <button onclick="updateStatus('Approved')" class="py-4 bg-[#22C55E] text-white font-bold rounded-xl shadow-lg hover:bg-green-600">อนุมัติ (Approve)</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        var ptwId = null;
+
+        window.addEventListener('load', async function() {
+            lucide.createIcons();
+            const urlParams = new URLSearchParams(window.location.search);
+            ptwId = urlParams.get('ptw_id');
+            if(!ptwId) {
+                Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสใบขออนุญาตใน URL', 'error');
+                return;
+            }
+            await fetchPermitDetails();
+        });
+
+        async function fetchPermitDetails() {
+            try {
+                // ดึงข้อมูล Permit
+                let { data: permit, error } = await supabase.from('tb_work_permits').select('*').eq('ptw_id', ptwId).single();
+                if(error || !permit) throw new Error("ไม่พบข้อมูลใบขออนุญาต");
+
+                // ดึงข้อมูลประกอบ (แยก Query ตามที่คาลูดแนะนำเพราะไม่มี View)
+                let { data: task } = await supabase.from('tb_wbs_tasks').select('task_name').eq('task_id', permit.task_id).single();
+                let { data: vendor } = await supabase.from('tb_vendors').select('vendor_name').eq('vendor_id', permit.vendor_id).single();
+                let { data: worker } = await supabase.from('tb_workers').select('full_name').eq('worker_id', permit.requester_id).single();
+
+                // แสดงผลบน UI
+                document.getElementById('ptw-id-text').innerText = permit.ptw_id;
+                document.getElementById('task-name').innerText = task ? task.task_name : permit.task_id;
+                document.getElementById('vendor-name').innerText = vendor ? vendor.vendor_name : '-';
+                document.getElementById('requester-name').innerText = worker ? worker.full_name : '-';
+                document.getElementById('permit-type').innerText = permit.ptw_type;
+                document.getElementById('zone-text').innerText = permit.risk_area_class;
+
+                // จัดการ Status Badge
+                let badge = document.getElementById('status-badge');
+                if(permit.status === 'Approved') { badge.className = 'px-2 py-1 bg-green-500 text-white text-xs font-bold rounded'; badge.innerText = 'อนุมัติแล้ว'; }
+                else if(permit.status === 'Rejected') { badge.className = 'px-2 py-1 bg-red-500 text-white text-xs font-bold rounded'; badge.innerText = 'ไม่อนุมัติ'; }
+
+                // แสดงปุ่มอนุมัติเฉพาะสถานะ Requested
+                if(permit.status === 'Requested') {
+                    document.getElementById('action-buttons').classList.remove('hidden');
+                }
+
+                // แกะข้อมูล Interlock (specific_data)
+                if(permit.specific_data) {
+                    let specBox = document.getElementById('specific-data-box');
+                    let specContent = document.getElementById('specific-content');
+                    let spec = typeof permit.specific_data === 'string' ? JSON.parse(permit.specific_data) : permit.specific_data;
+                    let html = '';
+
+                    if(permit.ptw_type === 'Height') {
+                        html += `<p>ความสูง: <b>${spec.height_m} เมตร</b></p>`;
+                        html += `<p>มีนั่งร้าน/ราวกันตก: <b>${spec.scaffold_confirmed ? '✅ ยืนยัน' : '❌ ไม่มึ'}</b></p>`;
+                        html += `<p>สวม Full Body Harness: <b>${spec.harness_confirmed ? '✅ ยืนยัน' : '❌ ไม่มี'}</b></p>`;
+                    } else if(permit.ptw_type === 'HotWork') {
+                        if(spec.fire_extinguisher_photo_url) {
+                            html += `<p class="mb-2">ภาพถังดับเพลิงหน้างาน:</p><img src="${spec.fire_extinguisher_photo_url}" class="w-full h-32 object-cover rounded-lg border border-gray-300">`;
+                        } else { html += '<p>ไม่พบรูปถ่ายถังดับเพลิง</p>'; }
+                    } else if(permit.ptw_type === 'ConfinedSpace') {
+                        html += `<p>ผู้เฝ้าระวัง (Hole Watch): <b>${spec.hole_watch_name || '-'}</b></p>`;
+                    }
+
+                    if(html !== '') {
+                        specContent.innerHTML = html;
+                        specBox.classList.remove('hidden');
+                    }
+                }
+
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('details-state').classList.remove('hidden');
+
+            } catch (err) {
+                Swal.fire('ข้อผิดพลาด', err.message, 'error');
+                document.getElementById('loading-state').innerHTML = '<p class="text-red-500">เกิดข้อผิดพลาดในการดึงข้อมูล</p>';
+            }
+        }
+
+        async function updateStatus(newStatus) {
+            Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+            // ใช้ .eq('status', 'Requested') ป้องกัน Race condition อนุมัติซ้อน
+            let { data, error } = await supabase.from('tb_work_permits').update({ status: newStatus }).eq('ptw_id', ptwId).eq('status', 'Requested').select();
+            
+            if(error) { Swal.fire('Error', error.message, 'error'); return; }
+            if(data && data.length === 0) { Swal.fire('อัปเดตไม่สำเร็จ', 'ใบขออนุญาตนี้อาจถูกอนุมัติไปแล้วโดยบุคคลอื่น', 'warning'); return; }
+
+            Swal.fire('สำเร็จ', `อัปเดตสถานะเป็น ${newStatus} เรียบร้อยแล้ว`, 'success').then(() => {
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
