@@ -1,62 +1,194 @@
-import { FileCheck, UserCheck, ClipboardList, AlertTriangle, FolderKanban, MapPinned } from "lucide-react"
-import { DashboardHeader } from "@/components/dashboard-header"
-import { QuickStats } from "@/components/quick-stats"
-import { DashboardSection } from "@/components/dashboard-section"
-import { ActionCard } from "@/components/action-card"
-import { BottomNav } from "@/components/bottom-nav"
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ศูนย์ควบคุมระบบ - FTC First Safety</title>
 
-export default function Page() {
-  return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background">
-      <DashboardHeader />
-      <QuickStats />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #F4F7F9; -webkit-tap-highlight-color: transparent; }
+        .bottom-nav-shadow { box-shadow: 0 -4px 20px rgba(0,0,0,0.04); }
+    </style>
+</head>
+<body class="text-gray-800 pb-28">
 
-      <main className="flex flex-col gap-7 pb-32 pt-7">
-        <DashboardSection index="1" title="รอการอนุมัติ" hint="ลำดับความสำคัญสูง">
-          <ActionCard
-            icon={FileCheck}
-            tone="orange"
-            title="อนุมัติใบขออนุญาต (E-Permit)"
-            subtitle="Hot Work, Confined Space, ที่สูง"
-            badge={{ count: 5, tone: "red" }}
-          />
-          <ActionCard
-            icon={UserCheck}
-            title="ขึ้นทะเบียนผู้ปฏิบัติงาน"
-            subtitle="ตรวจสอบเอกสารและผลการอบรม"
-            badge={{ count: 2, tone: "blue" }}
-          />
-        </DashboardSection>
+    <!-- ส่วนหัว (Header) -->
+    <header class="bg-[#19335A] rounded-b-[2rem] pt-10 pb-20 px-6 relative text-white">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="window.history.back()" class="bg-white/10 p-2.5 rounded-full hover:bg-white/20 transition">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <span class="bg-white/10 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-white/10 flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-orange"></i> VENDOR ADMIN
+            </span>
+            <button class="bg-white/10 p-2.5 rounded-full relative hover:bg-white/20 transition">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+                <span class="absolute top-2 right-2.5 w-2 h-2 bg-[#DB5A24] rounded-full border border-[#19335A]"></span>
+            </button>
+        </div>
 
-        <DashboardSection index="2" title="ตรวจสอบหน้างาน">
-          <ActionCard
-            icon={ClipboardList}
-            title="แบบฟอร์มตรวจความปลอดภัย"
-            subtitle="ตรวจนั่งร้าน, ตู้ไฟ, การสวมใส่ PPE"
-          />
-          <ActionCard
-            icon={AlertTriangle}
-            tone="orange"
-            title="บันทึกเหตุการณ์ฉุกเฉิน"
-            subtitle="Near Miss, อุบัติเหตุ, สั่งหยุดงาน"
-          />
-        </DashboardSection>
+        <!-- Title -->
+        <div>
+            <h1 class="text-[26px] font-bold tracking-tight">ศูนย์ควบคุมระบบ</h1>
+            <div class="flex items-center gap-2 mt-1.5">
+                <div class="w-5 h-5 bg-[#DB5A24] rounded flex items-center justify-center text-[10px] font-bold">F</div>
+                <p class="text-white/70 text-sm font-medium">FTC First Safety</p>
+            </div>
+        </div>
+    </header>
 
-        <DashboardSection index="3" title="ตั้งค่าระบบ">
-          <ActionCard
-            icon={FolderKanban}
-            title="จัดการโครงการ & แผนงาน"
-            subtitle="WBS Task & ผู้รับเหมา"
-          />
-          <ActionCard
-            icon={MapPinned}
-            title="กำหนดพื้นที่ปฏิบัติงาน"
-            subtitle="พื้นที่อันตราย, พื้นที่ควบคุมความเสี่ยง, พื้นที่ปลอดภัย"
-          />
-        </DashboardSection>
-      </main>
+    <!-- ส่วนสรุปสถิติ (Quick Stats) -->
+    <div class="max-w-md mx-auto px-5 -mt-12 relative z-10">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-orange-50 p-2.5 rounded-full">
+                        <i data-lucide="clock" class="w-6 h-6 text-[#DB5A24]"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500">รอดำเนินการ</p>
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-3xl font-bold text-[#DB5A24] leading-none">7</span>
+                            <span class="text-sm font-medium text-gray-500">รายการ</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="bg-orange-100 text-[#DB5A24] text-[10px] font-bold px-2 py-1 rounded-md">ด่วน</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2.5">
+                    <i data-lucide="clipboard-list" class="w-5 h-5 text-gray-500"></i>
+                    <div>
+                        <p class="text-sm font-bold text-[#19335A]">12</p>
+                        <p class="text-[10px] font-medium text-gray-500">ตรวจวันนี้</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2.5">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-gray-500"></i>
+                    <div>
+                        <p class="text-sm font-bold text-[#19335A]">48</p>
+                        <p class="text-[10px] font-medium text-gray-500">อนุมัติแล้ว</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-      <BottomNav />
+        <!-- Section 1: รอการอนุมัติ -->
+        <div class="mt-8">
+            <div class="flex justify-between items-end mb-3 border-l-4 border-[#DB5A24] pl-3">
+                <h2 class="text-base font-bold text-[#19335A]">รอการอนุมัติ</h2>
+                <span class="text-[10px] font-semibold text-gray-400">ลำดับความสำคัญสูง</span>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition">
+                <div class="flex items-center gap-4">
+                    <div class="bg-orange-50 p-3 rounded-2xl relative">
+                        <i data-lucide="file-check-2" class="w-6 h-6 text-[#DB5A24]"></i>
+                        <span class="absolute -top-1.5 -right-1.5 bg-[#EF4444] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">5</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#19335A] text-sm">อนุมัติใบขออนุญาต (E-Permit)</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Hot Work, Confined Space, ที่สูง</p>
+                    </div>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-50 p-3 rounded-2xl relative">
+                        <i data-lucide="user-check" class="w-6 h-6 text-blue-600"></i>
+                        <span class="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">2</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#19335A] text-sm">ขึ้นทะเบียนผู้ปฏิบัติงาน</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">ตรวจสอบเอกสารและผลการอบรม</p>
+                    </div>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+            </div>
+        </div>
+
+        <!-- Section 2: ตรวจสอบหน้างาน -->
+        <div class="mt-8">
+            <div class="flex justify-between items-end mb-3 border-l-4 border-[#DB5A24] pl-3">
+                <h2 class="text-base font-bold text-[#19335A]">ตรวจสอบหน้างาน</h2>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition">
+                <div class="flex items-center gap-4">
+                    <div class="bg-gray-50 p-3 rounded-2xl">
+                        <i data-lucide="clipboard-list" class="w-6 h-6 text-[#19335A]"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#19335A] text-sm">แบบฟอร์มตรวจความปลอดภัย</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">ตรวจนั่งร้าน, ตู้ไฟ, การสวมใส่ PPE</p>
+                    </div>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition">
+                <div class="flex items-center gap-4">
+                    <div class="bg-red-50 p-3 rounded-2xl">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-[#EF4444]"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-[#19335A] text-sm">บันทึกเหตุการณ์ฉุกเฉิน</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Near Miss, อุบัติเหตุ, สั่งหยุดงาน</p>
+                    </div>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+            </div>
+        </div>
+        
     </div>
-  )
-}
+
+    <!-- แถบเมนูด้านล่าง (Bottom Navigation) -->
+    <nav class="fixed bottom-0 w-full bg-white bottom-nav-shadow rounded-t-3xl z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center px-6 py-2 pb-6">
+            
+            <button class="flex flex-col items-center gap-1 p-2 w-16">
+                <i data-lucide="layout-grid" class="w-6 h-6 text-[#DB5A24]"></i>
+                <span class="text-[10px] font-bold text-[#DB5A24]">หน้าหลัก</span>
+            </button>
+            
+            <button class="flex flex-col items-center gap-1 p-2 w-16">
+                <i data-lucide="clipboard-check" class="w-6 h-6 text-gray-400"></i>
+                <span class="text-[10px] font-semibold text-gray-400">ตรวจงาน</span>
+            </button>
+
+            <!-- Floating Action Button (FAB) ตรงกลาง -->
+            <div class="relative -top-6">
+                <button class="w-14 h-14 bg-[#DB5A24] rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30 text-white hover:scale-105 active:scale-95 transition">
+                    <i data-lucide="plus" class="w-7 h-7"></i>
+                </button>
+            </div>
+
+            <button class="flex flex-col items-center gap-1 p-2 w-16">
+                <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+                <span class="text-[10px] font-semibold text-gray-400">เอกสาร</span>
+            </button>
+
+            <button class="flex flex-col items-center gap-1 p-2 w-16">
+                <i data-lucide="user" class="w-6 h-6 text-gray-400"></i>
+                <span class="text-[10px] font-semibold text-gray-400">โปรไฟล์</span>
+            </button>
+
+        </div>
+    </nav>
+
+    <script>
+        // เรียกใช้งาน Icon
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
