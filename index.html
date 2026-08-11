@@ -14,134 +14,220 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { navy: '#19335A', orange: '#DB5A24', 'navy-light': '#254B82', 'orange-hover': '#C14B1A' }
+                        brand: { 
+                            navy: '#19335A', 
+                            orange: '#DB5A24', 
+                            'navy-light': '#254B82', 
+                            'orange-hover': '#C14B1A',
+                            'bg': '#F4F7F9'
+                        }
                     },
-                    fontFamily: { sans: ['Sarabun', 'sans-serif'], }
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'], },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(25, 51, 90, 0.05)',
+                        'hover': '0 10px 25px -5px rgba(219, 90, 36, 0.15)',
+                    }
                 }
             }
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { background-color: #F4F6F8; font-family: 'Sarabun', sans-serif; }
+        body { 
+            background-color: #F4F7F9; 
+            font-family: 'Sarabun', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        .hero-bg {
-            background: linear-gradient(160deg, #19335A 0%, #254B82 60%, #19335A 100%);
+        .hero-pattern {
+            background: linear-gradient(135deg, #19335A 0%, #254B82 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-pattern::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-image: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 40%);
+            pointer-events: none;
         }
 
         .menu-card {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
-            padding: 22px 14px; border-radius: 20px; background: #fff;
-            border: 1px solid #E7EBF1; box-shadow: 0 4px 14px -6px rgba(25,51,90,0.12);
-            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .menu-card:active { transform: scale(0.96); }
-        .menu-card:hover { border-color: #DB5A24; box-shadow: 0 8px 20px -6px rgba(219,90,36,0.25); }
-
-        .menu-icon {
-            width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            background: #ffffff;
+            border: 1px solid #EAEFEF;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
-        .menu-card.disabled { cursor: not-allowed; opacity: 0.6; }
-        .menu-card.disabled:active { transform: none; }
-        .menu-card.disabled:hover { border-color: #E7EBF1; box-shadow: 0 4px 14px -6px rgba(25,51,90,0.12); }
+        .menu-card:active:not(.disabled) { 
+            transform: scale(0.97); 
+        }
+        
+        .menu-card:hover:not(.disabled) { 
+            border-color: rgba(219, 90, 36, 0.3);
+        }
+
+        .menu-icon-wrapper {
+            transition: transform 0.2s ease;
+        }
+
+        .menu-card:hover:not(.disabled) .menu-icon-wrapper {
+            transform: translateY(-2px);
+        }
 
         .badge-soon {
-            font-size: 0.6rem; font-weight: 700; color: #fff; background: #9CA3AF;
-            padding: 2px 8px; border-radius: 999px; letter-spacing: 0.03em;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #ffffff;
+            background: linear-gradient(90deg, #9CA3AF, #6B7280);
+            padding: 4px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid #ffffff;
+            z-index: 10;
         }
 
         .status-pill {
-            display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 600;
-            color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.12);
-            padding: 5px 12px; border-radius: 999px;
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            font-size: 0.75rem; 
+            font-weight: 500;
+            color: rgba(255,255,255,0.9); 
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            padding: 4px 12px; 
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .status-pill .dot { width: 6px; height: 6px; border-radius: 999px; background: #4ADE80; }
+        
+        .status-pill .dot { 
+            width: 6px; 
+            height: 6px; 
+            border-radius: 50%; 
+            background: #4ADE80; 
+            box-shadow: 0 0 8px #4ADE80;
+        }
+
+        /* Glassmorphism for Admin Button */
+        .admin-btn {
+            background: linear-gradient(135deg, #19335A 0%, #254B82 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
     </style>
 </head>
-<body class="min-h-screen text-gray-800">
+<body class="min-h-screen text-gray-800 flex flex-col">
 
     <!-- Header / Hero -->
-    <header class="hero-bg pb-16 pt-6 px-4 sm:px-6">
+    <header class="hero-pattern pb-20 pt-6 px-5 sm:px-8 rounded-b-[2.5rem] shadow-lg">
         <div class="max-w-3xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white rounded-xl p-1.5 flex items-center justify-center shadow-md">
-                        <img src="logo.png" alt="First Logo" class="h-9 w-auto object-contain" onerror="this.src='https://via.placeholder.com/90x36?text=FIRST'">
+            <!-- Top bar -->
+            <div class="flex items-start justify-between mb-8">
+                <div class="flex items-center gap-3.5">
+                    <div class="bg-white rounded-xl p-1.5 flex items-center justify-center shadow-md w-12 h-12">
+                        <img src="logo.png" alt="First Logo" class="h-full w-full object-contain" onerror="this.src='https://via.placeholder.com/90x36?text=FIRST'">
                     </div>
                     <div>
-                        <h1 class="text-white font-bold text-base sm:text-lg leading-tight">FTC First Safety</h1>
-                        <p class="text-white/70 text-[11px] sm:text-xs leading-tight">Safety Management System</p>
+                        <h1 class="text-white font-bold text-lg leading-tight tracking-wide">FTC First Safety</h1>
+                        <p class="text-white/70 text-xs font-medium tracking-wider uppercase mt-0.5">Safety Management</p>
                     </div>
                 </div>
-                <span id="env-pill" class="status-pill"><span class="dot"></span><span id="env-pill-text">กำลังตรวจสอบ...</span></span>
+                <span id="env-pill" class="status-pill mt-1">
+                    <span class="dot"></span>
+                    <span id="env-pill-text">กำลังตรวจสอบ...</span>
+                </span>
             </div>
 
-            <div>
-                <p class="text-white/70 text-xs sm:text-sm mb-1">สวัสดีครับ 👋</p>
-                <h2 class="text-white font-bold text-xl sm:text-2xl leading-snug">เลือกระบบที่ต้องการใช้งาน</h2>
+            <!-- Greeting -->
+            <div class="mt-2">
+                <p class="text-white/80 text-sm mb-1 font-medium">สวัสดีครับ 👋</p>
+                <h2 class="text-white font-bold text-2xl sm:text-3xl leading-snug tracking-tight">เลือกระบบที่ต้องการใช้งาน</h2>
             </div>
         </div>
     </header>
 
     <!-- Menu Grid -->
-    <main class="max-w-3xl mx-auto px-4 sm:px-6 -mt-10 pb-12">
-        <div class="grid grid-cols-2 gap-4 sm:gap-5 mb-6">
+    <main class="max-w-3xl mx-auto px-5 sm:px-8 -mt-12 flex-grow w-full z-10 pb-12">
+        <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
             
-            <!-- 1. ลงทะเบียนเข้าปฏิบัติงาน (โฟลเดอร์ Worker) -->
-            <div class="menu-card" onclick="openModule('Worker/Worker_Registration_ToSystem.html')">
-                <div class="menu-icon bg-brand-orange/10"><i data-lucide="user-check" class="w-7 h-7 text-brand-orange"></i></div>
-                <p class="text-sm font-bold text-brand-navy text-center leading-tight">1. ลงทะเบียน<br>เข้าปฏิบัติงาน</p>
+            <!-- 1. ลงทะเบียนเข้าปฏิบัติงาน (Worker) -->
+            <div class="menu-card rounded-2xl p-5 flex flex-col items-center justify-center gap-3 shadow-soft cursor-pointer hover:shadow-hover" onclick="openModule('Worker/Worker_Registration_ToSystem.html')">
+                <div class="menu-icon-wrapper w-14 h-14 rounded-full bg-brand-orange/10 flex items-center justify-center">
+                    <i data-lucide="user-check" class="w-7 h-7 text-brand-orange"></i>
+                </div>
+                <p class="text-[13px] sm:text-sm font-semibold text-brand-navy text-center leading-relaxed">1. ลงทะเบียน<br>เข้าปฏิบัติงาน</p>
             </div>
 
-            <!-- 2. ระบบฝึกอบรมความปลอดภัย (โฟลเดอร์ Training) - อัปเดต Path แล้ว! -->
-            <div class="menu-card" onclick="openModule('Training/Training_Menu.html')">
-                <div class="menu-icon bg-blue-50"><i data-lucide="graduation-cap" class="w-7 h-7 text-brand-navy"></i></div>
-                <p class="text-sm font-bold text-brand-navy text-center leading-tight">2. ระบบฝึกอบรม<br>ความปลอดภัย</p>
+            <!-- 2. ระบบฝึกอบรมความปลอดภัย (Training) -->
+            <div class="menu-card rounded-2xl p-5 flex flex-col items-center justify-center gap-3 shadow-soft cursor-pointer hover:shadow-hover" onclick="openModule('Training/Training_Menu.html')">
+                <div class="menu-icon-wrapper w-14 h-14 rounded-full bg-[#E0E7FF] flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-7 h-7 text-[#4338CA]"></i>
+                </div>
+                <p class="text-[13px] sm:text-sm font-semibold text-brand-navy text-center leading-relaxed">2. ระบบฝึกอบรม<br>ความปลอดภัย</p>
             </div>
 
-            <!-- 3. ระบบขออนุญาต (E-Permit) - เปิดใช้งานแล้ว! -->
-            <div class="menu-card" onclick="openModule('Permit/Permit_Request.html')">
-                <div class="menu-icon bg-[#E6F4EA]"><i data-lucide="clipboard-check" class="w-8 h-8 text-[#15803D]"></i></div>
-                <p class="text-[13px] font-bold text-[#19335A] text-center leading-tight">3. ระบบขออนุญาต<br>(E-Permit)</p>
+            <!-- 3. ระบบขออนุญาต (E-Permit) -->
+            <div class="menu-card rounded-2xl p-5 flex flex-col items-center justify-center gap-3 shadow-soft cursor-pointer hover:shadow-hover" onclick="openModule('Permit/Permit_Request.html')">
+                <div class="menu-icon-wrapper w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
+                    <i data-lucide="clipboard-check" class="w-7 h-7 text-[#15803D]"></i>
+                </div>
+                <p class="text-[13px] sm:text-sm font-semibold text-brand-navy text-center leading-relaxed">3. ระบบขออนุญาต<br>(E-Permit)</p>
             </div>
 
             <!-- 4. ประชุมหน้างาน (TBT & Check-in) -->
-            <div class="menu-card disabled" onclick="showComingSoon()">
-                <div class="menu-icon bg-gray-100"><i data-lucide="users" class="w-7 h-7 text-gray-400"></i></div>
-                <p class="text-sm font-bold text-gray-400 text-center leading-tight">4. ประชุมหน้างาน<br>(TBT & Check-in)</p>
+            <div class="menu-card disabled rounded-2xl p-5 flex flex-col items-center justify-center gap-3 bg-gray-50/50 cursor-not-allowed" onclick="showComingSoon()">
                 <span class="badge-soon">เร็วๆ นี้</span>
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center grayscale opacity-70">
+                    <i data-lucide="users" class="w-7 h-7 text-gray-500"></i>
+                </div>
+                <p class="text-[13px] sm:text-sm font-medium text-gray-400 text-center leading-relaxed">4. ประชุมหน้างาน<br>(TBT & Check-in)</p>
             </div>
 
             <!-- 5. ปิดใบงาน (5S Close-out) -->
-            <div class="menu-card disabled" onclick="showComingSoon()">
-                <div class="menu-icon bg-gray-100"><i data-lucide="sparkles" class="w-7 h-7 text-gray-400"></i></div>
-                <p class="text-sm font-bold text-gray-400 text-center leading-tight">5. ปิดใบงาน<br>(5S Close-out)</p>
+            <div class="menu-card disabled rounded-2xl p-5 flex flex-col items-center justify-center gap-3 bg-gray-50/50 cursor-not-allowed" onclick="showComingSoon()">
                 <span class="badge-soon">เร็วๆ นี้</span>
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center grayscale opacity-70">
+                    <i data-lucide="sparkles" class="w-7 h-7 text-gray-500"></i>
+                </div>
+                <p class="text-[13px] sm:text-sm font-medium text-gray-400 text-center leading-relaxed">5. ปิดใบงาน<br>(5S Close-out)</p>
             </div>
 
             <!-- 6. แจ้งเหตุฉุกเฉิน (SOS / Near Miss) -->
-            <div class="menu-card disabled" onclick="showComingSoon()">
-                <div class="menu-icon bg-red-50"><i data-lucide="triangle-alert" class="w-7 h-7 text-red-400"></i></div>
-                <p class="text-sm font-bold text-gray-400 text-center leading-tight">6. แจ้งเหตุฉุกเฉิน<br>(SOS / Near Miss)</p>
+            <div class="menu-card disabled rounded-2xl p-5 flex flex-col items-center justify-center gap-3 bg-gray-50/50 cursor-not-allowed" onclick="showComingSoon()">
                 <span class="badge-soon">เร็วๆ นี้</span>
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center grayscale opacity-70">
+                    <i data-lucide="triangle-alert" class="w-7 h-7 text-gray-500"></i>
+                </div>
+                <p class="text-[13px] sm:text-sm font-medium text-gray-400 text-center leading-relaxed">6. แจ้งเหตุฉุกเฉิน<br>(SOS / Near Miss)</p>
             </div>
         </div>
 
-    <!-- 7. Dynamic Admin Button -->
-        <div id="admin-menu" class="bg-[#19335A] rounded-2xl p-4 flex items-center justify-between shadow-lg cursor-pointer hover:bg-[#254B82] transition-colors" onclick="openModule('Admin/WBS_Setup.html')">
-            <div class="flex items-center gap-3">
-                <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="shield" class="w-6 h-6 text-white"></i></div>
+        <!-- 7. Dynamic Admin Button -->
+        <div id="admin-menu" class="admin-btn rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg cursor-pointer transform transition duration-200 hover:scale-[1.02] active:scale-95" onclick="openModule('Admin/WBS_Setup.html')">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                </div>
                 <div>
-                    <p class="text-white font-bold text-sm">สำหรับผู้คุมงาน (Vendor Admin)</p>
-                    <p class="text-white/70 text-xs">จัดการแผนงาน (WBS Task) / อนุมัติ</p>
+                    <p class="text-white font-semibold text-sm sm:text-base">สำหรับผู้คุมงาน (Vendor Admin)</p>
+                    <p class="text-white/70 text-[11px] sm:text-xs mt-0.5">จัดการแผนงาน (WBS Task) และการอนุมัติ</p>
                 </div>
             </div>
-            <i data-lucide="chevron-right" class="w-5 h-5 text-white"></i>
+            <div class="bg-white/10 p-2 rounded-full">
+                <i data-lucide="chevron-right" class="w-5 h-5 text-white"></i>
+            </div>
         </div>
 
-        <p class="text-center text-xs text-gray-400 mt-8">FTC First Safety Paperless System • FM-SAF-MENU-01</p>
+        <div class="mt-10 flex flex-col items-center justify-center gap-1">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mb-2"></div>
+            <p class="text-center text-[11px] text-gray-400 font-medium">FTC First Safety Paperless System</p>
+            <p class="text-center text-[10px] text-gray-300">FM-SAF-MENU-01</p>
+        </div>
     </main>
 
     <script>
@@ -158,13 +244,13 @@
         if (typeof liff !== 'undefined') {
             liff.init({ liffId: LIFF_ID }).then(function() {
                 isInLineClient = liff.isInClient();
-                setEnvPill(isInLineClient ? 'เปิดผ่าน LINE' : 'เปิดผ่านเบราว์เซอร์');
+                setEnvPill(isInLineClient ? 'เปิดผ่าน LINE' : 'เปิดผ่านเว็บเบราว์เซอร์');
             }).catch(function(err) {
                 console.error('LIFF Error:', err);
-                setEnvPill('เปิดผ่านเบราว์เซอร์');
+                setEnvPill('เปิดผ่านเว็บเบราว์เซอร์');
             });
         } else {
-            setEnvPill('เปิดผ่านเบราว์เซอร์');
+            setEnvPill('เปิดผ่านเว็บเบราว์เซอร์');
         }
 
         function setEnvPill(text) {
