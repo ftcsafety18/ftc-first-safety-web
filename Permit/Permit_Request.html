@@ -113,7 +113,7 @@
             <div class="relative">
               <select id="wbs-input" class="input-field appearance-none cursor-pointer pr-10">
                 <option value="" disabled selected>-- เลือกแผนงาน --</option>
-                <!-- ⚠️ ข้อควรระวัง: Value ต้องตรงกับ task_id ในตาราง tb_wbs_tasks เพื่อไม่ให้ติด Foreign Key Error -->
+                <!-- ⚠️ คำเตือน: Value ต้องตรงกับ task_id ในตาราง tb_wbs_tasks เพื่อไม่ให้ติด Foreign Key Error -->
                 <option value="TSK-001">งานโครงสร้าง (Structural Work)</option>
                 <option value="TSK-002">งานระบบ M&E (MEP Installation)</option>
                 <option value="TSK-003">งานสถาปัตยกรรม (Architectural Finishing)</option>
@@ -462,8 +462,8 @@
             // สร้าง Payload ให้ตรงกับฟิลด์ในตาราง tb_work_permits
             const payload = {
                 ptw_id: 'PTW-' + Date.now(),
-                task_id: document.getElementById('wbs-input').value || 'TSK-UNKNOWN',
-                vendor_id: 'VND-UNKNOWN', // ต้องดึงจากตาราง Vendors
+                task_id: document.getElementById('wbs-input').value, // ต้องมีอยู่ใน tb_wbs_tasks
+                vendor_id: 'C001', // ใช้ C001 ตามที่พี่ณัฐธัญแจ้ง เพื่อไม่ให้ติด Error 23503
                 requester_id: lineUserId || 'UNKNOWN_USER', 
                 ptw_type: workTypes.join(', '), 
                 work_description: document.getElementById('location-input').value,
@@ -497,7 +497,7 @@
             console.error('Submit Error:', error);
             let errMsg = error.message;
             if (error.code === '23503') {
-                errMsg = "รหัสแผนงาน (WBS) หรือ รหัสผู้รับเหมา (Vendor ID) ไม่ถูกต้องและไม่มีอยู่ในระบบฐานข้อมูล (Foreign Key Constraint Failed)";
+                errMsg = "รหัสแผนงาน (WBS) ไม่มีอยู่ในระบบฐานข้อมูล หรือ รหัสผู้รับเหมาไม่ถูกต้อง (Foreign Key Error)";
             }
             Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาด: ' + errMsg, 'error');
         }
