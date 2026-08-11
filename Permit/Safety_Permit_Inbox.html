@@ -141,10 +141,9 @@
         emptyState.classList.add('hidden');
 
         try {
-            // ดึงข้อมูลทั้งหมดที่สถานะเป็น Pending หรือ Endorsed พร้อมดึงชื่อจาก tb_workers ผ่าน LINE ID (ถ้าทำ Foreign Key ไว้)
-            // แต่เพื่อความง่าย เราดึงแค่ตาราง Permits ก่อน
+            // ดึงข้อมูลจาก tb_work_permits (สกีมาจริง)
             const { data, error } = await supabaseClient
-                .from('tb_permits')
+                .from('tb_work_permits')
                 .select('*')
                 .in('status', ['Pending', 'Endorsed'])
                 .order('created_at', { ascending: false });
@@ -177,24 +176,27 @@
     }
 
     function createCardHTML(permit) {
-        // จัดการวันที่และเวลา
         const sTime = new Date(permit.start_time);
         const eTime = new Date(permit.end_time);
         const dateStr = sTime.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
         const timeStr = `${sTime.getHours().toString().padStart(2,'0')}:${sTime.getMinutes().toString().padStart(2,'0')} - ${eTime.getHours().toString().padStart(2,'0')}:${eTime.getMinutes().toString().padStart(2,'0')}`;
 
-        // เช็กความเสี่ยงสูง
-        const workTypesArray = Array.isArray(permit.work_types) ? permit.work_types : JSON.parse(permit.work_types || '[]');
-        const isGeneralOnly = workTypesArray.length === 1 && workTypesArray[0].includes('General Work');
+        const workTypesStr = permit.ptw_type || '';
+        const isGeneralOnly = workTypesStr.includes('งานทั่วไป');
         const isHighRisk = !isGeneralOnly;
-
-        const hasJsa = !!permit.jsa_file_url;
+        
+        // เข้าถึงข้อมูลที่ซ่อนใน specific_data
+        const specificData = permit.specific_data || {};
+        const hasJsa = !!specificData.jsa_file_url;
+        const projectId = specificData.project_id || '-';
+        const locationZone = permit.work_description || '-';
         
         let tagHtml = '';
         if (isGeneralOnly) {
             tagHtml = `<span class="rounded-md border px-2 py-1 text-xs font-semibold border-teal-500/30 bg-teal-500/5 text-teal-600">งานทั่วไป (General Work)</span>`;
         } else {
-            tagHtml = workTypesArray.map(w => `<span class="rounded-md border px-2 py-1 text-[10px] sm:text-xs font-semibold border-danger/30 bg-danger/5 text-danger">${w}</span>`).join('');
+            const typesArray = workTypesStr.split(',').map(t => t.trim()).filter(t => t);
+            tagHtml = typesArray.map(w => `<span class="rounded-md border px-2 py-1 text-[10px] sm:text-xs font-semibold border-danger/30 bg-danger/5 text-danger">${w}</span>`).join('');
         }
 
         const urgentBadge = isHighRisk && permit.status === 'Pending' ? `
@@ -205,10 +207,10 @@
 
         const actionButtons = permit.status === 'Pending' ? `
             <div class="grid grid-cols-2 gap-2 border-t border-border/70 bg-secondary/30 px-4 py-3">
-              <button onclick="viewDetails('${permit.id}')" class="inline-flex items-center justify-center gap-1.5 rounded-lg border-2 border-primary/20 bg-white px-3 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary/5 active:scale-95 shadow-sm">
+              <button onclick="viewDetails('${permit.ptw_id}')" class="inline-flex items-center justify-center gap-1.5 rounded-lg border-2 border-primary/20 bg-white px-3 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary/5 active:scale-95 shadow-sm">
                 <i data-lucide="eye" class="size-4"></i> ข้อมูล & JSA
               </button>
-              <button onclick="endorsePermit('${permit.id}')" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-success px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-success/20 transition-colors hover:bg-success/90 active:scale-95">
+              <button onclick="endorsePermit('${permit.ptw_id}')" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-success px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-success/20 transition-colors hover:bg-success/90 active:scale-95">
                 <i data-lucide="check-circle-2" class="size-4"></i> รับรอง (Endorse)
               </button>
             </div>` : `
@@ -216,13 +218,10 @@
                 <span class="text-sm font-bold text-success flex items-center justify-center gap-2"><i data-lucide="shield-check" class="size-5"></i> จป. รับรองความปลอดภัยแล้ว</span>
             </div>`;
 
-        // สุ่มเลข ID ให้ดูสมจริงถ้าฐานข้อมูลใช้ UUID
-        const displayId = "PTW-" + String(permit.id).substring(0,8).toUpperCase();
-
         return `
         <article class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md mb-3.5">
           <div class="flex items-center justify-between gap-2 border-b border-border/70 bg-slate-50/50 px-4 py-3">
-            <span class="font-mono text-[13px] font-bold tracking-tight text-primary">${displayId}</span>
+            <span class="font-mono text-[13px] font-bold tracking-tight text-primary">${permit.ptw_id}</span>
             ${urgentBadge}
           </div>
 
@@ -233,12 +232,12 @@
               <div class="flex items-start gap-3">
                 <span class="mt-0.5 shrink-0 text-slate-400"><i data-lucide="user" class="size-4"></i></span>
                 <div class="min-w-0 flex-1 leading-snug">
-                  <span class="font-bold text-foreground">ผู้ขออนุญาต (รอเชื่อมชื่อจาก LINE)</span>
+                  <span class="font-bold text-foreground">รอเชื่อมชื่อพนักงานจาก LINE</span>
                 </div>
               </div>
               <div class="flex items-start gap-3">
                 <span class="mt-0.5 shrink-0 text-slate-400"><i data-lucide="map-pin" class="size-4"></i></span>
-                <div class="min-w-0 flex-1 leading-snug"><span class="font-semibold text-slate-700">${permit.project_id || '-'} — ${permit.location_zone}</span></div>
+                <div class="min-w-0 flex-1 leading-snug"><span class="font-semibold text-slate-700">${projectId} — ${locationZone}</span></div>
               </div>
               <div class="flex items-start gap-3">
                 <span class="mt-0.5 shrink-0 text-slate-400"><i data-lucide="calendar-clock" class="size-4"></i></span>
@@ -259,16 +258,17 @@
     }
 
     // ---- Actions ----
-    function viewDetails(id) {
-        const permit = allPermits.find(p => p.id == id);
+    function viewDetails(ptwId) {
+        const permit = allPermits.find(p => p.ptw_id === ptwId);
         if(!permit) return;
 
-        const ppeArray = Array.isArray(permit.ppe_required) ? permit.ppe_required : JSON.parse(permit.ppe_required || '[]');
+        const specificData = permit.specific_data || {};
+        const ppeArray = Array.isArray(specificData.ppe_required) ? specificData.ppe_required : [];
         const ppeHtml = ppeArray.map(item => `<span class="inline-block bg-slate-100 border border-slate-200 rounded px-2 py-1 text-xs font-semibold text-slate-600 m-1">${item}</span>`).join('');
         
         let jsaHtml = '';
-        if(permit.jsa_file_url) {
-            jsaHtml = `<div class="mt-4"><p class="text-sm font-bold text-left mb-2 text-primary">รูปถ่าย JSA:</p><img src="${permit.jsa_file_url}" class="w-full rounded-lg border border-slate-200 shadow-sm" style="max-height: 300px; object-fit: contain;"></div>`;
+        if(specificData.jsa_file_url) {
+            jsaHtml = `<div class="mt-4"><p class="text-sm font-bold text-left mb-2 text-primary">รูปถ่าย JSA:</p><img src="${specificData.jsa_file_url}" class="w-full rounded-lg border border-slate-200 shadow-sm" style="max-height: 300px; object-fit: contain;"></div>`;
         }
 
         Swal.fire({
@@ -278,7 +278,7 @@
                     <p class="text-sm font-bold text-slate-700 mb-1">อุปกรณ์ PPE ที่ต้องใช้:</p>
                     <div class="mb-3">${ppeHtml || '<span class="text-xs text-slate-400">ไม่มีข้อมูล</span>'}</div>
                     <p class="text-sm font-bold text-danger mb-1 flex items-center gap-1"><i data-lucide="shield-alert" class="w-4 h-4"></i> การตรวจสอบสภาพ:</p>
-                    <p class="text-xs text-slate-600 bg-red-50 p-2 rounded border border-red-100">${permit.declaration ? 'ยืนยันการเตรียมถังดับเพลิงและ TBT แล้ว' : 'ไม่ได้ยืนยัน'}</p>
+                    <p class="text-xs text-slate-600 bg-red-50 p-2 rounded border border-red-100">${specificData.declaration_checked ? 'ยืนยันการเตรียมถังดับเพลิงและ TBT แล้ว' : 'ไม่ได้ยืนยัน'}</p>
                     ${jsaHtml}
                 </div>
             `,
@@ -288,7 +288,7 @@
         });
     }
 
-    async function endorsePermit(id) {
+    async function endorsePermit(ptwId) {
         Swal.fire({
             title: 'ยืนยันการรับรอง?',
             text: "คุณได้ตรวจสอบ JSA และ PPE เรียบร้อยแล้วใช่หรือไม่?",
@@ -302,14 +302,15 @@
             if (result.isConfirmed) {
                 Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
+                    // อัปเดตสถานะในตาราง tb_work_permits
                     const { error } = await supabaseClient
-                        .from('tb_permits')
+                        .from('tb_work_permits')
                         .update({ status: 'Endorsed' })
-                        .eq('id', id);
+                        .eq('ptw_id', ptwId);
                     if (error) throw error;
                     
                     Swal.fire('รับรองสำเร็จ!', 'ส่งต่อให้วิศวกรอนุมัติขั้นตอนสุดท้ายแล้ว', 'success');
-                    await fetchPermits(); // Refresh data
+                    await fetchPermits(); // โหลดข้อมูลใหม่
                 } catch (error) {
                     Swal.fire('เกิดข้อผิดพลาด', error.message, 'error');
                 }
@@ -346,7 +347,7 @@
     }
 
     function showCurrentPanel() {
-        if(allPermits.length === 0) return; // Loading is handling empty state initially
+        if(allPermits.length === 0) return;
         
         const count = currentTab === 'pending' ? parseInt(document.getElementById('count-pending').textContent) : parseInt(document.getElementById('count-endorsed').textContent);
 
