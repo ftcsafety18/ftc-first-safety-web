@@ -113,9 +113,10 @@
             <div class="relative">
               <select id="wbs-input" class="input-field appearance-none cursor-pointer pr-10">
                 <option value="" disabled selected>-- เลือกแผนงาน --</option>
-                <option value="STR">งานโครงสร้าง (Structural Work)</option>
-                <option value="MEP">งานระบบ M&E (MEP Installation)</option>
-                <option value="ARC">งานสถาปัตยกรรม (Architectural Finishing)</option>
+                <!-- ⚠️ ข้อควรระวัง: Value ต้องตรงกับ task_id ในตาราง tb_wbs_tasks เพื่อไม่ให้ติด Foreign Key Error -->
+                <option value="TSK-001">งานโครงสร้าง (Structural Work)</option>
+                <option value="TSK-002">งานระบบ M&E (MEP Installation)</option>
+                <option value="TSK-003">งานสถาปัตยกรรม (Architectural Finishing)</option>
               </select>
               <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
             </div>
@@ -128,7 +129,7 @@
             </div>
           </div>
 
-          <!-- 🚀 เพิ่มช่อง วัน-เวลา เริ่มและสิ้นสุดงาน -->
+          <!-- วัน-เวลา เริ่มและสิ้นสุดงาน -->
           <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
             <div>
               <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">เวลาเริ่มงาน <span class="text-red-500">*</span></label>
@@ -350,7 +351,6 @@
         Swal.fire({ title: 'กำลังประมวลผลรูปภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         try {
-            // Convert HEIC if needed
             if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
                 if (typeof heic2any !== 'undefined') {
                     const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg' });
@@ -358,7 +358,6 @@
                 }
             }
 
-            // Compress image
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = event => {
@@ -424,7 +423,6 @@
                     document.getElementById('profileName').textContent = profile.displayName;
                     document.getElementById('profileAvatar').src = profile.pictureUrl;
                     
-                    // สมมติว่าดึงชื่อบริษัทจากฐานข้อมูลได้ (Mockup)
                     document.getElementById('profileCompany').textContent = "ผู้รับเหมา/โฟร์แมน";
                 } else {
                     document.getElementById('profileName').textContent = "ไม่พบข้อมูล LINE";
@@ -435,7 +433,6 @@
             }
         }
         
-        // Default time setup
         const now = new Date();
         const start = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,16);
         const end = new Date(now.getTime() - now.getTimezoneOffset() * 60000 + 8*60*60*1000).toISOString().slice(0,16);
@@ -460,21 +457,29 @@
             }
 
             const workTypes = generalWork ? ['งานทั่วไป (General Work)'] : Array.from(selectedRisk);
+            const isHighRisk = !generalWork;
             
+            // สร้าง Payload ให้ตรงกับฟิลด์ในตาราง tb_work_permits
             const payload = {
-                project_id: document.getElementById('project-input').value,
-                wbs_task: document.getElementById('wbs-input').value,
-                location_zone: document.getElementById('location-input').value,
+                ptw_id: 'PTW-' + Date.now(),
+                task_id: document.getElementById('wbs-input').value || 'TSK-UNKNOWN',
+                vendor_id: 'VND-UNKNOWN', // ต้องดึงจากตาราง Vendors
+                requester_id: lineUserId || 'UNKNOWN_USER', 
+                ptw_type: workTypes.join(', '), 
+                work_description: document.getElementById('location-input').value,
+                risk_area_class: isHighRisk ? 'เขตอันตราย' : 'เขตควบคุม', 
                 start_time: document.getElementById('start-time').value,
                 end_time: document.getElementById('end-time').value,
-                work_types: workTypes,
-                ppe_required: Array.from(selectedPPE),
-                jsa_file_url: jsaUrl,
-                requester_line_id: lineUserId,
-                status: 'Pending'
+                status: 'Pending',
+                specific_data: {
+                    project_id: document.getElementById('project-input').value,
+                    ppe_required: Array.from(selectedPPE),
+                    jsa_file_url: jsaUrl,
+                    declaration_checked: true
+                }
             };
 
-            const { error: dbError } = await supabaseClient.from('tb_permits').insert(payload);
+            const { error: dbError } = await supabaseClient.from('tb_work_permits').insert(payload);
             if (dbError) throw dbError;
 
             Swal.fire({
@@ -490,7 +495,11 @@
 
         } catch (error) {
             console.error('Submit Error:', error);
-            Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+            let errMsg = error.message;
+            if (error.code === '23503') {
+                errMsg = "รหัสแผนงาน (WBS) หรือ รหัสผู้รับเหมา (Vendor ID) ไม่ถูกต้องและไม่มีอยู่ในระบบฐานข้อมูล (Foreign Key Constraint Failed)";
+            }
+            Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาด: ' + errMsg, 'error');
         }
     }
   </script>
