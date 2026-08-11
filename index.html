@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" class="bg-[#F7FAFC]">
+<html lang="th" class="bg-[#F4F7F9]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -28,7 +28,7 @@
             navy: '#2A4365',
             'navy-dark': '#1A365D',
             orange: '#DB5A24',
-            background: '#F7FAFC',
+            background: '#F4F7F9', // ปรับให้พื้นหลังดูมีน้ำหนักขึ้นเล็กน้อย
           },
         },
       },
@@ -47,30 +47,30 @@
     <header>
       <!-- Environment status pill -->
       <div class="flex items-center justify-between">
-        <span id="env-pill" class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+        <span id="env-pill" class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
           <span class="relative flex h-2 w-2">
             <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
           </span>
           <span id="env-pill-text">กำลังตรวจสอบ...</span>
         </span>
-        <span class="text-xs font-medium text-slate-400">FTC First Safety</span>
+        <span class="text-xs font-bold text-slate-400 tracking-wide">FTC FIRST SAFETY</span>
       </div>
 
       <!-- Greeting + profile -->
       <div class="mt-5 flex items-center justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-base font-medium text-slate-500">สวัสดีครับ 👋</p>
+          <p class="text-base font-medium text-slate-600">สวัสดีครับ 👋</p>
           <h1 class="mt-1 text-pretty text-2xl font-bold leading-snug tracking-tight text-navy-dark">
             เลือกระบบที่ต้องการใช้งาน
           </h1>
         </div>
         <div class="relative shrink-0">
-          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-navy to-navy-dark text-lg font-bold text-white shadow-lg shadow-navy/25 overflow-hidden">
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-navy to-navy-dark text-lg font-bold text-white shadow-lg shadow-navy/30 overflow-hidden ring-2 ring-white">
              <!-- Placeholder for LINE Profile Picture -->
             <img id="profile-image" src="https://via.placeholder.com/150?text=User" alt="Profile" class="h-full w-full object-cover">
           </div>
-          <span class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-orange">
+          <span class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-orange shadow-sm">
             <i data-lucide="check" class="h-3 w-3 text-white"></i>
           </span>
         </div>
@@ -78,24 +78,24 @@
     </header>
 
     <!-- ===== Main Menu Grid ===== -->
-    <main class="mt-7">
-      <div class="grid grid-cols-2 gap-3.5" id="menu-grid"></div>
+    <main class="mt-8">
+      <div class="grid grid-cols-2 gap-4" id="menu-grid"></div>
 
       <!-- ===== Bottom Gateway Button ===== -->
       <button type="button" onclick="openModule('ftc_admin_home.html')"
-        class="group mt-4 flex w-full items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-navy to-navy-dark p-5 text-left shadow-xl shadow-navy/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-navy/40 active:translate-y-0 active:scale-[0.99]">
-        <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15">
-          <i data-lucide="shield-check" class="h-7 w-7 text-white"></i>
+        class="group mt-6 flex w-full items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-navy to-navy-dark p-5 text-left shadow-xl shadow-navy/30 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-navy/40 active:translate-y-0 active:scale-[0.98]">
+        <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
+          <i data-lucide="settings" class="h-7 w-7 text-white"></i>
         </span>
         <span class="min-w-0 flex-1">
           <span class="flex items-center gap-2">
-            <span class="text-[11px] font-bold text-orange">07</span>
+            <span class="text-[11px] font-bold text-orange tracking-wider">07</span>
             <span class="truncate text-base font-bold text-white">ระบบจัดการโครงการ</span>
           </span>
-          <span class="mt-0.5 block text-sm font-medium text-white/60">Management Portal</span>
-          <span class="mt-0.5 block text-[10px] sm:text-xs text-white/40">สำหรับผู้คุมงาน และ FTC</span>
+          <span class="mt-1 block text-sm font-medium text-white/70">Management Portal</span>
+          <span class="mt-0.5 block text-[11px] text-white/50">สำหรับผู้คุมงาน และ FTC</span>
         </span>
-        <i data-lucide="arrow-right" class="h-5 w-5 shrink-0 text-white/50 transition-transform group-hover:translate-x-1"></i>
+        <i data-lucide="chevron-right" class="h-6 w-6 shrink-0 text-white/50 transition-transform group-hover:translate-x-1.5"></i>
       </button>
     </main>
   </div>
@@ -105,7 +105,7 @@
     const menuItems = [
       { num: '01', icon: 'user-check',      th: 'ลงทะเบียนพนักงานใหม่และออกบัตร',                    en: 'New Worker Registration & Badging', url: 'Worker/Worker_Registration_ToSystem.html' },
       { num: '02', icon: 'graduation-cap',  th: 'อบรมความปลอดภัยก่อนเข้าพื้นที่',                      en: 'Safety Induction Training', url: 'Training/Training_Menu.html' },
-      { num: '03', icon: 'clipboard-check', th: 'ขอเปิดใบอนุญาตเข้าทำงาน',                          en: 'Work Request', url: 'Permit/Permit_Request.html' },
+      { num: '03', icon: 'clipboard-check', th: 'ขอเปิดใบอนุญาตเข้าทำงาน',                          en: 'Work Request (PTW)', url: 'Permit/Permit_Request.html' },
       { num: '04', icon: 'users',           th: 'ชี้แจงความปลอดภัยก่อนทำงาน / ลงเวลาเข้างาน',        en: 'Toolbox Talk (TBT) & Clock-In', disabled: true },
       { num: '05', icon: 'sparkles',        th: 'ปิดใบงานเคลียร์ 5 ส. / ลงเวลาออกจากงาน',            en: '5S Close-out & Clock-Out', disabled: true },
       { num: '06', icon: 'triangle-alert',  th: 'แจ้งเหตุการณ์เกือบเกิดอุบัติเหตุ',                    en: 'Near Miss Reporting', disabled: true },
@@ -114,28 +114,30 @@
     // Function to render the menu grid
     document.getElementById('menu-grid').innerHTML = menuItems.map((item) => {
       if (item.disabled) {
+        // ดีไซน์กล่องที่ยังไม่เปิดใช้งาน (ปรับสีให้ทึบขึ้น ตัดกับพื้นหลังชัดเจน)
         return `
-          <div onclick="showComingSoon()" class="relative flex min-h-[150px] cursor-not-allowed select-none flex-col rounded-2xl border border-slate-200/80 bg-white/60 p-4 active:scale-[0.98] transition">
-            <span class="absolute right-2.5 top-2.5 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-500">เร็วๆ นี้</span>
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-300">
+          <div onclick="showComingSoon()" class="relative flex min-h-[155px] cursor-not-allowed select-none flex-col rounded-2xl border border-slate-200 bg-slate-50 p-4 active:scale-[0.98] transition shadow-sm">
+            <span class="absolute right-3 top-3 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-500 shadow-sm">เร็วๆ นี้</span>
+            <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-200/60 text-slate-400 border border-slate-200">
               <i data-lucide="${item.icon}" class="h-6 w-6"></i>
             </span>
             <span class="mt-auto pt-3">
-              <span class="block text-[10px] font-bold text-slate-300">${item.num}</span>
-              <span class="mt-0.5 block text-[13px] sm:text-sm font-bold leading-snug text-slate-400">${item.th}</span>
-              <span class="mt-1 block text-[9px] sm:text-[10px] font-medium text-slate-400">${item.en}</span>
+              <span class="block text-[11px] font-bold text-slate-400">${item.num}</span>
+              <span class="mt-1 block text-[13px] sm:text-sm font-bold leading-snug text-slate-500">${item.th}</span>
+              <span class="mt-1 block text-[10px] font-medium text-slate-400">${item.en}</span>
             </span>
           </div>`;
       }
+      // ดีไซน์กล่องที่กดได้ (เพิ่ม Shadow และปรับขอบให้คมชัด)
       return `
-        <button type="button" onclick="openModule('${item.url}')" class="group relative flex min-h-[150px] flex-col rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-orange/40 hover:shadow-xl hover:shadow-navy/10 active:translate-y-0 active:scale-[0.97]">
-          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange/10 text-orange transition-colors group-hover:bg-orange group-hover:text-white">
+        <button type="button" onclick="openModule('${item.url}')" class="group relative flex min-h-[155px] flex-col rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-md transition-all duration-200 hover:-translate-y-1 hover:border-orange/50 hover:shadow-lg hover:shadow-navy/15 active:translate-y-0 active:scale-[0.97]">
+          <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange/10 text-orange transition-all duration-300 group-hover:bg-orange group-hover:text-white ring-1 ring-orange/20 group-hover:ring-orange/50">
             <i data-lucide="${item.icon}" class="h-6 w-6"></i>
           </span>
           <span class="mt-auto pt-3">
-            <span class="block text-[10px] font-bold text-orange">${item.num}</span>
-            <span class="mt-0.5 block text-[13px] sm:text-sm font-bold leading-snug text-navy-dark">${item.th}</span>
-            <span class="mt-1 block text-[9px] sm:text-[10px] font-medium text-slate-400">${item.en}</span>
+            <span class="block text-[11px] font-bold text-orange">${item.num}</span>
+            <span class="mt-1 block text-[13px] sm:text-sm font-bold leading-snug text-navy-dark group-hover:text-navy">${item.th}</span>
+            <span class="mt-1 block text-[10px] font-medium text-slate-500">${item.en}</span>
           </span>
         </button>`;
     }).join('');
@@ -171,6 +173,15 @@
 
     function setEnvPill(text) {
         document.getElementById('env-pill-text').innerText = text;
+        const pill = document.getElementById('env-pill');
+        if (text.includes('เว็บ')) {
+            pill.classList.replace('bg-emerald-50', 'bg-slate-100');
+            pill.classList.replace('border-emerald-200', 'border-slate-200');
+            pill.classList.replace('text-emerald-700', 'text-slate-600');
+            pill.querySelector('.bg-emerald-500').classList.replace('bg-emerald-500', 'bg-slate-500');
+            const ping = pill.querySelector('.animate-ping');
+            if(ping) ping.classList.replace('bg-emerald-400', 'bg-slate-400');
+        }
     }
 
     function openModule(targetUrl) {
