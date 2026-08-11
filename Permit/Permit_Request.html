@@ -451,9 +451,9 @@
             if (compressedJsaFile) {
                 Swal.update({ title: 'กำลังอัปโหลดเอกสาร JSA...' });
                 const filePath = 'jsa-docs/' + Date.now() + '.jpg';
-                const { error: uploadError } = await supabaseClient.storage.from('safety-docs').upload(filePath, compressedJsaFile);
+                const { error: uploadError } = await supabaseClient.storage.from('safety-documents').upload(filePath, compressedJsaFile);
                 if (uploadError) throw uploadError;
-                jsaUrl = supabaseClient.storage.from('safety-docs').getPublicUrl(filePath).data.publicUrl;
+                jsaUrl = supabaseClient.storage.from('safety-documents').getPublicUrl(filePath).data.publicUrl;
             }
 
             const workTypes = generalWork ? ['งานทั่วไป (General Work)'] : Array.from(selectedRisk);
