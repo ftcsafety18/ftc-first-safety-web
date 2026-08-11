@@ -1,1 +1,62 @@
+import { FileCheck, UserCheck, ClipboardList, AlertTriangle, FolderKanban, MapPinned } from "lucide-react"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { QuickStats } from "@/components/quick-stats"
+import { DashboardSection } from "@/components/dashboard-section"
+import { ActionCard } from "@/components/action-card"
+import { BottomNav } from "@/components/bottom-nav"
 
+export default function Page() {
+  return (
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background">
+      <DashboardHeader />
+      <QuickStats />
+
+      <main className="flex flex-col gap-7 pb-32 pt-7">
+        <DashboardSection index="1" title="รอการอนุมัติ" hint="ลำดับความสำคัญสูง">
+          <ActionCard
+            icon={FileCheck}
+            tone="orange"
+            title="อนุมัติใบขออนุญาต (E-Permit)"
+            subtitle="Hot Work, Confined Space, ที่สูง"
+            badge={{ count: 5, tone: "red" }}
+          />
+          <ActionCard
+            icon={UserCheck}
+            title="ขึ้นทะเบียนผู้ปฏิบัติงาน"
+            subtitle="ตรวจสอบเอกสารและผลการอบรม"
+            badge={{ count: 2, tone: "blue" }}
+          />
+        </DashboardSection>
+
+        <DashboardSection index="2" title="ตรวจสอบหน้างาน">
+          <ActionCard
+            icon={ClipboardList}
+            title="แบบฟอร์มตรวจความปลอดภัย"
+            subtitle="ตรวจนั่งร้าน, ตู้ไฟ, การสวมใส่ PPE"
+          />
+          <ActionCard
+            icon={AlertTriangle}
+            tone="orange"
+            title="บันทึกเหตุการณ์ฉุกเฉิน"
+            subtitle="Near Miss, อุบัติเหตุ, สั่งหยุดงาน"
+          />
+        </DashboardSection>
+
+        <DashboardSection index="3" title="ตั้งค่าระบบ">
+          <ActionCard
+            icon={FolderKanban}
+            title="จัดการโครงการ & แผนงาน"
+            subtitle="WBS Task & ผู้รับเหมา"
+          />
+          <ActionCard
+            icon={MapPinned}
+            title="กำหนดพื้นที่ปฏิบัติงาน"
+            subtitle="พื้นที่อันตราย, พื้นที่ควบคุมความเสี่ยง, พื้นที่ปลอดภัย"
+          />
+        </DashboardSection>
+      </main>
+
+      <BottomNav />
+    </div>
+  )
+}
