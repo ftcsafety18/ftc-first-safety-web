@@ -41,7 +41,6 @@
     .check-box i { width: 0.875rem; height: 0.875rem; color: white; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
     .check-text { font-size: 0.8125rem; color: #475569; font-weight: 500; line-height: 1.4; padding-top: 0.1rem;}
     
-    /* Active States */
     .check-card.active-hazard { background-color: #fef2f2; border-color: #fca5a5; }
     .check-card.active-hazard .check-box { background-color: #dc2626; border-color: #dc2626; }
     .check-card.active-hazard .check-text { color: #b91c1c; font-weight: 600; }
@@ -52,26 +51,17 @@
     .check-card.active-measure .check-text { color: #047857; font-weight: 600; }
     .check-card.active-measure .check-box i { opacity: 1; transform: scale(1); }
 
-    /* Severity Buttons */
-    .sev-btn { flex: 1; display: flex; flex-col; justify-content: center; align-items: center; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .sev-btn .grade { font-size: 1.2rem; font-weight: 800; line-height: 1; }
-    .sev-btn .desc { font-size: 0.65rem; font-weight: 700; margin-top: 0.2rem; text-transform: uppercase; }
+    /* Custom Range Sliders */
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
+    input[type=range]:focus { outline: none; }
     
-    /* Active States for Severity */
-    .sev-btn[data-rank="A"].active { border-color: #dc2626; background-color: #dc2626; color: white; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3); }
-    .sev-btn[data-rank="A"] { color: #dc2626; }
-    
-    .sev-btn[data-rank="B"].active { border-color: #f97316; background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); }
-    .sev-btn[data-rank="B"] { color: #f97316; }
-    
-    .sev-btn[data-rank="C"].active { border-color: #f59e0b; background-color: #f59e0b; color: white; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3); }
-    .sev-btn[data-rank="C"] { color: #f59e0b; }
-    
-    .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
-    .sev-btn[data-rank="D"] { color: #10b981; }
-
-    .criteria-text { font-size: 0.65rem; font-weight: 500; color: #64748b; margin-top: 0.3rem; line-height: 1.2; display: none; }
-    .sev-btn.active .criteria-text { color: rgba(255,255,255,0.9); display: block; }
+    .risk-badge { transition: all 0.3s ease; }
+    .risk-low { background-color: #10b981; color: white; }
+    .risk-med { background-color: #facc15; color: #451a03; }
+    .risk-high { background-color: #f97316; color: white; }
+    .risk-ext { background-color: #dc2626; color: white; }
 
   </style>
 </head>
@@ -119,6 +109,32 @@
       <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มขั้นตอนการปฏิบัติงาน
     </button>
 
+    <!-- Legend -->
+    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden mb-4 shadow-sm">
+      <summary class="flex justify-between items-center p-3 cursor-pointer text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition">
+        <span class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> เกณฑ์ประเมินความเสี่ยง (Risk Matrix Legend)</span>
+        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200"></i>
+      </summary>
+      <div class="p-3 text-[11px] space-y-3 border-t border-slate-100 bg-white">
+        <p class="font-bold text-slate-700 underline mb-1">ความรุนแรง (Severity: 1-5)</p>
+        <div class="grid grid-cols-1 gap-1.5 pl-2">
+            <div><span class="font-bold text-red-600">5 [A] Fatal:</span> เสียชีวิต / เสียหาย > 50,000 บ.</div>
+            <div><span class="font-bold text-orange-500">4 [B] Disability:</span> ทุพพลภาพ/หยุดงาน > 3 วัน</div>
+            <div><span class="font-bold text-yellow-500">3 [C] Lost Time:</span> บาดเจ็บ/หยุดงาน ≤ 3 วัน</div>
+            <div><span class="font-bold text-emerald-500">2 [D] Minor:</span> บาดเจ็บเล็กน้อย/ปฐมพยาบาล</div>
+            <div><span class="font-bold text-slate-500">1 No Injury:</span> ไม่บาดเจ็บ/ไม่เสียหาย</div>
+        </div>
+        <p class="font-bold text-slate-700 underline mt-2 mb-1">โอกาสเกิด (Likelihood: 1-5)</p>
+        <div class="grid grid-cols-1 gap-1.5 pl-2">
+            <div><span class="font-bold">5:</span> เกิดแน่นอน (Almost Certain)</div>
+            <div><span class="font-bold">4:</span> เกิดขึ้นบ่อย (Likely)</div>
+            <div><span class="font-bold">3:</span> ปานกลาง (Possible)</div>
+            <div><span class="font-bold">2:</span> เกิดขึ้นได้น้อย (Unlikely)</div>
+            <div><span class="font-bold">1:</span> แทบไม่เกิด (Rare)</div>
+        </div>
+      </div>
+    </details>
+
   </main>
 
   <!-- Bottom Action Bar -->
@@ -130,7 +146,7 @@
     </div>
   </div>
 
-  <style> .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); } </style>
+  <style> details[open] summary i { transform: rotate(180deg); } </style>
 
   <script>
     // ---- Supabase Initialization ----
@@ -141,10 +157,8 @@
     let stepCounter = 0;
 
     // ==========================================
-    // 🧠 ฐานข้อมูลอัจฉริยะ (Knowledge Base based on FTC Data)
+    // 🧠 ฐานข้อมูลอัจฉริยะ (Knowledge Base)
     // ==========================================
-    
-    // รายการอันตรายทั้งหมด
     const HAZARDS = [
         "ปลดเบรกเกอร์ผิด/มีไฟสำรอง", "บุคคลภายนอกเดินชน/สัมผัสอุปกรณ์", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค (Arc Flash)",
         "สะเก็ดไฟไหม้ผิวหนัง/รังสีทำลายตา", "สูดดมฟูมโลหะ/ก๊าซพิษ", "ไอระเหยสะสม/ระเบิด",
@@ -155,7 +169,6 @@
         "แสงสว่างไม่พอ/หมดสติ/ตื่นตระหนก", "นำสารเคมีปนเปื้อนออกมาภายนอก", "ปวดเมื่อยกล้ามเนื้อจากการยก/ก้มเงย"
     ];
 
-    // รายการมาตรการทั้งหมด
     const MEASURES = [
         "ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)",
         "ติดตั้งเบรกเกอร์ตัดไฟรั่ว (ELCB)", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า",
@@ -170,42 +183,20 @@
         "ใช้ท่าทางการยกของตามหลักการยศาสตร์"
     ];
 
-    // แหล่งกำเนิดอันตราย
     const SOURCES = [
-        "เครื่องมือ/อุปกรณ์ (Equipment/Tool)", 
-        "วัสดุ/ของหนัก (Material/Heavy Object)", 
-        "ยานพาหนะ/เครื่องจักร (Vehicle/MC)", 
-        "เครื่องจักรหนัก (Heavy MC)", 
-        "การพลัดตก (Fall Down)", 
-        "กระแสไฟฟ้า (Electrocution)", 
-        "สารเคมี (Chemical)", 
-        "งานความร้อน (Hot Work)", 
-        "สภาพแวดล้อม (Environment)",
-        "อื่นๆ (Others)"
+        "เครื่องมือ/อุปกรณ์ (Equipment/Tool)", "วัสดุ/ของหนัก (Material/Heavy Object)", 
+        "ยานพาหนะ/เครื่องจักร (Vehicle/MC)", "เครื่องจักรหนัก (Heavy MC)", 
+        "การพลัดตก (Fall Down)", "กระแสไฟฟ้า (Electrocution)", 
+        "สารเคมี (Chemical)", "งานความร้อน (Hot Work)", 
+        "สภาพแวดล้อม (Environment)", "อื่นๆ (Others)"
     ];
 
-    // สมองกลจับคู่ (Method -> Hazards -> Measures)
     const SMART_LOGIC = {
-        'elec_loto': {
-            hazards: ["ปลดเบรกเกอร์ผิด/มีไฟสำรอง", "บุคคลภายนอกเดินชน/สัมผัสอุปกรณ์", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค (Arc Flash)"],
-            measures: ["ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า", "ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)", "ติดตั้งเบรกเกอร์ตัดไฟรั่ว (ELCB)"]
-        },
-        'hot_work': {
-            hazards: ["สะเก็ดไฟไหม้ผิวหนัง/รังสีทำลายตา", "สูดดมฟูมโลหะ/ก๊าซพิษ", "ไอระเหยสะสม/ระเบิด"],
-            measures: ["ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)", "กั้นรัศมี 11 เมตร เป็น 'พื้นที่ควบคุมความเสี่ยง'", "จัดช่างเฝ้าระวังไฟ (Fire Watcher) พร้อมถังดับเพลิง", "ติดตั้งระบบดูดควัน (Portable Fume Extractor)"]
-        },
-        'scaffold_setup': {
-            hazards: ["ดินทรุดตัว/โครงสร้างเอียง", "ประกอบผิดวิธี/ข้อต่อไม่แน่น", "ผู้ปฏิบัติงานพลัดตกจากที่สูง", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง"],
-            measures: ["ติดตั้งราวกันตก 2 ชั้น และแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)", "สวม Full Body Harness เกี่ยวสายชูชีพตลอดเวลา", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า"]
-        },
-        'crane_lift': {
-            hazards: ["พื้นดินอ่อน/เครนเอียง/สลิงชำรุด", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "วัสดุแกว่งตัวอย่างรุนแรง (Swinging load)", "บูมเครนตวัดโดนสายไฟแรงสูง"],
-            measures: ["จัดทำแผนการยก (Lifting Plan)", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า", "สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล", "แบ่งวัสดุเป็นชิ้นเล็กลดน้ำหนักยก"]
-        },
-        'confined_entry': {
-            hazards: ["สารเคมี/น้ำรั่วซึมเข้าพื้นที่", "ก๊าซพิษตกค้าง/ขาดออกซิเจนเฉียบพลัน", "แสงสว่างไม่พอ/หมดสติ/ตื่นตระหนก", "นำสารเคมีปนเปื้อนออกมาภายนอก"],
-            measures: ["ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "ใช้พัดลมอัดอากาศบริสุทธิ์ตลอดเวลา", "กำหนดปากบ่อเป็น 'พื้นที่ควบคุมความเสี่ยง' และตั้ง 'พื้นที่ปลอดภัย' สำหรับพักฟื้น", "ผ่านกระบวนการ 'การชำระล้าง' อย่างถูกต้องก่อนออก", "ใช้ระบบไฟส่องสว่างกันระเบิดแรงดันต่ำ (24V)"]
-        }
+        'elec_loto': { hazards: ["ปลดเบรกเกอร์ผิด/มีไฟสำรอง", "บุคคลภายนอกเดินชน/สัมผัสอุปกรณ์", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค (Arc Flash)"], measures: ["ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า", "ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)", "ติดตั้งเบรกเกอร์ตัดไฟรั่ว (ELCB)"] },
+        'hot_work': { hazards: ["สะเก็ดไฟไหม้ผิวหนัง/รังสีทำลายตา", "สูดดมฟูมโลหะ/ก๊าซพิษ", "ไอระเหยสะสม/ระเบิด"], measures: ["ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)", "กั้นรัศมี 11 เมตร เป็น 'พื้นที่ควบคุมความเสี่ยง'", "จัดช่างเฝ้าระวังไฟ (Fire Watcher) พร้อมถังดับเพลิง", "ติดตั้งระบบดูดควัน (Portable Fume Extractor)"] },
+        'scaffold_setup': { hazards: ["ดินทรุดตัว/โครงสร้างเอียง", "ประกอบผิดวิธี/ข้อต่อไม่แน่น", "ผู้ปฏิบัติงานพลัดตกจากที่สูง", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง"], measures: ["ติดตั้งราวกันตก 2 ชั้น และแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)", "สวม Full Body Harness เกี่ยวสายชูชีพตลอดเวลา", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า"] },
+        'crane_lift': { hazards: ["พื้นดินอ่อน/เครนเอียง/สลิงชำรุด", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "วัสดุแกว่งตัวอย่างรุนแรง (Swinging load)", "บูมเครนตวัดโดนสายไฟแรงสูง"], measures: ["จัดทำแผนการยก (Lifting Plan)", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า", "สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล", "แบ่งวัสดุเป็นชิ้นเล็กลดน้ำหนักยก"] },
+        'confined_entry': { hazards: ["สารเคมี/น้ำรั่วซึมเข้าพื้นที่", "ก๊าซพิษตกค้าง/ขาดออกซิเจนเฉียบพลัน", "แสงสว่างไม่พอ/หมดสติ/ตื่นตระหนก", "นำสารเคมีปนเปื้อนออกมาภายนอก"], measures: ["ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "ใช้พัดลมอัดอากาศบริสุทธิ์ตลอดเวลา", "กำหนดปากบ่อเป็น 'พื้นที่ควบคุมความเสี่ยง' และตั้ง 'พื้นที่ปลอดภัย' สำหรับพักฟื้น", "ผ่านกระบวนการ 'การชำระล้าง' อย่างถูกต้องก่อนออก", "ใช้ระบบไฟส่องสว่างกันระเบิดแรงดันต่ำ (24V)"] }
     };
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -232,27 +223,57 @@
             customInput.classList.add('hidden');
         }
 
-        // ล้างค่า Checkbox เดิมทั้งหมด
         const allCards = stepContainer.querySelectorAll('.check-card');
         allCards.forEach(card => {
             card.classList.remove('active-hazard', 'active-measure');
             card.dataset.checked = "false";
         });
 
-        // Auto-Select ตาม Smart Logic
         if (SMART_LOGIC[value]) {
             const { hazards, measures } = SMART_LOGIC[value];
-            
             allCards.forEach(card => {
                 const text = card.querySelector('.check-text').textContent;
-                if (card.dataset.type === 'hazard' && hazards.includes(text)) {
-                    toggleCheckCard(card);
-                }
-                if (card.dataset.type === 'measure' && measures.includes(text)) {
-                    toggleCheckCard(card);
-                }
+                if (card.dataset.type === 'hazard' && hazards.includes(text)) toggleCheckCard(card);
+                if (card.dataset.type === 'measure' && measures.includes(text)) toggleCheckCard(card);
             });
         }
+    }
+
+    function calculateRisk(stepId) {
+        const card = document.getElementById(stepId);
+        
+        // Initial
+        const iL = parseInt(card.querySelector('.init-l').value);
+        const iS = parseInt(card.querySelector('.init-s').value);
+        const iScore = iL * iS;
+        
+        // Residual
+        const rL = parseInt(card.querySelector('.res-l').value);
+        const rS = parseInt(card.querySelector('.res-s').value); // Usually same as iS, but allow edit
+        const rScore = rL * rS;
+
+        // Map Severity 1-5 to A,B,C,D
+        const sMap = { 5: 'A (Fatal)', 4: 'B (Disability)', 3: 'C (Lost Time)', 2: 'D (Minor)', 1: 'No Injury' };
+
+        // Update Labels
+        card.querySelector('.lbl-init-l').textContent = iL;
+        card.querySelector('.lbl-init-s').textContent = `${iS} [${sMap[iS]}]`;
+        card.querySelector('.lbl-res-l').textContent = rL;
+        card.querySelector('.lbl-res-s').textContent = `${rS} [${sMap[rS]}]`;
+
+        // Function to style badge
+        const updateBadge = (score, el) => {
+            el.textContent = score;
+            el.className = 'risk-badge w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ';
+            let textEl = el.nextElementSibling;
+            if (score <= 4) { el.classList.add('risk-low'); textEl.textContent = "Low"; textEl.className = "font-bold text-emerald-600"; }
+            else if (score <= 9) { el.classList.add('risk-med'); textEl.textContent = "Medium"; textEl.className = "font-bold text-yellow-600"; }
+            else if (score <= 16) { el.classList.add('risk-high'); textEl.textContent = "High"; textEl.className = "font-bold text-orange-600"; }
+            else { el.classList.add('risk-ext'); textEl.textContent = "Extreme"; textEl.className = "font-bold text-red-600"; }
+        };
+
+        updateBadge(iScore, card.querySelector('.badge-init'));
+        updateBadge(rScore, card.querySelector('.badge-res'));
     }
 
     function addStep() {
@@ -330,18 +351,16 @@
               <textarea class="custom-method-input input-field resize-none hidden text-[13px]" rows="2" placeholder="โปรดพิมพ์อธิบายรายละเอียดขั้นตอนการทำงาน..."></textarea>
             </div>
 
-            <!-- C. Hazards & Risk -->
-            <div class="bg-red-50/20 p-3 -mx-2 rounded-xl border border-red-100">
-              <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-400 font-medium text-[11px]">(Potential Hazard)</span> <span class="text-red-500">*</span></label>
+            <!-- C. Hazards & INITIAL Risk -->
+            <div class="bg-red-50/40 p-3 -mx-2 rounded-xl border border-red-100">
+              <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-500 font-medium text-[11px]">(Potential Hazard)</span></label>
               
-              <div class="flex flex-col gap-2 mb-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                 ${hazardHTML}
               </div>
-              
-              <!-- ช่องระบุอันตรายอื่นๆ -->
               <input type="text" class="hazard-custom-text input-field text-xs mb-4" placeholder="+ ระบุอันตรายอื่นๆ เพิ่มเติม (ถ้ามี)...">
 
-              <div class="relative mb-3">
+              <div class="relative mb-4">
                 <select class="source-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-600 text-[13px] font-medium">
                   <option value="" disabled selected>แหล่งที่มาของอันตราย (Source of Hazard)</option>
                   ${sourceOptions}
@@ -349,39 +368,70 @@
                 <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
               </div>
 
-              <div>
-                <p class="text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">ระดับความรุนแรง (Severity Rank) <span class="text-red-500">*</span></p>
-                <div class="flex gap-2">
-                  <button type="button" class="sev-btn group" data-rank="A" onclick="selectSeverity(this)">
-                    <span class="grade">A</span><span class="desc block">Fatal</span>
-                    <span class="criteria-text">เสียชีวิต/ทรัพย์สินเสียหาย > 50,000</span>
-                  </button>
-                  <button type="button" class="sev-btn group" data-rank="B" onclick="selectSeverity(this)">
-                    <span class="grade">B</span><span class="desc block">Disability</span>
-                    <span class="criteria-text">ทุพพลภาพ/หยุดงาน > 3 วัน</span>
-                  </button>
-                  <button type="button" class="sev-btn group" data-rank="C" onclick="selectSeverity(this)">
-                    <span class="grade">C</span><span class="desc block">Lost Time</span>
-                    <span class="criteria-text">บาดเจ็บ/หยุดงาน ≤ 3 วัน</span>
-                  </button>
-                  <button type="button" class="sev-btn group" data-rank="D" onclick="selectSeverity(this)">
-                    <span class="grade">D</span><span class="desc block">Minor</span>
-                    <span class="criteria-text">บาดเจ็บเล็กน้อย/ไม่หยุดงาน</span>
-                  </button>
+              <!-- Initial Risk Matrix Sliders -->
+              <div class="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                    <p class="text-[12px] font-bold text-slate-700 uppercase">ความเสี่ยงก่อนควบคุม <span class="text-slate-400">(Initial Risk)</span></p>
+                    <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
+                        <span class="text-[10px] text-slate-500 font-bold">SCORE:</span>
+                        <div class="badge-init risk-badge w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 risk-med">9</div>
+                        <span class="font-bold text-yellow-600 text-[11px] uppercase w-12 text-center">Medium</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>โอกาสเกิด (Likelihood): <span class="lbl-init-l text-navy text-[13px]">3</span></span>
+                        <span class="text-slate-400">1 (Low) ➔ 5 (High)</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="3" class="init-l w-full" oninput="calculateRisk('${stepId}')">
+                </div>
+                
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>ความรุนแรง (Severity): <span class="lbl-init-s text-navy text-[13px]">3 [C (Lost Time)]</span></span>
+                        <span class="text-slate-400">1 (No Injury) ➔ 5 (Fatal)</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="3" class="init-s w-full" oninput="calculateRisk('${stepId}')">
                 </div>
               </div>
             </div>
 
-            <!-- D. Measures -->
-            <div class="bg-emerald-50/30 p-3 -mx-2 rounded-xl border border-emerald-100">
-              <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 3. การควบคุมความเสี่ยง <span class="text-slate-400 font-medium text-[11px]">(Risk Control)</span> <span class="text-red-500">*</span></label>
+            <!-- D. Measures & RESIDUAL Risk -->
+            <div class="bg-emerald-50/40 p-3 -mx-2 rounded-xl border border-emerald-100">
+              <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 3. การควบคุมความเสี่ยง <span class="text-slate-500 font-medium text-[11px]">(Risk Control)</span></label>
               
               <div class="flex flex-col gap-2 mb-3">
                 ${measureHTML}
               </div>
-              
-              <!-- ช่องระบุมาตรการอื่นๆ -->
-              <input type="text" class="measure-custom-text input-field text-xs" placeholder="+ ระบุมาตรการควบคุมความเสี่ยงอื่นๆ เพิ่มเติม (ถ้ามี)...">
+              <input type="text" class="measure-custom-text input-field text-xs mb-4" placeholder="+ ระบุมาตรการควบคุมความเสี่ยงอื่นๆ เพิ่มเติม (ถ้ามี)...">
+
+              <!-- Residual Risk Matrix Sliders -->
+              <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                    <p class="text-[12px] font-bold text-slate-700 uppercase">ความเสี่ยงหลังควบคุม <span class="text-slate-400">(Residual Risk)</span></p>
+                    <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
+                        <span class="text-[10px] text-slate-500 font-bold">SCORE:</span>
+                        <div class="badge-res risk-badge w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 risk-low">3</div>
+                        <span class="font-bold text-emerald-600 text-[11px] uppercase w-12 text-center">Low</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>โอกาสเกิดลดลงเหลือ (Likelihood): <span class="lbl-res-l text-navy text-[13px]">1</span></span>
+                    </div>
+                    <input type="range" min="1" max="5" value="1" class="res-l w-full" oninput="calculateRisk('${stepId}')">
+                </div>
+                
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>ความรุนแรง (Severity): <span class="lbl-res-s text-navy text-[13px]">3 [C (Lost Time)]</span></span>
+                    </div>
+                    <input type="range" min="1" max="5" value="3" class="res-s w-full" oninput="calculateRisk('${stepId}')">
+                </div>
+              </div>
+
             </div>
 
             <!-- E. Remarks -->
@@ -397,6 +447,7 @@
       container.insertAdjacentHTML('beforeend', html);
       lucide.createIcons();
       updateStepNumbers();
+      calculateRisk(stepId); // Initialize scores for this step
     }
 
     function removeStep(id) {
@@ -447,13 +498,6 @@
         }
     }
 
-    function selectSeverity(btn) {
-      const container = btn.closest('.flex');
-      const buttons = container.querySelectorAll('.sev-btn');
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-
     // ==========================================
     // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase)
     // ==========================================
@@ -480,9 +524,9 @@
 
             const hazardSource = stepEl.querySelector('.source-select').value;
 
-            const severityBtn = stepEl.querySelector('.sev-btn.active');
-            const severityRank = severityBtn ? severityBtn.dataset.rank : '';
-            if (!severityRank) isValid = false;
+            // Get Risk Scores
+            const initScore = parseInt(stepEl.querySelector('.badge-init').textContent);
+            const resScore = parseInt(stepEl.querySelector('.badge-res').textContent);
 
             let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"].active-measure')).map(c => c.querySelector('.check-text').textContent);
             const measureCustom = stepEl.querySelector('.measure-custom-text').value;
@@ -496,14 +540,15 @@
                 step_name: stepName,
                 hazards: hazards,
                 hazard_source: hazardSource,
-                severity_rank: severityRank,
+                initial_risk: initScore,
+                residual_risk: resScore,
                 measures: measures,
                 remark: remark
             });
         });
 
         if (!isValid) {
-            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนงาน, เลือกอันตราย, ระดับความรุนแรง และมาตรการป้องกันให้ครบทุกส่วน', 'warning');
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนงาน, เลือกอันตราย และมาตรการป้องกันให้ครบทุกส่วน', 'warning');
             return;
         }
 
