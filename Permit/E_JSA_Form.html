@@ -109,50 +109,92 @@
     let stepCount = 0;
 
     // ==========================================
-    // 🧠 สมองของระบบ (Smart Recommendation Logic)
-    // จับคู่อันตราย กับ มาตรการป้องกันอัตโนมัติ
+    // 🧠 สมองของระบบ ชั้นที่ 1: จับคู่ "ขั้นตอนงาน" -> "อันตราย"
     // ==========================================
-    const HAZARD_MEASURE_MAP = {
-      'กระแสไฟฟ้ารั่ว/ช็อต': ['ตัดแยกพลังงาน (LOTO)', 'ใช้เบรกเกอร์กันดูด (ELCB)', 'สวมถุงมือกันไฟฟ้า', 'ตรวจเช็คสภาพสายไฟ/ปลั๊ก', 'ห้ามปฏิบัติงานขณะเปียกชื้น'],
-      'การกระเด็นของวัสดุเข้าตา': ['สวมแว่นตานิรภัย/กระบังหน้า', 'กั้นเขตป้องกันประกายไฟ/สะเก็ด', 'ติดตั้งการ์ดป้องกันเครื่องจักร'],
-      'การชน/กระแทกจากเครื่องจักร': ['มีผู้ให้สัญญาณ (Signal Man)', 'สวมเสื้อสะท้อนแสง', 'กั้นเขตพื้นที่ปฏิบัติงาน', 'ตรวจเช็คระบบสัญญาณเตือนของรถ'],
-      'การตกหล่นของวัสดุ': ['กั้นเขตพื้นที่ด้านล่าง/ติดป้ายเตือน', 'สวมหมวกนิรภัย', 'ผูกรัดวัสดุให้แน่นหนา', 'ใช้ตาข่ายกันของตก (Safety Net)', 'ห้ามยืนใต้แนวรอก/เครน'],
-      'การพลัดตกจากที่สูง': ['สวมเข็มขัดกันตกเต็มตัว (Harness)', 'ติดตั้งจุดยึด/สายช่วยชีวิต (Lifeline)', 'ติดตั้งราวกันตก', 'ตรวจสภาพนั่งร้าน (Scaffold Tag)'],
-      'การสัมผัส/สูดดมสารเคมี': ['สวมหน้ากากกันสารเคมี', 'สวมถุงมือ/ชุดกันสารเคมี', 'จัดระบบระบายอากาศ', 'ตรวจสอบเอกสารสารเคมี (SDS)', 'เตรียมน้ำยาล้างตาฉุกเฉิน'],
-      'การสัมผัสรังสี': ['กั้นเขตพื้นที่รังสี/ติดป้ายเตือน', 'มีผู้เฝ้าระวัง (Standby Man)', 'สวมอุปกรณ์วัดรังสี (Dosimeter)', 'จำกัดเวลาการทำงาน'],
-      'การหนีบ/ดึง/ทับ': ['ติดตั้งการ์ดป้องกันเครื่องจักร (Guard)', 'แต่งกายรัดกุมไม่รุ่มร่าม', 'ตัดแยกพลังงาน (LOTO) ก่อนซ่อมบำรุง'],
-      'ของมีคมบาด/ทิ่มแทง': ['สวมถุงมือหนัง/ถุงมือกันบาด', 'จัดเก็บเศษวัสดุให้เป็นระเบียบ', 'ใช้เครื่องมือให้ถูกประเภท'],
-      'ขาดอากาศ/อับอากาศ': ['ตรวจวัดปริมาณก๊าซ', 'ระบายอากาศ/ติดตั้งพัดลม', 'มีผู้เฝ้าระวัง (Standby Man)', 'สวมอุปกรณ์ช่วยหายใจ (SCBA)'],
-      'เพลิงไหม้/ระเบิด': ['จัดเตรียมถังดับเพลิง', 'ขออนุญาตทำงานความร้อน (Hot Work)', 'ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ', 'มีผู้เฝ้าระวังไฟ (Fire Watcher)', 'เคลียร์พื้นที่สารไวไฟ'],
-      'เสียงดังระดับอันตราย': ['สวมปลั๊กอุดหู/ครอบหู', 'สับเปลี่ยนหมุนเวียนพนักงาน (Job Rotation)', 'บำรุงรักษาเครื่องจักรให้สมบูรณ์']
+    const STEP_HAZARD_MAP = {
+        'เตรียมพื้นที่และตรวจสอบอุปกรณ์': ['ของมีคมบาด/ทิ่มแทง', 'การชน/กระแทกจากเครื่องจักร'],
+        'ขนย้ายและยกวัสดุอุปกรณ์': ['การตกหล่นของวัสดุ', 'การหนีบ/ดึง/ทับ', 'ของมีคมบาด/ทิ่มแทง'],
+        'ติดตั้ง/รื้อถอนนั่งร้าน': ['การพลัดตกจากที่สูง', 'การตกหล่นของวัสดุ', 'การหนีบ/ดึง/ทับ'],
+        'ปฏิบัติงานตัด/เชื่อมโลหะ': ['เพลิงไหม้/ระเบิด', 'การกระเด็นของวัสดุเข้าตา', 'การสัมผัส/สูดดมสารเคมี', 'ความร้อน/เย็นจัด'],
+        'ปฏิบัติงานขุดเจาะ/เปิดผิวดิน': ['การชน/กระแทกจากเครื่องจักร', 'เสียงดังระดับอันตราย', 'การหนีบ/ดึง/ทับ'],
+        'ปฏิบัติงานบนที่สูง': ['การพลัดตกจากที่สูง', 'การตกหล่นของวัสดุ'],
+        'ปฏิบัติงานในที่อับอากาศ': ['ขาดอากาศ/อับอากาศ', 'การสัมผัส/สูดดมสารเคมี', 'เพลิงไหม้/ระเบิด'],
+        'งานเดินสายและติดตั้งระบบไฟฟ้า': ['กระแสไฟฟ้ารั่ว/ช็อต', 'การพลัดตกจากที่สูง', 'ของมีคมบาด/ทิ่มแทง'],
+        'งานทาสี/สัมผัสสารเคมี': ['การสัมผัส/สูดดมสารเคมี', 'เพลิงไหม้/ระเบิด'],
+        'เก็บกวาดและทำความสะอาดพื้นที่': ['ของมีคมบาด/ทิ่มแทง', 'การสัมผัส/สูดดมสารเคมี']
     };
 
-    // มาตรการพื้นฐานที่ต้องมีเสมอ (Default)
-    const DEFAULT_MEASURES = ['ทำ Toolbox Talk ก่อนเริ่มงาน', 'ขออนุญาตทำงาน (PTW)', 'สวมอุปกรณ์ PPE ครบถ้วน'];
-    const HAZARD_KEYS = Object.keys(HAZARD_MEASURE_MAP);
+    // ==========================================
+    // 🧠 สมองของระบบ ชั้นที่ 2: จับคู่ "อันตราย" -> "มาตรการป้องกัน"
+    // ==========================================
+    const HAZARD_MEASURE_MAP = {
+      // อันตรายหลัก
+      'กระแสไฟฟ้ารั่ว/ช็อต': ['ตัดแยกพลังงาน (LOTO)', 'ตรวจสอบสายไฟ/สายดิน', 'สวมอุปกรณ์ PPE ครบถ้วน'],
+      'การกระเด็นของวัสดุเข้าตา': ['สวมแว่นตานิรภัย/กระบังหน้า', 'ติดตั้งการ์ดป้องกันเครื่องจักร', 'กั้นเขตพื้นที่/ติดป้ายเตือน'],
+      'การชน/กระแทกจากเครื่องจักร': ['มีผู้เฝ้าระวัง (Standby Man)', 'กั้นเขตพื้นที่/ติดป้ายเตือน'],
+      'การตกหล่นของวัสดุ': ['กั้นเขตพื้นที่/ติดป้ายเตือน', 'ผูกรัดวัสดุให้แน่นหนา'],
+      'การพลัดตกจากที่สูง': ['สวมอุปกรณ์ PPE ครบถ้วน', 'จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด'],
+      'การสัมผัส/สูดดมสารเคมี': ['สวมอุปกรณ์ PPE ครบถ้วน', 'ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ'],
+      'การสัมผัสรังสี': ['กั้นเขตพื้นที่/ติดป้ายเตือน', 'มีผู้เฝ้าระวัง (Standby Man)', 'สับเปลี่ยนหมุนเวียนพนักงาน'],
+      'การหนีบ/ดึง/ทับ': ['ติดตั้งการ์ดป้องกันเครื่องจักร', 'ตัดแยกพลังงาน (LOTO)'],
+      'ของมีคมบาด/ทิ่มแทง': ['สวมอุปกรณ์ PPE ครบถ้วน', 'จัดเก็บเครื่องมือให้เป็นระเบียบ'],
+      'ขาดอากาศ/อับอากาศ': ['ตรวจวัดปริมาณก๊าซ', 'ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ', 'มีผู้เฝ้าระวัง (Standby Man)'],
+      'เพลิงไหม้/ระเบิด': ['จัดเตรียมถังดับเพลิง', 'ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ', 'ขออนุญาตทำงาน (PTW)'],
+      'เสียงดังระดับอันตราย': ['สวมอุปกรณ์ PPE ครบถ้วน', 'สับเปลี่ยนหมุนเวียนพนักงาน'],
+      
+      // อันตรายจาก Dropdown "อื่นๆ"
+      'ความร้อน/เย็นจัด': ['จัดเตรียมน้ำดื่ม/เกลือแร่', 'สับเปลี่ยนหมุนเวียนพนักงาน', 'จัดเตรียมพื้นที่พักร่มรื่น'],
+      'ท่าทางการทำงานที่ไม่เหมาะสม': ['สับเปลี่ยนหมุนเวียนพนักงาน', 'ยืดเหยียดกล้ามเนื้อก่อนทำงาน'],
+      'แสงสว่างไม่เพียงพอ/จ้าเกินไป': ['ติดตั้งไฟส่องสว่างชั่วคราว', 'สวมอุปกรณ์ PPE ครบถ้วน'],
+      'สัตว์มีพิษ/แมลงกัดต่อย': ['ตรวจสอบพื้นที่ก่อนเริ่มงาน', 'จัดเตรียมกล่องปฐมพยาบาล'],
+      'อันตรายจากแรงดัน': ['ตัดแยกพลังงาน (LOTO)', 'ตรวจสอบเกจวัดแรงดัน'],
+      'อันตรายจากการสั่นสะเทือน': ['สวมอุปกรณ์ PPE ครบถ้วน', 'สับเปลี่ยนหมุนเวียนพนักงาน']
+    };
+
+    const DEFAULT_MEASURES = ['ทำ Toolbox Talk', 'ขออนุญาตทำงาน (PTW)'];
+    const HAZARD_KEYS = ['กระแสไฟฟ้ารั่ว/ช็อต', 'การกระเด็นของวัสดุเข้าตา', 'การชน/กระแทกจากเครื่องจักร', 'การตกหล่นของวัสดุ', 'การพลัดตกจากที่สูง', 'การสัมผัส/สูดดมสารเคมี', 'การสัมผัสรังสี', 'การหนีบ/ดึง/ทับ', 'ของมีคมบาด/ทิ่มแทง', 'ขาดอากาศ/อับอากาศ', 'เพลิงไหม้/ระเบิด', 'เสียงดังระดับอันตราย'];
 
     // ==========================================
-    // ⚙️ ระบบสร้าง UI แบบไดนามิก
+    // ⚙️ ระบบ UI และการประมวลผล (Domino Effect)
     // ==========================================
     
-    // โหลดหน้าแรกปุ๊บ สร้างสเต็ป 1 ให้เลย
     document.addEventListener('DOMContentLoaded', () => {
-        addJsaStep();
+        addJsaStep(); // โหลดหน้าแรกปุ๊บ สร้างสเต็ป 1
     });
 
-    // ฟังก์ชันจัดการแสดงผลช่องกรอกเอง (Hybrid Dropdown) 
-    function toggleHybridInput(selectElement, inputClass) {
-        const wrapper = selectElement.parentElement.parentElement;
-        const textInput = wrapper.querySelector(`.${inputClass}`);
+    // 1. เมื่อโฟร์แมนเลือก "ขั้นตอนงาน"
+    function handleStepSelection(selectElement) {
+        const stepContainer = selectElement.closest('.jsa-step');
+        const textInput = stepContainer.querySelector('.step-text');
+        
+        // จัดการช่องพิมพ์เอง
         if (selectElement.value === 'custom') {
             textInput.classList.remove('hidden');
             textInput.focus();
         } else {
             textInput.classList.add('hidden');
         }
+
+        // --- ล้างค่าปุ่มอันตรายเก่าทั้งหมด ---
+        const hazardChips = stepContainer.querySelectorAll('.chip-hazard');
+        hazardChips.forEach(chip => chip.classList.remove('active'));
+
+        // --- Auto-Suggest อันตราย ---
+        const selectedStep = selectElement.value;
+        if (STEP_HAZARD_MAP[selectedStep]) {
+            const hazardsToActivate = STEP_HAZARD_MAP[selectedStep];
+            hazardChips.forEach(chip => {
+                if (hazardsToActivate.includes(chip.textContent)) {
+                    chip.classList.add('active'); // เปิดปุ่มอันตรายอัตโนมัติ
+                }
+            });
+        }
+
+        // --- อัปเดตมาตรการป้องกันต่อทันที ---
+        updatePreventiveMeasures(stepContainer);
     }
 
-    // ฟังก์ชันเปิด/ปิดกล่องระบุอื่นๆ สำหรับอันตรายหรือมาตรการ
+    // 2. ฟังก์ชันเปิด/ปิดกล่อง "อื่นๆ" (Dropdown)
     function toggleHybridWrapper(buttonElement, wrapperClass) {
         buttonElement.classList.toggle('active');
         const stepContainer = buttonElement.closest('.jsa-step');
@@ -164,39 +206,67 @@
         } else {
             wrapper.classList.add('hidden');
             wrapper.classList.remove('flex');
-            wrapper.querySelector('select').value = '';
+            const select = wrapper.querySelector('select');
+            select.value = ''; // รีเซ็ต Dropdown
             const textInput = wrapper.querySelector('input[type="text"]');
             textInput.value = '';
+            textInput.classList.add('hidden');
+            
+            // อัปเดตมาตรการป้องกันใหม่ เพราะเอาอันตรายออก
+            updatePreventiveMeasures(stepContainer);
+        }
+    }
+
+    // 3. จัดการ Dropdown "อันตรายอื่นๆ"
+    function handleHazardDropdown(selectElement) {
+        const wrapper = selectElement.closest('div').parentElement;
+        const textInput = wrapper.querySelector('.hazard-custom-text');
+        if (selectElement.value === 'custom') {
+            textInput.classList.remove('hidden');
+            textInput.focus();
+        } else {
+            textInput.classList.add('hidden');
+        }
+        
+        // --- อัปเดตมาตรการป้องกันเมื่อเลือก Dropdown ---
+        const stepContainer = selectElement.closest('.jsa-step');
+        updatePreventiveMeasures(stepContainer);
+    }
+
+    // 4. จัดการ Dropdown "มาตรการอื่นๆ"
+    function handleMeasureDropdown(selectElement) {
+        const wrapper = selectElement.closest('div').parentElement;
+        const textInput = wrapper.querySelector('.measure-custom-text');
+        if (selectElement.value === 'custom') {
+            textInput.classList.remove('hidden');
+            textInput.focus();
+        } else {
             textInput.classList.add('hidden');
         }
     }
 
-    // ฟังก์ชันสร้างปุ่มอันตราย (ก-ฮ)
-    function generateHazardButtons() {
-        let html = '';
-        HAZARD_KEYS.forEach(hazard => {
-            html += `<button type="button" class="chip chip-hazard" onclick="toggleHazard(this)">${hazard}</button>`;
-        });
-        html += `<button type="button" class="chip chip-hazard font-bold border-red-300 text-red-600" onclick="toggleHybridWrapper(this, 'hazard-others-wrapper')">➕ อื่นๆ (ระบุ)</button>`;
-        return html;
-    }
-
-    // ฟังก์ชันเมื่อกดเลือก "อันตราย" -> อัปเดต "มาตรการป้องกัน" ทันที
+    // 5. เมื่อกดปุ่ม "อันตราย" แมนนวล
     function toggleHazard(buttonElement) {
         buttonElement.classList.toggle('active');
         const stepContainer = buttonElement.closest('.jsa-step');
         updatePreventiveMeasures(stepContainer);
     }
 
-    // ฟังก์ชันหัวใจหลัก: ประมวลผลมาตรการป้องกัน (Smart Suggestion)
+    // 6. ฟังก์ชันหัวใจหลัก: ประมวลผลมาตรการป้องกัน (Smart Suggestion)
     function updatePreventiveMeasures(stepContainer) {
-        // 1. หาว่าผู้ใช้กดเลือกอันตรายอะไรไปบ้างแล้ว
-        const activeHazards = Array.from(stepContainer.querySelectorAll('.chip-hazard.active'))
+        // 6.1 รวบรวมอันตรายที่ถูกเลือกจาก "ปุ่มหลัก"
+        let activeHazards = Array.from(stepContainer.querySelectorAll('.chip-hazard.active'))
             .map(btn => btn.textContent)
-            .filter(text => text !== '➕ อื่นๆ (ระบุ)'); // เอา "อื่นๆ" ออกจาก list หลัก
+            .filter(text => text !== '➕ อื่นๆ (ระบุ)'); 
             
-        // 2. รวบรวมมาตรการป้องกันที่ต้องใช้จาก Dictionary
-        let recommendedMeasures = new Set([...DEFAULT_MEASURES]); // ใส่ค่าพื้นฐานรอไว้เลย
+        // 6.2 รวบรวมอันตรายที่ถูกเลือกจาก "Dropdown"
+        const hazardDropdown = stepContainer.querySelector('.hazard-others-wrapper select');
+        if (hazardDropdown && hazardDropdown.value && hazardDropdown.value !== 'custom') {
+            activeHazards.push(hazardDropdown.value);
+        }
+            
+        // 6.3 ประมวลผลมาตรการป้องกันจาก Dictionary
+        let recommendedMeasures = new Set([...DEFAULT_MEASURES]); 
         
         activeHazards.forEach(hazard => {
             if(HAZARD_MEASURE_MAP[hazard]) {
@@ -204,12 +274,12 @@
             }
         });
 
-        // 3. จำไว้ก่อนว่าผู้ใช้เคยกดปุ่ม "มาตรการ" ไหนไปแล้วบ้าง จะได้ไม่หายไปเวลากดอันตรายเพิ่ม
+        // 6.4 จดจำปุ่มมาตรการที่ผู้ใช้เคยกดเอาไว้เอง (จะได้ไม่ลบทิ้ง)
         const measureContainer = stepContainer.querySelector('.measures-container');
         const currentlyActiveMeasures = Array.from(measureContainer.querySelectorAll('.chip-measure.active'))
             .map(btn => btn.textContent);
 
-        // 4. สร้างปุ่ม HTML ใหม่
+        // 6.5 สร้างปุ่ม HTML ใหม่ให้สวยงาม
         let measuresHtml = '';
         recommendedMeasures.forEach(measure => {
             const isActive = currentlyActiveMeasures.includes(measure) ? 'active' : '';
@@ -217,15 +287,24 @@
         });
         measuresHtml += `<button type="button" class="chip chip-measure font-bold border-emerald-300 text-emerald-600" onclick="toggleHybridWrapper(this, 'measure-others-wrapper')">➕ อื่นๆ (ระบุ)</button>`;
 
-        // 5. นำปุ่มใหม่ไปแปะแทนที่
         measureContainer.innerHTML = measuresHtml;
         
-        // จัดการสถานะกล่องอื่นๆ ด้วย (ถ้าเคยกดไว้ ให้เปิดค้างไว้)
-        const othersBtn = stepContainer.querySelector('.measure-others-wrapper').previousElementSibling; // หาปุ่ม อื่นๆ ที่เพิ่งสร้างใหม่
+        // 6.6 คงสถานะกล่อง "มาตรการอื่นๆ" เอาไว้
+        const othersBtn = stepContainer.querySelector('.measure-others-wrapper').previousElementSibling; 
         const othersWrapper = stepContainer.querySelector('.measure-others-wrapper');
         if(!othersWrapper.classList.contains('hidden')){
              othersBtn.classList.add('active');
         }
+    }
+
+    // ฟังก์ชันสร้างปุ่มอันตราย (ก-ฮ) เริ่มต้น
+    function generateHazardButtons() {
+        let html = '';
+        HAZARD_KEYS.forEach(hazard => {
+            html += `<button type="button" class="chip chip-hazard" onclick="toggleHazard(this)">${hazard}</button>`;
+        });
+        html += `<button type="button" class="chip chip-hazard font-bold border-red-300 text-red-600" onclick="toggleHybridWrapper(this, 'hazard-others-wrapper')">➕ อื่นๆ (ระบุ)</button>`;
+        return html;
     }
 
     // ฟังก์ชันเพิ่มขั้นตอนการทำงาน
@@ -250,7 +329,7 @@
                 <div>
                     <label class="mb-1.5 block text-xs font-bold text-slate-700">1. ขั้นตอนการทำงาน (Job Step) <span class="text-red-500">*</span></label>
                     <div class="relative mb-2">
-                        <select class="jsa-step-select input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="toggleHybridInput(this, 'step-text')">
+                        <select class="input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="handleStepSelection(this)">
                             <option value="" disabled selected>-- เลือกขั้นตอนการทำงานมาตรฐาน --</option>
                             <option value="เตรียมพื้นที่และตรวจสอบอุปกรณ์">เตรียมพื้นที่และตรวจสอบเครื่องมือ (Site & Equip Prep)</option>
                             <option value="ขนย้ายและยกวัสดุอุปกรณ์">ขนย้ายและยกวัสดุอุปกรณ์ (Material Handling & Lifting)</option>
@@ -269,17 +348,16 @@
                     <textarea class="step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
                 </div>
 
-                <!-- 2. อันตราย (โหลดจาก JS อัตโนมัติ) -->
+                <!-- 2. อันตราย -->
                 <div>
                     <label class="mb-1.5 block text-xs font-bold text-red-600">2. อันตรายที่อาจเกิดขึ้น (Hazards) <span class="text-[10px] text-slate-400 font-normal">แตะเพื่อเลือก</span> <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-1.5 mb-2">
                         ${generateHazardButtons()}
                     </div>
-                    <!-- Hybrid Dropdown สำหรับอันตรายอื่นๆ -->
                     <div class="hazard-others-wrapper hidden flex-col gap-2 mt-2 border border-red-200 p-3 rounded-xl bg-red-50/50">
                         <label class="text-[10px] font-bold text-red-600 uppercase tracking-widest">อันตรายอื่นๆ (Hazards)</label>
                         <div class="relative">
-                            <select class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 text-xs font-semibold" onchange="toggleHybridInput(this, 'hazard-custom-text')">
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 text-xs font-semibold" onchange="handleHazardDropdown(this)">
                                 <option value="" disabled selected>-- เลือกอันตรายเพิ่มเติม --</option>
                                 <option value="ความร้อน/เย็นจัด">ความร้อน/เย็นจัด (Extreme Temperature)</option>
                                 <option value="ท่าทางการทำงานที่ไม่เหมาะสม">ท่าทางการทำงานที่ไม่เหมาะสม (Ergonomics)</option>
@@ -295,22 +373,23 @@
                     </div>
                 </div>
 
-                <!-- 3. มาตรการป้องกัน (ระบบแนะนำอัจฉริยะ) -->
+                <!-- 3. มาตรการป้องกัน -->
                 <div class="border-t border-slate-100 pt-4 bg-emerald-50/30 -mx-4 px-4 pb-2">
                     <label class="mb-1.5 block text-xs font-bold text-emerald-600 flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-500"></i> 3. มาตรการป้องกัน (Preventive Measures) <span class="text-red-500">*</span></label>
                     <div class="measures-container flex flex-wrap gap-1.5 mb-2">
-                        <!-- ระบบจะ Inject ปุ่มมาให้ตามอันตรายที่เลือก (ค่า Default คือ Toolbox, PTW, PPE) -->
+                        <!-- ระบบจะ Inject ปุ่มมาให้ตามอันตรายที่เลือก -->
                     </div>
-                    <!-- Hybrid Dropdown สำหรับมาตรการอื่นๆ -->
                     <div class="measure-others-wrapper hidden flex-col gap-2 mt-2 border border-emerald-200 p-3 rounded-xl bg-white">
                         <label class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">มาตรการป้องกันอื่นๆ (Measures)</label>
                         <div class="relative">
-                            <select class="input-field appearance-none cursor-pointer pr-10 border-emerald-300 focus:border-emerald-600 text-emerald-700 text-xs font-semibold" onchange="toggleHybridInput(this, 'measure-custom-text')">
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-emerald-300 focus:border-emerald-600 text-emerald-700 text-xs font-semibold" onchange="handleMeasureDropdown(this)">
                                 <option value="" disabled selected>-- เลือกมาตรการเพิ่มเติม --</option>
+                                <option value="จัดเตรียมน้ำดื่ม/เกลือแร่">จัดเตรียมน้ำดื่ม/เกลือแร่</option>
+                                <option value="จัดเตรียมพื้นที่พักร่มรื่น">จัดเตรียมพื้นที่พักร่มรื่น</option>
                                 <option value="จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด">จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด</option>
-                                <option value="ติดตั้งการ์ดป้องกันเครื่องจักร">ติดตั้งการ์ดป้องกันเครื่องจักร (Machine Guard)</option>
+                                <option value="ติดตั้งไฟส่องสว่างชั่วคราว">ติดตั้งไฟส่องสว่างชั่วคราว</option>
                                 <option value="ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ">ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำทิ้ง</option>
-                                <option value="ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ">ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ</option>
+                                <option value="ตรวจสอบพื้นที่ก่อนเริ่มงาน">ตรวจสอบพื้นที่ก่อนเริ่มงาน (ตรวจหาสัตว์มีพิษ)</option>
                                 <option value="สับเปลี่ยนหมุนเวียนพนักงาน">สับเปลี่ยนหมุนเวียนพนักงาน (Job Rotation)</option>
                                 <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุมาตรการเอง...</option>
                             </select>
@@ -332,12 +411,10 @@
         container.insertAdjacentHTML('beforeend', stepHTML);
         lucide.createIcons();
         
-        // อัปเดตมาตรการตั้งต้นของการ์ดใบใหม่ทันที
         const newStep = container.lastElementChild;
         updatePreventiveMeasures(newStep);
     }
 
-    // ฟังก์ชันจัดเรียงเลขขั้นตอนใหม่ กรณีมีคนกดลบทิ้ง
     function renumberSteps() {
         const steps = document.querySelectorAll('.jsa-step');
         stepCount = steps.length;
@@ -349,7 +426,6 @@
         });
     }
 
-    // ฟังก์ชันบันทึกข้อมูล (Mockup)
     function submitJsa() {
         Swal.fire({
             title: 'บันทึก E-JSA สำเร็จ!',
