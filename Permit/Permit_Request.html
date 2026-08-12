@@ -67,7 +67,23 @@
 </head>
 
 <body class="bg-surface antialiased text-slate-800">
-  <div class="min-h-screen pb-28">
+
+  <!-- 🚀 Smart Gateway (LIFF Blocker) แก้ปัญหากล้อง Android 🚀 -->
+  <div id="liff-blocker" class="hidden min-h-screen flex-col items-center justify-center p-6 bg-white z-50 absolute inset-0">
+      <div class="w-20 h-20 bg-navy/10 rounded-full flex items-center justify-center mb-6">
+          <i data-lucide="camera" class="w-10 h-10 text-navy"></i>
+      </div>
+      <h2 class="text-xl font-bold text-navy mb-1 text-center">ต้องใช้เบราว์เซอร์ภายนอก</h2>
+      <h3 class="text-md font-semibold text-orange mb-5 text-center">เพื่อเปิดใช้งานกล้องถ่ายรูป</h3>
+      <p class="text-sm text-gray-600 leading-relaxed text-center max-w-sm">
+          เนื่องจากข้อจำกัดของระบบ Android ในแอป LINE ทำให้ไม่สามารถเปิดกล้องเพื่อสแกน QR Code หรือถ่ายรูป JSA ได้ กรุณากดปุ่มด้านล่างเพื่อเปิดระบบใน Google Chrome ครับ
+      </p>
+      <button onclick="openInExternalBrowser()" class="mt-8 w-full max-w-xs flex items-center justify-center gap-2 py-4 bg-navy text-white text-sm font-bold rounded-xl hover:bg-navy-700 shadow-md transition-all">
+          เปิดในเบราว์เซอร์ Chrome <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
+      </button>
+  </div>
+
+  <div id="main-form" class="min-h-screen pb-28 hidden">
 
     <!-- Header -->
     <header class="sticky top-0 z-40 border-b border-navy-700/40 bg-navy text-white shadow-md">
@@ -246,21 +262,29 @@
             <div id="scannedAssetsList" class="mt-2 flex flex-col gap-2 empty:hidden"></div>
           </div>
 
-          <!-- JSA dropzone (ระบบ Hybrid) -->
+          <!-- 🚀 JSA dropzone (ระบบ Hybrid) อัปเดตใหม่ 🚀 -->
           <div id="jsaWrap" class="hidden">
             <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
             
             <div class="flex p-1 bg-slate-100 rounded-lg mb-3">
-               <button type="button" id="btn-jsa-photo" class="flex-1 py-2 text-[13px] font-bold bg-white text-red-600 shadow-sm rounded-md transition-all border border-slate-200">📸 แนบรูปถ่าย</button>
-               <button type="button" id="btn-jsa-ejsa" class="flex-1 py-2 text-[13px] font-bold text-slate-500 hover:text-navy transition-all border border-transparent">✨ ทำ E-JSA ออนไลน์</button>
+               <button type="button" id="btn-jsa-ejsa" class="flex-1 py-2 text-[13px] font-bold bg-white text-navy shadow-sm rounded-md transition-all border border-slate-200">✨ ทำ E-JSA ออนไลน์</button>
+               <button type="button" id="btn-jsa-photo" class="flex-1 py-2 text-[13px] font-bold text-slate-500 hover:text-red-600 transition-all border border-transparent">📸 แนบรูป (แบบกระดาษดั้งเดิม)</button>
             </div>
 
-            <div id="jsa-photo-area">
+            <!-- กล่องที่ 1: เลือกทำ E-JSA (ตั้งเป็น Default) -->
+            <div id="jsa-ejsa-area" class="flex flex-col items-center justify-center p-6 bg-navy/5 border-2 border-navy/20 border-dashed rounded-xl text-center">
+               <i data-lucide="sparkles" class="w-8 h-8 text-navy mb-2"></i>
+               <p class="text-sm font-extrabold text-navy">จัดทำ E-JSA ด้วยระบบอัจฉริยะ</p>
+               <p class="text-xs text-slate-600 mt-1 leading-relaxed">เมื่อกดปุ่ม "ส่งคำขอใบอนุญาต" ด้านล่าง<br>ระบบจะนำท่านไปยังหน้าทำ E-JSA อัตโนมัติ</p>
+            </div>
+
+            <!-- กล่องที่ 2: อัปโหลดรูป (ซ่อนไว้ก่อน) -->
+            <div id="jsa-photo-area" class="hidden">
               <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
                 <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
-                <span id="jsaText" class="text-sm font-bold text-red-600">กดเพื่อถ่ายรูป หรือเลือกไฟล์</span>
-                <span class="text-[11px] font-medium text-red-500/70">ระบบจะทำการบีบอัดรูปภาพอัตโนมัติ</span>
-                <input id="jsaInput" type="file" accept="image/*,application/pdf" capture="environment" class="hidden" />
+                <span id="jsaText" class="text-sm font-bold text-red-600">กดเพื่อเปิดกล้อง หรือเลือกไฟล์</span>
+                <span class="text-[11px] font-medium text-red-500/70">ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กที่สุดอัตโนมัติ</span>
+                <input id="jsaInput" type="file" accept="image/*" capture="environment" class="hidden" />
               </label>
               <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
                  <img id="jsaPreview" src="" class="w-full h-full object-cover" />
@@ -268,11 +292,6 @@
               </div>
             </div>
 
-            <div id="jsa-ejsa-area" class="hidden flex-col items-center justify-center p-6 bg-navy/5 border-2 border-navy/20 border-dashed rounded-xl text-center">
-               <i data-lucide="sparkles" class="w-8 h-8 text-navy mb-2"></i>
-               <p class="text-sm font-extrabold text-navy">จัดทำ E-JSA ด้วยระบบอัจฉริยะ</p>
-               <p class="text-xs text-slate-600 mt-1 leading-relaxed">เมื่อกดปุ่ม "ส่งคำขอใบอนุญาต" ด้านล่าง<br>ระบบจะนำท่านไปยังหน้าทำ E-JSA อัตโนมัติ</p>
-            </div>
           </div>
 
           <!-- Required PPE Grid -->
@@ -375,7 +394,6 @@
       { id: 'other_risk',  th: 'งานอื่นๆ (ระบุ)',       en: 'Other High Risk',    icon: 'plus-circle' },
     ];
     
-    // 🚀 อัปเดต: เพิ่ม mandatory: true สำหรับหมวกและรองเท้า
     const PPE_ITEMS = [
       { id: 'helmet',     th: 'หมวกนิรภัย',                en: 'Helmet',            icon: 'hard-hat', mandatory: true },
       { id: 'shoes',      th: 'รองเท้าเซฟตี้',              en: 'Safety Shoes',      icon: 'footprints', mandatory: true },
@@ -393,11 +411,10 @@
     // ---- State ----
     const selectedRisk = new Set();
     const selectedPPE = new Set();
-    // 🚀 อัปเดต: บังคับเลือกขั้นต่ำไว้ตั้งแต่เริ่ม
     selectedPPE.add('หมวกนิรภัย');
     selectedPPE.add('รองเท้าเซฟตี้');
 
-    let scannedAssets = []; // เก็บ Asset ID ที่สแกนสำเร็จ
+    let scannedAssets = [];
     let generalWork = false;
     let declared = false;
 
@@ -425,7 +442,6 @@
       btn.type = 'button';
       const colSpan = item.id === 'other_ppe' ? 'col-span-2 bg-slate-50 justify-center' : 'col-span-1 bg-white justify-start';
       
-      // 🚀 อัปเดต: ถ้าเป็นของบังคับ ให้เพิ่มคลาส mandatory และใส่สีแดงกำกับ
       let mandatoryBadge = '';
       if (item.mandatory) {
           btn.className = `ppe-opt active mandatory flex items-center gap-2.5 rounded-xl border p-2.5 text-left ${colSpan}`;
@@ -441,7 +457,6 @@
         '<span class="text-[9px] text-slate-400">' + item.en + '</span>' +
         '</div>';
       
-      // ล็อกไม่ให้กดยกเลิกได้ถ้าเป็นของบังคับ
       if (!item.mandatory) {
           btn.addEventListener('click', () => togglePPE(item.id, item.th, btn));
       }
@@ -465,8 +480,8 @@
     const otherPPESelect = document.getElementById('otherPPESelect');
     const otherPPEText = document.getElementById('otherPPEText');
 
-    // ---- JSA Mode Logic ----
-    let jsaMode = 'photo'; 
+    // ---- JSA Mode Logic (อัปเดตสลับค่าเริ่มต้น) ----
+    let jsaMode = 'ejsa'; // 🚀 ตั้งให้ E-JSA เป็นค่าเริ่มต้น
     const btnJsaPhoto = document.getElementById('btn-jsa-photo');
     const btnJsaEjsa = document.getElementById('btn-jsa-ejsa');
     const areaPhoto = document.getElementById('jsa-photo-area');
@@ -606,6 +621,7 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     let width = img.width, height = img.height;
+                    // บีบอัดภาพเพื่อลดขนาดไฟล์สูงสุด
                     const maxWidth = 1200;
                     if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
                     canvas.width = width; canvas.height = height;
@@ -619,7 +635,7 @@
                         document.getElementById('jsaText').textContent = "เปลี่ยนรูปถ่าย";
                         Swal.close();
                         refresh();
-                    }, 'image/jpeg', 0.7);
+                    }, 'image/jpeg', 0.7); // ลด Quality เหลือ 70%
                 };
                 img.onerror = () => {
                     Swal.fire('ข้อผิดพลาด', 'ไฟล์รูปภาพนี้มีปัญหา ไม่สามารถอ่านได้ครับ', 'error');
@@ -637,7 +653,7 @@
         compressedJsaFile = null;
         jsaInput.value = '';
         document.getElementById('jsaPreviewWrap').classList.add('hidden');
-        document.getElementById('jsaText').textContent = "กดเพื่อถ่ายรูป หรือเลือกไฟล์";
+        document.getElementById('jsaText').textContent = "กดเพื่อเปิดกล้อง หรือเลือกไฟล์";
         refresh();
     }
 
@@ -678,7 +694,7 @@
       submitBtn.disabled = !(declared && (generalWork || hasHighRisk) && hasJsaIfNeeded && selectedPPE.size > 0 && hasBasicInfo && isOtherRiskValid && isOtherPPEValid);
     }
 
-    // 🚀 อัปเดต: ระบบสแกน QR Code ด้วย html5-qrcode
+    // ---- ระบบสแกน QR Code ด้วย html5-qrcode ----
     function openScanner() {
         if (!supabaseClient) {
             Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
@@ -687,7 +703,6 @@
         document.getElementById('qrModal').classList.remove('hidden');
         document.getElementById('qrModal').classList.add('flex');
         
-        // กำหนดค่าสแกนเนอร์
         html5QrcodeScanner = new Html5Qrcode("reader");
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
         
@@ -709,18 +724,15 @@
     }
 
     async function onScanSuccess(decodedText, decodedResult) {
-        // เมื่อสแกนติด ให้ปิดกล้องก่อน
         closeScanner();
         Swal.fire({ title: 'กำลังตรวจสอบอุปกรณ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         try {
-            // เช็คว่าเคยสแกนตัวนี้ไปแล้วหรือไม่
             if(scannedAssets.some(asset => asset.id === decodedText)) {
                 Swal.fire('สแกนซ้ำ', 'อุปกรณ์นี้ถูกเพิ่มในใบงานเรียบร้อยแล้ว', 'info');
                 return;
             }
 
-            // ค้นหาอุปกรณ์ใน Database (tb_assets)
             const { data, error } = await supabaseClient
                 .from('tb_assets')
                 .select('asset_id, asset_name, safe_to_use, condition_tag')
@@ -737,7 +749,6 @@
                 return;
             }
 
-            // เพิ่มเข้า List ในหน่วยความจำ และแสดงผลบนหน้าจอ
             scannedAssets.push({ id: data.asset_id, name: data.asset_name });
             renderScannedAssets();
             Swal.fire({
@@ -755,7 +766,7 @@
     }
 
     function onScanFailure(error) {
-        // ไม่ต้องทำอะไร ปล่อยให้มันสแกนต่อไปเรื่อยๆ จนกว่าจะเจอ
+        // Ignored, continuous scanning
     }
 
     function renderScannedAssets() {
@@ -781,8 +792,33 @@
         renderScannedAssets();
     }
 
-    // ---- LIFF Init ----
+    // ---- 🚀 ฟังก์ชันดักจับ LIFF Blocker สำหรับ Android ----
+    function openInExternalBrowser() {
+        var withoutScheme = window.location.href.replace(/^https?:\/\//, '');
+        var intentUrl = 'intent://' + withoutScheme + '#Intent;scheme=https;package=com.android.chrome;end';
+        try {
+            window.location.href = intentUrl;
+        } catch (e) {
+            console.error('intent redirect failed:', e);
+        }
+    }
+
+    // ---- LIFF Init & Setup ----
     document.addEventListener('DOMContentLoaded', async () => {
+        // ตรวจสอบ Android + LINE เพื่อบล็อกแล้วเด้งไป Chrome
+        var isLineApp = /Line/i.test(navigator.userAgent);
+        var isAndroid = /Android/i.test(navigator.userAgent);
+
+        if (isLineApp && isAndroid) {
+            document.getElementById('main-form').style.display = 'none';
+            document.getElementById('liff-blocker').classList.remove('hidden');
+            document.getElementById('liff-blocker').classList.add('flex');
+        } else {
+            document.getElementById('liff-blocker').classList.add('hidden');
+            document.getElementById('liff-blocker').classList.remove('flex');
+            document.getElementById('main-form').style.display = 'block';
+        }
+
         if (typeof liff !== 'undefined') {
             try {
                 await liff.init({ liffId: '2010907761-KrJ8PgNN' });
@@ -819,7 +855,7 @@
         try {
             let jsaUrl = null;
             if (jsaMode === 'photo' && compressedJsaFile) {
-                Swal.update({ title: 'กำลังอัปโหลดเอกสาร JSA...' });
+                Swal.update({ title: 'กำลังอัปโหลดรูป JSA...' });
                 const filePath = 'jsa-docs/' + Date.now() + '.jpg';
                 const { error: uploadError } = await supabaseClient.storage.from('safety-documents').upload(filePath, compressedJsaFile);
                 if (uploadError) throw uploadError;
@@ -862,7 +898,7 @@
                 risk_area_class: isHighRisk ? 'เขตอันตราย' : 'เขตควบคุม', 
                 start_time: document.getElementById('start-time').value,
                 end_time: document.getElementById('end-time').value,
-                assets_list: scannedAssets, // 🚀 เพิ่ม Asset List ลงในตาราง
+                assets_list: scannedAssets, 
                 status: 'Pending',
                 specific_data: {
                     project_id: document.getElementById('project-input').value,
