@@ -113,7 +113,6 @@
             <div class="relative">
               <select id="wbs-input" class="input-field appearance-none cursor-pointer pr-10">
                 <option value="" disabled selected>-- เลือกแผนงาน --</option>
-                <!-- ⚠️ คำเตือน: Value ต้องตรงกับ task_id ในตาราง tb_wbs_tasks เพื่อไม่ให้ติด Foreign Key Error -->
                 <option value="TSK-001">งานโครงสร้าง (Structural Work)</option>
                 <option value="TSK-002">งานระบบ M&E (MEP Installation)</option>
                 <option value="TSK-003">งานสถาปัตยกรรม (Architectural Finishing)</option>
@@ -199,7 +198,7 @@
               <i data-lucide="camera" class="h-8 w-8 text-orange"></i>
               <span id="jsaText" class="text-sm font-bold text-orange">กดเพื่อถ่ายรูป หรือเลือกไฟล์</span>
               <span class="text-[11px] font-medium text-orange/60">ระบบจะทำการบีบอัดรูปภาพอัตโนมัติ</span>
-              <input id="jsaInput" type="file" accept="image/*" capture="environment" class="hidden" />
+              <input id="jsaInput" type="file" accept="image/*,application/pdf" capture="environment" class="hidden" />
             </label>
             <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
                <img id="jsaPreview" src="" class="w-full h-full object-cover" />
@@ -348,6 +347,16 @@
         if (!e.target.files || e.target.files.length === 0) return;
         let file = e.target.files[0];
         
+        // 1. เคลียร์รูปเก่าทิ้งจากหน่วยความจำทันทีที่กดเลือกไฟล์ใหม่
+        compressedJsaFile = null;
+
+        // 2. ดักจับ: ถ้าไม่ใช่ไฟล์รูปภาพ ให้แจ้งเตือนและยกเลิก
+        if (!file.type.match('image.*') && !file.name.toLowerCase().endsWith('.heic')) {
+            Swal.fire('ชนิดไฟล์ไม่ถูกต้อง', 'ระบบรองรับเฉพาะการถ่ายรูป หรือแนบไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ', 'warning');
+            removeJsa();
+            return;
+        }
+
         Swal.fire({ title: 'กำลังประมวลผลรูปภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         try {
@@ -381,10 +390,17 @@
                         refresh();
                     }, 'image/jpeg', 0.7);
                 };
+                
+                // ดักจับ Error กรณีเบราว์เซอร์อ่านไฟล์รูปไม่ได้
+                img.onerror = () => {
+                    Swal.fire('ข้อผิดพลาด', 'ไฟล์รูปภาพนี้มีปัญหา ไม่สามารถอ่านได้ครับ', 'error');
+                    removeJsa();
+                };
             };
         } catch (err) {
             console.error('Image processing failed:', err);
             Swal.fire('ข้อผิดพลาด', 'ไม่สามารถประมวลผลรูปภาพได้', 'error');
+            removeJsa();
         }
     });
 
@@ -489,8 +505,12 @@
                 confirmButtonColor: '#2A4365',
                 confirmButtonText: 'กลับสู่หน้าหลัก'
             }).then(() => {
-                if (typeof liff !== 'undefined' && liff.isInClient()) { liff.closeWindow(); } 
-                else { window.history.back(); }
+                if (typeof liff !== 'undefined' && liff.isInClient()) { 
+                    liff.closeWindow(); // ปิดแอป LINE
+                } else { 
+                    // 3. บังคับรีเฟรชหน้าจอใหม่หมดจด เพื่อล้างความจำตอนทดสอบบนคอมพิวเตอร์
+                    window.location.reload(); 
+                }
             });
 
         } catch (error) {
