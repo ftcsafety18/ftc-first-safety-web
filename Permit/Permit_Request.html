@@ -251,59 +251,14 @@
         </header>
         <div class="space-y-5 p-5">
           
-          <!-- ปุ่ม E-Tagging -->
+          <!-- 1. Required PPE Grid (เลื่อนขึ้นมาไว้บนสุด) -->
           <div>
-            <button type="button" onclick="openScanner()"
-              class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-navy/20 bg-slate-50 px-4 py-3.5 text-sm font-bold text-navy transition hover:bg-slate-100 active:scale-[0.98]">
-              <i data-lucide="qr-code" class="h-5 w-5"></i>
-              สแกน QR เครื่องมือช่าง (E-Tagging)
-            </button>
-            <!-- คอนเทนเนอร์แสดงเครื่องมือที่สแกนแล้ว -->
-            <div id="scannedAssetsList" class="mt-2 flex flex-col gap-2 empty:hidden"></div>
-          </div>
-
-          <!-- 🚀 JSA dropzone (ระบบ Hybrid) อัปเดตคำเชิญชวน 🚀 -->
-          <div id="jsaWrap" class="hidden">
-            <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
-            
-            <div class="flex p-1 bg-slate-100 rounded-lg mb-3">
-               <button type="button" id="btn-jsa-ejsa" class="flex-1 py-2 text-[13px] font-bold bg-white text-navy shadow-sm rounded-md transition-all border border-slate-200">✨ ทำ E-JSA ออนไลน์</button>
-               <button type="button" id="btn-jsa-photo" class="flex-1 py-2 text-[13px] font-bold text-slate-500 hover:text-red-600 transition-all border border-transparent">📸 แนบรูป (แบบกระดาษดั้งเดิม)</button>
-            </div>
-
-            <!-- กล่องที่ 1: เลือกทำ E-JSA (ตั้งเป็น Default) -->
-            <div id="jsa-ejsa-area" class="flex flex-col items-center justify-center p-6 bg-navy/5 border-2 border-navy/20 border-dashed rounded-xl text-center">
-               <i data-lucide="sparkles" class="w-8 h-8 text-navy mb-2"></i>
-               <p class="text-sm font-extrabold text-navy">จัดทำ E-JSA ด้วยระบบอัจฉริยะ</p>
-               <p class="text-xs text-slate-600 mt-1 leading-relaxed">เมื่อกดปุ่ม "ส่งคำขอใบอนุญาต" ด้านล่าง<br>ระบบจะนำท่านไปยังหน้าทำ E-JSA อัตโนมัติ</p>
-            </div>
-
-            <!-- กล่องที่ 2: อัปโหลดรูป JSA แบบกระดาษ -->
-            <div id="jsa-photo-area" class="hidden">
-              <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
-                <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
-                <span id="jsaText" class="text-sm font-bold text-red-600">แนบรูปถ่าย JSA แบบกระดาษดั้งเดิม</span>
-                <span class="text-[11px] font-medium text-red-500/80 leading-relaxed">
-                  กรุณากดเพื่อเปิดกล้องถ่ายรูปเอกสาร<br>
-                  <span class="text-navy font-bold mt-1 inline-block">💡 แนะนำ: เลือก "ทำ E-JSA ออนไลน์" เพื่อความสะดวกรวดเร็ว</span>
-                </span>
-                <input id="jsaInput" type="file" accept="image/*" capture="environment" class="hidden" />
-              </label>
-              <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
-                 <img id="jsaPreview" src="" class="w-full h-full object-cover" />
-                 <button type="button" onclick="removeJsa()" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 shadow-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Required PPE Grid -->
-          <div class="border-t border-slate-100 pt-4">
-            <label class="mb-3 block text-sm font-bold text-slate-700">อุปกรณ์ PPE ที่บังคับใช้ <span class="text-[11px] font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span> <span class="text-red-500">*</span></label>
+            <label class="mb-3 block text-sm font-bold text-slate-700">กรุณาระบุ PPE ที่ต้องใช้งาน <span class="text-[11px] font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span> <span class="text-red-500">*</span></label>
             <div id="ppeList" class="grid grid-cols-2 gap-2">
               <!-- ppe items injected by JS -->
             </div>
             
+            <!-- Hybrid Input สำหรับ PPE อื่นๆ -->
             <div id="otherPPEWrapper" class="hidden flex-col gap-2 mt-2 border border-slate-200 p-3 rounded-xl bg-slate-50">
               <label class="text-[11px] font-bold text-navy uppercase tracking-widest">อุปกรณ์ PPE อื่นๆ (โปรดระบุ)</label>
               <div class="relative">
@@ -324,6 +279,53 @@
               <input type="text" id="otherPPEText" placeholder="โปรดพิมพ์ระบุอุปกรณ์ PPE ที่นี่..." class="hidden input-field border-navy/30 focus:border-navy" />
             </div>
           </div>
+
+          <!-- 2. ปุ่ม E-Tagging (เลื่อนมาไว้ตรงกลาง) -->
+          <div class="border-t border-slate-100 pt-4">
+            <button type="button" onclick="openScanner()"
+              class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-navy/20 bg-slate-50 px-4 py-3.5 text-sm font-bold text-navy transition hover:bg-slate-100 active:scale-[0.98]">
+              <i data-lucide="qr-code" class="h-5 w-5"></i>
+              สแกน QR เครื่องมือช่าง (E-Tagging)
+            </button>
+            <!-- คอนเทนเนอร์แสดงเครื่องมือที่สแกนแล้ว -->
+            <div id="scannedAssetsList" class="mt-2 flex flex-col gap-2 empty:hidden"></div>
+          </div>
+
+          <!-- 3. JSA dropzone (เลื่อนมาไว้ด้านล่างสุด) -->
+          <div id="jsaWrap" class="hidden border-t border-slate-100 pt-4">
+            <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
+            
+            <div class="flex p-1 bg-slate-100 rounded-lg mb-3">
+               <button type="button" id="btn-jsa-ejsa" class="flex-1 py-2 text-[13px] font-bold bg-white text-navy shadow-sm rounded-md transition-all border border-slate-200">✨ ทำ JSA แบบออนไลน์</button>
+               <button type="button" id="btn-jsa-photo" class="flex-1 py-2 text-[13px] font-bold text-slate-500 hover:text-red-600 transition-all border border-transparent">📸 แนบกระดาษแบบเก่า</button>
+            </div>
+
+            <!-- กล่องที่ 1: เลือกทำ E-JSA (ตั้งเป็น Default) -->
+            <div id="jsa-ejsa-area" class="flex flex-col items-center justify-center p-6 bg-navy/5 border-2 border-navy/20 border-dashed rounded-xl text-center">
+               <i data-lucide="sparkles" class="w-8 h-8 text-navy mb-2"></i>
+               <p class="text-sm font-extrabold text-navy">จัดทำ E-JSA ด้วยระบบอัจฉริยะ</p>
+               <p class="text-xs text-slate-600 mt-1 leading-relaxed">เมื่อกดปุ่ม "ส่งคำขอใบอนุญาต" ด้านล่าง<br>ระบบจะนำท่านไปยังหน้าทำ E-JSA อัตโนมัติ</p>
+            </div>
+
+            <!-- กล่องที่ 2: อัปโหลดรูป JSA แบบกระดาษ -->
+            <div id="jsa-photo-area" class="hidden">
+              <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
+                <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
+                <span id="jsaText" class="text-sm font-bold text-red-600">แนบรูปถ่าย JSA แบบกระดาษแบบเก่า</span>
+                <span class="text-[11px] font-medium text-red-500/80 leading-relaxed">
+                  กรุณากดเพื่อเปิดกล้องถ่ายรูปเอกสาร<br>
+                  <span class="text-navy font-bold mt-1 inline-block">💡 แนะนำ: เลือก "ทำ JSA แบบออนไลน์" เพื่อความสะดวกรวดเร็ว</span>
+                </span>
+                <input id="jsaInput" type="file" accept="image/*" capture="environment" class="hidden" />
+              </label>
+              <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
+                 <img id="jsaPreview" src="" class="w-full h-full object-cover" />
+                 <button type="button" onclick="removeJsa()" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 shadow-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
@@ -655,7 +657,7 @@
         compressedJsaFile = null;
         jsaInput.value = '';
         document.getElementById('jsaPreviewWrap').classList.add('hidden');
-        document.getElementById('jsaText').textContent = "แนบรูปถ่าย JSA แบบกระดาษดั้งเดิม";
+        document.getElementById('jsaText').textContent = "แนบรูปถ่าย JSA แบบกระดาษแบบเก่า";
         refresh();
     }
 
