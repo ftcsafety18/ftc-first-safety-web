@@ -12,7 +12,7 @@
   <!-- Sarabun font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <!-- LIFF, Supabase, SweetAlert2, Heic2Any -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -37,16 +37,26 @@
 
   <style>
     body { font-family: 'Sarabun', sans-serif; -webkit-tap-highlight-color: transparent; }
-    /* Selected states */
-    .risk-card.active { border-color:#2A4365; background:rgba(42,67,101,.05); box-shadow:0 2px 4px rgba(0,0,0,.05); }
-    .risk-card.active .risk-icon { background:#2A4365; color:#fff; }
-    .risk-card.active .risk-check { border-color:#2A4365; background:#2A4365; color:#fff; }
     
-    .opt.active { border-color:#DB5A24; background:rgba(219,90,36,.05); color: #DB5A24; font-weight: 600; }
-    .opt.active .opt-check { border-color:#DB5A24; background:#DB5A24; color:#fff; }
-    
-    .decl.active { border-color:#e11d48; background:rgba(225,29,72,.08); }
-    .decl.active .decl-check { border-color:#e11d48; background:#e11d48; color:#fff; }
+    /* Risk Cards (Red Theme for High Risk) */
+    .risk-card { border-color: #fca5a5; background: #fff; }
+    .risk-card.active { border-color: #dc2626; background: #fef2f2; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1); }
+    .risk-card.active .risk-icon { background: #dc2626; color: #fff; }
+    .risk-card.active .risk-check { border-color: #dc2626; background: #dc2626; color: #fff; }
+    .risk-card.active .risk-title { color: #b91c1c; }
+
+    /* General Work (Green/Safe Theme) */
+    #generalWork { border-width: 2px; }
+    #generalWork.active { border-color: #059669; background: #f0fdf4; }
+    #generalWork.active .opt-check { border-color: #059669; background: #059669; color: #fff; }
+
+    /* PPE Cards */
+    .ppe-opt { border-color: #e2e8f0; }
+    .ppe-opt.active { border-color: #2A4365; background: #f8fafc; font-weight: 600; color: #2A4365; }
+    .ppe-opt.active .opt-check { border-color: #2A4365; background: #2A4365; color: #fff; }
+
+    .decl.active { border-color: #e11d48; background: rgba(225,29,72,.08); }
+    .decl.active .decl-check { border-color: #e11d48; background: #e11d48; color: #fff; }
 
     .input-field { width: 100%; border-radius: 0.75rem; border: 1px solid #e2e8f0; background-color: #fff; padding: 0.75rem 1rem; font-size: 0.875rem; color: #1e293b; outline: none; transition: all 0.2s; }
     .input-field:focus { border-color: #2A4365; box-shadow: 0 0 0 3px rgba(42, 67, 101, 0.1); }
@@ -72,7 +82,7 @@
         </span>
       </div>
 
-      <!-- Profile Bar (LIFF Injection Target) -->
+      <!-- Profile Bar -->
       <div class="border-t border-white/10 bg-navy-700/60 backdrop-blur-sm">
         <div class="mx-auto flex max-w-xl items-center gap-3 px-4 py-2.5">
           <img id="profileAvatar" src="https://via.placeholder.com/150?text=U"
@@ -87,7 +97,7 @@
 
     <main class="mx-auto max-w-xl space-y-5 px-4 py-6">
 
-      <!-- Section 1 -->
+      <!-- Section 1 (ของเดิมที่ทำงานได้ 100%) -->
       <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         <header class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 bg-slate-50/50">
           <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-bold text-white shadow-inner">1</span>
@@ -127,8 +137,6 @@
               <input type="text" id="location-input" placeholder="เช่น อาคาร A ชั้น 12 โซนลิฟต์โดยสาร" class="input-field pl-10" />
             </div>
           </div>
-
-          <!-- วัน-เวลา เริ่มและสิ้นสุดงาน -->
           <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
             <div>
               <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">เวลาเริ่มงาน <span class="text-red-500">*</span></label>
@@ -142,7 +150,7 @@
         </div>
       </section>
 
-      <!-- Section 2 -->
+      <!-- Section 2: ประเภทงาน -->
       <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         <header class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 bg-slate-50/50">
           <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-bold text-white shadow-inner">2</span>
@@ -153,29 +161,32 @@
         </header>
         <div class="space-y-4 p-5">
           <div>
-            <label class="mb-1 block text-sm font-semibold text-slate-700">ประเภทงานเสี่ยงสูง <span class="text-[11px] font-normal text-slate-400">(เลือกได้มากกว่า 1 รายการ)</span> <span class="text-red-500">*</span></label>
+            <label class="mb-1 block text-sm font-bold text-red-600">ประเภทงานเสี่ยงสูง <span class="text-[11px] font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span> <span class="text-red-500">*</span></label>
             <div id="riskGrid" class="grid grid-cols-2 gap-2 mt-3">
               <!-- risk cards injected by JS -->
             </div>
+            <!-- ช่องกรอกงานอื่นๆ ซ่อนไว้เป็นค่าเริ่มต้น -->
+            <input type="text" id="otherRiskInput" placeholder="โปรดระบุลักษณะงานเสี่ยงสูง..." class="hidden input-field mt-2 border-red-300 focus:border-red-600" />
           </div>
 
+          <!-- กล่องงานทั่วไป (เน้นขอบหนา สีเขียว) -->
           <button type="button" id="generalWork" data-active="false"
-            class="opt flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3.5 text-left transition hover:border-slate-300">
-            <span class="opt-check flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white text-transparent transition">
+            class="flex w-full items-center gap-3 rounded-xl border border-slate-300 bg-white p-3.5 text-left transition hover:border-slate-400">
+            <span class="opt-check flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-slate-400 bg-white text-transparent transition">
               <i data-lucide="check" class="h-3.5 w-3.5"></i>
             </span>
-            <span class="text-sm font-medium text-slate-600">งานทั่วไป (General Work) — <span class="text-emerald-600 font-semibold">เสี่ยงต่ำ</span></span>
+            <span class="text-[15px] font-extrabold text-slate-700">งานทั่วไป (General Work) — <span class="text-emerald-600">เสี่ยงต่ำ</span></span>
           </button>
 
           <!-- High-risk alert -->
-          <div id="riskAlert" role="alert" class="hidden items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700 animate-pulse">
-            <i data-lucide="alert-triangle" class="h-5 w-5 shrink-0 text-red-600"></i>
-            <p class="text-sm font-bold leading-snug">⚠️ งานเสี่ยงสูงจำเป็นต้องแนบรูปเอกสาร JSA</p>
+          <div id="riskAlert" role="alert" class="hidden items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">
+            <i data-lucide="alert-triangle" class="h-5 w-5 shrink-0 text-red-600 animate-pulse"></i>
+            <p class="text-[13px] font-bold leading-snug">⚠️ งานเสี่ยงสูงจำเป็นต้องแนบรูปเอกสาร JSA</p>
           </div>
         </div>
       </section>
 
-      <!-- Section 3 -->
+      <!-- Section 3: ความปลอดภัยและอุปกรณ์ PPE -->
       <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         <header class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 bg-slate-50/50">
           <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-bold text-white shadow-inner">3</span>
@@ -193,11 +204,11 @@
 
           <!-- JSA dropzone -->
           <div id="jsaWrap" class="hidden">
-            <label class="mb-2 block text-sm font-semibold text-slate-700">ถ่ายรูปเอกสาร JSA (Job Safety Analysis) <span class="text-red-500">*</span></label>
-            <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-orange bg-orange/5 p-6 text-center transition hover:bg-orange/10">
-              <i data-lucide="camera" class="h-8 w-8 text-orange"></i>
-              <span id="jsaText" class="text-sm font-bold text-orange">กดเพื่อถ่ายรูป หรือเลือกไฟล์</span>
-              <span class="text-[11px] font-medium text-orange/60">ระบบจะทำการบีบอัดรูปภาพอัตโนมัติ</span>
+            <label class="mb-2 block text-sm font-bold text-red-600">แนบรูปเอกสาร JSA <span class="text-red-500">*</span></label>
+            <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
+              <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
+              <span id="jsaText" class="text-sm font-bold text-red-600">กดเพื่อถ่ายรูป หรือเลือกไฟล์</span>
+              <span class="text-[11px] font-medium text-red-500/70">ระบบจะทำการบีบอัดรูปภาพอัตโนมัติ</span>
               <input id="jsaInput" type="file" accept="image/*,application/pdf" capture="environment" class="hidden" />
             </label>
             <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
@@ -206,12 +217,14 @@
             </div>
           </div>
 
-          <!-- Required PPE -->
+          <!-- Required PPE Grid -->
           <div class="border-t border-slate-100 pt-4">
-            <label class="mb-3 block text-sm font-semibold text-slate-700">อุปกรณ์ PPE ที่บังคับใช้ (เลือกได้มากกว่า 1) <span class="text-red-500">*</span></label>
+            <label class="mb-3 block text-sm font-bold text-slate-700">อุปกรณ์ PPE ที่บังคับใช้ <span class="text-[11px] font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span> <span class="text-red-500">*</span></label>
             <div id="ppeList" class="grid grid-cols-2 gap-2">
               <!-- ppe items injected by JS -->
             </div>
+            <!-- ช่องกรอก PPE อื่นๆ ซ่อนไว้เป็นค่าเริ่มต้น -->
+            <input type="text" id="otherPPEInput" placeholder="โปรดระบุอุปกรณ์ PPE อื่นๆ..." class="hidden input-field mt-2" />
           </div>
         </div>
       </section>
@@ -258,18 +271,31 @@
 
     // ---- Data ----
     const HIGH_RISK_WORK = [
-      { id: 'grinding',    th: 'งานเจียร / ตัด',       icon: 'scissors' },
-      { id: 'welding',     th: 'งานเชื่อม / ประกายไฟ',  icon: 'flame' },
-      { id: 'confined',    th: 'งานอับอากาศ',         icon: 'wind' },
-      { id: 'energy',      th: 'งานแยกพลังงาน',        icon: 'zap' },
-      { id: 'painting',    th: 'งานทาสี / สารเคมี',     icon: 'paintbrush' },
-      { id: 'scaffolding', th: 'นั่งร้าน / ที่สูง',        icon: 'construction' },
-      { id: 'testing',     th: 'งานทดสอบระบบ',        icon: 'gauge' },
-      { id: 'crane',       th: 'เครื่องจักรกลหนัก',       icon: 'truck' },
-      { id: 'radiography', th: 'งานรังสีถ่ายภาพ',        icon: 'radiation' },
+      { id: 'confined',    th: 'งานที่อับอากาศ',         en: 'Confined Space',     icon: 'wind' },
+      { id: 'welding',     th: 'งานเชื่อม/ก่อประกายไฟ',  en: 'Hot Work',           icon: 'flame' },
+      { id: 'scaffolding', th: 'งานบนที่สูง',          en: 'Working at Height',  icon: 'arrow-up-to-line' },
+      { id: 'excavation',  th: 'งานขุดเจาะดิน',         en: 'Excavation',         icon: 'pickaxe' },
+      { id: 'electrical',  th: 'งานเกี่ยวกับไฟฟ้า',       en: 'Electrical Work',    icon: 'zap' },
+      { id: 'crane',       th: 'งานยกของหนัก/เครน',     en: 'Lifting / Crane',    icon: 'package-open' },
+      { id: 'chemical',    th: 'งานเกี่ยวกับสารเคมี',      en: 'Chemical Work',      icon: 'beaker' },
+      { id: 'structure',   th: 'งานรื้อถอน/โครงสร้าง',    en: 'Structural Work',    icon: 'building' },
+      { id: 'radiation',   th: 'งานเกี่ยวกับรังสี',        en: 'Radiation Area',     icon: 'radiation' },
+      { id: 'other_risk',  th: 'งานอื่นๆ',             en: 'Other High Risk',    icon: 'help-circle' },
     ];
+    
+    // อ้างอิงจากคู่มือความปลอดภัย โครงการ APTAR
     const PPE_ITEMS = [
-      'หมวกนิรภัย', 'รองเท้าเซฟตี้', 'แว่นตากันสะเก็ด', 'ถุงมือหนัง', 'เข็มขัดกันตกเต็มตัว'
+      { id: 'helmet',     th: 'หมวกนิรภัย',                en: 'Helmet',            icon: 'hard-hat' },
+      { id: 'shoes',      th: 'รองเท้าเซฟตี้',              en: 'Safety Shoes',      icon: 'footprints' },
+      { id: 'glasses',    th: 'แว่นตานิรภัย',              en: 'Safety Glasses',    icon: 'glasses' },
+      { id: 'shield',     th: 'หน้ากากเชื่อม/กระบังหน้า',     en: 'Face Shield',       icon: 'shield' },
+      { id: 'leather',    th: 'ถุงมือหนัง',                en: 'Leather Gloves',    icon: 'hand' },
+      { id: 'cotton',     th: 'ถุงมือผ้า/ยาง',             en: 'Cotton / Rubber',   icon: 'hand' },
+      { id: 'ear',        th: 'ที่อุดหู/ครอบหู',             en: 'Ear Plugs/Muffs',   icon: 'ear' },
+      { id: 'harness',    th: 'เข็มขัดกันตกเต็มตัว',         en: 'Full Body Harness', icon: 'person-standing' },
+      { id: 'lifeline',   th: 'สายช่วยชีวิต',              en: 'Life Line',         icon: 'link' },
+      { id: 'mask',       th: 'หน้ากากกันสารเคมี/ฝุ่น',       en: 'Respirator/Mask',   icon: 'spray-can' },
+      { id: 'other_ppe',  th: 'อื่นๆ (Others)',          en: 'Please specify',    icon: 'more-horizontal' },
     ];
 
     // ---- State ----
@@ -283,12 +309,15 @@
     HIGH_RISK_WORK.forEach((w) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'risk-card relative flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-slate-300 active:scale-[0.98]';
+      btn.className = 'risk-card relative flex flex-col items-start gap-1.5 rounded-xl border p-3 text-left transition active:scale-[0.98]';
       btn.dataset.id = w.id;
       btn.innerHTML =
-        '<span class="risk-icon flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-navy transition"><i data-lucide="' + w.icon + '" class="h-4 w-4"></i></span>' +
-        '<span class="block text-[12px] font-bold leading-tight text-slate-700 mt-1">' + w.th + '</span>' +
-        '<span class="risk-check absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 bg-white text-transparent transition"><i data-lucide="check" class="h-2.5 w-2.5"></i></span>';
+        '<div class="flex items-center gap-2">' +
+        '<span class="risk-icon flex h-6 w-6 shrink-0 items-center justify-center rounded text-red-400 transition"><i data-lucide="' + w.icon + '" class="h-4 w-4"></i></span>' +
+        '<span class="risk-title block text-[12px] font-bold leading-tight text-red-600">' + w.th + '</span>' +
+        '</div>' +
+        '<span class="block text-[10px] leading-tight text-slate-400 mt-0.5">' + w.en + '</span>' +
+        '<span class="risk-check absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full border border-slate-200 bg-white text-transparent transition"><i data-lucide="check" class="h-2.5 w-2.5"></i></span>';
       btn.addEventListener('click', () => toggleRisk(w.id, w.th, btn));
       riskGrid.appendChild(btn);
     });
@@ -297,11 +326,16 @@
     PPE_ITEMS.forEach((item) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'opt col-span-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2.5 text-left transition hover:border-orange/50';
+      // ถ้าเป็นอันสุดท้าย (อื่นๆ) ให้กว้างเต็ม 2 คอลัมน์
+      const colSpan = item.id === 'other_ppe' ? 'col-span-2 bg-slate-50 justify-center' : 'col-span-1 bg-white justify-start';
+      btn.className = `ppe-opt flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition active:scale-[0.98] ${colSpan}`;
       btn.innerHTML =
         '<span class="opt-check flex h-4 w-4 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-transparent transition"><i data-lucide="check" class="h-3 w-3"></i></span>' +
-        '<span class="text-[11px] sm:text-xs font-semibold text-slate-600">' + item + '</span>';
-      btn.addEventListener('click', () => togglePPE(item, btn));
+        '<div class="flex flex-col">' +
+        '<span class="text-[12px] font-bold text-slate-700">' + item.th + '</span>' +
+        '<span class="text-[9px] text-slate-400">' + item.en + '</span>' +
+        '</div>';
+      btn.addEventListener('click', () => togglePPE(item.id, item.th, btn));
       ppeList.appendChild(btn);
     });
 
@@ -313,17 +347,36 @@
     const jsaWrap = document.getElementById('jsaWrap');
     const submitBtn = document.getElementById('submitBtn');
     const declBtn = document.getElementById('declaration');
+    
+    // Inputs for "Others"
+    const otherRiskInput = document.getElementById('otherRiskInput');
+    const otherPPEInput = document.getElementById('otherPPEInput');
 
     function toggleRisk(id, name, btn) {
       if (generalWork) { generalWork = false; generalBtn.classList.remove('active'); }
-      if (selectedRisk.has(name)) { selectedRisk.delete(name); btn.classList.remove('active'); }
-      else { selectedRisk.add(name); btn.classList.add('active'); }
+      
+      if (selectedRisk.has(name)) { 
+          selectedRisk.delete(name); 
+          btn.classList.remove('active'); 
+          if(id === 'other_risk') otherRiskInput.classList.add('hidden');
+      } else { 
+          selectedRisk.add(name); 
+          btn.classList.add('active'); 
+          if(id === 'other_risk') otherRiskInput.classList.remove('hidden');
+      }
       refresh();
     }
 
-    function togglePPE(item, btn) {
-        if(selectedPPE.has(item)) { selectedPPE.delete(item); btn.classList.remove('active'); }
-        else { selectedPPE.add(item); btn.classList.add('active'); }
+    function togglePPE(id, name, btn) {
+        if(selectedPPE.has(name)) { 
+            selectedPPE.delete(name); 
+            btn.classList.remove('active'); 
+            if(id === 'other_ppe') otherPPEInput.classList.add('hidden');
+        } else { 
+            selectedPPE.add(name); 
+            btn.classList.add('active'); 
+            if(id === 'other_ppe') otherPPEInput.classList.remove('hidden');
+        }
         refresh();
     }
 
@@ -332,6 +385,7 @@
       generalBtn.classList.toggle('active', generalWork);
       selectedRisk.clear();
       riskGrid.querySelectorAll('.risk-card').forEach((c) => c.classList.remove('active'));
+      otherRiskInput.classList.add('hidden');
       refresh();
     });
 
@@ -347,10 +401,8 @@
         if (!e.target.files || e.target.files.length === 0) return;
         let file = e.target.files[0];
         
-        // 1. เคลียร์รูปเก่าทิ้งจากหน่วยความจำทันทีที่กดเลือกไฟล์ใหม่
         compressedJsaFile = null;
 
-        // 2. ดักจับ: ถ้าไม่ใช่ไฟล์รูปภาพ ให้แจ้งเตือนและยกเลิก
         if (!file.type.match('image.*') && !file.name.toLowerCase().endsWith('.heic')) {
             Swal.fire('ชนิดไฟล์ไม่ถูกต้อง', 'ระบบรองรับเฉพาะการถ่ายรูป หรือแนบไฟล์รูปภาพ (JPG, PNG) เท่านั้นครับ', 'warning');
             removeJsa();
@@ -390,8 +442,6 @@
                         refresh();
                     }, 'image/jpeg', 0.7);
                 };
-                
-                // ดักจับ Error กรณีเบราว์เซอร์อ่านไฟล์รูปไม่ได้
                 img.onerror = () => {
                     Swal.fire('ข้อผิดพลาด', 'ไฟล์รูปภาพนี้มีปัญหา ไม่สามารถอ่านได้ครับ', 'error');
                     removeJsa();
@@ -438,8 +488,6 @@
                     lineUserId = profile.userId;
                     document.getElementById('profileName').textContent = profile.displayName;
                     document.getElementById('profileAvatar').src = profile.pictureUrl;
-                    
-                    document.getElementById('profileCompany').textContent = "ผู้รับเหมา/โฟร์แมน";
                 } else {
                     document.getElementById('profileName').textContent = "ไม่พบข้อมูล LINE";
                 }
@@ -472,16 +520,37 @@
                 jsaUrl = supabaseClient.storage.from('safety-documents').getPublicUrl(filePath).data.publicUrl;
             }
 
-            const workTypes = generalWork ? ['งานทั่วไป (General Work)'] : Array.from(selectedRisk);
+            // จัดการข้อมูล "งานอื่นๆ" และ "PPE อื่นๆ"
+            let finalWorkTypes = [];
+            if (generalWork) {
+                finalWorkTypes = ['งานทั่วไป (General Work)'];
+            } else {
+                selectedRisk.forEach(risk => {
+                    if (risk === 'งานอื่นๆ' && otherRiskInput.value.trim() !== '') {
+                        finalWorkTypes.push('อื่นๆ: ' + otherRiskInput.value.trim());
+                    } else if (risk !== 'งานอื่นๆ') {
+                        finalWorkTypes.push(risk);
+                    }
+                });
+            }
+            
+            let finalPPE = [];
+            selectedPPE.forEach(ppe => {
+                if (ppe === 'อื่นๆ (Others)' && otherPPEInput.value.trim() !== '') {
+                    finalPPE.push('อื่นๆ: ' + otherPPEInput.value.trim());
+                } else if (ppe !== 'อื่นๆ (Others)') {
+                    finalPPE.push(ppe);
+                }
+            });
+
             const isHighRisk = !generalWork;
             
-            // สร้าง Payload ให้ตรงกับฟิลด์ในตาราง tb_work_permits
             const payload = {
                 ptw_id: 'PTW-' + Date.now(),
-                task_id: document.getElementById('wbs-input').value, // ต้องมีอยู่ใน tb_wbs_tasks
-                vendor_id: 'C001', // ใช้ C001 ตามที่พี่ณัฐธัญแจ้ง เพื่อไม่ให้ติด Error 23503
+                task_id: document.getElementById('wbs-input').value,
+                vendor_id: 'C001',
                 requester_id: lineUserId || 'UNKNOWN_USER', 
-                ptw_type: workTypes.join(', '), 
+                ptw_type: finalWorkTypes.join(', '), 
                 work_description: document.getElementById('location-input').value,
                 risk_area_class: isHighRisk ? 'เขตอันตราย' : 'เขตควบคุม', 
                 start_time: document.getElementById('start-time').value,
@@ -489,7 +558,7 @@
                 status: 'Pending',
                 specific_data: {
                     project_id: document.getElementById('project-input').value,
-                    ppe_required: Array.from(selectedPPE),
+                    ppe_required: finalPPE,
                     jsa_file_url: jsaUrl,
                     declaration_checked: true
                 }
@@ -506,9 +575,8 @@
                 confirmButtonText: 'กลับสู่หน้าหลัก'
             }).then(() => {
                 if (typeof liff !== 'undefined' && liff.isInClient()) { 
-                    liff.closeWindow(); // ปิดแอป LINE
+                    liff.closeWindow();
                 } else { 
-                    // 3. บังคับรีเฟรชหน้าจอใหม่หมดจด เพื่อล้างความจำตอนทดสอบบนคอมพิวเตอร์
                     window.location.reload(); 
                 }
             });
