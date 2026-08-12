@@ -31,36 +31,45 @@
   <style>
     body { font-family: 'Sarabun', sans-serif; background-color: #F4F7F9; -webkit-tap-highlight-color: transparent; }
     
-    .input-field { width: 100%; border-radius: 0.5rem; border: 1px solid #e2e8f0; background-color: #f8fafc; padding: 0.75rem 1rem; font-size: 0.875rem; color: #1e293b; outline: none; transition: all 0.2s; }
-    .input-field:focus { border-color: #2A4365; background-color: #fff; box-shadow: 0 0 0 3px rgba(42, 67, 101, 0.1); }
+    .input-field { width: 100%; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; padding: 0.75rem 1rem; font-size: 0.875rem; color: #1e293b; outline: none; transition: all 0.2s; }
+    .input-field:focus { border-color: #2A4365; box-shadow: 0 0 0 3px rgba(42, 67, 101, 0.1); }
     
-    /* Chips */
-    .chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem 0.75rem; border-radius: 9999px; border: 1px solid #e2e8f0; background-color: #fff; font-size: 0.75rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.2s; user-select: none; }
-    .chip:active { transform: scale(0.95); }
+    /* Custom Checkbox Cards */
+    .check-card { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: #fff; cursor: pointer; transition: all 0.2s; }
+    .check-card:active { transform: scale(0.98); }
+    .check-box { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; border: 2px solid #94a3b8; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .check-box i { width: 0.875rem; height: 0.875rem; color: white; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+    .check-text { font-size: 0.8125rem; color: #475569; font-weight: 500; line-height: 1.4; padding-top: 0.1rem;}
     
-    /* Active States for Chips */
-    .chip-hazard.active { background-color: #fef2f2; border-color: #fca5a5; color: #dc2626; font-weight: 600; }
-    .chip-measure.active { background-color: #ecfdf5; border-color: #6ee7b7; color: #059669; font-weight: 600; }
+    /* Active States */
+    .check-card.active-hazard { background-color: #fef2f2; border-color: #fca5a5; }
+    .check-card.active-hazard .check-box { background-color: #dc2626; border-color: #dc2626; }
+    .check-card.active-hazard .check-text { color: #b91c1c; font-weight: 600; }
+    .check-card.active-hazard .check-box i { opacity: 1; transform: scale(1); }
+
+    .check-card.active-measure { background-color: #f0fdf4; border-color: #6ee7b7; }
+    .check-card.active-measure .check-box { background-color: #059669; border-color: #059669; }
+    .check-card.active-measure .check-text { color: #047857; font-weight: 600; }
+    .check-card.active-measure .check-box i { opacity: 1; transform: scale(1); }
 
     /* Severity Buttons */
-    .sev-btn { flex: 1; display: flex; flex-col; justify-content: center; align-items: center; padding: 0.5rem; border-radius: 0.5rem; border: 2px solid #e2e8f0; background-color: #fff; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .sev-btn { flex: 1; display: flex; flex-col; justify-content: center; align-items: center; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; cursor: pointer; transition: all 0.2s; text-align: center; }
     .sev-btn .grade { font-size: 1.1rem; font-weight: 800; line-height: 1; }
     .sev-btn .desc { font-size: 0.65rem; font-weight: 500; margin-top: 0.2rem; }
     
     /* Active States for Severity */
-    .sev-btn[data-rank="A"].active { border-color: #dc2626; background-color: #dc2626; color: white; }
+    .sev-btn[data-rank="A"].active { border-color: #dc2626; background-color: #dc2626; color: white; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2); }
     .sev-btn[data-rank="A"] { color: #dc2626; }
     
-    .sev-btn[data-rank="B"].active { border-color: #f97316; background-color: #f97316; color: white; }
+    .sev-btn[data-rank="B"].active { border-color: #f97316; background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2); }
     .sev-btn[data-rank="B"] { color: #f97316; }
     
-    .sev-btn[data-rank="C"].active { border-color: #f59e0b; background-color: #f59e0b; color: white; }
+    .sev-btn[data-rank="C"].active { border-color: #f59e0b; background-color: #f59e0b; color: white; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2); }
     .sev-btn[data-rank="C"] { color: #f59e0b; }
     
-    .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; }
+    .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
     .sev-btn[data-rank="D"] { color: #10b981; }
 
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 
@@ -92,8 +101,8 @@
         <i data-lucide="clipboard-list" class="w-5 h-5"></i>
       </div>
       <div>
-        <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> PTW-202608-001</p>
-        <p class="text-[13px] font-semibold text-slate-800 mt-0.5 leading-snug">งานเชื่อมประกอบโครงสร้างท่อ HDPE อาคารผลิต B</p>
+        <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> <span id="display-ptw-id">กำลังโหลด...</span></p>
+        <p class="text-[13px] font-semibold text-slate-800 mt-0.5 leading-snug">อ้างอิงจากแบบฟอร์มขออนุญาตทำงาน (PTW)</p>
       </div>
     </div>
 
@@ -108,7 +117,7 @@
     </button>
 
     <!-- Legend (อ้างอิงจากตาราง Excel) -->
-    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden mb-4">
+    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden mb-4 shadow-sm">
       <summary class="flex justify-between items-center p-3 cursor-pointer text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition">
         <span class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> ระดับความรุนแรงของอันตราย (Rank of Hazard Severity)</span>
         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200"></i>
@@ -136,27 +145,49 @@
   </main>
 
   <!-- Bottom Action Bar -->
-  <div class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-3 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.03)] z-40">
+  <div class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-3 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-40">
     <div class="max-w-2xl mx-auto">
-      <button type="button" class="w-full bg-navy hover:bg-navy-700 text-white font-bold py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 transition active:scale-[0.98]">
+      <button type="button" onclick="submitJsa()" class="w-full bg-[#B24D29] hover:bg-[#923e20] text-white font-bold py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 transition active:scale-[0.98]">
         <i data-lucide="save" class="w-5 h-5"></i> บันทึกข้อมูล SWI & E-JSA
       </button>
     </div>
   </div>
 
-  <style> .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); } details[open] summary i { transform: rotate(180deg); } </style>
+  <style> details[open] summary i { transform: rotate(180deg); } </style>
 
   <script>
+    // ---- Supabase Initialization ----
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    let currentPtwId = null;
     let stepCounter = 0;
 
-    const HAZARDS = ["ของมีคมบาด/ทิ่มแทง", "ตกจากที่สูง/ลื่นล้ม", "ไฟฟ้าช็อต/ดูด", "สารเคมีสัมผัส", "เสียงดัง/สั่นสะเทือน", "อับอากาศ/ขาดอ๊อกซิเจน", "ไฟไหม้/ระเบิด", "ปวดกล้ามเนื้อจากการยก", "ท่อหล่นทับ/วัตถุกระแทก"];
-    const MEASURES = ["สวม PPE ครบถ้วน", "ตรวจสอบอุปกรณ์ก่อนใช้งาน", "ขอ Permit to Work", "ยกท่อด้วยความระมัดระวังและให้สัญญาณ", "ใช้ท่าทางการยกตามหลักการยศาสตร์", "จัดเก็บวัสดุให้เป็นระเบียบ", "มีผู้ควบคุมงาน (Standby Man)", "ตัดแยกระบบไฟฟ้า (LOTO)", "สวมถุงมือป้องกันความร้อน"];
-    
-    // อ้างอิงแหล่งกำเนิดอันตรายจากตาราง Excel
+    // ==========================================
+    // 🧠 ฐานข้อมูลอัจฉริยะ (Knowledge Base)
+    // ==========================================
+    const HAZARDS = [
+        "ท่อหล่นทับ / วัสดุหล่นทับ", "ปวดกล้ามเนื้อจากการยก/ก้มเงย", "ของมีคมบาด/ทิ่มแทง", 
+        "ชน กระแทก ครูด เสียดสี", "พลัดตกจากที่สูง/ลื่นล้ม", "กระแสไฟฟ้ารั่ว/ช็อต", 
+        "สูดดมควันเชื่อม/สารเคมี", "เสียงดัง/สั่นสะเทือน", "ไฟไหม้/ประกายไฟตกใส่", 
+        "ขาดอากาศ/อับอากาศ"
+    ];
+
+    const MEASURES = [
+        "สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "ยกด้วยความระมัดระวัง และให้สัญญาณทุกครั้ง", 
+        "ใช้ท่าทางการยกของตามหลักการยศาสตร์", "จัดเตรียมถังดับเพลิงและแผ่นกันประกายไฟ", 
+        "ขออนุญาตทำงาน (Permit to Work)", "ตรวจเช็คสภาพเครื่องมือ/สายไฟ/ปลั๊ก", 
+        "กั้นเขตพื้นที่ปฏิบัติงาน/ติดตั้งป้ายเตือน", "สวมแว่นตานิรภัย/หน้ากากเชื่อม", 
+        "มีผู้เฝ้าระวัง (Standby Man) ตลอดเวลา", "ตรวจวัดปริมาณก๊าซ (Gas Test)"
+    ];
+
     const SOURCES = [
-        "เครื่องมือ/อุปกรณ์ (Eq./Tool)", 
-        "วัสดุ/ของหนัก (Material/Heavy Obj.)", 
+        "เครื่องมือ/อุปกรณ์ (Equipment)", 
+        "เครื่องจักร/เครื่องมือ (MC/Tool)", 
+        "วัสดุ (Material)", 
+        "วัตถุที่มีน้ำหนักมาก (Heavy Object)", 
         "ยานพาหนะ (Vehicle)", 
+        "เครื่องจักรหนัก (Heavy MC)", 
         "พลัดตก (Fall Down)", 
         "ไฟฟ้า (Electrocution)", 
         "สารเคมี (Chemical)", 
@@ -164,18 +195,77 @@
         "อื่นๆ (Others)"
     ];
 
+    // สมองกลจับคู่ (Method -> Hazards -> Measures)
+    const SMART_LOGIC = {
+        'piping_prep': { // จัดเตรียมท่อ
+            hazards: ["ปวดกล้ามเนื้อจากการยก/ก้มเงย", "ชน กระแทก ครูด เสียดสี"],
+            measures: ["สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "ใช้ท่าทางการยกของตามหลักการยศาสตร์"]
+        },
+        'piping_position': { // จัดวางท่อ
+            hazards: ["ท่อหล่นทับ / วัสดุหล่นทับ", "ปวดกล้ามเนื้อจากการยก/ก้มเงย", "ชน กระแทก ครูด เสียดสี"],
+            measures: ["สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "ยกด้วยความระมัดระวัง และให้สัญญาณทุกครั้ง"]
+        },
+        'piping_weld': { // เชื่อมท่อ
+            hazards: ["ไฟไหม้/ประกายไฟตกใส่", "กระแสไฟฟ้ารั่ว/ช็อต", "สูดดมควันเชื่อม/สารเคมี", "ของมีคมบาด/ทิ่มแทง"],
+            measures: ["ขออนุญาตทำงาน (Permit to Work)", "จัดเตรียมถังดับเพลิงและแผ่นกันประกายไฟ", "สวมแว่นตานิรภัย/หน้ากากเชื่อม", "ตรวจเช็คสภาพเครื่องมือ/สายไฟ/ปลั๊ก"]
+        },
+        'work_at_height': { // งานบนที่สูง
+            hazards: ["พลัดตกจากที่สูง/ลื่นล้ม", "ท่อหล่นทับ / วัสดุหล่นทับ"],
+            measures: ["สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "กั้นเขตพื้นที่ปฏิบัติงาน/ติดตั้งป้ายเตือน"]
+        },
+        'confined_space': { // งานอับอากาศ
+            hazards: ["ขาดอากาศ/อับอากาศ", "สูดดมควันเชื่อม/สารเคมี"],
+            measures: ["ขออนุญาตทำงาน (Permit to Work)", "มีผู้เฝ้าระวัง (Standby Man) ตลอดเวลา", "ตรวจวัดปริมาณก๊าซ (Gas Test)"]
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      currentPtwId = urlParams.get('ptw_id');
+      if(currentPtwId) { document.getElementById('display-ptw-id').textContent = currentPtwId; }
+
       addStep(); // โหลดหน้าปุ๊บ สร้างขั้นตอนที่ 1 ทันที
     });
 
-    function toggleCustomInput(selectElement) {
-        const textInput = selectElement.nextElementSibling.nextElementSibling; // หา textarea ที่อยู่ถัดจาก select (ผ่าน i icon ไป)
-        if (selectElement.value === 'custom') {
-            textInput.classList.remove('hidden');
-            textInput.focus();
+    // ==========================================
+    // ⚙️ UI Functions
+    // ==========================================
+
+    function handleMethodSelection(selectElement) {
+        const stepContainer = selectElement.closest('.step-card');
+        const customInput = stepContainer.querySelector('.custom-method-input');
+        const value = selectElement.value;
+        
+        // 1. จัดการช่องพิมพ์เอง
+        if (value === 'custom') {
+            customInput.classList.remove('hidden');
+            customInput.focus();
         } else {
-            textInput.classList.add('hidden');
+            customInput.classList.add('hidden');
+        }
+
+        // 2. ล้างค่า Checkbox เดิมทั้งหมด
+        const allCards = stepContainer.querySelectorAll('.check-card');
+        allCards.forEach(card => {
+            card.classList.remove('active-hazard', 'active-measure');
+            card.dataset.checked = "false";
+        });
+
+        // 3. Auto-Select ตาม Smart Logic
+        if (SMART_LOGIC[value]) {
+            const { hazards, measures } = SMART_LOGIC[value];
+            
+            allCards.forEach(card => {
+                const text = card.querySelector('.check-text').textContent;
+                if (card.dataset.type === 'hazard' && hazards.includes(text)) {
+                    toggleCheckCard(card);
+                }
+                if (card.dataset.type === 'measure' && measures.includes(text)) {
+                    toggleCheckCard(card);
+                }
+            });
         }
     }
 
@@ -184,18 +274,32 @@
       const container = document.getElementById('steps-container');
       const stepId = `step-${Date.now()}`;
 
-      // สร้างปุ่มอัจฉริยะ
-      const hazardChips = HAZARDS.map(h => `<span class="chip chip-hazard" onclick="toggleChip(this)">${h}</span>`).join('');
-      const measureChips = MEASURES.map(m => `<span class="chip chip-measure" onclick="toggleChip(this)">${m}</span>`).join('');
+      // สร้าง Checkbox สำหรับอันตราย
+      const hazardHTML = HAZARDS.map(h => `
+        <div class="check-card" data-type="hazard" data-checked="false" onclick="toggleCheckCard(this)">
+            <div class="check-box"><i data-lucide="check"></i></div>
+            <span class="check-text">${h}</span>
+        </div>
+      `).join('');
+
+      // สร้าง Checkbox สำหรับมาตรการ
+      const measureHTML = MEASURES.map(m => `
+        <div class="check-card" data-type="measure" data-checked="false" onclick="toggleCheckCard(this)">
+            <div class="check-box"><i data-lucide="check"></i></div>
+            <span class="check-text">${m}</span>
+        </div>
+      `).join('');
+
       const sourceOptions = SOURCES.map(s => `<option value="${s}">${s}</option>`).join('');
 
       const html = `
-        <article class="step-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden" id="${stepId}">
+        <article class="step-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4" id="${stepId}">
+          
           <!-- Card Header -->
-          <div class="bg-slate-50/80 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
+          <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
               <span class="step-number bg-navy text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-inner">${stepCounter}</span>
-              <h3 class="font-bold text-navy text-sm">ขั้นตอนที่ ${stepCounter}</h3>
+              <h3 class="font-bold text-navy text-[13px]">ขั้นตอนที่ ${stepCounter}</h3>
             </div>
             <button type="button" onclick="removeStep('${stepId}')" class="text-slate-400 hover:text-red-500 transition p-1 ${stepCounter === 1 ? 'hidden' : ''}">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -206,46 +310,54 @@
             
             <!-- A. Photo Upload -->
             <div>
-              <label for="img-${stepId}" class="upload-area flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative">
+              <label for="img-${stepId}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative">
                 <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500 p-4 text-center">
-                  <i data-lucide="camera" class="w-7 h-7 mb-2 text-slate-400"></i>
-                  <span class="text-[13px] font-bold text-slate-600">โปรดระบุขั้นตอนการทำงาน</span>
-                  <span class="text-[11px] font-medium mt-1">และแนบรูปภาพลงในขั้นตอนการปฏิบัติงานแต่ละขั้นตอน (Photo)</span>
+                  <i data-lucide="camera" class="w-6 h-6 mb-2 text-slate-400"></i>
+                  <span class="text-xs font-bold text-navy">ถ่ายภาพ หรือ แนบรูปภาพ</span>
+                  <span class="text-[10px] font-medium text-slate-500 mt-1">ประกอบขั้นตอนการปฏิบัติงาน (Photo)</span>
                 </div>
                 <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
               </label>
               <input type="file" id="img-${stepId}" class="hidden" accept="image/*" onchange="previewImage(this)">
             </div>
 
-            <!-- B. Method Statement (Dropdown + Textarea) -->
+            <!-- B. Method Statement -->
             <div>
-              <label class="block text-[13px] font-bold text-slate-700 mb-1.5">1. ขั้นตอนการปฏิบัติงาน (Method Statement)</label>
+              <label class="block text-[13px] font-bold text-slate-800 mb-1.5">1. ขั้นตอนการปฏิบัติงาน (Method Statement) <span class="text-red-500">*</span></label>
               <div class="relative mb-2">
-                <select class="input-field appearance-none pr-8 bg-white border-slate-200 text-navy font-semibold text-[13px]" onchange="toggleCustomInput(this)">
+                <select class="method-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-700 font-semibold text-[13px]" onchange="handleMethodSelection(this)">
                   <option value="" disabled selected>-- เลือกขั้นตอนการปฏิบัติงาน --</option>
-                  <option value="จัดเตรียมวัสดุและอุปกรณ์">จัดเตรียมท่อ วัสดุและอุปกรณ์ (Preparation)</option>
-                  <option value="จัดวางชิ้นงานให้ได้ระดับ">จัดวางท่อทั้งสองข้าง ให้ได้ระดับบนเครื่องเชื่อมท่อ (Positioning)</option>
-                  <option value="เตรียมแผ่นความร้อน">เตรียมแผ่นเชื่อมท่อด้วยความร้อนตามอุณหภูมิที่กำหนด (Heating Setup)</option>
-                  <option value="นำแผ่นความร้อนประสานชิ้นงาน">นำแผ่นความร้อนผสานเข้ากับท่อทั้งสองข้าง (Connecting)</option>
-                  <option value="ตรวจสอบความเรียบร้อยของชิ้นงาน">ตรวจสอบความเรียบร้อยของรอยเชื่อมท่อ (Inspection)</option>
+                  <optgroup label="กลุ่มงานท่อดับเพลิง / ท่อน้ำ (Piping Work)">
+                    <option value="piping_prep">จัดเตรียมท่อ วัสดุและอุปกรณ์ (Preparation)</option>
+                    <option value="piping_position">จัดวางท่อทั้งสองข้าง ให้ได้ระดับ (Positioning)</option>
+                    <option value="piping_weld">ปฏิบัติงานเชื่อมท่อ/ประสานท่อ (Connecting & Welding)</option>
+                    <option value="piping_inspect">ตรวจสอบความเรียบร้อยของรอยเชื่อมท่อ (Inspection)</option>
+                  </optgroup>
+                  <optgroup label="กลุ่มงานโครงสร้างและอื่นๆ (Structural & Others)">
+                    <option value="work_at_height">ปฏิบัติงานบนที่สูง / ติดตั้งนั่งร้าน (Working at Height)</option>
+                    <option value="confined_space">ปฏิบัติงานในที่อับอากาศ (Confined Space Entry)</option>
+                    <option value="electrical_work">ปฏิบัติงานติดตั้งระบบไฟฟ้า (Electrical Installation)</option>
+                  </optgroup>
                   <option value="custom" class="text-orange-600 font-bold">✏️ พิมพ์ระบุขั้นตอนการปฏิบัติงานเอง...</option>
                 </select>
                 <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                <textarea class="input-field resize-none hidden mt-2 text-[13px]" rows="2" placeholder="โปรดพิมพ์อธิบายรายละเอียดขั้นตอนการทำงาน..."></textarea>
               </div>
+              <textarea class="custom-method-input input-field resize-none hidden text-[13px]" rows="2" placeholder="โปรดพิมพ์อธิบายรายละเอียดขั้นตอนการทำงาน..."></textarea>
             </div>
 
             <!-- C. Hazards & Risk -->
-            <div class="bg-red-50/30 p-3 -mx-2 rounded-xl border border-red-50/50">
-              <label class="block text-[13px] font-bold text-slate-700 mb-2">2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-400 font-medium text-[11px]">(Potential Hazard)</span></label>
+            <div class="bg-red-50/20 p-3 -mx-2 rounded-xl border border-red-100">
+              <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-400 font-medium text-[11px]">(Potential Hazard)</span> <span class="text-red-500">*</span></label>
               
-              <div class="flex flex-wrap gap-1.5 mb-3">
-                ${hazardChips}
-                <span class="chip chip-hazard border-red-200 text-red-500" onclick="toggleChip(this)"><i data-lucide="plus" class="w-3 h-3 mr-1"></i> อื่นๆ (ระบุ)</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                ${hazardHTML}
               </div>
+              
+              <!-- ช่องระบุอันตรายอื่นๆ -->
+              <input type="text" class="hazard-custom-text input-field text-xs mb-4" placeholder="+ ระบุอันตรายอื่นๆ เพิ่มเติม (ถ้ามี)...">
 
               <div class="relative mb-3">
-                <select class="input-field appearance-none pr-8 bg-white border-slate-200 text-slate-600 text-xs">
+                <select class="source-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-600 text-[13px] font-medium">
                   <option value="" disabled selected>แหล่งที่มาของอันตราย (Source of Hazard)</option>
                   ${sourceOptions}
                 </select>
@@ -253,7 +365,7 @@
               </div>
 
               <div>
-                <p class="text-[11px] font-semibold text-slate-500 mb-1.5">ระดับความรุนแรง (Severity Rank)</p>
+                <p class="text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">ระดับความรุนแรง (Severity Rank) <span class="text-red-500">*</span></p>
                 <div class="flex gap-2">
                   <button type="button" class="sev-btn group" data-rank="A" onclick="selectSeverity(this)">
                     <span class="grade">A</span><span class="desc block">Fatal</span>
@@ -272,18 +384,21 @@
             </div>
 
             <!-- D. Measures -->
-            <div class="bg-emerald-50/30 p-3 -mx-2 rounded-xl border border-emerald-50/50">
-              <label class="block text-[13px] font-bold text-slate-700 mb-2">3. การควบคุมความเสี่ยง <span class="text-slate-400 font-medium text-[11px]">(Risk Control)</span></label>
-              <div class="flex flex-wrap gap-1.5">
-                ${measureChips}
-                <span class="chip chip-measure border-emerald-200 text-emerald-500" onclick="toggleChip(this)"><i data-lucide="plus" class="w-3 h-3 mr-1"></i> อื่นๆ (ระบุ)</span>
+            <div class="bg-emerald-50/30 p-3 -mx-2 rounded-xl border border-emerald-100">
+              <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 3. การควบคุมความเสี่ยง <span class="text-slate-400 font-medium text-[11px]">(Risk Control)</span> <span class="text-red-500">*</span></label>
+              
+              <div class="flex flex-col gap-2 mb-3">
+                ${measureHTML}
               </div>
+              
+              <!-- ช่องระบุมาตรการอื่นๆ -->
+              <input type="text" class="measure-custom-text input-field text-xs" placeholder="+ ระบุมาตรการป้องกันอื่นๆ เพิ่มเติม (ถ้ามี)...">
             </div>
 
             <!-- E. Remarks -->
-            <div>
-              <label class="block text-[12px] font-bold text-slate-500 mb-1">4. หมายเหตุ (Remark)</label>
-              <input type="text" class="input-field text-xs py-2 bg-transparent" placeholder="ระบุหมายเหตุเพิ่มเติม (ถ้ามี)">
+            <div class="border-t border-slate-100 pt-3">
+              <label class="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wide">4. หมายเหตุ (Remark)</label>
+              <input type="text" class="remark-input input-field text-[13px] bg-slate-50 border-transparent focus:bg-white" placeholder="ระบุหมายเหตุเพิ่มเติม (ถ้ามี)...">
             </div>
 
           </div>
@@ -307,7 +422,6 @@
         const num = index + 1;
         card.querySelector('.step-number').textContent = num;
         card.querySelector('h3').textContent = `ขั้นตอนที่ ${num}`;
-        // Hide trash icon on the first card
         const trashBtn = card.querySelector('button[onclick^="removeStep"]');
         if(trashBtn) trashBtn.classList.toggle('hidden', index === 0);
       });
@@ -317,7 +431,7 @@
       if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          const area = input.previousElementSibling;
+          const area = input.parentElement.querySelector('label');
           const preview = area.querySelector('.image-preview');
           const placeholder = area.querySelector('.upload-placeholder');
           
@@ -331,8 +445,17 @@
       }
     }
 
-    function toggleChip(element) {
-      element.classList.toggle('active');
+    function toggleCheckCard(element) {
+        const isHazard = element.dataset.type === 'hazard';
+        const activeClass = isHazard ? 'active-hazard' : 'active-measure';
+        
+        if(element.dataset.checked === "true") {
+            element.dataset.checked = "false";
+            element.classList.remove(activeClass);
+        } else {
+            element.dataset.checked = "true";
+            element.classList.add(activeClass);
+        }
     }
 
     function selectSeverity(btn) {
@@ -340,6 +463,95 @@
       const buttons = container.querySelectorAll('.sev-btn');
       buttons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+    }
+
+    // ==========================================
+    // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase)
+    // ==========================================
+    async function submitJsa() {
+        if (!currentPtwId) {
+            Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสอ้างอิงใบงาน (PTW-ID) โปรดเข้าผ่านระบบขอใบอนุญาตหลัก', 'error');
+            return;
+        }
+
+        const steps = document.querySelectorAll('.step-card');
+        let ejsaDataArray = [];
+        let isValid = true;
+
+        steps.forEach((stepEl, index) => {
+            // 1. Method
+            const methodSelect = stepEl.querySelector('.method-select').value;
+            const methodCustom = stepEl.querySelector('.custom-method-input').value;
+            let stepName = methodSelect === 'custom' ? methodCustom : stepEl.querySelector('.method-select option:checked')?.textContent;
+            if (!methodSelect || (methodSelect === 'custom' && !methodCustom)) isValid = false;
+
+            // 2. Hazards
+            let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"].active-hazard')).map(c => c.querySelector('.check-text').textContent);
+            const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
+            if (hazardCustom) hazards.push(hazardCustom);
+            if (hazards.length === 0) isValid = false;
+
+            const hazardSource = stepEl.querySelector('.source-select').value;
+
+            // Severity
+            const severityBtn = stepEl.querySelector('.sev-btn.active');
+            const severityRank = severityBtn ? severityBtn.dataset.rank : '';
+            if (!severityRank) isValid = false;
+
+            // 3. Measures
+            let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"].active-measure')).map(c => c.querySelector('.check-text').textContent);
+            const measureCustom = stepEl.querySelector('.measure-custom-text').value;
+            if (measureCustom) measures.push(measureCustom);
+            if (measures.length === 0) isValid = false;
+
+            // 4. Remark
+            const remark = stepEl.querySelector('.remark-input').value;
+
+            ejsaDataArray.push({
+                step_no: index + 1,
+                step_name: stepName,
+                hazards: hazards,
+                hazard_source: hazardSource,
+                severity_rank: severityRank,
+                measures: measures,
+                remark: remark
+            });
+        });
+
+        if (!isValid) {
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนงาน, เลือกอันตราย, ระดับความรุนแรง และมาตรการป้องกันให้ครบทุกส่วน', 'warning');
+            return;
+        }
+
+        Swal.fire({ title: 'กำลังบันทึก E-JSA...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        try {
+            if (!supabaseClient) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+
+            const { data: permitData, error: fetchError } = await supabaseClient.from('tb_work_permits').select('specific_data').eq('ptw_id', currentPtwId).single();
+            if (fetchError) throw fetchError;
+
+            let specificData = permitData.specific_data || {};
+            specificData.ejsa_data = ejsaDataArray; 
+
+            const { error: updateError } = await supabaseClient.from('tb_work_permits').update({ specific_data: specificData }).eq('ptw_id', currentPtwId);
+            if (updateError) throw updateError;
+
+            Swal.fire({
+                title: 'บันทึก E-JSA สำเร็จ!',
+                text: 'ข้อมูลเชื่อมโยงเข้ากับใบอนุญาต ' + currentPtwId + ' เรียบร้อยแล้ว',
+                icon: 'success',
+                confirmButtonColor: '#B24D29',
+                confirmButtonText: 'ปิดหน้าต่าง'
+            }).then(() => {
+                if (typeof liff !== 'undefined' && liff.isInClient()) { liff.closeWindow(); } 
+                else { window.location.href = 'index.html'; }
+            });
+
+        } catch (error) {
+            console.error('Save E-JSA Error:', error);
+            Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+        }
     }
   </script>
 </body>
