@@ -137,7 +137,23 @@
               <input type="text" id="location-input" placeholder="เช่น อาคาร A ชั้น 12 โซนลิฟต์โดยสาร" class="input-field pl-10" />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+          
+          <!-- 🚀 ช่องให้กรอกชื่อและบริษัท 🚀 -->
+          <div class="border-t border-slate-100 pt-3 mt-1">
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">ชื่อผู้ขออนุญาต (Requestor) <span class="text-red-500">*</span></label>
+            <div class="relative mb-3">
+              <i data-lucide="user" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="req-name-input" placeholder="เช่น นายสมชาย ใจดี" class="input-field pl-10" />
+            </div>
+            
+            <label class="mb-1.5 block text-sm font-semibold text-slate-700">บริษัท / สังกัด (Company) <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <i data-lucide="briefcase" class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="req-company-input" placeholder="เช่น บจก. เฟิร์ส เทคโนโลยี" class="input-field pl-10" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 mt-1">
             <div>
               <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">เวลาเริ่มงาน <span class="text-red-500">*</span></label>
               <input type="datetime-local" id="start-time" class="input-field px-3 text-[13px]" />
@@ -161,7 +177,6 @@
         </header>
         <div class="space-y-4 p-5">
           
-          <!-- 🚀 ย้ายกล่องงานทั่วไป มาไว้บนสุด -->
           <button type="button" id="generalWork" data-active="false"
             class="flex w-full items-center gap-3 rounded-xl border-2 border-emerald-500/30 bg-emerald-50/50 p-4 text-left transition hover:border-emerald-500/50">
             <span class="opt-check flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 border-emerald-500 bg-white text-transparent transition">
@@ -596,9 +611,16 @@
       riskAlert.classList.toggle('flex', hasHighRisk);
       jsaWrap.classList.toggle('hidden', !hasHighRisk);
       
-      // ดักจับเงื่อนไข JSA (ถ้าเสี่ยงสูง ต้องมีรูป หรือเลือก E-JSA)
       const hasJsaIfNeeded = hasHighRisk ? (jsaMode === 'ejsa' || compressedJsaFile !== null) : true;
-      const hasBasicInfo = document.getElementById('project-input').value && document.getElementById('wbs-input').value && document.getElementById('location-input').value && document.getElementById('start-time').value && document.getElementById('end-time').value;
+      
+      // อัปเดตเงื่อนไขให้เช็คชื่อและบริษัทด้วย
+      const hasBasicInfo = document.getElementById('project-input').value && 
+                           document.getElementById('wbs-input').value && 
+                           document.getElementById('location-input').value && 
+                           document.getElementById('req-name-input').value && 
+                           document.getElementById('req-company-input').value && 
+                           document.getElementById('start-time').value && 
+                           document.getElementById('end-time').value;
       
       // ดักจับ: ถ้ากดเลือก "อื่นๆ" ต้องเช็คเงื่อนไขย่อย
       let isOtherRiskValid = true;
@@ -650,6 +672,10 @@
         const end = new Date(now.getTime() - now.getTimezoneOffset() * 60000 + 8*60*60*1000).toISOString().slice(0,16);
         document.getElementById('start-time').value = start;
         document.getElementById('end-time').value = end;
+        
+        // เช็คการพิมพ์ในช่องชื่อเพื่ออัปเดตปุ่ม Submit
+        document.getElementById('req-name-input').addEventListener('input', refresh);
+        document.getElementById('req-company-input').addEventListener('input', refresh);
     });
 
     // ---- Submit to Supabase ----
@@ -709,6 +735,8 @@
                 status: 'Pending',
                 specific_data: {
                     project_id: document.getElementById('project-input').value,
+                    req_name: document.getElementById('req-name-input').value, // บันทึกชื่อ
+                    req_company: document.getElementById('req-company-input').value, // บันทึกบริษัท
                     ppe_required: finalPPE,
                     jsa_file_url: jsaUrl,
                     declaration_checked: true
