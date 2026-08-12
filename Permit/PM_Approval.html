@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PTW Final Approval Dashboard | FTC First Safety</title>
+
+<!-- Google Fonts: Sarabun -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CSS via CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+        colors: {
+          background: '#F6F7FA', foreground: '#212A3B', card: '#FFFFFF',
+          primary: '#2F3B57', 'primary-foreground': '#FFFFFF',
+          secondary: '#EEF0F4', 'secondary-foreground': '#2F3B57',
+          muted: '#EEF0F4', 'muted-foreground': '#69707E',
+          border: '#DDE1E7',
+          success: '#3F8F5B', 'success-soft': '#E7F5EC',
+          risk: '#D6403F', 'risk-soft': '#FCEAE9',
+          general: '#3D7B87', 'general-soft': '#E8F2F3',
+        },
+      },
+    },
+  }
+</script>
+
+<!-- Lucide Icons, Supabase, SweetAlert2 -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  html, body { font-family: 'Sarabun', sans-serif; background-color: #F6F7FA; -webkit-tap-highlight-color: transparent; }
+  .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid #2F3B57; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+
+<body class="min-h-screen bg-background text-foreground antialiased">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 border-b border-border bg-primary text-primary-foreground shadow-md">
+    <div class="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3.5">
+      <button type="button" onclick="window.history.back()" aria-label="กลับ" class="flex size-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/10 active:bg-white/20">
+        <i data-lucide="chevron-left" class="size-5"></i>
+      </button>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <h1 class="truncate text-base font-bold leading-tight text-balance">อนุมัติเริ่มงาน (Final Approval)</h1>
+        <p class="truncate text-xs text-primary-foreground/70">PTW Project Manager Inbox</p>
+      </div>
+      <span class="shrink-0 rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-semibold shadow-inner">
+        PM / วิศวกร
+      </span>
+    </div>
+  </header>
+
+  <main class="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-5 pb-20">
+
+    <!-- Status Tabs -->
+    <div role="tablist" class="sticky top-[60px] z-20 flex items-center gap-1.5 overflow-x-auto rounded-xl bg-secondary p-1.5 shadow-sm backdrop-blur-sm bg-opacity-90">
+      <button type="button" role="tab" data-tab="endorsed" class="tab-btn flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors bg-primary text-primary-foreground shadow-sm">
+        รออนุมัติ (<span id="count-endorsed">0</span>)
+      </button>
+      <button type="button" role="tab" data-tab="approved" class="tab-btn flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors text-muted-foreground hover:bg-card hover:text-foreground">
+        กำลังทำงาน (<span id="count-approved">0</span>)
+      </button>
+      <button type="button" role="tab" data-tab="closed" class="tab-btn flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors text-muted-foreground hover:bg-card hover:text-foreground">
+        ปิดงานแล้ว (<span id="count-closed">0</span>)
+      </button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="py-10 text-center">
+      <div class="loader-spin mb-3"></div>
+      <p class="text-sm text-muted-foreground font-medium">กำลังโหลดข้อมูลใบงาน...</p>
+    </div>
+
+    <!-- Permit Cards Container -->
+    <div id="permit-container" class="flex flex-col gap-4">
+        <!-- Cards will be injected here -->
+    </div>
+    
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden flex-col items-center justify-center gap-3 py-16 text-center">
+        <div class="flex size-16 items-center justify-center rounded-full bg-secondary border border-border text-muted-foreground shadow-inner">
+          <i data-lucide="inbox" class="size-8 opacity-50"></i>
+        </div>
+        <p class="text-sm font-semibold text-muted-foreground">ไม่มีใบงานในสถานะนี้</p>
+    </div>
+
+  </main>
+
+  <script>
+    // ---- Supabase Initialization ----
+    const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+    let allPermits = [];
+    let currentTab = 'endorsed';
+
+    // ---- DOM Elements ----
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const container = document.getElementById("permit-container");
+    const emptyState = document.getElementById("empty-state");
+    const loadingIndicator = document.getElementById("loading-indicator");
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        lucide.createIcons();
+        setupTabs();
+        await fetchPermits();
+    });
+
+    // ---- Fetch Data ----
+    async function fetchPermits() {
+        if (!supabaseClient) { Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); return; }
+
+        loadingIndicator.classList.remove('hidden');
+        container.innerHTML = '';
+        emptyState.classList.add('hidden');
+
+        try {
+            // ดึงใบงานที่ผ่าน จป. แล้ว (Endorsed) หรือ อนุมัติแล้ว (Approved) หรือ ปิดงานแล้ว (Closed)
+            const { data, error } = await supabaseClient
+                .from('tb_work_permits')
+                .select('*')
+                .in('status', ['Endorsed', 'Approved', 'Closed'])
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            allPermits = data || [];
+            renderCards();
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลได้: ' + error.message, 'error');
+        } finally {
+            loadingIndicator.classList.add('hidden');
+        }
+    }
+
+    // ---- Render Cards ----
+    function renderCards() {
+        const endorsed = allPermits.filter(p => p.status === 'Endorsed');
+        const approved = allPermits.filter(p => p.status === 'Approved');
+        const closed = allPermits.filter(p => p.status === 'Closed');
+
+        document.getElementById('count-endorsed').textContent = endorsed.length;
+        document.getElementById('count-approved').textContent = approved.length;
+        document.getElementById('count-closed').textContent = closed.length;
+
+        let displayData = [];
+        if(currentTab === 'endorsed') displayData = endorsed;
+        if(currentTab === 'approved') displayData = approved;
+        if(currentTab === 'closed') displayData = closed;
+
+        if (displayData.length === 0) {
+            container.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            emptyState.classList.add('flex');
+        } else {
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+            container.innerHTML = displayData.map(p => createCardHTML(p)).join('');
+            lucide.createIcons();
+        }
+    }
+
+    function createCardHTML(permit) {
+        const sTime = new Date(permit.start_time);
+        const eTime = new Date(permit.end_time);
+        const dateStr = sTime.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+        const timeStr = `${sTime.getHours().toString().padStart(2,'0')}:${sTime.getMinutes().toString().padStart(2,'0')} - ${eTime.getHours().toString().padStart(2,'0')}:${eTime.getMinutes().toString().padStart(2,'0')}`;
+
+        const workTypesStr = permit.ptw_type || '';
+        const isGeneralOnly = workTypesStr.includes('งานทั่วไป');
+        
+        // กำหนดสีและสไตล์ตามประเภทงาน
+        const typeStyle = isGeneralOnly 
+            ? `bg-general-soft text-general` 
+            : `bg-risk-soft text-risk`;
+            
+        let tagHtml = '';
+        if (isGeneralOnly) {
+            tagHtml = `<span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${typeStyle}">งานทั่วไป (General Work)</span>`;
+        } else {
+            const typesArray = workTypesStr.split(',').map(t => t.trim()).filter(t => t);
+            tagHtml = typesArray.map(w => `<span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold ${typeStyle} mb-1 mr-1 shadow-sm">${w}</span>`).join('');
+        }
+
+        const specificData = permit.specific_data || {};
+        const projectId = specificData.project_id || '-';
+        const locationZone = permit.work_description || '-';
+        
+        // ป้ายสถานะด้านขวาบน
+        let statusBadge = '';
+        if (permit.status === 'Endorsed') {
+            statusBadge = `<span class="inline-flex items-center gap-1.5 rounded-full bg-success-soft px-2.5 py-1 text-xs font-semibold text-success border border-success/20"><i data-lucide="shield-check" class="size-3.5"></i> จป. รับรองแล้ว</span>`;
+        } else if (permit.status === 'Approved') {
+            statusBadge = `<span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary border border-primary/20"><i data-lucide="play-circle" class="size-3.5"></i> กำลังทำงาน</span>`;
+        } else {
+            statusBadge = `<span class="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground"><i data-lucide="lock" class="size-3.5"></i> ปิดงานแล้ว</span>`;
+        }
+
+        // ปุ่ม Action ด้านล่าง (จะแสดงปุ่ม 'อนุมัติ' เฉพาะตอนอยู่แท็บ 'รออนุมัติ')
+        let actionButtons = `
+          <button type="button" onclick="viewDetails('${permit.ptw_id}')" class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-border bg-transparent px-4 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-secondary active:scale-95">
+            <i data-lucide="eye" class="size-4"></i> ดูข้อมูลทั้งหมด
+          </button>`;
+          
+        if (permit.status === 'Endorsed') {
+            actionButtons += `
+            <button type="button" onclick="approvePermit('${permit.ptw_id}')" class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-md transition-all hover:bg-primary/90 active:scale-95 ring-offset-2 hover:ring-2 ring-primary/50">
+              <i data-lucide="check-circle-2" class="size-4"></i> อนุมัติให้เริ่มงาน
+            </button>`;
+        }
+
+        return `
+        <article class="rounded-2xl border border-border bg-card shadow-[0_2px_10px_-4px_rgba(42,67,101,0.15)] transition-all hover:shadow-lg">
+          <div class="flex flex-col gap-4 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-mono text-[13px] font-bold tracking-tight text-foreground bg-secondary px-2 py-0.5 rounded">${permit.ptw_id}</span>
+              ${statusBadge}
+            </div>
+
+            <div>${tagHtml}</div>
+
+            <dl class="flex flex-col gap-2.5 text-sm mt-1">
+              <div class="flex items-start gap-3 text-foreground">
+                <i data-lucide="map-pin" class="mt-0.5 size-4 shrink-0 text-muted-foreground"></i>
+                <span class="font-semibold text-pretty">${projectId} — ${locationZone}</span>
+              </div>
+              <div class="flex items-start gap-3 text-foreground">
+                <i data-lucide="calendar-clock" class="mt-0.5 size-4 shrink-0 text-muted-foreground"></i>
+                <span class="font-medium">${dateStr} (${timeStr})</span>
+              </div>
+              <div class="flex items-start gap-3 text-foreground">
+                <i data-lucide="user" class="mt-0.5 size-4 shrink-0 text-muted-foreground"></i>
+                <span class="font-medium text-pretty">รอเชื่อมข้อมูลจากระบบ LINE</span>
+              </div>
+            </dl>
+
+            <div class="flex items-start gap-2.5 rounded-xl bg-success-soft/50 border border-success/20 px-3.5 py-3 mt-1">
+              <i data-lucide="shield-check" class="mt-0.5 size-4 shrink-0 text-success"></i>
+              <p class="text-[13px] font-semibold leading-relaxed text-success">
+                จป. ได้ตรวจสอบความปลอดภัย อุปกรณ์ PPE และเอกสาร JSA เรียบร้อยแล้ว อนุญาตให้ PM พิจารณาดำเนินการได้
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-2.5 pt-2 sm:flex-row border-t border-border mt-1">
+              ${actionButtons}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    // ---- Actions ----
+    function viewDetails(ptwId) {
+        const permit = allPermits.find(p => p.ptw_id === ptwId);
+        if(!permit) return;
+
+        const specificData = permit.specific_data || {};
+        const ppeArray = Array.isArray(specificData.ppe_required) ? specificData.ppe_required : [];
+        const ppeHtml = ppeArray.map(item => `<span class="inline-block bg-slate-100 border border-slate-200 rounded-md px-2 py-1 text-xs font-semibold text-slate-700 m-1">${item}</span>`).join('');
+        
+        let jsaHtml = '';
+        if(specificData.jsa_file_url) {
+            jsaHtml = `<div class="mt-4"><p class="text-sm font-bold text-left mb-2 text-primary">เอกสาร JSA แนบ:</p><img src="${specificData.jsa_file_url}" class="w-full rounded-xl border border-slate-200 shadow-sm" style="max-height: 350px; object-fit: contain;"></div>`;
+        }
+
+        Swal.fire({
+            title: '<span class="text-lg font-bold text-primary">ข้อมูลการเตรียมพร้อม</span>',
+            html: `
+                <div class="text-left mt-2 border-t border-slate-100 pt-3">
+                    <p class="text-sm font-bold text-slate-700 mb-1">อุปกรณ์ PPE ที่บังคับใช้:</p>
+                    <div class="mb-4">${ppeHtml || '<span class="text-xs text-slate-400">ไม่มีข้อมูล</span>'}</div>
+                    <p class="text-sm font-bold text-risk mb-1 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> การตรวจสอบสภาพพื้นที่หน้างาน:</p>
+                    <p class="text-[13px] font-semibold text-slate-700 bg-risk-soft p-2.5 rounded-lg border border-risk/20">${specificData.declaration_checked ? '✅ ยืนยันการเตรียมถังดับเพลิงและทำ TBT เรียบร้อยแล้ว' : '❌ ไม่ได้ยืนยัน'}</p>
+                    ${jsaHtml}
+                </div>
+            `,
+            confirmButtonText: 'ปิดหน้าต่าง',
+            confirmButtonColor: '#2F3B57',
+            width: '90%',
+            customClass: { popup: 'rounded-2xl' },
+            didOpen: () => { lucide.createIcons(); }
+        });
+    }
+
+    async function approvePermit(ptwId) {
+        Swal.fire({
+            title: 'ยืนยันอนุมัติเริ่มงาน?',
+            text: "คุณในฐานะ PM ได้พิจารณาแผนงานและผลกระทบเรียบร้อยแล้วใช่หรือไม่?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2F3B57',
+            cancelButtonColor: '#69707E',
+            confirmButtonText: 'ใช่, อนุมัติเริ่มงาน',
+            cancelButtonText: 'ยกเลิก',
+            customClass: { popup: 'rounded-2xl', confirmButton: 'font-bold rounded-lg', cancelButton: 'font-bold rounded-lg' }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'กำลังบันทึกการอนุมัติ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                try {
+                    // อัปเดตสถานะในตาราง tb_work_permits ให้เป็น Approved
+                    const { error } = await supabaseClient
+                        .from('tb_work_permits')
+                        .update({ status: 'Approved' })
+                        .eq('ptw_id', ptwId);
+                    if (error) throw error;
+                    
+                    Swal.fire({
+                        title: 'อนุมัติสำเร็จ!', 
+                        text: 'ใบงานเข้าสู่สถานะ "กำลังทำงาน" ผู้รับเหมาสามารถเริ่มงานได้ทันที', 
+                        icon: 'success',
+                        confirmButtonColor: '#3F8F5B',
+                        customClass: { popup: 'rounded-2xl' }
+                    });
+                    await fetchPermits(); // โหลดข้อมูลใหม่เพื่อล้างใบงานที่อนุมัติแล้วออกจากหน้าจอ
+                } catch (error) {
+                    Swal.fire('เกิดข้อผิดพลาด', error.message, 'error');
+                }
+            }
+        });
+    }
+
+    // ---- Tabs Logic ----
+    function setupTabs() {
+        tabButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                currentTab = btn.dataset.tab;
+                
+                tabButtons.forEach((b) => {
+                    const isActive = b === btn;
+                    b.setAttribute("aria-selected", isActive ? "true" : "false");
+
+                    if (isActive) {
+                        b.classList.add("bg-primary", "text-primary-foreground", "shadow-sm");
+                        b.classList.remove("text-muted-foreground", "hover:bg-card", "hover:text-foreground");
+                    } else {
+                        b.classList.remove("bg-primary", "text-primary-foreground", "shadow-sm");
+                        b.classList.add("text-muted-foreground", "hover:bg-card", "hover:text-foreground");
+                    }
+                });
+                renderCards();
+            });
+        });
+    }
+  </script>
+</body>
+</html>
