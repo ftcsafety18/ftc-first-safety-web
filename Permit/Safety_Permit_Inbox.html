@@ -56,9 +56,15 @@
           <p class="truncate text-[11px] font-medium tracking-widest text-primary-foreground/70 uppercase">PTW Approval Inbox</p>
         </div>
 
-        <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold ring-1 ring-inset ring-white/30 shadow-sm">
-          <i data-lucide="shield-check" class="size-3.5 text-accent"></i> จป. วิชาชีพ
-        </span>
+        <!-- 🚀 เพิ่มรหัสแบบฟอร์ม ISO ลงใน Header 🚀 -->
+        <div class="flex flex-col items-end gap-1">
+          <span class="shrink-0 rounded-md bg-accent px-2 py-0.5 text-[9px] font-bold tracking-widest text-white shadow-sm">
+            FM-SAF-03 / 19
+          </span>
+          <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ring-white/30 shadow-sm">
+            <i data-lucide="shield-check" class="size-3 text-accent"></i> จป. วิชาชีพ
+          </span>
+        </div>
       </div>
     </header>
 
@@ -235,7 +241,6 @@
               <div class="flex items-start gap-3">
                 <span class="mt-0.5 shrink-0 text-slate-400"><i data-lucide="user" class="size-4"></i></span>
                 <div class="min-w-0 flex-1 leading-snug">
-                  <!-- 🚀 อัปเดต: ดึงชื่อและบริษัทมาโชว์ 🚀 -->
                   <span class="font-bold text-foreground">${specificData.req_name || 'ไม่ระบุชื่อ'}</span>
                   <span class="text-muted-foreground font-medium text-[13px]">(${specificData.req_company || 'ไม่ระบุบริษัท'})</span>
                 </div>
@@ -275,7 +280,7 @@
         
         let jsaContentHtml = '';
 
-        // 2. แว่นขยายตรวจสอบ E-JSA (ถ้ามีข้อมูล E-JSA ให้แสดงเป็นรูปแบบการ์ด)
+        // 2. แว่นขยายตรวจสอบ E-JSA
         if (specificData.ejsa_data && specificData.ejsa_data.length > 0) {
             let ejsaStepsHtml = specificData.ejsa_data.map(step => `
                 <div class="mb-3 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -305,7 +310,7 @@
                 </div>
             `;
         }
-        // 3. ถ้าไม่มี E-JSA ให้ไปเช็คว่ามีรูปถ่ายแนบมาไหม
+        // 3. ตรวจสอบรูปถ่าย JSA
         else if (specificData.jsa_file_url) {
             jsaContentHtml = `
                 <div class="mt-4">
@@ -314,7 +319,7 @@
                 </div>
             `;
         } 
-        // 4. กรณีไม่มีอะไรเลย (งานทั่วไปความเสี่ยงต่ำ)
+        // 4. กรณีไม่มีอะไรเลย
         else {
             jsaContentHtml = `
                 <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
