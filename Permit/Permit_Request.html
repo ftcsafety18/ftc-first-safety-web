@@ -97,7 +97,7 @@
 
     <main class="mx-auto max-w-xl space-y-5 px-4 py-6">
 
-      <!-- Section 1 (ของเดิมที่ทำงานได้ 100%) -->
+      <!-- Section 1 -->
       <section class="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         <header class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 bg-slate-50/50">
           <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-bold text-white shadow-inner">1</span>
@@ -165,11 +165,24 @@
             <div id="riskGrid" class="grid grid-cols-2 gap-2 mt-3">
               <!-- risk cards injected by JS -->
             </div>
-            <!-- ช่องกรอกงานอื่นๆ ซ่อนไว้เป็นค่าเริ่มต้น -->
-            <input type="text" id="otherRiskInput" placeholder="โปรดระบุลักษณะงานเสี่ยงสูง..." class="hidden input-field mt-2 border-red-300 focus:border-red-600" />
+            
+            <!-- 🚀 อัปเกรด: Dropdown สำหรับงานเสี่ยงสูงอื่นๆ (ตามกฎหมายกระทรวงแรงงาน) -->
+            <div id="otherRiskWrapper" class="hidden relative mt-2">
+              <select id="otherRiskInput" class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 font-medium">
+                <option value="" disabled selected>-- โปรดเลือกงานเสี่ยงสูงอื่นๆ --</option>
+                <option value="งานตอก/เจาะเสาเข็ม">งานตอก/เจาะเสาเข็ม (Piling Work)</option>
+                <option value="งานประดาน้ำ/ใต้น้ำ">งานประดาน้ำ/ใต้น้ำ (Diving Work)</option>
+                <option value="งานทดสอบแรงดันท่อ">งานทดสอบแรงดันท่อ (Pressure Testing)</option>
+                <option value="งานปิดกั้นการจราจร">งานปิดกั้นการจราจร (Traffic Control)</option>
+                <option value="งานที่ใช้กระเช้าลอยฟ้า/กอนโดลา">งานที่ใช้กระเช้าลอยฟ้า/กอนโดลา (Suspended Scaffold)</option>
+                <option value="งานบนผิวน้ำ">งานบนผิวน้ำ (Working over water)</option>
+                <option value="งานที่มีระดับเสียงดังรุนแรง">งานที่มีระดับเสียงดังรุนแรง (High Noise Area)</option>
+              </select>
+              <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-red-400"></i>
+            </div>
           </div>
 
-          <!-- กล่องงานทั่วไป (เน้นขอบหนา สีเขียว) -->
+          <!-- กล่องงานทั่วไป -->
           <button type="button" id="generalWork" data-active="false"
             class="flex w-full items-center gap-3 rounded-xl border border-slate-300 bg-white p-3.5 text-left transition hover:border-slate-400">
             <span class="opt-check flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-slate-400 bg-white text-transparent transition">
@@ -178,7 +191,6 @@
             <span class="text-[15px] font-extrabold text-slate-700">งานทั่วไป (General Work) — <span class="text-emerald-600">เสี่ยงต่ำ</span></span>
           </button>
 
-          <!-- High-risk alert -->
           <div id="riskAlert" role="alert" class="hidden items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">
             <i data-lucide="alert-triangle" class="h-5 w-5 shrink-0 text-red-600 animate-pulse"></i>
             <p class="text-[13px] font-bold leading-snug">⚠️ งานเสี่ยงสูงจำเป็นต้องแนบรูปเอกสาร JSA</p>
@@ -223,8 +235,22 @@
             <div id="ppeList" class="grid grid-cols-2 gap-2">
               <!-- ppe items injected by JS -->
             </div>
-            <!-- ช่องกรอก PPE อื่นๆ ซ่อนไว้เป็นค่าเริ่มต้น -->
-            <input type="text" id="otherPPEInput" placeholder="โปรดระบุอุปกรณ์ PPE อื่นๆ..." class="hidden input-field mt-2" />
+            
+            <!-- 🚀 อัปเกรด: Dropdown สำหรับ PPE อื่นๆ -->
+            <div id="otherPPEWrapper" class="hidden relative mt-2">
+              <select id="otherPPEInput" class="input-field appearance-none cursor-pointer pr-10 border-navy/30 focus:border-navy text-navy font-medium">
+                <option value="" disabled selected>-- เลือกอุปกรณ์ PPE เพิ่มเติม --</option>
+                <option value="เสื้อสะท้อนแสง (Reflective Vest)">เสื้อสะท้อนแสง (Reflective Vest)</option>
+                <option value="ชุดป้องกันสารเคมี (Chemical Suit)">ชุดป้องกันสารเคมี (Chemical Suit)</option>
+                <option value="อุปกรณ์ช่วยหายใจ SCBA">อุปกรณ์ช่วยหายใจแบบถัง (SCBA / Air Line)</option>
+                <option value="ถุงมือกันไฟฟ้า (Electrical Gloves)">ถุงมือฉนวนกันไฟฟ้า (Electrical Insulating Gloves)</option>
+                <option value="รองเท้าบูทยาง (Rubber Boots)">รองเท้าบูทยางกันน้ำ/สารเคมี (Rubber Boots)</option>
+                <option value="เสื้อชูชีพ (Life Jacket)">เสื้อชูชีพ (Life Jacket)</option>
+                <option value="ปลอกแขน/ปลอกขาหนัง (Leather Sleeves)">ปลอกแขน/ปลอกขาหนัง (Leather Sleeves/Leggings)</option>
+                <option value="เข็มขัดพยุงหลัง (Back Support)">เข็มขัดพยุงหลัง (Back Support)</option>
+              </select>
+              <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
+            </div>
           </div>
         </div>
       </section>
@@ -280,10 +306,9 @@
       { id: 'chemical',    th: 'งานเกี่ยวกับสารเคมี',      en: 'Chemical Work',      icon: 'beaker' },
       { id: 'structure',   th: 'งานรื้อถอน/โครงสร้าง',    en: 'Structural Work',    icon: 'building' },
       { id: 'radiation',   th: 'งานเกี่ยวกับรังสี',        en: 'Radiation Area',     icon: 'radiation' },
-      { id: 'other_risk',  th: 'งานอื่นๆ',             en: 'Other High Risk',    icon: 'help-circle' },
+      { id: 'other_risk',  th: 'งานอื่นๆ (ระบุ)',       en: 'Other High Risk',    icon: 'plus-circle' },
     ];
     
-    // อ้างอิงจากคู่มือความปลอดภัย โครงการ APTAR
     const PPE_ITEMS = [
       { id: 'helmet',     th: 'หมวกนิรภัย',                en: 'Helmet',            icon: 'hard-hat' },
       { id: 'shoes',      th: 'รองเท้าเซฟตี้',              en: 'Safety Shoes',      icon: 'footprints' },
@@ -295,7 +320,7 @@
       { id: 'harness',    th: 'เข็มขัดกันตกเต็มตัว',         en: 'Full Body Harness', icon: 'person-standing' },
       { id: 'lifeline',   th: 'สายช่วยชีวิต',              en: 'Life Line',         icon: 'link' },
       { id: 'mask',       th: 'หน้ากากกันสารเคมี/ฝุ่น',       en: 'Respirator/Mask',   icon: 'spray-can' },
-      { id: 'other_ppe',  th: 'อื่นๆ (Others)',          en: 'Please specify',    icon: 'more-horizontal' },
+      { id: 'other_ppe',  th: 'อื่นๆ (โปรดระบุ)',          en: 'Please specify',    icon: 'plus-circle' },
     ];
 
     // ---- State ----
@@ -326,7 +351,6 @@
     PPE_ITEMS.forEach((item) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      // ถ้าเป็นอันสุดท้าย (อื่นๆ) ให้กว้างเต็ม 2 คอลัมน์
       const colSpan = item.id === 'other_ppe' ? 'col-span-2 bg-slate-50 justify-center' : 'col-span-1 bg-white justify-start';
       btn.className = `ppe-opt flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition active:scale-[0.98] ${colSpan}`;
       btn.innerHTML =
@@ -348,8 +372,10 @@
     const submitBtn = document.getElementById('submitBtn');
     const declBtn = document.getElementById('declaration');
     
-    // Inputs for "Others"
+    // Wrappers and Inputs for "Others" Dropdowns
+    const otherRiskWrapper = document.getElementById('otherRiskWrapper');
     const otherRiskInput = document.getElementById('otherRiskInput');
+    const otherPPEWrapper = document.getElementById('otherPPEWrapper');
     const otherPPEInput = document.getElementById('otherPPEInput');
 
     function toggleRisk(id, name, btn) {
@@ -358,11 +384,14 @@
       if (selectedRisk.has(name)) { 
           selectedRisk.delete(name); 
           btn.classList.remove('active'); 
-          if(id === 'other_risk') otherRiskInput.classList.add('hidden');
+          if(id === 'other_risk') {
+              otherRiskWrapper.classList.add('hidden');
+              otherRiskInput.value = ''; 
+          }
       } else { 
           selectedRisk.add(name); 
           btn.classList.add('active'); 
-          if(id === 'other_risk') otherRiskInput.classList.remove('hidden');
+          if(id === 'other_risk') otherRiskWrapper.classList.remove('hidden');
       }
       refresh();
     }
@@ -371,11 +400,14 @@
         if(selectedPPE.has(name)) { 
             selectedPPE.delete(name); 
             btn.classList.remove('active'); 
-            if(id === 'other_ppe') otherPPEInput.classList.add('hidden');
+            if(id === 'other_ppe') {
+                otherPPEWrapper.classList.add('hidden');
+                otherPPEInput.value = ''; 
+            }
         } else { 
             selectedPPE.add(name); 
             btn.classList.add('active'); 
-            if(id === 'other_ppe') otherPPEInput.classList.remove('hidden');
+            if(id === 'other_ppe') otherPPEWrapper.classList.remove('hidden');
         }
         refresh();
     }
@@ -385,7 +417,8 @@
       generalBtn.classList.toggle('active', generalWork);
       selectedRisk.clear();
       riskGrid.querySelectorAll('.risk-card').forEach((c) => c.classList.remove('active'));
-      otherRiskInput.classList.add('hidden');
+      otherRiskWrapper.classList.add('hidden');
+      otherRiskInput.value = '';
       refresh();
     });
 
@@ -394,6 +427,10 @@
       declBtn.classList.toggle('active', declared);
       refresh();
     });
+
+    // ตรวจสอบการเลือก Dropdown เพื่อเปิดปุ่ม Submit
+    otherRiskInput.addEventListener('change', refresh);
+    otherPPEInput.addEventListener('change', refresh);
 
     // ---- Image Compression (JSA) ----
     const jsaInput = document.getElementById('jsaInput');
@@ -471,7 +508,11 @@
       const hasJsaIfNeeded = hasHighRisk ? (compressedJsaFile !== null) : true;
       const hasBasicInfo = document.getElementById('project-input').value && document.getElementById('wbs-input').value && document.getElementById('location-input').value && document.getElementById('start-time').value && document.getElementById('end-time').value;
       
-      submitBtn.disabled = !(declared && (generalWork || hasHighRisk) && hasJsaIfNeeded && selectedPPE.size > 0 && hasBasicInfo);
+      // ดักจับว่าถ้าเลือก "อื่นๆ" ต้องเลือกค่าจาก Dropdown ด้วยถึงจะให้กด Submit
+      const isOtherRiskValid = !selectedRisk.has('งานอื่นๆ (ระบุ)') || (otherRiskInput.value !== '');
+      const isOtherPPEValid = !selectedPPE.has('อื่นๆ (โปรดระบุ)') || (otherPPEInput.value !== '');
+
+      submitBtn.disabled = !(declared && (generalWork || hasHighRisk) && hasJsaIfNeeded && selectedPPE.size > 0 && hasBasicInfo && isOtherRiskValid && isOtherPPEValid);
     }
 
     function scanAsset() {
@@ -520,15 +561,15 @@
                 jsaUrl = supabaseClient.storage.from('safety-documents').getPublicUrl(filePath).data.publicUrl;
             }
 
-            // จัดการข้อมูล "งานอื่นๆ" และ "PPE อื่นๆ"
+            // จัดการข้อมูล "งานอื่นๆ" และ "PPE อื่นๆ" ให้เป็นคำที่อ่านง่าย
             let finalWorkTypes = [];
             if (generalWork) {
                 finalWorkTypes = ['งานทั่วไป (General Work)'];
             } else {
                 selectedRisk.forEach(risk => {
-                    if (risk === 'งานอื่นๆ' && otherRiskInput.value.trim() !== '') {
-                        finalWorkTypes.push('อื่นๆ: ' + otherRiskInput.value.trim());
-                    } else if (risk !== 'งานอื่นๆ') {
+                    if (risk === 'งานอื่นๆ (ระบุ)' && otherRiskInput.value !== '') {
+                        finalWorkTypes.push(otherRiskInput.value);
+                    } else if (risk !== 'งานอื่นๆ (ระบุ)') {
                         finalWorkTypes.push(risk);
                     }
                 });
@@ -536,9 +577,9 @@
             
             let finalPPE = [];
             selectedPPE.forEach(ppe => {
-                if (ppe === 'อื่นๆ (Others)' && otherPPEInput.value.trim() !== '') {
-                    finalPPE.push('อื่นๆ: ' + otherPPEInput.value.trim());
-                } else if (ppe !== 'อื่นๆ (Others)') {
+                if (ppe === 'อื่นๆ (โปรดระบุ)' && otherPPEInput.value !== '') {
+                    finalPPE.push(otherPPEInput.value);
+                } else if (ppe !== 'อื่นๆ (โปรดระบุ)') {
                     finalPPE.push(ppe);
                 }
             });
