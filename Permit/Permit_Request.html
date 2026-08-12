@@ -251,7 +251,9 @@
         </header>
         <div class="space-y-5 p-5">
           
-          <!-- 1. Required PPE Grid (เลื่อนขึ้นมาไว้บนสุด) -->
+          <!-- ========================================== -->
+          <!-- 1. อุปกรณ์ PPE (เลื่อนมาไว้บนสุดของ Section 3) -->
+          <!-- ========================================== -->
           <div>
             <label class="mb-3 block text-sm font-bold text-slate-700">กรุณาระบุ PPE ที่ต้องใช้งาน <span class="text-[11px] font-normal text-slate-500">(เลือกได้มากกว่า 1 ข้อ)</span> <span class="text-red-500">*</span></label>
             <div id="ppeList" class="grid grid-cols-2 gap-2">
@@ -280,7 +282,9 @@
             </div>
           </div>
 
+          <!-- ========================================== -->
           <!-- 2. ปุ่ม E-Tagging (เลื่อนมาไว้ตรงกลาง) -->
+          <!-- ========================================== -->
           <div class="border-t border-slate-100 pt-4">
             <button type="button" onclick="openScanner()"
               class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-navy/20 bg-slate-50 px-4 py-3.5 text-sm font-bold text-navy transition hover:bg-slate-100 active:scale-[0.98]">
@@ -291,7 +295,9 @@
             <div id="scannedAssetsList" class="mt-2 flex flex-col gap-2 empty:hidden"></div>
           </div>
 
+          <!-- ========================================== -->
           <!-- 3. JSA dropzone (เลื่อนมาไว้ด้านล่างสุด) -->
+          <!-- ========================================== -->
           <div id="jsaWrap" class="hidden border-t border-slate-100 pt-4">
             <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
             
