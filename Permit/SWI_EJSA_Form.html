@@ -79,7 +79,7 @@
         </div>
       </div>
       <span class="bg-orange/10 text-orange border border-orange/20 px-2 py-1 rounded text-[10px] font-bold tracking-wider">
-        FM-SAF-04
+        FM-SAF-34
       </span>
     </div>
   </header>
@@ -93,7 +93,7 @@
       </div>
       <div>
         <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> PTW-202608-001</p>
-        <p class="text-[13px] font-semibold text-slate-800 mt-0.5 leading-snug">งานตัดเตรียมท่อเหล็กบนโครงนั่งร้าน อาคารผลิต B</p>
+        <p class="text-[13px] font-semibold text-slate-800 mt-0.5 leading-snug">งานเชื่อมประกอบโครงสร้างท่อ HDPE อาคารผลิต B</p>
       </div>
     </div>
 
@@ -107,17 +107,29 @@
       <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มขั้นตอนการปฏิบัติงาน
     </button>
 
-    <!-- Legend -->
-    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+    <!-- Legend (อ้างอิงจากตาราง Excel) -->
+    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden mb-4">
       <summary class="flex justify-between items-center p-3 cursor-pointer text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition">
-        <span class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> คำอธิบายระดับความรุนแรง (Severity Legend)</span>
+        <span class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> ระดับความรุนแรงของอันตราย (Rank of Hazard Severity)</span>
         <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200"></i>
       </summary>
-      <div class="p-3 text-[11px] space-y-2 border-t border-slate-100 bg-white">
-        <div class="flex items-start gap-2"><span class="bg-red-600 text-white px-1.5 rounded font-bold">A</span> <span class="text-slate-600">รุนแรงมาก/เสียชีวิต (Fatal/Serious)</span></div>
-        <div class="flex items-start gap-2"><span class="bg-orange-500 text-white px-1.5 rounded font-bold">B</span> <span class="text-slate-600">ทุพพลภาพ/หยุดงานเกิน 3 วัน (Disability)</span></div>
-        <div class="flex items-start gap-2"><span class="bg-yellow-400 text-white px-1.5 rounded font-bold">C</span> <span class="text-slate-600">บาดเจ็บ/หยุดงานไม่เกิน 3 วัน (Lost Time)</span></div>
-        <div class="flex items-start gap-2"><span class="bg-emerald-500 text-white px-1.5 rounded font-bold">D</span> <span class="text-slate-600">บาดเจ็บเล็กน้อย/ไม่หยุดงาน (Minor/First Aid)</span></div>
+      <div class="p-3 text-[11px] space-y-3 border-t border-slate-100 bg-white">
+        <div class="flex items-start gap-2">
+            <span class="bg-red-600 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">A</span> 
+            <span class="text-slate-600">บาดเจ็บถึงขั้นเสียชีวิต หรือโรคร้ายแรง / ทรัพย์สินเสียหาย > 50,000 บาท <br><span class="text-[9px] text-slate-400">(Injury causing death or serious diseases / Damaged property > 50,000 B.)</span></span>
+        </div>
+        <div class="flex items-start gap-2">
+            <span class="bg-orange-500 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">B</span> 
+            <span class="text-slate-600">สูญเสียอวัยวะ หรือหยุดงานเกิน 3 วัน / ทรัพย์สินเสียหาย 20,001 - 50,000 บาท <br><span class="text-[9px] text-slate-400">(Injury causing loss of organs, disability, stop working > 3 days / Damaged property 20,001-50,000 B.)</span></span>
+        </div>
+        <div class="flex items-start gap-2">
+            <span class="bg-yellow-400 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">C</span> 
+            <span class="text-slate-600">บาดเจ็บถึงขั้นหยุดงาน แต่ไม่เกิน 3 วัน / ทรัพย์สินเสียหาย 5,000 - 20,000 บาท <br><span class="text-[9px] text-slate-400">(Injury that injured person stop working not more than 3 days / Damaged property 5,000-20,000 B.)</span></span>
+        </div>
+        <div class="flex items-start gap-2">
+            <span class="bg-emerald-500 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">D</span> 
+            <span class="text-slate-600">บาดเจ็บเล็กน้อยไม่ต้องหยุดงาน / ทรัพย์สินเสียหายต่ำกว่า 5,000 บาท <br><span class="text-[9px] text-slate-400">(Minor injury or sickness that injured person does not stop working / Damaged property < 5,000 B.)</span></span>
+        </div>
       </div>
     </details>
 
@@ -137,21 +149,42 @@
   <script>
     let stepCounter = 0;
 
-    const HAZARDS = ["ของมีคมบาด", "ตกจากที่สูง", "ไฟฟ้าช็อต", "สารเคมีสัมผัส", "เสียงดัง/สั่นสะเทือน", "อับอากาศ", "ไฟไหม้/ระเบิด", "วัตถุกระแทก/ทับ"];
-    const MEASURES = ["สวม PPE ครบถ้วน", "ตรวจสอบอุปกรณ์ก่อนใช้งาน", "ขอ Permit to Work", "ติดตั้ง Barricade/สัญญาณเตือน", "มีผู้ควบคุมงาน (Standby Man)", "ตรวจวัดบรรยากาศ (Gas Test)", "ตัดแยกระบบไฟฟ้า (LOTO)", "อบรมพนักงานก่อนเริ่มงาน"];
-    const SOURCES = ["งานความร้อน (Hot Work)", "งานบนที่สูง (Working at Height)", "งานเกี่ยวกับไฟฟ้า (Electrical)", "งานสารเคมี (Chemical)", "งานในที่อับอากาศ (Confined Space)", "งานเครื่องจักร (Machinery)", "อื่นๆ (Others)"];
+    const HAZARDS = ["ของมีคมบาด/ทิ่มแทง", "ตกจากที่สูง/ลื่นล้ม", "ไฟฟ้าช็อต/ดูด", "สารเคมีสัมผัส", "เสียงดัง/สั่นสะเทือน", "อับอากาศ/ขาดอ๊อกซิเจน", "ไฟไหม้/ระเบิด", "ปวดกล้ามเนื้อจากการยก", "ท่อหล่นทับ/วัตถุกระแทก"];
+    const MEASURES = ["สวม PPE ครบถ้วน", "ตรวจสอบอุปกรณ์ก่อนใช้งาน", "ขอ Permit to Work", "ยกท่อด้วยความระมัดระวังและให้สัญญาณ", "ใช้ท่าทางการยกตามหลักการยศาสตร์", "จัดเก็บวัสดุให้เป็นระเบียบ", "มีผู้ควบคุมงาน (Standby Man)", "ตัดแยกระบบไฟฟ้า (LOTO)", "สวมถุงมือป้องกันความร้อน"];
+    
+    // อ้างอิงแหล่งกำเนิดอันตรายจากตาราง Excel
+    const SOURCES = [
+        "เครื่องมือ/อุปกรณ์ (Eq./Tool)", 
+        "วัสดุ/ของหนัก (Material/Heavy Obj.)", 
+        "ยานพาหนะ (Vehicle)", 
+        "พลัดตก (Fall Down)", 
+        "ไฟฟ้า (Electrocution)", 
+        "สารเคมี (Chemical)", 
+        "งานความร้อน (Hot Work)", 
+        "อื่นๆ (Others)"
+    ];
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      addStep(); // Add first step automatically
+      addStep(); // โหลดหน้าปุ๊บ สร้างขั้นตอนที่ 1 ทันที
     });
+
+    function toggleCustomInput(selectElement) {
+        const textInput = selectElement.nextElementSibling.nextElementSibling; // หา textarea ที่อยู่ถัดจาก select (ผ่าน i icon ไป)
+        if (selectElement.value === 'custom') {
+            textInput.classList.remove('hidden');
+            textInput.focus();
+        } else {
+            textInput.classList.add('hidden');
+        }
+    }
 
     function addStep() {
       stepCounter++;
       const container = document.getElementById('steps-container');
       const stepId = `step-${Date.now()}`;
 
-      // Generate HTML for Chips
+      // สร้างปุ่มอัจฉริยะ
       const hazardChips = HAZARDS.map(h => `<span class="chip chip-hazard" onclick="toggleChip(this)">${h}</span>`).join('');
       const measureChips = MEASURES.map(m => `<span class="chip chip-measure" onclick="toggleChip(this)">${m}</span>`).join('');
       const sourceOptions = SOURCES.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -174,24 +207,37 @@
             <!-- A. Photo Upload -->
             <div>
               <label for="img-${stepId}" class="upload-area flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative">
-                <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500">
-                  <i data-lucide="camera" class="w-6 h-6 mb-2 text-slate-400"></i>
-                  <span class="text-xs font-medium">ถ่ายภาพ / แนบรูปขั้นตอนการทำงาน</span>
+                <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500 p-4 text-center">
+                  <i data-lucide="camera" class="w-7 h-7 mb-2 text-slate-400"></i>
+                  <span class="text-[13px] font-bold text-slate-600">โปรดระบุขั้นตอนการทำงาน</span>
+                  <span class="text-[11px] font-medium mt-1">และแนบรูปภาพลงในขั้นตอนการปฏิบัติงานแต่ละขั้นตอน (Photo)</span>
                 </div>
                 <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
               </label>
               <input type="file" id="img-${stepId}" class="hidden" accept="image/*" onchange="previewImage(this)">
             </div>
 
-            <!-- B. Method Statement -->
+            <!-- B. Method Statement (Dropdown + Textarea) -->
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1.5">1. ขั้นตอนการปฏิบัติงาน (Method Statement)</label>
-              <textarea class="input-field resize-none" rows="2" placeholder="อธิบายรายละเอียดขั้นตอนการทำงาน..."></textarea>
+              <label class="block text-[13px] font-bold text-slate-700 mb-1.5">1. ขั้นตอนการปฏิบัติงาน (Method Statement)</label>
+              <div class="relative mb-2">
+                <select class="input-field appearance-none pr-8 bg-white border-slate-200 text-navy font-semibold text-[13px]" onchange="toggleCustomInput(this)">
+                  <option value="" disabled selected>-- เลือกขั้นตอนการปฏิบัติงาน --</option>
+                  <option value="จัดเตรียมวัสดุและอุปกรณ์">จัดเตรียมท่อ วัสดุและอุปกรณ์ (Preparation)</option>
+                  <option value="จัดวางชิ้นงานให้ได้ระดับ">จัดวางท่อทั้งสองข้าง ให้ได้ระดับบนเครื่องเชื่อมท่อ (Positioning)</option>
+                  <option value="เตรียมแผ่นความร้อน">เตรียมแผ่นเชื่อมท่อด้วยความร้อนตามอุณหภูมิที่กำหนด (Heating Setup)</option>
+                  <option value="นำแผ่นความร้อนประสานชิ้นงาน">นำแผ่นความร้อนผสานเข้ากับท่อทั้งสองข้าง (Connecting)</option>
+                  <option value="ตรวจสอบความเรียบร้อยของชิ้นงาน">ตรวจสอบความเรียบร้อยของรอยเชื่อมท่อ (Inspection)</option>
+                  <option value="custom" class="text-orange-600 font-bold">✏️ พิมพ์ระบุขั้นตอนการปฏิบัติงานเอง...</option>
+                </select>
+                <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                <textarea class="input-field resize-none hidden mt-2 text-[13px]" rows="2" placeholder="โปรดพิมพ์อธิบายรายละเอียดขั้นตอนการทำงาน..."></textarea>
+              </div>
             </div>
 
             <!-- C. Hazards & Risk -->
             <div class="bg-red-50/30 p-3 -mx-2 rounded-xl border border-red-50/50">
-              <label class="block text-xs font-bold text-slate-700 mb-2">2. อันตรายและระดับความเสี่ยง <span class="text-slate-400 font-medium text-[10px]">(Hazards & Risk Rank)</span></label>
+              <label class="block text-[13px] font-bold text-slate-700 mb-2">2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-400 font-medium text-[11px]">(Potential Hazard)</span></label>
               
               <div class="flex flex-wrap gap-1.5 mb-3">
                 ${hazardChips}
@@ -207,7 +253,7 @@
               </div>
 
               <div>
-                <p class="text-[10px] text-slate-500 mb-1.5">ระดับความรุนแรง (Severity Rank)</p>
+                <p class="text-[11px] font-semibold text-slate-500 mb-1.5">ระดับความรุนแรง (Severity Rank)</p>
                 <div class="flex gap-2">
                   <button type="button" class="sev-btn group" data-rank="A" onclick="selectSeverity(this)">
                     <span class="grade">A</span><span class="desc block">Fatal</span>
@@ -216,7 +262,7 @@
                     <span class="grade">B</span><span class="desc block">Disability</span>
                   </button>
                   <button type="button" class="sev-btn group" data-rank="C" onclick="selectSeverity(this)">
-                    <span class="grade">C</span><span class="desc block">Lost</span>
+                    <span class="grade">C</span><span class="desc block">Lost Time</span>
                   </button>
                   <button type="button" class="sev-btn group" data-rank="D" onclick="selectSeverity(this)">
                     <span class="grade">D</span><span class="desc block">Minor</span>
@@ -227,7 +273,7 @@
 
             <!-- D. Measures -->
             <div class="bg-emerald-50/30 p-3 -mx-2 rounded-xl border border-emerald-50/50">
-              <label class="block text-xs font-bold text-slate-700 mb-2">3. มาตรการควบคุมความเสี่ยง <span class="text-slate-400 font-medium text-[10px]">(Risk Control)</span></label>
+              <label class="block text-[13px] font-bold text-slate-700 mb-2">3. การควบคุมความเสี่ยง <span class="text-slate-400 font-medium text-[11px]">(Risk Control)</span></label>
               <div class="flex flex-wrap gap-1.5">
                 ${measureChips}
                 <span class="chip chip-measure border-emerald-200 text-emerald-500" onclick="toggleChip(this)"><i data-lucide="plus" class="w-3 h-3 mr-1"></i> อื่นๆ (ระบุ)</span>
@@ -236,7 +282,7 @@
 
             <!-- E. Remarks -->
             <div>
-              <label class="block text-[11px] font-bold text-slate-500 mb-1">4. หมายเหตุ (Remark)</label>
+              <label class="block text-[12px] font-bold text-slate-500 mb-1">4. หมายเหตุ (Remark)</label>
               <input type="text" class="input-field text-xs py-2 bg-transparent" placeholder="ระบุหมายเหตุเพิ่มเติม (ถ้ามี)">
             </div>
 
@@ -290,14 +336,9 @@
     }
 
     function selectSeverity(btn) {
-      // Find parent container to isolate radio-like behavior
       const container = btn.closest('.flex');
       const buttons = container.querySelectorAll('.sev-btn');
-      
-      // Remove active from all
       buttons.forEach(b => b.classList.remove('active'));
-      
-      // Add active to clicked
       btn.classList.add('active');
     }
   </script>
