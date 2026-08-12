@@ -22,44 +22,34 @@
     .input-field { width: 100%; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; padding: 0.75rem 1rem; font-size: 0.875rem; color: #1e293b; outline: none; transition: all 0.2s; }
     .input-field:focus { border-color: #2A4365; box-shadow: 0 0 0 3px rgba(42, 67, 101, 0.1); }
     
-    .check-card { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: #fff; cursor: pointer; transition: all 0.2s; }
+    .check-card { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: #fff; cursor: pointer; transition: all 0.3s ease; }
     .check-card:active { transform: scale(0.98); }
     .check-box { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; border: 2px solid #94a3b8; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .check-box i { width: 0.875rem; height: 0.875rem; color: white; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
     .check-text { font-size: 0.8125rem; color: #475569; font-weight: 500; line-height: 1.4; padding-top: 0.1rem;}
     
-    .active-hazard { background-color: #fef2f2; border-color: #fca5a5; }
+    .active-hazard { background-color: #fef2f2; border-color: #fca5a5; order: -1; }
     .active-hazard .check-box { background-color: #dc2626; border-color: #dc2626; }
     .active-hazard .check-text { color: #b91c1c; font-weight: 600; }
     .active-hazard .check-box i { opacity: 1; transform: scale(1); }
 
-    .active-source { background-color: #fff7ed; border-color: #fdba74; }
+    .active-source { background-color: #fff7ed; border-color: #fdba74; order: -1; }
     .active-source .check-box { background-color: #f97316; border-color: #f97316; }
     .active-source .check-text { color: #c2410c; font-weight: 600; }
     .active-source .check-box i { opacity: 1; transform: scale(1); }
 
-    .active-measure { background-color: #f0fdf4; border-color: #6ee7b7; }
+    .active-measure { background-color: #f0fdf4; border-color: #6ee7b7; order: -1; }
     .active-measure .check-box { background-color: #059669; border-color: #059669; }
     .active-measure .check-text { color: #047857; font-weight: 600; }
     .active-measure .check-box i { opacity: 1; transform: scale(1); }
 
-    .sev-btn { flex: 1; display: flex; flex-col; justify-content: center; align-items: center; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .sev-btn .grade { font-size: 1.2rem; font-weight: 800; line-height: 1; }
-    .sev-btn .desc { font-size: 0.65rem; font-weight: 700; margin-top: 0.2rem; text-transform: uppercase; }
-    
-    .sev-btn[data-rank="A"].active { border-color: #dc2626; background-color: #dc2626; color: white; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3); }
-    .sev-btn[data-rank="A"] { color: #dc2626; }
-    .sev-btn[data-rank="B"].active { border-color: #f97316; background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); }
-    .sev-btn[data-rank="B"] { color: #f97316; }
-    .sev-btn[data-rank="C"].active { border-color: #f59e0b; background-color: #f59e0b; color: white; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3); }
-    .sev-btn[data-rank="C"] { color: #f59e0b; }
-    .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
-    .sev-btn[data-rank="D"] { color: #10b981; }
-    .criteria-text { font-size: 0.65rem; font-weight: 500; color: #64748b; margin-top: 0.3rem; line-height: 1.2; display: none; }
-    .sev-btn.active .criteria-text { color: rgba(255,255,255,0.9); display: block; }
+    /* CSS Flexbox Ordering trick to push unchecked items down */
+    .hazards-container, .sources-container, .measures-container { display: flex; flex-direction: column; gap: 0.5rem; }
+    .check-card[data-checked="false"] { order: 1; opacity: 0.75; }
+    .check-card[data-checked="true"] { order: -1; opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; touch-action: manipulation; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
     input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
     input[type=range]:focus { outline: none; }
     
@@ -151,7 +141,6 @@
     // 🧠 SMART KNOWLEDGE BASE (MASTER DATA)
     // ==========================================
     
-    // โครงสร้างหมวดหมู่งานหลัก (Category)
     const JOB_CATEGORIES = [
         { id: 'cat_mep_elec', name: 'หมวด 1.1: งานระบบไฟฟ้า (Electrical Work)' },
         { id: 'cat_mep_hw', name: 'หมวด 1.2: งานเชื่อม ตัด เจียร (Hot Work)' },
@@ -181,7 +170,6 @@
         { id: 'cat_other', name: 'อื่นๆ (โปรดระบุเอง)' }
     ];
 
-    // โครงสร้างขั้นตอนย่อยตามหมวดหมู่ (Steps by Category)
     const JOB_STEPS = {
         'cat_mep_elec': [
             { id: 'm1_elec_1', name: 'ขั้น 1: แจ้งขออนุญาตและตัดแยกระบบพลังงาน (LOTO) ที่ตู้ควบคุมหลัก' },
@@ -335,8 +323,7 @@
             { id: 'm6_blast_1', name: 'ขั้น 1: บรรจุระเบิด/เดินสายชนวน' },
             { id: 'm6_blast_2', name: 'ขั้น 2: อพยพคน/กดจุดระเบิด' },
             { id: 'm6_blast_3', name: 'ขั้น 3: ตรวจสอบระเบิดด้าน (Misfire)' }
-        ],
-        'cat_other': []
+        ]
     };
 
     const HAZARDS = [
@@ -432,7 +419,7 @@
         'm1_pt_1': { hazards: ["ขันน็อตไม่แน่น ปะเก็นปลิ้นเมื่อรับแรงดัน"], sources: ["Mechanical (กลศาสตร์)"], measures: ["ใช้ประแจปอนด์ (Torque Wrench) ขันให้ได้ค่าตามสเปก"] },
         'm1_pt_2': { hazards: ["คนนอกเดินเข้ามาใกล้แนวท่อที่กำลังอัดแรงดัน"], sources: ["Human / Management (บุคคลและการจัดการ)"], measures: ["กั้นพื้นที่อันตราย ขึงเชือกรอบบริเวณและติดป้ายชัดเจน"] },
         'm1_pt_3': { hazards: ["ท่อปริแตกหรือระเบิด (โดยเฉพาะลม Pneumatic)"], sources: ["Pressure (แรงดัน)"], measures: ["ติดตั้งวาล์วระบายแรงดันเกิน (Pressure Relief Valve)"] },
-        'm1_pt_4': { hazards: ["โครงสร้างซัพพอร์ตรับน้ำหนักน้ำที่เต็มท่อไม่ไหวจนถล่ม"], sources: ["Structural (โครงสร้าง)"], measures: ["วิศวกรคำนวณ Load Bearing ก่อนทดสอบ"] },
+        'm1_pt_4': { hazards: ["โครงสร้างซัพพอร์ตรับน้ำหนักน้ำที่เต็มท่อไม่ไหวจนถถล่ม"], sources: ["Structural (โครงสร้าง)"], measures: ["วิศวกรคำนวณ Load Bearing ก่อนทดสอบ"] },
         'm1_pt_5': { hazards: ["น้ำแรงดันสูงทะลุผิวหนัง (High-Pressure Injection)"], sources: ["Pressure (แรงดัน)"], measures: ["ห้ามใช้มือเปล่าลูบหารอยรั่ว ให้ใช้กระดาษหรือน้ำยาสบู่"] },
         'm1_pt_6': { hazards: ["วาล์วระบายตัน แรงดันยังค้างอยู่ เกิดระเบิดตอนเปิด"], sources: ["Mechanical (กลศาสตร์)", "Pressure (แรงดัน)"], measures: ["ติดตั้งเกจวัดแรงดันอย่างน้อย 2 จุดเพื่อเทียบค่า"] },
         
@@ -539,23 +526,29 @@
       addStep(); 
     });
 
+    // ==========================================
+    // ⚙️ UI Functions
+    // ==========================================
+
     function handleCategorySelection(selectElement) {
         const stepContainer = selectElement.closest('.step-card');
         const methodSelect = stepContainer.querySelector('.method-select');
         const customInput = stepContainer.querySelector('.custom-method-input');
         const categoryId = selectElement.value;
 
-        // Reset
-        methodSelect.innerHTML = '<option value="" disabled selected>-- เลือกขั้นตอนการปฏิบัติงาน --</option>';
+        methodSelect.innerHTML = '<option value="" disabled selected>-- 1.2 เลือกขั้นตอนย่อย --</option>';
         customInput.classList.add('hidden');
         customInput.value = '';
         
-        // ล้างค่า Checkbox ด้านล่าง
         const allCards = stepContainer.querySelectorAll('.check-card');
         allCards.forEach(card => {
             card.classList.remove('active-hazard', 'active-source', 'active-measure');
             card.dataset.checked = "false";
         });
+        
+        sortCheckedToTop(stepContainer.querySelector('.hazards-container'));
+        sortCheckedToTop(stepContainer.querySelector('.sources-container'));
+        sortCheckedToTop(stepContainer.querySelector('.measures-container'));
 
         if (categoryId === 'cat_other') {
             methodSelect.innerHTML += '<option value="custom">✏️ พิมพ์ระบุขั้นตอนการปฏิบัติงานเอง...</option>';
@@ -564,7 +557,7 @@
             JOB_STEPS[categoryId].forEach(step => {
                 methodSelect.innerHTML += `<option value="${step.id}">${step.name}</option>`;
             });
-            methodSelect.innerHTML += '<option value="custom" class="text-orange-600 font-bold">✏️ พิมพ์ระบุขั้นตอนการปฏิบัติงานเอง...</option>';
+            methodSelect.innerHTML += '<option value="custom" class="text-orange-600 font-bold">✏️ พิมพ์ระบุขั้นตอนย่อยเอง...</option>';
             methodSelect.classList.remove('hidden');
         } else {
             methodSelect.classList.add('hidden');
@@ -594,18 +587,52 @@
             
             allCards.forEach(card => {
                 const text = card.querySelector('.check-text').textContent;
-                if (card.dataset.type === 'hazard' && hazards.includes(text)) toggleCheckCard(card);
-                if (card.dataset.type === 'source' && sources.includes(text)) toggleCheckCard(card);
-                if (card.dataset.type === 'measure' && measures.includes(text)) toggleCheckCard(card);
+                if (card.dataset.type === 'hazard' && hazards.includes(text)) {
+                    card.dataset.checked = "true";
+                    card.classList.add('active-hazard');
+                }
+                if (card.dataset.type === 'source' && sources.includes(text)) {
+                    card.dataset.checked = "true";
+                    card.classList.add('active-source');
+                }
+                if (card.dataset.type === 'measure' && measures.includes(text)) {
+                    card.dataset.checked = "true";
+                    card.classList.add('active-measure');
+                }
             });
         }
+        
+        // ดันตัวที่เลือกให้ขึ้นไปบนสุด
+        const hzContainer = stepContainer.querySelector('.hazards-container');
+        const srcContainer = stepContainer.querySelector('.sources-container');
+        const msContainer = stepContainer.querySelector('.measures-container');
+        
+        sortCheckedToTop(hzContainer);
+        sortCheckedToTop(srcContainer);
+        sortCheckedToTop(msContainer);
+        
+        hzContainer.scrollTop = 0;
+        srcContainer.scrollTop = 0;
+        msContainer.scrollTop = 0;
+    }
+
+    function sortCheckedToTop(container) {
+        const cards = Array.from(container.children).filter(c => c.classList.contains('check-card'));
+        cards.sort((a, b) => {
+            const aChecked = a.dataset.checked === "true" ? 1 : 0;
+            const bChecked = b.dataset.checked === "true" ? 1 : 0;
+            return bChecked - aChecked;
+        });
+        cards.forEach(card => container.appendChild(card));
     }
 
     function calculateRisk(stepId) {
         const card = document.getElementById(stepId);
+        
         const iL = parseInt(card.querySelector('.init-l').value);
         const iS = parseInt(card.querySelector('.init-s').value);
         const iScore = iL * iS;
+        
         const rL = parseInt(card.querySelector('.res-l').value);
         const rS = parseInt(card.querySelector('.res-s').value); 
         const rScore = rL * rS;
@@ -629,6 +656,15 @@
 
         updateBadge(iScore, card.querySelector('.badge-init'));
         updateBadge(rScore, card.querySelector('.badge-res'));
+        
+        // ประเมินผลความปลอดภัยหลังควบคุม (Risk Acceptance Check)
+        const residualStatusEl = card.querySelector('.residual-status');
+        if (rScore <= 9) {
+            residualStatusEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-md font-bold flex items-center gap-1.5 text-xs"><i data-lucide="check-circle-2" class="w-4 h-4"></i> ความเสี่ยงอยู่ในระดับยอมรับได้ (เริ่มงานได้)</span>`;
+        } else {
+            residualStatusEl.innerHTML = `<span class="text-red-600 bg-red-50 px-3 py-1.5 rounded-md font-bold flex items-center gap-1.5 text-xs"><i data-lucide="x-circle" class="w-4 h-4"></i> ความเสี่ยงสูงเกินไป (ไม่อนุญาตให้ทำงาน)</span>`;
+        }
+        lucide.createIcons({root: residualStatusEl});
     }
 
     function addStep() {
@@ -636,9 +672,9 @@
       const container = document.getElementById('steps-container');
       const stepId = `step-${Date.now()}`;
 
-      const hazardHTML = HAZARDS.map(h => `<div class="check-card" data-type="hazard" data-checked="false" onclick="toggleCheckCard(this)"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${h}</span></div>`).join('');
-      const sourceHTML = SOURCES.map(s => `<div class="check-card" data-type="source" data-checked="false" onclick="toggleCheckCard(this)"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${s}</span></div>`).join('');
-      const measureHTML = MEASURES.map(m => `<div class="check-card" data-type="measure" data-checked="false" onclick="toggleCheckCard(this)"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${m}</span></div>`).join('');
+      const hazardHTML = HAZARDS.map(h => `<div class="check-card" data-type="hazard" data-checked="false" onclick="toggleCheckCard(this); sortCheckedToTop(this.parentElement);"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${h}</span></div>`).join('');
+      const sourceHTML = SOURCES.map(s => `<div class="check-card" data-type="source" data-checked="false" onclick="toggleCheckCard(this); sortCheckedToTop(this.parentElement);"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${s}</span></div>`).join('');
+      const measureHTML = MEASURES.map(m => `<div class="check-card" data-type="measure" data-checked="false" onclick="toggleCheckCard(this); sortCheckedToTop(this.parentElement);"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${m}</span></div>`).join('');
 
       const categoryOptions = JOB_CATEGORIES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
@@ -658,7 +694,6 @@
             <div class="bg-slate-50/50 p-3 -mx-2 rounded-xl border border-slate-100">
               <label class="block text-[13px] font-bold text-slate-800 mb-1.5">1. เลือกขั้นตอนการปฏิบัติงาน (Method Statement) <span class="text-red-500">*</span></label>
               
-              <!-- ก๊อก 1: หมวดหมู่ -->
               <div class="relative mb-2">
                 <select class="category-select input-field appearance-none pr-8 bg-white border-slate-300 text-navy font-bold text-[13px]" onchange="handleCategorySelection(this)">
                   <option value="" disabled selected>-- 1.1 เลือกหมวดหมู่งานหลัก --</option>
@@ -667,7 +702,6 @@
                 <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
               </div>
 
-              <!-- ก๊อก 2: ขั้นตอนย่อย (ซ่อนไว้ก่อน) -->
               <div class="relative mb-2">
                 <select class="method-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-700 font-semibold text-[13px] hidden" onchange="handleMethodSelection(this)">
                   <option value="" disabled selected>-- 1.2 เลือกขั้นตอนย่อย --</option>
@@ -681,7 +715,7 @@
             <!-- 2. Hazards -->
             <div class="bg-red-50/40 p-3 -mx-2 rounded-xl border border-red-100">
               <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-500 font-medium text-[11px]">(Hazards)</span></label>
-              <div class="hazards-container grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 h-48 overflow-y-auto pr-1 border border-red-100 bg-white p-2 rounded-lg">
+              <div class="hazards-container mb-3 max-h-48 overflow-y-auto pr-1 border border-red-100 bg-white p-2 rounded-lg">
                  ${hazardHTML}
               </div>
               <input type="text" class="hazard-custom-text input-field text-xs" placeholder="+ ระบุอันตรายอื่นๆ (ถ้ามี)...">
@@ -690,7 +724,7 @@
             <!-- 3. Sources -->
             <div class="bg-orange-50/40 p-3 -mx-2 rounded-xl border border-orange-100">
               <label class="block text-[13px] font-bold text-orange-600 mb-2 flex items-center gap-1.5"><i data-lucide="target" class="w-4 h-4"></i> 3. แหล่งกำเนิดอันตราย <span class="text-slate-500 font-medium text-[11px]">(Sources)</span></label>
-              <div class="sources-container grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 h-32 overflow-y-auto pr-1 border border-orange-100 bg-white p-2 rounded-lg">
+              <div class="sources-container mb-3 max-h-32 overflow-y-auto pr-1 border border-orange-100 bg-white p-2 rounded-lg">
                  ${sourceHTML}
               </div>
               <input type="text" class="source-custom-text input-field text-xs" placeholder="+ ระบุแหล่งอันตรายอื่นๆ (ถ้ามี)...">
@@ -712,7 +746,7 @@
                         <span>โอกาสเกิด (Likelihood): <span class="lbl-init-l text-navy text-[13px]">3</span></span>
                         <span class="text-slate-400">1 (Low) ➔ 5 (High)</span>
                     </div>
-                    <input type="range" min="1" max="5" value="3" class="init-l w-full" oninput="calculateRisk('${stepId}')">
+                    <input type="range" min="1" max="5" value="3" step="1" class="init-l w-full" oninput="calculateRisk('${stepId}')" onchange="calculateRisk('${stepId}')">
                 </div>
                 
                 <div>
@@ -720,14 +754,14 @@
                         <span>ความรุนแรง (Severity): <span class="lbl-init-s text-navy text-[13px]">3 [C (Lost Time)]</span></span>
                         <span class="text-slate-400">1 (No) ➔ 5 (Fatal)</span>
                     </div>
-                    <input type="range" min="1" max="5" value="3" class="init-s w-full" oninput="calculateRisk('${stepId}')">
+                    <input type="range" min="1" max="5" value="3" step="1" class="init-s w-full" oninput="calculateRisk('${stepId}')" onchange="calculateRisk('${stepId}')">
                 </div>
             </div>
 
             <!-- 5. Measures -->
             <div class="bg-emerald-50/40 p-3 -mx-2 rounded-xl border border-emerald-100">
               <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 5. การควบคุมความเสี่ยง <span class="text-slate-500 font-medium text-[11px]">(Risk Control)</span></label>
-              <div class="measures-container grid grid-cols-1 gap-2 mb-3 h-48 overflow-y-auto pr-1 border border-emerald-100 bg-white p-2 rounded-lg">
+              <div class="measures-container mb-3 max-h-48 overflow-y-auto pr-1 border border-emerald-100 bg-white p-2 rounded-lg">
                  ${measureHTML}
               </div>
               <input type="text" class="measure-custom-text input-field text-xs mb-4" placeholder="+ ระบุมาตรการควบคุมอื่นๆ (ถ้ามี)...">
@@ -747,14 +781,18 @@
                     <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
                         <span>โอกาสเกิดลดลงเหลือ (Likelihood): <span class="lbl-res-l text-navy text-[13px]">1</span></span>
                     </div>
-                    <input type="range" min="1" max="5" value="1" class="res-l w-full" oninput="calculateRisk('${stepId}')">
+                    <input type="range" min="1" max="5" value="1" step="1" class="res-l w-full" oninput="calculateRisk('${stepId}')" onchange="calculateRisk('${stepId}')">
                 </div>
                 
-                <div>
+                <div class="mb-3">
                     <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
                         <span>ความรุนแรง (Severity): <span class="lbl-res-s text-navy text-[13px]">3 [C (Lost Time)]</span></span>
                     </div>
-                    <input type="range" min="1" max="5" value="3" class="res-s w-full" oninput="calculateRisk('${stepId}')">
+                    <input type="range" min="1" max="5" value="3" step="1" class="res-s w-full" oninput="calculateRisk('${stepId}')" onchange="calculateRisk('${stepId}')">
+                </div>
+                
+                <div class="residual-status mt-2 flex justify-center">
+                    <!-- Javascript will inject status badge here -->
                 </div>
               </div>
             </div>
@@ -769,7 +807,7 @@
                 </div>
                 <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
               </label>
-              <input type="file" id="img-${stepId}" class="hidden" accept="image/*" onchange="previewImage(this)">
+              <input type="file" id="img-${stepId}" class="hidden" accept="image/*" capture="environment" onchange="previewImage(this)">
             </div>
 
           </div>
@@ -857,18 +895,18 @@
                 if (!methodSelect) isValid = false;
             }
 
-            let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"].active-hazard')).map(c => c.querySelector('.check-text').textContent);
+            let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
             const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
             if (hazardCustom) hazards.push(hazardCustom);
             
-            let sources = Array.from(stepEl.querySelectorAll('.check-card[data-type="source"].active-source')).map(c => c.querySelector('.check-text').textContent);
+            let sources = Array.from(stepEl.querySelectorAll('.check-card[data-type="source"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
             const sourceCustom = stepEl.querySelector('.source-custom-text').value;
             if (sourceCustom) sources.push(sourceCustom);
 
             const initScore = parseInt(stepEl.querySelector('.badge-init').textContent);
             const resScore = parseInt(stepEl.querySelector('.badge-res').textContent);
 
-            let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"].active-measure')).map(c => c.querySelector('.check-text').textContent);
+            let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
             const measureCustom = stepEl.querySelector('.measure-custom-text').value;
             if (measureCustom) measures.push(measureCustom);
 
