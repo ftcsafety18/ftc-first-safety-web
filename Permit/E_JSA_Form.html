@@ -92,7 +92,7 @@
                 <div>
                     <label class="mb-1.5 block text-xs font-bold text-slate-700">1. ขั้นตอนการทำงาน (Job Step) <span class="text-red-500">*</span></label>
                     <div class="relative mb-2">
-                        <select class="jsa-step-select input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="toggleCustomStep(this)">
+                        <select class="jsa-step-select input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="toggleHybridInput(this, 'step-text')">
                             <option value="" disabled selected>-- เลือกขั้นตอนการทำงานมาตรฐาน --</option>
                             <option value="เตรียมพื้นที่และตรวจสอบอุปกรณ์">เตรียมพื้นที่และตรวจสอบเครื่องมือ (Site & Equip Prep)</option>
                             <option value="ขนย้ายและยกวัสดุอุปกรณ์">ขนย้ายและยกวัสดุอุปกรณ์ (Material Handling & Lifting)</option>
@@ -108,41 +108,81 @@
                         </select>
                         <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
                     </div>
-                    <textarea class="jsa-step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
+                    <textarea class="step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
                 </div>
 
-                <!-- 2. อันตราย -->
+                <!-- 2. อันตรายที่เรียงลำดับ ก-ฮ -->
                 <div>
                     <label class="mb-1.5 block text-xs font-bold text-red-600">2. อันตรายที่อาจเกิดขึ้น (Hazards) <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-1.5 mb-2">
+                        <!-- ปุ่มมาตรฐานเรียง ก-ฮ -->
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">กระแสไฟฟ้ารั่ว/ช็อต</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การกระเด็นของวัสดุเข้าตา</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การชน/กระแทกจากเครื่องจักร</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การตกหล่นของวัสดุ</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การพลัดตกจากที่สูง</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การสัมผัส/สูดดมสารเคมี</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การสัมผัสรังสี</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การหนีบ/ดึง/ทับ</button>
                         <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ของมีคมบาด/ทิ่มแทง</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">วัสดุกระเด็นเข้าตา</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">วัสดุตกหล่นทับ</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ไฟฟ้าดูด/ช็อต</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">พลัดตกจากที่สูง</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เพลิงไหม้/ประกายไฟ</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ขาดอากาศ/อับอากาศ</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เพลิงไหม้/ระเบิด</button>
                         <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เสียงดังระดับอันตราย</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เครื่องจักรหนีบ/ดึง</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ขาดอากาศหายใจ</button>
+                        <button type="button" class="chip chip-hazard font-bold border-red-300 text-red-600" onclick="toggleHybridWrapper(this, 'hazard-others-wrapper')">➕ อื่นๆ (ระบุ)</button>
                     </div>
-                    <input type="text" class="input-field text-xs border-dashed" placeholder="ระบุอันตรายอื่นๆ (วิเคราะห์จาก 3ME: คน, เครื่องจักร, วิธีการ, สภาพแวดล้อม)..." />
+                    <!-- Hybrid Dropdown สำหรับอันตรายอื่นๆ -->
+                    <div class="hazard-others-wrapper hidden flex-col gap-2 mt-2 border border-red-200 p-3 rounded-xl bg-red-50/50">
+                        <label class="text-[10px] font-bold text-red-600 uppercase tracking-widest">อันตรายอื่นๆ (Hazards)</label>
+                        <div class="relative">
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 text-xs font-semibold" onchange="toggleHybridInput(this, 'hazard-custom-text')">
+                                <option value="" disabled selected>-- เลือกอันตรายเพิ่มเติม --</option>
+                                <option value="ความร้อน/เย็นจัด">ความร้อน/เย็นจัด (Extreme Temperature)</option>
+                                <option value="ท่าทางการทำงานที่ไม่เหมาะสม">ท่าทางการทำงานที่ไม่เหมาะสม (Ergonomics)</option>
+                                <option value="แสงสว่างไม่เพียงพอ/จ้าเกินไป">แสงสว่างไม่เพียงพอ/จ้าเกินไป (Poor Lighting)</option>
+                                <option value="สัตว์มีพิษ/แมลงกัดต่อย">สัตว์มีพิษ/แมลงกัดต่อย (Biological Hazards)</option>
+                                <option value="อันตรายจากแรงดัน">อันตรายจากแรงดัน (Pressure Hazards)</option>
+                                <option value="อันตรายจากการสั่นสะเทือน">อันตรายจากการสั่นสะเทือน (Vibration)</option>
+                                <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุอันตรายเอง (วิเคราะห์ 3ME)...</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-400"></i>
+                        </div>
+                        <input type="text" class="hazard-custom-text hidden input-field text-xs border-red-300 focus:border-red-600 text-red-700" placeholder="โปรดพิมพ์ระบุอันตราย (วิเคราะห์จาก 3ME: คน, เครื่องจักร, วิธีการ)..." />
+                    </div>
                 </div>
 
-                <!-- 3. มาตรการ -->
+                <!-- 3. มาตรการป้องกันเรียงลำดับ ก-ฮ -->
                 <div class="border-t border-slate-100 pt-4">
                     <label class="mb-1.5 block text-xs font-bold text-emerald-600">3. มาตรการป้องกัน (Preventive Measures) <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-1.5 mb-2">
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมถุงมือหนัง/ยาง</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมแว่นตานิรภัย</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมรองเท้าเซฟตี้</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมเข็มขัดกันตกเต็มตัว</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตัดแยกพลังงาน (LOTO)</button>
+                        <!-- ปุ่มมาตรฐานเรียง ก-ฮ -->
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">กั้นเขตพื้นที่/ติดป้ายเตือน</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ขออนุญาตทำงาน (PTW)</button>
                         <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">จัดเตรียมถังดับเพลิง</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">กั้นเขตพื้นที่อันตราย</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตรวจวัดค่าก๊าซ</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตัดแยกพลังงาน (LOTO)</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตรวจเช็คสภาพเครื่องมือ</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตรวจวัดปริมาณก๊าซ</button>
                         <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ทำ Toolbox Talk</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">มีผู้เฝ้าระวัง (Standby Man)</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมอุปกรณ์ PPE ครบถ้วน</button>
+                        <button type="button" class="chip chip-measure font-bold border-emerald-300 text-emerald-600" onclick="toggleHybridWrapper(this, 'measure-others-wrapper')">➕ อื่นๆ (ระบุ)</button>
                     </div>
-                    <input type="text" class="input-field text-xs border-dashed" placeholder="ระบุมาตรการป้องกันอื่นๆ..." />
+                    <!-- Hybrid Dropdown สำหรับมาตรการอื่นๆ -->
+                    <div class="measure-others-wrapper hidden flex-col gap-2 mt-2 border border-emerald-200 p-3 rounded-xl bg-emerald-50/50">
+                        <label class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">มาตรการป้องกันอื่นๆ (Measures)</label>
+                        <div class="relative">
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-emerald-300 focus:border-emerald-600 text-emerald-700 text-xs font-semibold" onchange="toggleHybridInput(this, 'measure-custom-text')">
+                                <option value="" disabled selected>-- เลือกมาตรการเพิ่มเติม --</option>
+                                <option value="จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด">จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด</option>
+                                <option value="ติดตั้งการ์ดป้องกันเครื่องจักร">ติดตั้งการ์ดป้องกันเครื่องจักร (Machine Guard)</option>
+                                <option value="ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ">ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำทิ้ง</option>
+                                <option value="ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ">ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ</option>
+                                <option value="สับเปลี่ยนหมุนเวียนพนักงาน">สับเปลี่ยนหมุนเวียนพนักงาน (Job Rotation)</option>
+                                <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุมาตรการเอง...</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-400"></i>
+                        </div>
+                        <input type="text" class="measure-custom-text hidden input-field text-xs border-emerald-300 focus:border-emerald-600 text-emerald-700" placeholder="โปรดพิมพ์ระบุมาตรการป้องกัน..." />
+                    </div>
                 </div>
 
                 <!-- 4. หมายเหตุ -->
@@ -181,15 +221,34 @@
     lucide.createIcons();
     let stepCount = 1;
 
-    // ฟังก์ชันจัดการแสดงผลช่องกรอกเอง (Hybrid Dropdown)
-    function toggleCustomStep(selectElement) {
-        const wrapper = selectElement.closest('div').parentElement;
-        const textarea = wrapper.querySelector('.jsa-step-text');
+    // ฟังก์ชันจัดการแสดงผลช่องกรอกเอง (Hybrid Dropdown) สำหรับขั้นตอนงาน
+    function toggleHybridInput(selectElement, inputClass) {
+        const wrapper = selectElement.parentElement.parentElement;
+        const textInput = wrapper.querySelector(`.${inputClass}`);
         if (selectElement.value === 'custom') {
-            textarea.classList.remove('hidden');
-            textarea.focus();
+            textInput.classList.remove('hidden');
+            textInput.focus();
         } else {
-            textarea.classList.add('hidden');
+            textInput.classList.add('hidden');
+        }
+    }
+
+    // ฟังก์ชันเปิด/ปิดกล่องระบุอื่นๆ สำหรับปุ่ม Chips
+    function toggleHybridWrapper(buttonElement, wrapperClass) {
+        buttonElement.classList.toggle('active');
+        const stepContainer = buttonElement.closest('.jsa-step');
+        const wrapper = stepContainer.querySelector(`.${wrapperClass}`);
+        if (buttonElement.classList.contains('active')) {
+            wrapper.classList.remove('hidden');
+            wrapper.classList.add('flex');
+        } else {
+            wrapper.classList.add('hidden');
+            wrapper.classList.remove('flex');
+            // Reset values when hidden
+            wrapper.querySelector('select').value = '';
+            const textInput = wrapper.querySelector('input[type="text"]');
+            textInput.value = '';
+            textInput.classList.add('hidden');
         }
     }
 
@@ -198,7 +257,7 @@
         stepCount++;
         const container = document.getElementById('jsa-container');
         
-        // จำลองก้อน HTML ของ JSA Card
+        // HTML ของ JSA Card ที่รวมระบบ Hybrid Dropdown เข้าไปแล้ว
         const stepHTML = `
         <section class="jsa-step rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-4" data-step="${stepCount}">
             <header class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
@@ -212,10 +271,11 @@
             </header>
             
             <div class="p-4 space-y-5">
+                <!-- 1. ขั้นตอนงาน -->
                 <div>
                     <label class="mb-1.5 block text-xs font-bold text-slate-700">1. ขั้นตอนการทำงาน (Job Step) <span class="text-red-500">*</span></label>
                     <div class="relative mb-2">
-                        <select class="jsa-step-select input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="toggleCustomStep(this)">
+                        <select class="jsa-step-select input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="toggleHybridInput(this, 'step-text')">
                             <option value="" disabled selected>-- เลือกขั้นตอนการทำงานมาตรฐาน --</option>
                             <option value="เตรียมพื้นที่และตรวจสอบอุปกรณ์">เตรียมพื้นที่และตรวจสอบเครื่องมือ (Site & Equip Prep)</option>
                             <option value="ขนย้ายและยกวัสดุอุปกรณ์">ขนย้ายและยกวัสดุอุปกรณ์ (Material Handling & Lifting)</option>
@@ -231,41 +291,85 @@
                         </select>
                         <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
                     </div>
-                    <textarea class="jsa-step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
+                    <textarea class="step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
                 </div>
+
+                <!-- 2. อันตราย -->
                 <div>
                     <label class="mb-1.5 block text-xs font-bold text-red-600">2. อันตรายที่อาจเกิดขึ้น (Hazards) <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-1.5 mb-2">
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">กระแสไฟฟ้ารั่ว/ช็อต</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การกระเด็นของวัสดุเข้าตา</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การชน/กระแทกจากเครื่องจักร</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การตกหล่นของวัสดุ</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การพลัดตกจากที่สูง</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การสัมผัส/สูดดมสารเคมี</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การสัมผัสรังสี</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">การหนีบ/ดึง/ทับ</button>
                         <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ของมีคมบาด/ทิ่มแทง</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">วัสดุกระเด็นเข้าตา</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">วัสดุตกหล่นทับ</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ไฟฟ้าดูด/ช็อต</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">พลัดตกจากที่สูง</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เพลิงไหม้/ประกายไฟ</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ขาดอากาศ/อับอากาศ</button>
+                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เพลิงไหม้/ระเบิด</button>
                         <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เสียงดังระดับอันตราย</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">เครื่องจักรหนีบ/ดึง</button>
-                        <button type="button" class="chip chip-hazard" onclick="this.classList.toggle('active')">ขาดอากาศหายใจ</button>
+                        <button type="button" class="chip chip-hazard font-bold border-red-300 text-red-600" onclick="toggleHybridWrapper(this, 'hazard-others-wrapper')">➕ อื่นๆ (ระบุ)</button>
                     </div>
-                    <input type="text" class="input-field text-xs border-dashed" placeholder="ระบุอันตรายอื่นๆ (วิเคราะห์จาก 3ME: คน, เครื่องจักร, วิธีการ, สภาพแวดล้อม)..." />
+                    <!-- Hybrid Dropdown สำหรับอันตรายอื่นๆ -->
+                    <div class="hazard-others-wrapper hidden flex-col gap-2 mt-2 border border-red-200 p-3 rounded-xl bg-red-50/50">
+                        <label class="text-[10px] font-bold text-red-600 uppercase tracking-widest">อันตรายอื่นๆ (Hazards)</label>
+                        <div class="relative">
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 text-xs font-semibold" onchange="toggleHybridInput(this, 'hazard-custom-text')">
+                                <option value="" disabled selected>-- เลือกอันตรายเพิ่มเติม --</option>
+                                <option value="ความร้อน/เย็นจัด">ความร้อน/เย็นจัด (Extreme Temperature)</option>
+                                <option value="ท่าทางการทำงานที่ไม่เหมาะสม">ท่าทางการทำงานที่ไม่เหมาะสม (Ergonomics)</option>
+                                <option value="แสงสว่างไม่เพียงพอ/จ้าเกินไป">แสงสว่างไม่เพียงพอ/จ้าเกินไป (Poor Lighting)</option>
+                                <option value="สัตว์มีพิษ/แมลงกัดต่อย">สัตว์มีพิษ/แมลงกัดต่อย (Biological Hazards)</option>
+                                <option value="อันตรายจากแรงดัน">อันตรายจากแรงดัน (Pressure Hazards)</option>
+                                <option value="อันตรายจากการสั่นสะเทือน">อันตรายจากการสั่นสะเทือน (Vibration)</option>
+                                <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุอันตรายเอง (วิเคราะห์ 3ME)...</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-400"></i>
+                        </div>
+                        <input type="text" class="hazard-custom-text hidden input-field text-xs border-red-300 focus:border-red-600 text-red-700" placeholder="โปรดพิมพ์ระบุอันตราย (วิเคราะห์จาก 3ME: คน, เครื่องจักร, วิธีการ)..." />
+                    </div>
                 </div>
+
+                <!-- 3. มาตรการป้องกัน -->
                 <div class="border-t border-slate-100 pt-4">
                     <label class="mb-1.5 block text-xs font-bold text-emerald-600">3. มาตรการป้องกัน (Preventive Measures) <span class="text-red-500">*</span></label>
                     <div class="flex flex-wrap gap-1.5 mb-2">
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมถุงมือหนัง/ยาง</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมแว่นตานิรภัย</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมรองเท้าเซฟตี้</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมเข็มขัดกันตกเต็มตัว</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตัดแยกพลังงาน (LOTO)</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">กั้นเขตพื้นที่/ติดป้ายเตือน</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ขออนุญาตทำงาน (PTW)</button>
                         <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">จัดเตรียมถังดับเพลิง</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">กั้นเขตพื้นที่อันตราย</button>
-                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตรวจวัดค่าก๊าซ</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตัดแยกพลังงาน (LOTO)</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตรวจเช็คสภาพเครื่องมือ</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ตรวจวัดปริมาณก๊าซ</button>
                         <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">ทำ Toolbox Talk</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">มีผู้เฝ้าระวัง (Standby Man)</button>
+                        <button type="button" class="chip chip-measure" onclick="this.classList.toggle('active')">สวมอุปกรณ์ PPE ครบถ้วน</button>
+                        <button type="button" class="chip chip-measure font-bold border-emerald-300 text-emerald-600" onclick="toggleHybridWrapper(this, 'measure-others-wrapper')">➕ อื่นๆ (ระบุ)</button>
                     </div>
-                    <input type="text" class="input-field text-xs border-dashed" placeholder="ระบุมาตรการป้องกันอื่นๆ..." />
+                    <!-- Hybrid Dropdown สำหรับมาตรการอื่นๆ -->
+                    <div class="measure-others-wrapper hidden flex-col gap-2 mt-2 border border-emerald-200 p-3 rounded-xl bg-emerald-50/50">
+                        <label class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">มาตรการป้องกันอื่นๆ (Measures)</label>
+                        <div class="relative">
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-emerald-300 focus:border-emerald-600 text-emerald-700 text-xs font-semibold" onchange="toggleHybridInput(this, 'measure-custom-text')">
+                                <option value="" disabled selected>-- เลือกมาตรการเพิ่มเติม --</option>
+                                <option value="จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด">จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด</option>
+                                <option value="ติดตั้งการ์ดป้องกันเครื่องจักร">ติดตั้งการ์ดป้องกันเครื่องจักร (Machine Guard)</option>
+                                <option value="ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ">ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำทิ้ง</option>
+                                <option value="ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ">ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ</option>
+                                <option value="สับเปลี่ยนหมุนเวียนพนักงาน">สับเปลี่ยนหมุนเวียนพนักงาน (Job Rotation)</option>
+                                <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุมาตรการเอง...</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-400"></i>
+                        </div>
+                        <input type="text" class="measure-custom-text hidden input-field text-xs border-emerald-300 focus:border-emerald-600 text-emerald-700" placeholder="โปรดพิมพ์ระบุมาตรการป้องกัน..." />
+                    </div>
                 </div>
+
+                <!-- 4. หมายเหตุ -->
                 <div class="border-t border-slate-100 pt-4 bg-slate-50/50 -mx-4 px-4 pb-1">
                     <label class="mb-1.5 block text-[11px] font-bold text-slate-500 tracking-widest uppercase">4. หมายเหตุ (Remarks)</label>
-                    <textarea rows="1" class="input-field text-xs bg-transparent border-slate-200" placeholder="ระบุหมายเหตุ..."></textarea>
+                    <textarea rows="1" class="input-field text-xs bg-transparent border-slate-200" placeholder="ระบุหมายเหตุ การเตรียมงาน หรือเก็บงาน..."></textarea>
                 </div>
             </div>
         </section>
