@@ -797,11 +797,6 @@
         lucide.createIcons();
     }
 
-    function removeScannedAsset(index) {
-        scannedAssets.splice(index, 1);
-        renderScannedAssets();
-    }
-
     // ---- 🚀 ฟังก์ชันดักจับ LIFF Blocker สำหรับ Android ----
     function openInExternalBrowser() {
         var withoutScheme = window.location.href.replace(/^https?:\/\//, '');
@@ -928,10 +923,11 @@
                 text: jsaMode === 'ejsa' ? 'ระบบกำลังพาท่านไปจัดทำ E-JSA...' : 'ข้อมูลของคุณถูกส่งไปยัง จป. เพื่อรอการอนุมัติแล้ว',
                 icon: 'success',
                 confirmButtonColor: '#2A4365',
-                confirmButtonText: jsaMode === 'ejsa' ? 'ไปหน้าทำ E-JSA' : 'กลับสู่หน้าหลัก'
+                confirmButtonText: jsaMode === 'ejsa' ? 'ไปจัดทำ SWI & E-JSA' : 'กลับสู่หน้าหลัก'
             }).then(() => {
                 if (jsaMode === 'ejsa') {
-                    window.location.href = `E_JSA_Form.html?ptw_id=${payload.ptw_id}`;
+                    // เปลี่ยนเป้าหมายไปยังไฟล์ SWI_EJSA_Form.html ตัวใหม่ของเรา
+                    window.location.href = `SWI_EJSA_Form.html?ptw_id=${payload.ptw_id}`;
                 } else {
                     if (typeof liff !== 'undefined' && liff.isInClient()) { 
                         liff.closeWindow();
