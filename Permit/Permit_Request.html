@@ -19,6 +19,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <!-- 🚀 เพิ่มไลบรารีสำหรับสแกน QR Code ผ่านกล้องมือถือ -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <script>
     tailwind.config = {
@@ -38,14 +40,14 @@
   <style>
     body { font-family: 'Sarabun', sans-serif; -webkit-tap-highlight-color: transparent; }
     
-    /* Risk Cards (Red Theme for High Risk) */
+    /* Risk Cards */
     .risk-card { border-color: #fca5a5; background: #fff; }
     .risk-card.active { border-color: #dc2626; background: #fef2f2; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1); }
     .risk-card.active .risk-icon { background: #dc2626; color: #fff; }
     .risk-card.active .risk-check { border-color: #dc2626; background: #dc2626; color: #fff; }
     .risk-card.active .risk-title { color: #b91c1c; }
 
-    /* General Work (Green/Safe Theme) */
+    /* General Work */
     #generalWork { border-width: 2px; }
     #generalWork.active { border-color: #059669; background: #f0fdf4; }
     #generalWork.active .opt-check { border-color: #059669; background: #059669; color: #fff; }
@@ -54,6 +56,7 @@
     .ppe-opt { border-color: #e2e8f0; }
     .ppe-opt.active { border-color: #2A4365; background: #f8fafc; font-weight: 600; color: #2A4365; }
     .ppe-opt.active .opt-check { border-color: #2A4365; background: #2A4365; color: #fff; }
+    .ppe-opt.mandatory { cursor: not-allowed; opacity: 0.9; }
 
     .decl.active { border-color: #e11d48; background: rgba(225,29,72,.08); }
     .decl.active .decl-check { border-color: #e11d48; background: #e11d48; color: #fff; }
@@ -138,7 +141,6 @@
             </div>
           </div>
           
-          <!-- 🚀 ช่องให้กรอกชื่อและบริษัท 🚀 -->
           <div class="border-t border-slate-100 pt-3 mt-1">
             <label class="mb-1.5 block text-sm font-semibold text-slate-700">ชื่อผู้ขออนุญาต (Requestor) <span class="text-red-500">*</span></label>
             <div class="relative mb-3">
@@ -195,7 +197,6 @@
               <!-- risk cards injected by JS -->
             </div>
             
-            <!-- Hybrid Input สำหรับงานเสี่ยงสูงอื่นๆ -->
             <div id="otherRiskWrapper" class="hidden flex-col gap-2 mt-2 border border-red-200 p-3 rounded-xl bg-red-50/50">
               <label class="text-[11px] font-bold text-red-600 uppercase tracking-widest">งานเสี่ยงอื่นๆ (โปรดระบุ)</label>
               <div class="relative">
@@ -233,23 +234,27 @@
           </div>
         </header>
         <div class="space-y-5 p-5">
-          <button type="button" onclick="scanAsset()"
-            class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-navy/20 bg-slate-50 px-4 py-3.5 text-sm font-bold text-navy transition hover:bg-slate-100 active:scale-[0.98]">
-            <i data-lucide="qr-code" class="h-5 w-5"></i>
-            สแกน QR เครื่องมือช่าง (E-Tagging)
-          </button>
+          
+          <!-- ปุ่ม E-Tagging -->
+          <div>
+            <button type="button" onclick="openScanner()"
+              class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-navy/20 bg-slate-50 px-4 py-3.5 text-sm font-bold text-navy transition hover:bg-slate-100 active:scale-[0.98]">
+              <i data-lucide="qr-code" class="h-5 w-5"></i>
+              สแกน QR เครื่องมือช่าง (E-Tagging)
+            </button>
+            <!-- คอนเทนเนอร์แสดงเครื่องมือที่สแกนแล้ว -->
+            <div id="scannedAssetsList" class="mt-2 flex flex-col gap-2 empty:hidden"></div>
+          </div>
 
           <!-- JSA dropzone (ระบบ Hybrid) -->
           <div id="jsaWrap" class="hidden">
             <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
             
-            <!-- สวิตช์เลือกรูปแบบ JSA -->
             <div class="flex p-1 bg-slate-100 rounded-lg mb-3">
                <button type="button" id="btn-jsa-photo" class="flex-1 py-2 text-[13px] font-bold bg-white text-red-600 shadow-sm rounded-md transition-all border border-slate-200">📸 แนบรูปถ่าย</button>
                <button type="button" id="btn-jsa-ejsa" class="flex-1 py-2 text-[13px] font-bold text-slate-500 hover:text-navy transition-all border border-transparent">✨ ทำ E-JSA ออนไลน์</button>
             </div>
 
-            <!-- กล่องที่ 1: อัปโหลดรูป -->
             <div id="jsa-photo-area">
               <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
                 <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
@@ -263,7 +268,6 @@
               </div>
             </div>
 
-            <!-- กล่องที่ 2: เลือกทำ E-JSA -->
             <div id="jsa-ejsa-area" class="hidden flex-col items-center justify-center p-6 bg-navy/5 border-2 border-navy/20 border-dashed rounded-xl text-center">
                <i data-lucide="sparkles" class="w-8 h-8 text-navy mb-2"></i>
                <p class="text-sm font-extrabold text-navy">จัดทำ E-JSA ด้วยระบบอัจฉริยะ</p>
@@ -278,7 +282,6 @@
               <!-- ppe items injected by JS -->
             </div>
             
-            <!-- Hybrid Input สำหรับ PPE อื่นๆ -->
             <div id="otherPPEWrapper" class="hidden flex-col gap-2 mt-2 border border-slate-200 p-3 rounded-xl bg-slate-50">
               <label class="text-[11px] font-bold text-navy uppercase tracking-widest">อุปกรณ์ PPE อื่นๆ (โปรดระบุ)</label>
               <div class="relative">
@@ -329,8 +332,23 @@
     </div>
   </div>
 
+  <!-- QR Scanner Modal -->
+  <div id="qrModal" class="fixed inset-0 z-[60] hidden flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl relative">
+      <div class="bg-navy p-4 flex justify-between items-center text-white">
+        <h3 class="font-bold">สแกนป้าย E-Tagging เครื่องมือ</h3>
+        <button onclick="closeScanner()" class="text-white/70 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+      </div>
+      <div id="reader" class="w-full bg-black min-h-[300px]"></div>
+      <div class="p-4 text-center bg-slate-50">
+        <p class="text-xs text-slate-500">โปรดเล็งกล้องไปที่ QR Code ของอุปกรณ์ช่าง</p>
+      </div>
+    </div>
+  </div>
+
   <style>
       .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+      #reader video { object-fit: cover; border-radius: 0; }
   </style>
 
   <script>
@@ -341,11 +359,12 @@
     
     let lineUserId = null;
     let compressedJsaFile = null;
+    let html5QrcodeScanner = null;
 
     // ---- Data ----
     const HIGH_RISK_WORK = [
-      { id: 'confined',    th: 'งานที่อับอากาศ',         en: 'Confined Space',     icon: 'wind' },
-      { id: 'welding',     th: 'งานเชื่อม/ก่อประกายไฟ',  en: 'Hot Work',           icon: 'flame' },
+      { id: 'confined',    th: 'งานที่อับอากาศ',         en: 'Confined Space',      icon: 'wind' },
+      { id: 'welding',     th: 'งานเชื่อม/ก่อประกายไฟ',  en: 'Hot Work',            icon: 'flame' },
       { id: 'scaffolding', th: 'งานบนที่สูง',          en: 'Working at Height',  icon: 'arrow-up-to-line' },
       { id: 'excavation',  th: 'งานขุดเจาะดิน',         en: 'Excavation',         icon: 'pickaxe' },
       { id: 'electrical',  th: 'งานเกี่ยวกับไฟฟ้า',       en: 'Electrical Work',    icon: 'zap' },
@@ -356,9 +375,10 @@
       { id: 'other_risk',  th: 'งานอื่นๆ (ระบุ)',       en: 'Other High Risk',    icon: 'plus-circle' },
     ];
     
+    // 🚀 อัปเดต: เพิ่ม mandatory: true สำหรับหมวกและรองเท้า
     const PPE_ITEMS = [
-      { id: 'helmet',     th: 'หมวกนิรภัย',                en: 'Helmet',            icon: 'hard-hat' },
-      { id: 'shoes',      th: 'รองเท้าเซฟตี้',              en: 'Safety Shoes',      icon: 'footprints' },
+      { id: 'helmet',     th: 'หมวกนิรภัย',                en: 'Helmet',            icon: 'hard-hat', mandatory: true },
+      { id: 'shoes',      th: 'รองเท้าเซฟตี้',              en: 'Safety Shoes',      icon: 'footprints', mandatory: true },
       { id: 'glasses',    th: 'แว่นตานิรภัย',              en: 'Safety Glasses',    icon: 'glasses' },
       { id: 'shield',     th: 'หน้ากากเชื่อม/กระบังหน้า',     en: 'Face Shield',       icon: 'shield' },
       { id: 'leather',    th: 'ถุงมือหนัง',                en: 'Leather Gloves',    icon: 'hand' },
@@ -373,6 +393,11 @@
     // ---- State ----
     const selectedRisk = new Set();
     const selectedPPE = new Set();
+    // 🚀 อัปเดต: บังคับเลือกขั้นต่ำไว้ตั้งแต่เริ่ม
+    selectedPPE.add('หมวกนิรภัย');
+    selectedPPE.add('รองเท้าเซฟตี้');
+
+    let scannedAssets = []; // เก็บ Asset ID ที่สแกนสำเร็จ
     let generalWork = false;
     let declared = false;
 
@@ -399,14 +424,27 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       const colSpan = item.id === 'other_ppe' ? 'col-span-2 bg-slate-50 justify-center' : 'col-span-1 bg-white justify-start';
-      btn.className = `ppe-opt flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition active:scale-[0.98] ${colSpan}`;
+      
+      // 🚀 อัปเดต: ถ้าเป็นของบังคับ ให้เพิ่มคลาส mandatory และใส่สีแดงกำกับ
+      let mandatoryBadge = '';
+      if (item.mandatory) {
+          btn.className = `ppe-opt active mandatory flex items-center gap-2.5 rounded-xl border p-2.5 text-left ${colSpan}`;
+          mandatoryBadge = ' <span class="text-[9px] text-red-500 font-normal ml-1">(บังคับขั้นต่ำ)</span>';
+      } else {
+          btn.className = `ppe-opt flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition active:scale-[0.98] ${colSpan}`;
+      }
+
       btn.innerHTML =
         '<span class="opt-check flex h-4 w-4 shrink-0 items-center justify-center rounded border border-slate-300 bg-white text-transparent transition"><i data-lucide="check" class="h-3 w-3"></i></span>' +
         '<div class="flex flex-col">' +
-        '<span class="text-[12px] font-bold text-slate-700">' + item.th + '</span>' +
+        '<span class="text-[12px] font-bold text-slate-700">' + item.th + mandatoryBadge + '</span>' +
         '<span class="text-[9px] text-slate-400">' + item.en + '</span>' +
         '</div>';
-      btn.addEventListener('click', () => togglePPE(item.id, item.th, btn));
+      
+      // ล็อกไม่ให้กดยกเลิกได้ถ้าเป็นของบังคับ
+      if (!item.mandatory) {
+          btn.addEventListener('click', () => togglePPE(item.id, item.th, btn));
+      }
       ppeList.appendChild(btn);
     });
 
@@ -419,7 +457,6 @@
     const submitBtn = document.getElementById('submitBtn');
     const declBtn = document.getElementById('declaration');
     
-    // Elements for "Others" Hybrid Inputs
     const otherRiskWrapper = document.getElementById('otherRiskWrapper');
     const otherRiskSelect = document.getElementById('otherRiskSelect');
     const otherRiskText = document.getElementById('otherRiskText');
@@ -429,7 +466,7 @@
     const otherPPEText = document.getElementById('otherPPEText');
 
     // ---- JSA Mode Logic ----
-    let jsaMode = 'photo'; // ค่าเริ่มต้นคือถ่ายรูป
+    let jsaMode = 'photo'; 
     const btnJsaPhoto = document.getElementById('btn-jsa-photo');
     const btnJsaEjsa = document.getElementById('btn-jsa-ejsa');
     const areaPhoto = document.getElementById('jsa-photo-area');
@@ -499,7 +536,6 @@
         refresh();
     }
 
-    // Event Listeners สำหรับ Dropdown ถ้าเลือก custom ให้โชว์ช่องพิมพ์
     otherRiskSelect.addEventListener('change', (e) => {
         if (e.target.value === 'custom') {
             otherRiskText.classList.remove('hidden');
@@ -613,7 +649,6 @@
       
       const hasJsaIfNeeded = hasHighRisk ? (jsaMode === 'ejsa' || compressedJsaFile !== null) : true;
       
-      // อัปเดตเงื่อนไขให้เช็คชื่อและบริษัทด้วย
       const hasBasicInfo = document.getElementById('project-input').value && 
                            document.getElementById('wbs-input').value && 
                            document.getElementById('location-input').value && 
@@ -622,13 +657,12 @@
                            document.getElementById('start-time').value && 
                            document.getElementById('end-time').value;
       
-      // ดักจับ: ถ้ากดเลือก "อื่นๆ" ต้องเช็คเงื่อนไขย่อย
       let isOtherRiskValid = true;
       if (selectedRisk.has('งานอื่นๆ (ระบุ)')) {
           if (!otherRiskSelect.value) {
-              isOtherRiskValid = false; // ยังไม่กด dropdown
+              isOtherRiskValid = false;
           } else if (otherRiskSelect.value === 'custom' && otherRiskText.value.trim() === '') {
-              isOtherRiskValid = false; // กดพิมพ์เอง แต่ไม่ได้พิมพ์
+              isOtherRiskValid = false; 
           }
       }
 
@@ -644,8 +678,107 @@
       submitBtn.disabled = !(declared && (generalWork || hasHighRisk) && hasJsaIfNeeded && selectedPPE.size > 0 && hasBasicInfo && isOtherRiskValid && isOtherPPEValid);
     }
 
-    function scanAsset() {
-        Swal.fire({ title: 'สแกน QR', text: 'ระบบกล้องเพื่อตรวจสอบป้าย E-Tagging พร้อมใช้งานในแอปจริง', icon: 'info', confirmButtonColor: '#2A4365' });
+    // 🚀 อัปเดต: ระบบสแกน QR Code ด้วย html5-qrcode
+    function openScanner() {
+        if (!supabaseClient) {
+            Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+            return;
+        }
+        document.getElementById('qrModal').classList.remove('hidden');
+        document.getElementById('qrModal').classList.add('flex');
+        
+        // กำหนดค่าสแกนเนอร์
+        html5QrcodeScanner = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        
+        html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+        .catch(err => {
+            console.error("Camera start failed", err);
+            Swal.fire('ไม่สามารถเปิดกล้องได้', 'กรุณาอนุญาตให้เบราว์เซอร์ใช้งานกล้องถ่ายรูป', 'error');
+            closeScanner();
+        });
+    }
+
+    function closeScanner() {
+        document.getElementById('qrModal').classList.add('hidden');
+        document.getElementById('qrModal').classList.remove('flex');
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.stop().catch(err => console.error("Failed to stop scanner", err));
+            html5QrcodeScanner = null;
+        }
+    }
+
+    async function onScanSuccess(decodedText, decodedResult) {
+        // เมื่อสแกนติด ให้ปิดกล้องก่อน
+        closeScanner();
+        Swal.fire({ title: 'กำลังตรวจสอบอุปกรณ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        try {
+            // เช็คว่าเคยสแกนตัวนี้ไปแล้วหรือไม่
+            if(scannedAssets.some(asset => asset.id === decodedText)) {
+                Swal.fire('สแกนซ้ำ', 'อุปกรณ์นี้ถูกเพิ่มในใบงานเรียบร้อยแล้ว', 'info');
+                return;
+            }
+
+            // ค้นหาอุปกรณ์ใน Database (tb_assets)
+            const { data, error } = await supabaseClient
+                .from('tb_assets')
+                .select('asset_id, asset_name, safe_to_use, condition_tag')
+                .eq('asset_id', decodedText)
+                .single();
+
+            if (error || !data) {
+                Swal.fire('ไม่พบอุปกรณ์', 'รหัส QR นี้ไม่มีอยู่ในระบบฐานข้อมูล (รหัส: ' + decodedText + ')', 'error');
+                return;
+            }
+
+            if (data.safe_to_use === false) {
+                Swal.fire('อุปกรณ์ไม่ปลอดภัย', `อุปกรณ์ <b>${data.asset_name}</b> อยู่ในสถานะชำรุด หรือใบรับรองหมดอายุ ไม่อนุญาตให้นำเข้าพื้นที่`, 'error');
+                return;
+            }
+
+            // เพิ่มเข้า List ในหน่วยความจำ และแสดงผลบนหน้าจอ
+            scannedAssets.push({ id: data.asset_id, name: data.asset_name });
+            renderScannedAssets();
+            Swal.fire({
+                title: 'สแกนสำเร็จ',
+                text: `เพิ่ม ${data.asset_name} ลงในใบงานแล้ว`,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+        } catch (err) {
+            console.error(err);
+            Swal.fire('ระบบขัดข้อง', 'ไม่สามารถดึงข้อมูลอุปกรณ์ได้ในขณะนี้', 'error');
+        }
+    }
+
+    function onScanFailure(error) {
+        // ไม่ต้องทำอะไร ปล่อยให้มันสแกนต่อไปเรื่อยๆ จนกว่าจะเจอ
+    }
+
+    function renderScannedAssets() {
+        const listDiv = document.getElementById('scannedAssetsList');
+        listDiv.innerHTML = '';
+        scannedAssets.forEach((asset, index) => {
+            const item = document.createElement('div');
+            item.className = 'flex items-center justify-between bg-green-50 border border-green-200 p-2 rounded-lg';
+            item.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-green-600"></i>
+                    <span class="text-sm font-bold text-green-800">${asset.name}</span>
+                </div>
+                <button type="button" onclick="removeScannedAsset(${index})" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            `;
+            listDiv.appendChild(item);
+        });
+        lucide.createIcons();
+    }
+
+    function removeScannedAsset(index) {
+        scannedAssets.splice(index, 1);
+        renderScannedAssets();
     }
 
     // ---- LIFF Init ----
@@ -673,7 +806,6 @@
         document.getElementById('start-time').value = start;
         document.getElementById('end-time').value = end;
         
-        // เช็คการพิมพ์ในช่องชื่อเพื่ออัปเดตปุ่ม Submit
         document.getElementById('req-name-input').addEventListener('input', refresh);
         document.getElementById('req-company-input').addEventListener('input', refresh);
     });
@@ -694,7 +826,6 @@
                 jsaUrl = supabaseClient.storage.from('safety-documents').getPublicUrl(filePath).data.publicUrl;
             }
 
-            // จัดการข้อมูล "งานอื่นๆ"
             let finalWorkTypes = [];
             if (generalWork) {
                 finalWorkTypes = ['งานทั่วไป (General Work)'];
@@ -709,7 +840,6 @@
                 });
             }
             
-            // จัดการข้อมูล "PPE อื่นๆ"
             let finalPPE = [];
             selectedPPE.forEach(ppe => {
                 if (ppe === 'อื่นๆ (โปรดระบุ)') {
@@ -732,11 +862,12 @@
                 risk_area_class: isHighRisk ? 'เขตอันตราย' : 'เขตควบคุม', 
                 start_time: document.getElementById('start-time').value,
                 end_time: document.getElementById('end-time').value,
+                assets_list: scannedAssets, // 🚀 เพิ่ม Asset List ลงในตาราง
                 status: 'Pending',
                 specific_data: {
                     project_id: document.getElementById('project-input').value,
-                    req_name: document.getElementById('req-name-input').value, // บันทึกชื่อ
-                    req_company: document.getElementById('req-company-input').value, // บันทึกบริษัท
+                    req_name: document.getElementById('req-name-input').value,
+                    req_company: document.getElementById('req-company-input').value,
                     ppe_required: finalPPE,
                     jsa_file_url: jsaUrl,
                     declaration_checked: true
@@ -754,7 +885,6 @@
                 confirmButtonText: jsaMode === 'ejsa' ? 'ไปหน้าทำ E-JSA' : 'กลับสู่หน้าหลัก'
             }).then(() => {
                 if (jsaMode === 'ejsa') {
-                    // ไปหน้าทำ E-JSA พร้อมส่งรหัส PTW อ้างอิงไปด้วย
                     window.location.href = `E_JSA_Form.html?ptw_id=${payload.ptw_id}`;
                 } else {
                     if (typeof liff !== 'undefined' && liff.isInClient()) { 
