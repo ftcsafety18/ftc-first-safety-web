@@ -1,47 +1,47 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PTW Final Approval Dashboard | FTC First Safety</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PTW Final Approval Dashboard | FTC First Safety</title>
 
-<!-- Google Fonts: Sarabun -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Fonts: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-<!-- Tailwind CSS via CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: { sans: ['Sarabun', 'sans-serif'] },
-        colors: {
-          background: '#F6F7FA', foreground: '#212A3B', card: '#FFFFFF',
-          primary: '#2F3B57', 'primary-foreground': '#FFFFFF',
-          secondary: '#EEF0F4', 'secondary-foreground': '#2F3B57',
-          muted: '#EEF0F4', 'muted-foreground': '#69707E',
-          border: '#DDE1E7',
-          success: '#3F8F5B', 'success-soft': '#E7F5EC',
-          risk: '#D6403F', 'risk-soft': '#FCEAE9',
-          general: '#3D7B87', 'general-soft': '#E8F2F3',
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+          colors: {
+            background: '#F6F7FA', foreground: '#212A3B', card: '#FFFFFF',
+            primary: '#2F3B57', 'primary-foreground': '#FFFFFF',
+            secondary: '#EEF0F4', 'secondary-foreground': '#2F3B57',
+            muted: '#EEF0F4', 'muted-foreground': '#69707E',
+            border: '#DDE1E7',
+            success: '#3F8F5B', 'success-soft': '#E7F5EC',
+            risk: '#D6403F', 'risk-soft': '#FCEAE9',
+            general: '#3D7B87', 'general-soft': '#E8F2F3',
+          },
         },
       },
-    },
-  }
-</script>
+    }
+  </script>
 
-<!-- Lucide Icons, Supabase, SweetAlert2 -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Lucide Icons, Supabase, SweetAlert2 -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<style>
-  html, body { font-family: 'Sarabun', sans-serif; background-color: #F6F7FA; -webkit-tap-highlight-color: transparent; }
-  .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid #2F3B57; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+  <style>
+    html, body { font-family: 'Sarabun', sans-serif; background-color: #F6F7FA; -webkit-tap-highlight-color: transparent; }
+    .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid #2F3B57; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
 </head>
 
 <body class="min-h-screen bg-background text-foreground antialiased">
@@ -268,14 +268,62 @@
         if(!permit) return;
 
         const specificData = permit.specific_data || {};
+        
+        // 1. จัดการข้อมูล PPE
         const ppeArray = Array.isArray(specificData.ppe_required) ? specificData.ppe_required : [];
         const ppeHtml = ppeArray.map(item => `<span class="inline-block bg-slate-100 border border-slate-200 rounded-md px-2 py-1 text-xs font-semibold text-slate-700 m-1">${item}</span>`).join('');
         
-        let jsaHtml = '';
-        if(specificData.jsa_file_url) {
-            jsaHtml = `<div class="mt-4"><p class="text-sm font-bold text-left mb-2 text-primary">เอกสาร JSA แนบ:</p><img src="${specificData.jsa_file_url}" class="w-full rounded-xl border border-slate-200 shadow-sm" style="max-height: 350px; object-fit: contain;"></div>`;
+        let jsaContentHtml = '';
+
+        // 2. แว่นขยายตรวจสอบ E-JSA (ถ้ามีข้อมูล E-JSA ให้แสดงเป็นรูปแบบการ์ด)
+        if (specificData.ejsa_data && specificData.ejsa_data.length > 0) {
+            let ejsaStepsHtml = specificData.ejsa_data.map(step => `
+                <div class="mb-3 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <div class="bg-slate-50 px-3 py-2 border-b border-slate-200">
+                        <span class="font-bold text-navy text-[13px]">ขั้นตอนที่ ${step.step_no}: ${step.step_name}</span>
+                    </div>
+                    <div class="p-3 bg-white">
+                        <div class="mb-2">
+                            <span class="text-[11px] font-bold text-red-600 block mb-1">อันตราย (Hazards):</span>
+                            <div class="flex flex-wrap gap-1">${step.hazards.map(h => `<span class="text-[11px] bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded">${h}</span>`).join('')}</div>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold text-emerald-600 block mb-1">มาตรการป้องกัน (Measures):</span>
+                            <div class="flex flex-wrap gap-1">${step.measures.map(m => `<span class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded">${m}</span>`).join('')}</div>
+                        </div>
+                        ${step.remark ? `<div class="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500"><span class="font-bold">หมายเหตุ:</span> ${step.remark}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            jsaContentHtml = `
+                <div class="mt-4">
+                    <p class="text-sm font-bold text-left mb-2 text-navy flex items-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-emerald-500"></i> ข้อมูล E-JSA (อิเล็กทรอนิกส์):</p>
+                    <div class="text-left max-h-72 overflow-y-auto pr-1">
+                        ${ejsaStepsHtml}
+                    </div>
+                </div>
+            `;
+        }
+        // 3. ถ้าไม่มี E-JSA ให้ไปเช็คว่ามีรูปถ่ายแนบมาไหม
+        else if (specificData.jsa_file_url) {
+            jsaContentHtml = `
+                <div class="mt-4">
+                    <p class="text-sm font-bold text-left mb-2 text-navy flex items-center gap-1.5"><i data-lucide="camera" class="w-4 h-4 text-red-500"></i> รูปถ่ายเอกสาร JSA:</p>
+                    <img src="${specificData.jsa_file_url}" class="w-full rounded-xl border border-slate-200 shadow-sm" style="max-height: 350px; object-fit: contain;">
+                </div>
+            `;
+        } 
+        // 4. กรณีไม่มีอะไรเลย (งานทั่วไปความเสี่ยงต่ำ)
+        else {
+            jsaContentHtml = `
+                <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                    <p class="text-xs font-bold text-slate-500">ไม่ต้องแนบเอกสาร JSA (งานความเสี่ยงต่ำ)</p>
+                </div>
+            `;
         }
 
+        // 5. แสดงหน้าต่าง Popup
         Swal.fire({
             title: '<span class="text-lg font-bold text-primary">ข้อมูลการเตรียมพร้อม</span>',
             html: `
@@ -284,7 +332,7 @@
                     <div class="mb-4">${ppeHtml || '<span class="text-xs text-slate-400">ไม่มีข้อมูล</span>'}</div>
                     <p class="text-sm font-bold text-risk mb-1 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> การตรวจสอบสภาพพื้นที่หน้างาน:</p>
                     <p class="text-[13px] font-semibold text-slate-700 bg-risk-soft p-2.5 rounded-lg border border-risk/20">${specificData.declaration_checked ? '✅ ยืนยันการเตรียมถังดับเพลิงและทำ TBT เรียบร้อยแล้ว' : '❌ ไม่ได้ยืนยัน'}</p>
-                    ${jsaHtml}
+                    ${jsaContentHtml}
                 </div>
             `,
             confirmButtonText: 'ปิดหน้าต่าง',
