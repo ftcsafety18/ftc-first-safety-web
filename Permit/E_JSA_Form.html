@@ -1,651 +1,1035 @@
 <!DOCTYPE html>
+
 <html lang="th">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
   <title>จัดทำ E-JSA | FTC First Safety</title>
 
+
+
   <!-- Tailwind CSS via CDN -->
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Lucide Icons via CDN -->
+
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <!-- Sarabun font -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
   
-  <!-- LIFF, Supabase, SweetAlert2, Heic2Any -->
+
+  <!-- LIFF, Supabase, SweetAlert2 -->
+
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
+
 
   <script>
+
     tailwind.config = {
+
       theme: {
+
         extend: {
+
           fontFamily: { sans: ['Sarabun', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+
           colors: {
+
             navy: { DEFAULT: '#2A4365', 700: '#22364F' },
+
             orange: { DEFAULT: '#DB5A24', 600: '#C24D1C' },
+
             surface: '#F4F7F9',
-            riskA: '#dc2626', /* Red */
-            riskB: '#f97316', /* Orange */
-            riskC: '#eab308', /* Yellow */
-            riskD: '#16a34a', /* Green */
+
           },
+
         },
+
       },
+
     }
+
   </script>
 
+
+
   <style>
+
     body { font-family: 'Sarabun', sans-serif; -webkit-tap-highlight-color: transparent; }
+
     
+
     .input-field { width: 100%; border-radius: 0.75rem; border: 1px solid #e2e8f0; background-color: #fff; padding: 0.75rem 1rem; font-size: 0.875rem; color: #1e293b; outline: none; transition: all 0.2s; }
+
     .input-field:focus { border-color: #2A4365; box-shadow: 0 0 0 3px rgba(42, 67, 101, 0.1); }
+
     
+
     /* Toggle Chips Style */
+
     .chip { display: inline-flex; align-items: center; justify-content: center; padding: 0.375rem 0.75rem; border-radius: 9999px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.75rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; user-select: none; }
+
     .chip:active { transform: scale(0.95); }
+
     
+
     .chip-hazard.active { background-color: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
     .chip-measure.active { background-color: #f0fdf4; border-color: #6ee7b7; color: #059669; }
+
   </style>
+
 </head>
 
+
+
 <body class="bg-surface antialiased text-slate-800">
+
   <div class="min-h-screen pb-28">
 
+
+
     <!-- Header -->
+
     <header class="sticky top-0 z-40 border-b border-navy-700/40 bg-navy text-white shadow-md">
+
       <div class="mx-auto flex max-w-xl items-center gap-3 px-4 py-3">
+
         <button type="button" onclick="window.history.back()" aria-label="ย้อนกลับ"
+
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition hover:bg-white/10 active:scale-95">
+
           <i data-lucide="chevron-left" class="h-5 w-5"></i>
+
         </button>
+
         <div class="min-w-0 flex-1">
-          <h1 class="truncate text-base font-bold leading-tight flex items-center gap-2">จัดทำ E-JSA</h1>
-          <p class="truncate text-xs text-white/70 tracking-widest uppercase">Job Safety Analysis & WI</p>
+
+          <h1 class="truncate text-base font-bold leading-tight">จัดทำ E-JSA</h1>
+
+          <p class="truncate text-xs text-white/70 tracking-widest uppercase">Smart Job Safety Analysis</p>
+
         </div>
-        <span class="shrink-0 rounded-md bg-orange px-2 py-0.5 text-[10px] font-bold tracking-widest text-white shadow-sm">
-          FM-SAF-34
-        </span>
+
       </div>
+
     </header>
 
+
+
     <main class="mx-auto max-w-xl space-y-4 px-4 py-6">
+
       
+
       <!-- ข้อมูลอ้างอิงใบงาน -->
+
       <div class="rounded-xl border border-navy/20 bg-navy/5 p-4">
+
         <p class="text-[11px] font-bold tracking-widest text-navy uppercase mb-1">ข้อมูลอ้างอิงใบอนุญาต</p>
+
         <div class="flex justify-between items-center">
+
             <p class="text-sm font-semibold text-slate-700">อ้างอิง: <span id="display-ptw-id" class="text-navy font-mono">กำลังโหลด...</span></p>
+
             <span class="rounded bg-navy text-white px-2 py-0.5 text-[10px] font-bold">รอการบันทึก</span>
+
         </div>
+
         <p class="text-xs text-slate-600 mt-1">อ้างอิงจากแบบฟอร์มขออนุญาตทำงาน (PTW)</p>
+
       </div>
 
-      <!-- กล่องข้อความอธิบาย -->
-      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 shadow-sm">
-        <i data-lucide="info" class="w-6 h-6 text-blue-600 shrink-0"></i>
-        <div class="text-sm text-blue-900 leading-relaxed">
-            <b>ระบบอัจฉริยะ (Smart Logic & Visual JSA)</b> <br>
-            เลือกขั้นตอนงาน แนบรูปภาพ และประเมินระดับความเสี่ยง ระบบจะแนะนำมาตรการป้องกันให้อัตโนมัติ
-        </div>
-      </div>
+
 
       <!-- คอนเทนเนอร์เก็บการ์ดขั้นตอนการทำงาน -->
+
       <div id="jsa-container" class="space-y-4">
+
         <!-- จะถูกสร้างโดย JavaScript -->
+
       </div>
 
+
+
       <!-- ปุ่มเพิ่มขั้นตอน -->
+
       <button type="button" onclick="addJsaStep()" class="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-navy/30 bg-navy/5 px-4 py-3.5 text-sm font-bold text-navy transition hover:bg-navy/10 active:scale-[0.98]">
+
         <i data-lucide="plus-circle" class="h-5 w-5"></i>
+
         เพิ่มขั้นตอนการทำงาน (Add Step)
+
       </button>
+
+
 
     </main>
 
+
+
     <!-- Sticky bottom bar -->
+
     <div class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+
       <div class="mx-auto max-w-xl px-4 py-3">
+
         <button type="button" onclick="submitJsa()"
+
           class="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-navy to-navy-700 py-4 text-center text-[15px] font-bold text-white shadow-lg shadow-navy/30 transition active:scale-[0.98]">
+
           <i data-lucide="save" class="w-5 h-5"></i> บันทึกข้อมูล E-JSA
+
         </button>
+
       </div>
+
     </div>
+
   </div>
 
+
+
   <style>
+
       .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); }
+
   </style>
 
+
+
   <script>
+
     // ---- Supabase Initialization ----
+
     const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+
     const SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
+
+
     let stepCount = 0;
+
     let currentPtwId = null;
-    let stepFiles = {}; // เก็บไฟล์รูปภาพแยกตาม stepId
+
+
 
     // ==========================================
-    // 🧠 สมองของระบบ: 3-Tier Logic
+
+    // 🧠 สมองของระบบ ชั้นที่ 1: จับคู่ "ขั้นตอนงาน" -> "อันตราย"
+
     // ==========================================
+
     const STEP_HAZARD_MAP = {
+
         'เตรียมพื้นที่และตรวจสอบอุปกรณ์': ['ของมีคมบาด/ทิ่มแทง', 'การชน/กระแทกจากเครื่องจักร'],
+
         'ขนย้ายและยกวัสดุอุปกรณ์': ['การตกหล่นของวัสดุ', 'การหนีบ/ดึง/ทับ', 'ของมีคมบาด/ทิ่มแทง'],
+
         'ติดตั้ง/รื้อถอนนั่งร้าน': ['การพลัดตกจากที่สูง', 'การตกหล่นของวัสดุ', 'การหนีบ/ดึง/ทับ'],
+
         'ปฏิบัติงานตัด/เชื่อมโลหะ': ['เพลิงไหม้/ระเบิด', 'การกระเด็นของวัสดุเข้าตา', 'การสัมผัส/สูดดมสารเคมี', 'ความร้อน/เย็นจัด'],
+
         'ปฏิบัติงานขุดเจาะ/เปิดผิวดิน': ['การชน/กระแทกจากเครื่องจักร', 'เสียงดังระดับอันตราย', 'การหนีบ/ดึง/ทับ'],
+
         'ปฏิบัติงานบนที่สูง': ['การพลัดตกจากที่สูง', 'การตกหล่นของวัสดุ'],
+
         'ปฏิบัติงานในที่อับอากาศ': ['ขาดอากาศ/อับอากาศ', 'การสัมผัส/สูดดมสารเคมี', 'เพลิงไหม้/ระเบิด'],
+
         'งานเดินสายและติดตั้งระบบไฟฟ้า': ['กระแสไฟฟ้ารั่ว/ช็อต', 'การพลัดตกจากที่สูง', 'ของมีคมบาด/ทิ่มแทง'],
+
         'งานทาสี/สัมผัสสารเคมี': ['การสัมผัส/สูดดมสารเคมี', 'เพลิงไหม้/ระเบิด'],
+
         'เก็บกวาดและทำความสะอาดพื้นที่': ['ของมีคมบาด/ทิ่มแทง', 'การสัมผัส/สูดดมสารเคมี']
+
     };
+
+
+
+    // ==========================================
+
+    // 🧠 สมองของระบบ ชั้นที่ 2: จับคู่ "อันตราย" -> "มาตรการป้องกัน"
+
+    // ==========================================
 
     const HAZARD_MEASURE_MAP = {
+
       'กระแสไฟฟ้ารั่ว/ช็อต': ['ตัดแยกพลังงาน (LOTO)', 'ตรวจสอบสายไฟ/สายดิน', 'สวมอุปกรณ์ PPE ครบถ้วน'],
+
       'การกระเด็นของวัสดุเข้าตา': ['สวมแว่นตานิรภัย/กระบังหน้า', 'ติดตั้งการ์ดป้องกันเครื่องจักร', 'กั้นเขตพื้นที่/ติดป้ายเตือน'],
+
       'การชน/กระแทกจากเครื่องจักร': ['มีผู้เฝ้าระวัง (Standby Man)', 'กั้นเขตพื้นที่/ติดป้ายเตือน'],
+
       'การตกหล่นของวัสดุ': ['กั้นเขตพื้นที่/ติดป้ายเตือน', 'ผูกรัดวัสดุให้แน่นหนา'],
+
       'การพลัดตกจากที่สูง': ['สวมอุปกรณ์ PPE ครบถ้วน', 'จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด'],
+
       'การสัมผัส/สูดดมสารเคมี': ['สวมอุปกรณ์ PPE ครบถ้วน', 'ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ'],
+
       'การสัมผัสรังสี': ['กั้นเขตพื้นที่/ติดป้ายเตือน', 'มีผู้เฝ้าระวัง (Standby Man)', 'สับเปลี่ยนหมุนเวียนพนักงาน'],
+
       'การหนีบ/ดึง/ทับ': ['ติดตั้งการ์ดป้องกันเครื่องจักร', 'ตัดแยกพลังงาน (LOTO)'],
+
       'ของมีคมบาด/ทิ่มแทง': ['สวมอุปกรณ์ PPE ครบถ้วน', 'จัดเก็บเครื่องมือให้เป็นระเบียบ'],
+
       'ขาดอากาศ/อับอากาศ': ['ตรวจวัดปริมาณก๊าซ', 'ระบายอากาศ/ติดตั้งพัดลมดูดอากาศ', 'มีผู้เฝ้าระวัง (Standby Man)'],
+
       'เพลิงไหม้/ระเบิด': ['จัดเตรียมถังดับเพลิง', 'ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ', 'ขออนุญาตทำงาน (PTW)'],
+
       'เสียงดังระดับอันตราย': ['สวมอุปกรณ์ PPE ครบถ้วน', 'สับเปลี่ยนหมุนเวียนพนักงาน'],
+
       'ความร้อน/เย็นจัด': ['จัดเตรียมน้ำดื่ม/เกลือแร่', 'สับเปลี่ยนหมุนเวียนพนักงาน', 'จัดเตรียมพื้นที่พักร่มรื่น'],
+
       'ท่าทางการทำงานที่ไม่เหมาะสม': ['สับเปลี่ยนหมุนเวียนพนักงาน', 'ยืดเหยียดกล้ามเนื้อก่อนทำงาน'],
+
       'แสงสว่างไม่เพียงพอ/จ้าเกินไป': ['ติดตั้งไฟส่องสว่างชั่วคราว', 'สวมอุปกรณ์ PPE ครบถ้วน'],
+
       'สัตว์มีพิษ/แมลงกัดต่อย': ['ตรวจสอบพื้นที่ก่อนเริ่มงาน', 'จัดเตรียมกล่องปฐมพยาบาล'],
+
       'อันตรายจากแรงดัน': ['ตัดแยกพลังงาน (LOTO)', 'ตรวจสอบเกจวัดแรงดัน'],
+
       'อันตรายจากการสั่นสะเทือน': ['สวมอุปกรณ์ PPE ครบถ้วน', 'สับเปลี่ยนหมุนเวียนพนักงาน']
+
     };
+
+
 
     const DEFAULT_MEASURES = ['ทำ Toolbox Talk', 'ขออนุญาตทำงาน (PTW)'];
+
     const HAZARD_KEYS = ['กระแสไฟฟ้ารั่ว/ช็อต', 'การกระเด็นของวัสดุเข้าตา', 'การชน/กระแทกจากเครื่องจักร', 'การตกหล่นของวัสดุ', 'การพลัดตกจากที่สูง', 'การสัมผัส/สูดดมสารเคมี', 'การสัมผัสรังสี', 'การหนีบ/ดึง/ทับ', 'ของมีคมบาด/ทิ่มแทง', 'ขาดอากาศ/อับอากาศ', 'เพลิงไหม้/ระเบิด', 'เสียงดังระดับอันตราย'];
 
-    // คำอธิบายระดับความเสี่ยง
-    const RISK_DESC = {
-        'A': 'A (แดง) - บาดเจ็บถึงขั้นเสียชีวิต หรือ ทรัพย์สินเสียหาย > 50,000 บ.',
-        'B': 'B (ส้ม) - สูญเสียอวัยวะ/ทุพพลภาพ หรือ ทรัพย์สินเสียหาย 20,001 - 50,000 บ.',
-        'C': 'C (เหลือง) - บาดเจ็บหยุดงานไม่เกิน 3 วัน หรือ ทรัพย์สินเสียหาย 5,000 - 20,000 บ.',
-        'D': 'D (เขียว) - บาดเจ็บเล็กน้อยไม่หยุดงาน หรือ ทรัพย์สินเสียหาย < 5,000 บ.'
-    };
+
 
     // ==========================================
+
     // ⚙️ เริ่มต้นทำงาน (Init)
+
     // ==========================================
+
     document.addEventListener('DOMContentLoaded', () => {
+
         lucide.createIcons();
-        const urlParams = new URLSearchParams(window.location.search);
-        currentPtwId = urlParams.get('ptw_id');
+
         
+
+        // อ่านรหัส PTW_ID จาก URL Parameter (ที่ส่งมาจากหน้าขอใบอนุญาต)
+
+        const urlParams = new URLSearchParams(window.location.search);
+
+        currentPtwId = urlParams.get('ptw_id');
+
+        
+
         if(currentPtwId) {
+
             document.getElementById('display-ptw-id').textContent = currentPtwId;
+
         } else {
+
             document.getElementById('display-ptw-id').textContent = "ไม่ได้อ้างอิงใบงาน";
+
         }
-        addJsaStep(); 
+
+
+
+        addJsaStep(); // โหลดหน้าแรกปุ๊บ สร้างสเต็ป 1
+
     });
 
-    // ---- สร้าง UI ขั้นตอน JSA ----
-    function addJsaStep() {
-        stepCount++;
-        const stepId = stepCount;
-        const container = document.getElementById('jsa-container');
-        
-        const stepHTML = `
-        <section class="jsa-step rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" data-step="${stepId}">
-            <header class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
-              <div class="flex items-center gap-2">
-                <span class="step-number flex h-6 w-6 items-center justify-center rounded-full bg-navy text-xs font-bold text-white shadow-inner">${stepId}</span>
-                <h3 class="font-bold text-navy text-sm">ขั้นตอนการทำงาน (Job Step)</h3>
-              </div>
-              <button type="button" onclick="removeJsaStep(${stepId})" class="text-red-500 hover:text-red-700 p-1 bg-red-50 rounded-lg ${stepId === 1 ? 'hidden' : ''}">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </header>
-            
-            <div class="p-4 space-y-5">
-                <!-- 1. เลือกงานและถ่ายรูป -->
-                <div class="space-y-3">
-                    <div class="relative">
-                        <select class="input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="handleStepSelection(this)">
-                            <option value="" disabled selected>-- เลือกขั้นตอนการทำงาน --</option>
-                            <option value="เตรียมพื้นที่และตรวจสอบอุปกรณ์">เตรียมพื้นที่และตรวจสอบเครื่องมือ</option>
-                            <option value="ขนย้ายและยกวัสดุอุปกรณ์">ขนย้ายและยกวัสดุอุปกรณ์</option>
-                            <option value="ติดตั้ง/รื้อถอนนั่งร้าน">ติดตั้ง/รื้อถอนนั่งร้าน</option>
-                            <option value="ปฏิบัติงานตัด/เชื่อมโลหะ">ปฏิบัติงานตัด/เชื่อมโลหะ</option>
-                            <option value="ปฏิบัติงานขุดเจาะ/เปิดผิวดิน">งานขุดเจาะ/เปิดผิวดิน</option>
-                            <option value="ปฏิบัติงานบนที่สูง">ปฏิบัติงานบนที่สูง</option>
-                            <option value="ปฏิบัติงานในที่อับอากาศ">ปฏิบัติงานในที่อับอากาศ</option>
-                            <option value="งานเดินสายและติดตั้งระบบไฟฟ้า">งานเดินสายและติดตั้งระบบไฟฟ้า</option>
-                            <option value="งานทาสี/สัมผัสสารเคมี">งานทาสี/สัมผัสสารเคมี</option>
-                            <option value="เก็บกวาดและทำความสะอาดพื้นที่">เก็บกวาดและทำความสะอาดพื้นที่</option>
-                            <option value="custom" class="font-bold text-orange-600">✏️ พิมพ์ระบุขั้นตอนการทำงานเอง...</option>
-                        </select>
-                        <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
-                    </div>
-                    <textarea class="step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
-                    
-                    <!-- 📸 อัปโหลดรูปภาพ -->
-                    <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                        <label class="cursor-pointer flex items-center justify-center gap-1.5 bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-semibold shadow-sm hover:bg-slate-100 transition shrink-0">
-                            <i data-lucide="camera" class="w-4 h-4 text-navy"></i> แนบรูปภาพ
-                            <input type="file" id="photo-${stepId}" accept="image/*" capture="environment" class="hidden" onchange="handleStepPhoto(${stepId}, this)" />
-                        </label>
-                        <div id="preview-wrap-${stepId}" class="hidden relative h-12 w-12 rounded-lg overflow-hidden border border-slate-200 shadow-sm shrink-0">
-                            <img id="preview-img-${stepId}" class="h-full w-full object-cover" />
-                            <button type="button" onclick="removeStepPhoto(${stepId})" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 transform scale-75"><i data-lucide="x" class="w-4 h-4"></i></button>
-                        </div>
-                        <span id="photo-status-${stepId}" class="text-[10px] text-slate-400 leading-tight">ถ่ายรูปหน้างานหรือเครื่องมือ<br>ที่ใช้ในขั้นตอนนี้</span>
-                    </div>
-                </div>
 
-                <!-- 2. เลือกระดับความเสี่ยง (Rank of Hazard Severity) -->
-                <div class="border-t border-slate-100 pt-3">
-                    <label class="mb-2 block text-xs font-bold text-slate-700">ระดับความรุนแรง (Severity Rank) <span class="text-red-500">*</span></label>
-                    <div class="flex gap-2">
-                        <label class="cursor-pointer flex-1">
-                            <input type="radio" name="risk-${stepId}" value="A" class="peer hidden" onchange="updateRiskDesc(${stepId}, 'A')" />
-                            <div class="h-10 rounded-lg flex items-center justify-center font-bold text-sm border-2 border-slate-200 text-slate-400 peer-checked:bg-riskA peer-checked:text-white peer-checked:border-riskA transition-colors">A</div>
-                        </label>
-                        <label class="cursor-pointer flex-1">
-                            <input type="radio" name="risk-${stepId}" value="B" class="peer hidden" onchange="updateRiskDesc(${stepId}, 'B')" />
-                            <div class="h-10 rounded-lg flex items-center justify-center font-bold text-sm border-2 border-slate-200 text-slate-400 peer-checked:bg-riskB peer-checked:text-white peer-checked:border-riskB transition-colors">B</div>
-                        </label>
-                        <label class="cursor-pointer flex-1">
-                            <input type="radio" name="risk-${stepId}" value="C" class="peer hidden" onchange="updateRiskDesc(${stepId}, 'C')" />
-                            <div class="h-10 rounded-lg flex items-center justify-center font-bold text-sm border-2 border-slate-200 text-slate-400 peer-checked:bg-riskC peer-checked:text-white peer-checked:border-riskC transition-colors">C</div>
-                        </label>
-                        <label class="cursor-pointer flex-1">
-                            <input type="radio" name="risk-${stepId}" value="D" class="peer hidden" onchange="updateRiskDesc(${stepId}, 'D')" />
-                            <div class="h-10 rounded-lg flex items-center justify-center font-bold text-sm border-2 border-slate-200 text-slate-400 peer-checked:bg-riskD peer-checked:text-white peer-checked:border-riskD transition-colors">D</div>
-                        </label>
-                    </div>
-                    <p id="risk-desc-${stepId}" class="text-[10px] font-semibold text-slate-500 mt-1.5 bg-slate-50 p-2 rounded border border-slate-100">แตะเพื่อดูคำอธิบายระดับความเสี่ยง</p>
-                </div>
 
-                <!-- 3. อันตรายและมาตรการ -->
-                <div class="border-t border-slate-100 pt-3">
-                    <label class="mb-1.5 block text-xs font-bold text-red-600 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> อันตรายที่อาจเกิดขึ้น (Hazards)</label>
-                    <div class="flex flex-wrap gap-1.5 mb-2">
-                        ${generateHazardButtons()}
-                    </div>
-                    <div class="hazard-others-wrapper hidden flex-col gap-2 mt-2 border border-red-200 p-3 rounded-xl bg-red-50/50">
-                        <select class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 text-xs font-semibold" onchange="handleHazardDropdown(this)">
-                            <option value="" disabled selected>-- เลือกอันตรายเพิ่มเติม --</option>
-                            <option value="ความร้อน/เย็นจัด">ความร้อน/เย็นจัด (Extreme Temperature)</option>
-                            <option value="ท่าทางการทำงานที่ไม่เหมาะสม">ท่าทางการทำงานที่ไม่เหมาะสม (Ergonomics)</option>
-                            <option value="แสงสว่างไม่เพียงพอ/จ้าเกินไป">แสงสว่างไม่เพียงพอ/จ้าเกินไป (Poor Lighting)</option>
-                            <option value="สัตว์มีพิษ/แมลงกัดต่อย">สัตว์มีพิษ/แมลงกัดต่อย (Biological Hazards)</option>
-                            <option value="อันตรายจากแรงดัน">อันตรายจากแรงดัน (Pressure Hazards)</option>
-                            <option value="อันตรายจากการสั่นสะเทือน">อันตรายจากการสั่นสะเทือน (Vibration)</option>
-                            <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุอันตรายเอง...</option>
-                        </select>
-                        <input type="text" class="hazard-custom-text hidden input-field text-xs border-red-300 focus:border-red-600 text-red-700" placeholder="โปรดพิมพ์ระบุอันตราย..." />
-                    </div>
-                </div>
-
-                <div class="border-t border-slate-100 pt-3 bg-emerald-50/30 -mx-4 px-4 pb-2">
-                    <label class="mb-1.5 block text-xs font-bold text-emerald-600 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> มาตรการป้องกัน (Risk Controls)</label>
-                    <div class="measures-container flex flex-wrap gap-1.5 mb-2"></div>
-                    <div class="measure-others-wrapper hidden flex-col gap-2 mt-2 border border-emerald-200 p-3 rounded-xl bg-white">
-                        <select class="input-field appearance-none cursor-pointer pr-10 border-emerald-300 focus:border-emerald-600 text-emerald-700 text-xs font-semibold" onchange="handleMeasureDropdown(this)">
-                            <option value="" disabled selected>-- เลือกมาตรการเพิ่มเติม --</option>
-                            <option value="จัดเตรียมน้ำดื่ม/เกลือแร่">จัดเตรียมน้ำดื่ม/เกลือแร่</option>
-                            <option value="จัดเตรียมพื้นที่พักร่มรื่น">จัดเตรียมพื้นที่พักร่มรื่น</option>
-                            <option value="จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด">จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด</option>
-                            <option value="ติดตั้งไฟส่องสว่างชั่วคราว">ติดตั้งไฟส่องสว่างชั่วคราว</option>
-                            <option value="ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ">ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำทิ้ง</option>
-                            <option value="ตรวจสอบพื้นที่ก่อนเริ่มงาน">ตรวจสอบพื้นที่ก่อนเริ่มงาน (ตรวจหาสัตว์มีพิษ)</option>
-                            <option value="สับเปลี่ยนหมุนเวียนพนักงาน">สับเปลี่ยนหมุนเวียนพนักงาน (Job Rotation)</option>
-                            <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุมาตรการเอง...</option>
-                        </select>
-                        <input type="text" class="measure-custom-text hidden input-field text-xs border-emerald-300 focus:border-emerald-600 text-emerald-700" placeholder="โปรดพิมพ์ระบุมาตรการป้องกัน..." />
-                    </div>
-                </div>
-            </div>
-        </section>
-        `;
-        
-        container.insertAdjacentHTML('beforeend', stepHTML);
-        lucide.createIcons();
-        updatePreventiveMeasures(container.lastElementChild);
-    }
-
-    // ---- Event Handlers ----
-    function removeJsaStep(id) {
-        document.querySelector(`.jsa-step[data-step="${id}"]`).remove();
-        delete stepFiles[id];
-        renumberSteps();
-    }
-
-    function renumberSteps() {
-        const steps = document.querySelectorAll('.jsa-step');
-        stepCount = steps.length;
-        steps.forEach((step, index) => {
-            const num = index + 1;
-            step.dataset.step = num;
-            step.querySelector('.step-number').textContent = num;
-        });
-    }
-
-    function updateRiskDesc(stepId, val) {
-        document.getElementById(`risk-desc-${stepId}`).textContent = RISK_DESC[val];
-    }
+    // ---- Functions จัดการ UI ----
 
     function handleStepSelection(selectElement) {
+
         const stepContainer = selectElement.closest('.jsa-step');
+
         const textInput = stepContainer.querySelector('.step-text');
+
         
+
         if (selectElement.value === 'custom') {
+
             textInput.classList.remove('hidden');
+
             textInput.focus();
+
         } else {
+
             textInput.classList.add('hidden');
+
         }
+
+
 
         const hazardChips = stepContainer.querySelectorAll('.chip-hazard');
+
         hazardChips.forEach(chip => chip.classList.remove('active'));
 
+
+
         const selectedStep = selectElement.value;
+
         if (STEP_HAZARD_MAP[selectedStep]) {
+
             const hazardsToActivate = STEP_HAZARD_MAP[selectedStep];
+
             hazardChips.forEach(chip => {
+
                 if (hazardsToActivate.includes(chip.textContent)) {
+
                     chip.classList.add('active'); 
+
                 }
+
             });
+
         }
+
         updatePreventiveMeasures(stepContainer);
+
     }
+
+
 
     function toggleHybridWrapper(buttonElement, wrapperClass) {
+
         buttonElement.classList.toggle('active');
+
         const stepContainer = buttonElement.closest('.jsa-step');
+
         const wrapper = stepContainer.querySelector(`.${wrapperClass}`);
+
         
+
         if (buttonElement.classList.contains('active')) {
+
             wrapper.classList.remove('hidden');
+
             wrapper.classList.add('flex');
+
         } else {
+
             wrapper.classList.add('hidden');
+
             wrapper.classList.remove('flex');
+
             wrapper.querySelector('select').value = '';
-            wrapper.querySelector('input[type="text"]').value = '';
-            wrapper.querySelector('input[type="text"]').classList.add('hidden');
+
+            const textInput = wrapper.querySelector('input[type="text"]');
+
+            textInput.value = '';
+
+            textInput.classList.add('hidden');
+
             updatePreventiveMeasures(stepContainer);
+
         }
+
     }
+
+
 
     function handleHazardDropdown(selectElement) {
+
         const wrapper = selectElement.closest('div').parentElement;
+
         const textInput = wrapper.querySelector('.hazard-custom-text');
+
         if (selectElement.value === 'custom') {
+
             textInput.classList.remove('hidden');
+
             textInput.focus();
+
         } else {
+
             textInput.classList.add('hidden');
+
         }
+
         updatePreventiveMeasures(selectElement.closest('.jsa-step'));
+
     }
+
+
 
     function handleMeasureDropdown(selectElement) {
+
         const wrapper = selectElement.closest('div').parentElement;
+
         const textInput = wrapper.querySelector('.measure-custom-text');
+
         if (selectElement.value === 'custom') {
+
             textInput.classList.remove('hidden');
+
             textInput.focus();
+
         } else {
+
             textInput.classList.add('hidden');
+
         }
+
     }
+
+
 
     function toggleHazard(buttonElement) {
+
         buttonElement.classList.toggle('active');
+
         updatePreventiveMeasures(buttonElement.closest('.jsa-step'));
+
     }
 
-    function generateHazardButtons() {
-        let html = '';
-        HAZARD_KEYS.forEach(hazard => {
-            html += `<button type="button" class="chip chip-hazard" onclick="toggleHazard(this)">${hazard}</button>`;
-        });
-        html += `<button type="button" class="chip chip-hazard font-bold border-red-300 text-red-600" onclick="toggleHybridWrapper(this, 'hazard-others-wrapper')">➕ อื่นๆ</button>`;
-        return html;
-    }
+
 
     function updatePreventiveMeasures(stepContainer) {
+
         let activeHazards = Array.from(stepContainer.querySelectorAll('.chip-hazard.active'))
+
             .map(btn => btn.textContent)
-            .filter(text => text !== '➕ อื่นๆ'); 
+
+            .filter(text => text !== '➕ อื่นๆ (ระบุ)'); 
+
             
+
         const hazardDropdown = stepContainer.querySelector('.hazard-others-wrapper select');
+
         if (hazardDropdown && hazardDropdown.value && hazardDropdown.value !== 'custom') {
+
             activeHazards.push(hazardDropdown.value);
+
         }
+
             
+
         let recommendedMeasures = new Set([...DEFAULT_MEASURES]); 
+
         
+
         activeHazards.forEach(hazard => {
+
             if(HAZARD_MEASURE_MAP[hazard]) {
+
                 HAZARD_MEASURE_MAP[hazard].forEach(measure => recommendedMeasures.add(measure));
+
             }
+
         });
+
+
 
         const measureContainer = stepContainer.querySelector('.measures-container');
+
         const currentlyActiveMeasures = Array.from(measureContainer.querySelectorAll('.chip-measure.active'))
+
             .map(btn => btn.textContent);
 
+
+
         let measuresHtml = '';
+
         recommendedMeasures.forEach(measure => {
+
             const isActive = currentlyActiveMeasures.includes(measure) ? 'active' : '';
+
             measuresHtml += `<button type="button" class="chip chip-measure ${isActive}" onclick="this.classList.toggle('active')">${measure}</button>`;
+
         });
-        measuresHtml += `<button type="button" class="chip chip-measure font-bold border-emerald-300 text-emerald-600" onclick="toggleHybridWrapper(this, 'measure-others-wrapper')">➕ อื่นๆ</button>`;
+
+        measuresHtml += `<button type="button" class="chip chip-measure font-bold border-emerald-300 text-emerald-600" onclick="toggleHybridWrapper(this, 'measure-others-wrapper')">➕ อื่นๆ (ระบุ)</button>`;
+
+
 
         measureContainer.innerHTML = measuresHtml;
+
         
+
         const othersBtn = stepContainer.querySelector('.measure-others-wrapper').previousElementSibling; 
+
         const othersWrapper = stepContainer.querySelector('.measure-others-wrapper');
+
         if(!othersWrapper.classList.contains('hidden')){
+
              othersBtn.classList.add('active');
+
         }
+
     }
 
-    // ---- 📸 จัดการรูปถ่ายและการบีบอัดภาพ ----
-    async function handleStepPhoto(stepId, inputElement) {
-        if (!inputElement.files || inputElement.files.length === 0) return;
-        let file = inputElement.files[0];
+
+
+    function generateHazardButtons() {
+
+        let html = '';
+
+        HAZARD_KEYS.forEach(hazard => {
+
+            html += `<button type="button" class="chip chip-hazard" onclick="toggleHazard(this)">${hazard}</button>`;
+
+        });
+
+        html += `<button type="button" class="chip chip-hazard font-bold border-red-300 text-red-600" onclick="toggleHybridWrapper(this, 'hazard-others-wrapper')">➕ อื่นๆ (ระบุ)</button>`;
+
+        return html;
+
+    }
+
+
+
+    function addJsaStep() {
+
+        stepCount++;
+
+        const container = document.getElementById('jsa-container');
+
         
-        const statusText = document.getElementById(`photo-status-${stepId}`);
-        statusText.textContent = "กำลังประมวลผล...";
-        statusText.classList.remove('text-slate-400');
-        statusText.classList.add('text-orange');
 
-        try {
-            if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
-                if (typeof heic2any !== 'undefined') {
-                    const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg' });
-                    file = new File([Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob], file.name.replace(/\.heic$/i, ".jpg"), { type: 'image/jpeg' });
-                }
-            }
+        const stepHTML = `
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = event => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width, height = img.height;
-                    const maxWidth = 1000;
-                    if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+        <section class="jsa-step rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-4" data-step="${stepCount}">
 
-                    canvas.toBlob(blob => {
-                        const compressedFile = new File([blob], `step_${stepId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                        stepFiles[stepId] = compressedFile; 
-                        
-                        document.getElementById(`step-preview-${stepId}`).src = URL.createObjectURL(blob);
-                        document.getElementById(`preview-container-${stepId}`).classList.remove('hidden');
-                        
-                        statusText.textContent = "รูปภาพพร้อมใช้งาน";
-                        statusText.classList.replace('text-orange', 'text-emerald-600');
-                    }, 'image/jpeg', 0.7); 
-                };
-            };
-        } catch (err) {
-            console.error('Photo processing error:', err);
-            statusText.textContent = "เกิดข้อผิดพลาด";
-            statusText.classList.replace('text-orange', 'text-red-500');
-        }
-    }
+            <header class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
 
-    function removeStepPhoto(stepId) {
-        delete stepFiles[stepId];
-        document.getElementById(`photo-${stepId}`).value = '';
-        document.getElementById(`preview-container-${stepId}`).classList.add('hidden');
-        
-        const statusText = document.getElementById(`photo-status-${stepId}`);
-        statusText.innerHTML = "ถ่ายรูปหน้างานหรือเครื่องมือ<br>ที่ใช้ในขั้นตอนนี้";
-        statusText.classList.remove('text-emerald-600', 'text-red-500', 'text-orange');
-        statusText.classList.add('text-slate-400');
-    }
+              <div class="flex items-center gap-2">
 
-    // ==========================================
-    // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase)
-    // ==========================================
-    async function submitJsa() {
-        if(!currentPtwId) {
-            Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสใบงาน (PTW ID)', 'error');
-            return;
-        }
+                <span class="step-number flex h-6 w-6 items-center justify-center rounded-full bg-navy text-xs font-bold text-white shadow-inner">${stepCount}</span>
 
-        let eJsaDataArray = [];
-        let hasError = false;
+                <h3 class="font-bold text-navy text-sm">ส่วนที่ ${stepCount}: ขั้นตอนการทำงาน</h3>
 
-        const stepBlocks = document.querySelectorAll('.jsa-step');
-        for (let block of stepBlocks) {
-            const stepId = block.dataset.step;
+              </div>
+
+              <button type="button" onclick="this.closest('.jsa-step').remove(); renumberSteps();" class="text-red-500 hover:text-red-700 p-1 bg-red-50 rounded-lg ${stepCount === 1 ? 'hidden' : ''}">
+
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+
+              </button>
+
+            </header>
+
             
-            // Validate Task
-            let task = block.querySelector('select.input-field').value;
-            if (task === 'custom') task = block.querySelector('.step-text').value;
 
-            // Validate Risk Rank
-            let riskInput = block.querySelector(`input[name="risk-${stepId}"]:checked`);
-            let riskVal = riskInput ? riskInput.value : null;
+            <div class="p-4 space-y-5">
 
-            if (!task || task.trim() === '' || !riskVal) {
-                hasError = true;
-                break;
-            }
+                <div>
 
-            // Hazards
-            let hazards = [];
-            block.querySelectorAll(`.chip-hazard.active`).forEach(chk => { if(chk.textContent !== '➕ อื่นๆ') hazards.push(chk.textContent); });
-            const hazardDropdown = block.querySelector('.hazard-others-wrapper select').value;
-            const hazardCustom = block.querySelector('.hazard-custom-text').value;
+                    <label class="mb-1.5 block text-xs font-bold text-slate-700">1. ขั้นตอนการทำงาน (Job Step) <span class="text-red-500">*</span></label>
+
+                    <div class="relative mb-2">
+
+                        <select class="input-field appearance-none cursor-pointer pr-10 text-sm font-semibold text-navy border-slate-300 focus:border-navy" onchange="handleStepSelection(this)">
+
+                            <option value="" disabled selected>-- เลือกขั้นตอนการทำงานมาตรฐาน --</option>
+
+                            <option value="เตรียมพื้นที่และตรวจสอบอุปกรณ์">เตรียมพื้นที่และตรวจสอบเครื่องมือ (Site & Equip Prep)</option>
+
+                            <option value="ขนย้ายและยกวัสดุอุปกรณ์">ขนย้ายและยกวัสดุอุปกรณ์ (Material Handling & Lifting)</option>
+
+                            <option value="ติดตั้ง/รื้อถอนนั่งร้าน">ติดตั้ง/รื้อถอนนั่งร้าน (Scaffold Erection/Dismantling)</option>
+
+                            <option value="ปฏิบัติงานตัด/เชื่อมโลหะ">ปฏิบัติงานตัด/เชื่อมโลหะ (Hot Work / Welding)</option>
+
+                            <option value="ปฏิบัติงานขุดเจาะ/เปิดผิวดิน">งานขุดเจาะ/เปิดผิวดิน (Excavation Work)</option>
+
+                            <option value="ปฏิบัติงานบนที่สูง">ปฏิบัติงานบนที่สูง (Working at Height)</option>
+
+                            <option value="ปฏิบัติงานในที่อับอากาศ">ปฏิบัติงานในที่อับอากาศ (Confined Space Entry)</option>
+
+                            <option value="งานเดินสายและติดตั้งระบบไฟฟ้า">งานเดินสายและติดตั้งระบบไฟฟ้า (Electrical Installation)</option>
+
+                            <option value="งานทาสี/สัมผัสสารเคมี">งานทาสี/สัมผัสสารเคมี (Painting & Chemical Handling)</option>
+
+                            <option value="เก็บกวาดและทำความสะอาดพื้นที่">เก็บกวาดและทำความสะอาดพื้นที่ (Housekeeping)</option>
+
+                            <option value="custom" class="font-bold text-orange-600">✏️ พิมพ์ระบุขั้นตอนการทำงานเอง...</option>
+
+                        </select>
+
+                        <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+
+                    </div>
+
+                    <textarea class="step-text hidden input-field text-sm border-orange-300 focus:border-orange" rows="2" placeholder="โปรดระบุขั้นตอนการทำงานโดยละเอียด..."></textarea>
+
+                </div>
+
+
+
+                <div>
+
+                    <label class="mb-1.5 block text-xs font-bold text-red-600">2. อันตรายที่อาจเกิดขึ้น (Hazards) <span class="text-[10px] text-slate-400 font-normal">แตะเพื่อเลือก</span> <span class="text-red-500">*</span></label>
+
+                    <div class="flex flex-wrap gap-1.5 mb-2">
+
+                        ${generateHazardButtons()}
+
+                    </div>
+
+                    <div class="hazard-others-wrapper hidden flex-col gap-2 mt-2 border border-red-200 p-3 rounded-xl bg-red-50/50">
+
+                        <label class="text-[10px] font-bold text-red-600 uppercase tracking-widest">อันตรายอื่นๆ (Hazards)</label>
+
+                        <div class="relative">
+
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-red-300 focus:border-red-600 text-red-700 text-xs font-semibold" onchange="handleHazardDropdown(this)">
+
+                                <option value="" disabled selected>-- เลือกอันตรายเพิ่มเติม --</option>
+
+                                <option value="ความร้อน/เย็นจัด">ความร้อน/เย็นจัด (Extreme Temperature)</option>
+
+                                <option value="ท่าทางการทำงานที่ไม่เหมาะสม">ท่าทางการทำงานที่ไม่เหมาะสม (Ergonomics)</option>
+
+                                <option value="แสงสว่างไม่เพียงพอ/จ้าเกินไป">แสงสว่างไม่เพียงพอ/จ้าเกินไป (Poor Lighting)</option>
+
+                                <option value="สัตว์มีพิษ/แมลงกัดต่อย">สัตว์มีพิษ/แมลงกัดต่อย (Biological Hazards)</option>
+
+                                <option value="อันตรายจากแรงดัน">อันตรายจากแรงดัน (Pressure Hazards)</option>
+
+                                <option value="อันตรายจากการสั่นสะเทือน">อันตรายจากการสั่นสะเทือน (Vibration)</option>
+
+                                <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุอันตรายเอง (วิเคราะห์ 3ME)...</option>
+
+                            </select>
+
+                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-400"></i>
+
+                        </div>
+
+                        <input type="text" class="hazard-custom-text hidden input-field text-xs border-red-300 focus:border-red-600 text-red-700" placeholder="โปรดพิมพ์ระบุอันตราย (วิเคราะห์จาก 3ME: คน, เครื่องจักร, วิธีการ)..." />
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="border-t border-slate-100 pt-4 bg-emerald-50/30 -mx-4 px-4 pb-2">
+
+                    <label class="mb-1.5 block text-xs font-bold text-emerald-600 flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-500"></i> 3. มาตรการป้องกัน (Preventive Measures) <span class="text-red-500">*</span></label>
+
+                    <div class="measures-container flex flex-wrap gap-1.5 mb-2">
+
+                        <!-- ระบบจะ Inject ปุ่มมาให้ -->
+
+                    </div>
+
+                    <div class="measure-others-wrapper hidden flex-col gap-2 mt-2 border border-emerald-200 p-3 rounded-xl bg-white">
+
+                        <label class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">มาตรการป้องกันอื่นๆ (Measures)</label>
+
+                        <div class="relative">
+
+                            <select class="input-field appearance-none cursor-pointer pr-10 border-emerald-300 focus:border-emerald-600 text-emerald-700 text-xs font-semibold" onchange="handleMeasureDropdown(this)">
+
+                                <option value="" disabled selected>-- เลือกมาตรการเพิ่มเติม --</option>
+
+                                <option value="จัดเตรียมน้ำดื่ม/เกลือแร่">จัดเตรียมน้ำดื่ม/เกลือแร่</option>
+
+                                <option value="จัดเตรียมพื้นที่พักร่มรื่น">จัดเตรียมพื้นที่พักร่มรื่น</option>
+
+                                <option value="จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด">จัดทำนั่งร้านที่ได้มาตรฐาน/จุดเกี่ยวสายรัด</option>
+
+                                <option value="ติดตั้งไฟส่องสว่างชั่วคราว">ติดตั้งไฟส่องสว่างชั่วคราว</option>
+
+                                <option value="ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำ">ปิดคลุมวัสดุติดไฟ/ท่อระบายน้ำทิ้ง</option>
+
+                                <option value="ตรวจสอบพื้นที่ก่อนเริ่มงาน">ตรวจสอบพื้นที่ก่อนเริ่มงาน (ตรวจหาสัตว์มีพิษ)</option>
+
+                                <option value="สับเปลี่ยนหมุนเวียนพนักงาน">สับเปลี่ยนหมุนเวียนพนักงาน (Job Rotation)</option>
+
+                                <option value="custom" class="font-extrabold text-navy">✏️ พิมพ์ระบุมาตรการเอง...</option>
+
+                            </select>
+
+                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-400"></i>
+
+                        </div>
+
+                        <input type="text" class="measure-custom-text hidden input-field text-xs border-emerald-300 focus:border-emerald-600 text-emerald-700" placeholder="โปรดพิมพ์ระบุมาตรการป้องกัน..." />
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="border-t border-slate-100 pt-4 bg-slate-50/80 -mx-4 px-4 pb-1">
+
+                    <label class="mb-1.5 block text-[11px] font-bold text-slate-500 tracking-widest uppercase">4. หมายเหตุ (Remarks)</label>
+
+                    <textarea class="remark-input input-field text-xs bg-transparent border-slate-200" rows="1" placeholder="ระบุหมายเหตุ การเตรียมงาน หรือเก็บงาน..."></textarea>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        `;
+
+        
+
+        container.insertAdjacentHTML('beforeend', stepHTML);
+
+        lucide.createIcons();
+
+        const newStep = container.lastElementChild;
+
+        updatePreventiveMeasures(newStep);
+
+    }
+
+
+
+    function renumberSteps() {
+
+        const steps = document.querySelectorAll('.jsa-step');
+
+        stepCount = steps.length;
+
+        steps.forEach((step, index) => {
+
+            const num = index + 1;
+
+            step.dataset.step = num;
+
+            step.querySelector('.step-number').textContent = num;
+
+            step.querySelector('h3').textContent = `ส่วนที่ ${num}: ขั้นตอนการทำงาน`;
+
+        });
+
+    }
+
+
+
+    // ==========================================
+
+    // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase)
+
+    // ==========================================
+
+    async function submitJsa() {
+
+        if (!currentPtwId) {
+
+            Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสอ้างอิงใบงาน (PTW-ID) ไม่สามารถบันทึกข้อมูลได้', 'error');
+
+            return;
+
+        }
+
+
+
+        const steps = document.querySelectorAll('.jsa-step');
+
+        let ejsaDataArray = [];
+
+        let isValid = true;
+
+
+
+        // 1. กวาดข้อมูลจากทุกการ์ด (Loop through steps)
+
+        steps.forEach((stepEl, index) => {
+
+            // ดึง ขั้นตอนงาน
+
+            const stepSelect = stepEl.querySelector('select.input-field').value;
+
+            const stepCustom = stepEl.querySelector('.step-text').value;
+
+            let stepName = stepSelect === 'custom' ? stepCustom : stepSelect;
+
+            if (!stepName) isValid = false;
+
+
+
+            // ดึง อันตราย
+
+            let hazards = Array.from(stepEl.querySelectorAll('.chip-hazard.active')).map(btn => btn.textContent).filter(text => text !== '➕ อื่นๆ (ระบุ)');
+
+            const hazardDropdown = stepEl.querySelector('.hazard-others-wrapper select').value;
+
+            const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
+
             if (hazardDropdown && hazardDropdown !== 'custom') hazards.push(hazardDropdown);
+
             if (hazardDropdown === 'custom' && hazardCustom) hazards.push(hazardCustom);
 
-            // Controls
-            let controls = [];
-            block.querySelectorAll(`.chip-measure.active`).forEach(chk => { if(chk.textContent !== '➕ อื่นๆ') controls.push(chk.textContent); });
-            const measureDropdown = block.querySelector('.measure-others-wrapper select').value;
-            const measureCustom = block.querySelector('.measure-custom-text').value;
-            if (measureDropdown && measureDropdown !== 'custom') controls.push(measureDropdown);
-            if (measureDropdown === 'custom' && measureCustom) controls.push(measureCustom);
+            if (hazards.length === 0) isValid = false;
 
-            if (hazards.length === 0 || controls.length === 0) {
-                hasError = true;
-                break;
-            }
 
-            eJsaDataArray.push({
-                step_no: parseInt(stepId),
-                step_name: task,
-                risk_level: riskVal,
+
+            // ดึง มาตรการป้องกัน
+
+            let measures = Array.from(stepEl.querySelectorAll('.chip-measure.active')).map(btn => btn.textContent).filter(text => text !== '➕ อื่นๆ (ระบุ)');
+
+            const measureDropdown = stepEl.querySelector('.measure-others-wrapper select').value;
+
+            const measureCustom = stepEl.querySelector('.measure-custom-text').value;
+
+            if (measureDropdown && measureDropdown !== 'custom') measures.push(measureDropdown);
+
+            if (measureDropdown === 'custom' && measureCustom) measures.push(measureCustom);
+
+            if (measures.length === 0) isValid = false;
+
+
+
+            // ดึง หมายเหตุ
+
+            const remark = stepEl.querySelector('.remark-input').value;
+
+
+
+            // แพ็กใส่ JSON
+
+            ejsaDataArray.push({
+
+                step_no: index + 1,
+
+                step_name: stepName,
+
                 hazards: hazards,
-                measures: controls,
-                step_photo_url: null 
+
+                measures: measures,
+
+                remark: remark
+
             });
-        }
 
-        if (hasError || eJsaDataArray.length === 0) {
-            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนการทำงาน ประเมินความเสี่ยง(A-D) อันตราย และมาตรการป้องกันให้ครบทุกส่วนครับ', 'warning');
+        });
+
+
+
+        if (!isValid) {
+
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนงาน อันตราย และมาตรการป้องกันให้ครบทุกส่วน', 'warning');
+
             return;
+
         }
 
-        Swal.fire({ title: 'กำลังบันทึก E-JSA และอัปโหลดรูป...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+
+        Swal.fire({ title: 'กำลังบันทึก E-JSA...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+
 
         try {
+
             if (!supabaseClient) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
 
-            // 1. อัปโหลดรูปภาพ
-            for (let data of eJsaDataArray) {
-                const file = stepFiles[data.step_no];
-                if (file) {
-                    const filePath = `jsa-steps-docs/${currentPtwId}_step${data.step_no}_${Date.now()}.jpg`;
-                    const { error: uploadError } = await supabaseClient.storage.from('safety-documents').upload(filePath, file);
-                    if (uploadError) throw uploadError;
-                    data.step_photo_url = supabaseClient.storage.from('safety-documents').getPublicUrl(filePath).data.publicUrl;
-                }
-            }
 
-            // 2. ดึง specific_data เดิม
-            const { data: permitData, error: fetchErr } = await supabaseClient
+
+            // 2. ดึงข้อมูลเดิมลงมาก่อน (เพื่อไม่ให้ PPE หรือข้อมูลอื่นๆ หายไป)
+
+            const { data: permitData, error: fetchError } = await supabaseClient
+
                 .from('tb_work_permits')
-                .select('specific_data')
-                .eq('ptw_id', currentPtwId)
-                .single();
-            
-            if (fetchErr) throw fetchErr;
 
-            // 3. ผสมข้อมูล
+                .select('specific_data')
+
+                .eq('ptw_id', currentPtwId)
+
+                .single();
+
+
+
+            if (fetchError) throw fetchError;
+
+
+
+            // 3. เอา E-JSA ยัดเพิ่มเข้าไปใน specific_data
+
             let specificData = permitData.specific_data || {};
-            specificData.ejsa_data = eJsaDataArray; 
+
+            specificData.ejsa_data = ejsaDataArray; 
+
+
 
             // 4. อัปเดตกลับขึ้นคลาวด์
+
             const { error: updateError } = await supabaseClient
+
                 .from('tb_work_permits')
+
                 .update({ specific_data: specificData })
+
                 .eq('ptw_id', currentPtwId);
+
+
 
             if (updateError) throw updateError;
 
+
+
             Swal.fire({
+
                 title: 'บันทึก E-JSA สำเร็จ!',
-                text: 'ข้อมูล JSA แบบภาพถ่าย ถูกส่งไปให้ จป. ตรวจสอบแล้วครับ',
+
+                text: 'ข้อมูล JSA ถูกแนบเข้ากับใบอนุญาต ' + currentPtwId + ' เรียบร้อยแล้ว',
+
                 icon: 'success',
+
                 confirmButtonColor: '#2A4365',
+
                 confirmButtonText: 'ปิดหน้าต่าง'
+
             }).then(() => {
+
+                // ปิดแอป
+
                 if (typeof liff !== 'undefined' && liff.isInClient()) {
+
                     liff.closeWindow();
+
                 } else {
-                    window.location.href = '../index.html'; 
+
+                    // ถ้าทำบนเบราว์เซอร์ก็วิ่งกลับหน้าหลัก
+
+                    window.location.href = 'index.html'; 
+
                 }
+
             });
 
+
+
         } catch (error) {
+
             console.error('Save E-JSA Error:', error);
+
             Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+
         }
+
     }
+
   </script>
+
 </body>
+
 </html>
