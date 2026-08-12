@@ -54,21 +54,24 @@
 
     /* Severity Buttons */
     .sev-btn { flex: 1; display: flex; flex-col; justify-content: center; align-items: center; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .sev-btn .grade { font-size: 1.1rem; font-weight: 800; line-height: 1; }
-    .sev-btn .desc { font-size: 0.65rem; font-weight: 500; margin-top: 0.2rem; }
+    .sev-btn .grade { font-size: 1.2rem; font-weight: 800; line-height: 1; }
+    .sev-btn .desc { font-size: 0.65rem; font-weight: 700; margin-top: 0.2rem; text-transform: uppercase; }
     
     /* Active States for Severity */
-    .sev-btn[data-rank="A"].active { border-color: #dc2626; background-color: #dc2626; color: white; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2); }
+    .sev-btn[data-rank="A"].active { border-color: #dc2626; background-color: #dc2626; color: white; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3); }
     .sev-btn[data-rank="A"] { color: #dc2626; }
     
-    .sev-btn[data-rank="B"].active { border-color: #f97316; background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2); }
+    .sev-btn[data-rank="B"].active { border-color: #f97316; background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); }
     .sev-btn[data-rank="B"] { color: #f97316; }
     
-    .sev-btn[data-rank="C"].active { border-color: #f59e0b; background-color: #f59e0b; color: white; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2); }
+    .sev-btn[data-rank="C"].active { border-color: #f59e0b; background-color: #f59e0b; color: white; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3); }
     .sev-btn[data-rank="C"] { color: #f59e0b; }
     
-    .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
+    .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
     .sev-btn[data-rank="D"] { color: #10b981; }
+
+    .criteria-text { font-size: 0.65rem; font-weight: 500; color: #64748b; margin-top: 0.3rem; line-height: 1.2; display: none; }
+    .sev-btn.active .criteria-text { color: rgba(255,255,255,0.9); display: block; }
 
   </style>
 </head>
@@ -116,32 +119,6 @@
       <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มขั้นตอนการปฏิบัติงาน
     </button>
 
-    <!-- Legend (อ้างอิงจากตาราง Excel) -->
-    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden mb-4 shadow-sm">
-      <summary class="flex justify-between items-center p-3 cursor-pointer text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition">
-        <span class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> ระดับความรุนแรงของอันตราย (Rank of Hazard Severity)</span>
-        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200"></i>
-      </summary>
-      <div class="p-3 text-[11px] space-y-3 border-t border-slate-100 bg-white">
-        <div class="flex items-start gap-2">
-            <span class="bg-red-600 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">A</span> 
-            <span class="text-slate-600">บาดเจ็บถึงขั้นเสียชีวิต หรือโรคร้ายแรง / ทรัพย์สินเสียหาย > 50,000 บาท <br><span class="text-[9px] text-slate-400">(Injury causing death or serious diseases / Damaged property > 50,000 B.)</span></span>
-        </div>
-        <div class="flex items-start gap-2">
-            <span class="bg-orange-500 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">B</span> 
-            <span class="text-slate-600">สูญเสียอวัยวะ หรือหยุดงานเกิน 3 วัน / ทรัพย์สินเสียหาย 20,001 - 50,000 บาท <br><span class="text-[9px] text-slate-400">(Injury causing loss of organs, disability, stop working > 3 days / Damaged property 20,001-50,000 B.)</span></span>
-        </div>
-        <div class="flex items-start gap-2">
-            <span class="bg-yellow-400 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">C</span> 
-            <span class="text-slate-600">บาดเจ็บถึงขั้นหยุดงาน แต่ไม่เกิน 3 วัน / ทรัพย์สินเสียหาย 5,000 - 20,000 บาท <br><span class="text-[9px] text-slate-400">(Injury that injured person stop working not more than 3 days / Damaged property 5,000-20,000 B.)</span></span>
-        </div>
-        <div class="flex items-start gap-2">
-            <span class="bg-emerald-500 text-white px-2 py-1 rounded font-bold w-6 text-center shrink-0">D</span> 
-            <span class="text-slate-600">บาดเจ็บเล็กน้อยไม่ต้องหยุดงาน / ทรัพย์สินเสียหายต่ำกว่า 5,000 บาท <br><span class="text-[9px] text-slate-400">(Minor injury or sickness that injured person does not stop working / Damaged property < 5,000 B.)</span></span>
-        </div>
-      </div>
-    </details>
-
   </main>
 
   <!-- Bottom Action Bar -->
@@ -153,7 +130,7 @@
     </div>
   </div>
 
-  <style> details[open] summary i { transform: rotate(180deg); } </style>
+  <style> .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); } </style>
 
   <script>
     // ---- Supabase Initialization ----
@@ -164,69 +141,79 @@
     let stepCounter = 0;
 
     // ==========================================
-    // 🧠 ฐานข้อมูลอัจฉริยะ (Knowledge Base)
+    // 🧠 ฐานข้อมูลอัจฉริยะ (Knowledge Base based on FTC Data)
     // ==========================================
+    
+    // รายการอันตรายทั้งหมด
     const HAZARDS = [
-        "ท่อหล่นทับ / วัสดุหล่นทับ", "ปวดกล้ามเนื้อจากการยก/ก้มเงย", "ของมีคมบาด/ทิ่มแทง", 
-        "ชน กระแทก ครูด เสียดสี", "พลัดตกจากที่สูง/ลื่นล้ม", "กระแสไฟฟ้ารั่ว/ช็อต", 
-        "สูดดมควันเชื่อม/สารเคมี", "เสียงดัง/สั่นสะเทือน", "ไฟไหม้/ประกายไฟตกใส่", 
-        "ขาดอากาศ/อับอากาศ"
+        "ปลดเบรกเกอร์ผิด/มีไฟสำรอง", "บุคคลภายนอกเดินชน/สัมผัสอุปกรณ์", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค (Arc Flash)",
+        "สะเก็ดไฟไหม้ผิวหนัง/รังสีทำลายตา", "สูดดมฟูมโลหะ/ก๊าซพิษ", "ไอระเหยสะสม/ระเบิด",
+        "ดินทรุดตัว/โครงสร้างเอียง", "ประกอบผิดวิธี/ข้อต่อไม่แน่น", "ผู้ปฏิบัติงานพลัดตกจากที่สูง",
+        "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง", "ลมพายุ/นั่งร้านล้มคว่ำ", "พื้นดินอ่อน/เครนเอียง/สลิงชำรุด",
+        "ขาหยั่งกดทับท่อใต้ดินแตก", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "วัสดุแกว่งตัวอย่างรุนแรง (Swinging load)",
+        "บูมเครนตวัดโดนสายไฟแรงสูง", "สารเคมี/น้ำรั่วซึมเข้าพื้นที่", "ก๊าซพิษตกค้าง/ขาดออกซิเจนเฉียบพลัน",
+        "แสงสว่างไม่พอ/หมดสติ/ตื่นตระหนก", "นำสารเคมีปนเปื้อนออกมาภายนอก", "ปวดเมื่อยกล้ามเนื้อจากการยก/ก้มเงย"
     ];
 
+    // รายการมาตรการทั้งหมด
     const MEASURES = [
-        "สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "ยกด้วยความระมัดระวัง และให้สัญญาณทุกครั้ง", 
-        "ใช้ท่าทางการยกของตามหลักการยศาสตร์", "จัดเตรียมถังดับเพลิงและแผ่นกันประกายไฟ", 
-        "ขออนุญาตทำงาน (Permit to Work)", "ตรวจเช็คสภาพเครื่องมือ/สายไฟ/ปลั๊ก", 
-        "กั้นเขตพื้นที่ปฏิบัติงาน/ติดตั้งป้ายเตือน", "สวมแว่นตานิรภัย/หน้ากากเชื่อม", 
-        "มีผู้เฝ้าระวัง (Standby Man) ตลอดเวลา", "ตรวจวัดปริมาณก๊าซ (Gas Test)"
+        "ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)",
+        "ติดตั้งเบรกเกอร์ตัดไฟรั่ว (ELCB)", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า",
+        "ติดตั้งระบบดูดควัน (Portable Fume Extractor)", "ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)",
+        "กั้นรัศมี 11 เมตร เป็น 'พื้นที่ควบคุมความเสี่ยง'", "จัดช่างเฝ้าระวังไฟ (Fire Watcher) พร้อมถังดับเพลิง",
+        "ติดตั้งราวกันตก 2 ชั้น และแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)",
+        "ใช้รถกระเช้าแทน (ถ้าหน้างานเอื้ออำนวย)", "สวม Full Body Harness เกี่ยวสายชูชีพตลอดเวลา",
+        "จัดทำแผนการยก (Lifting Plan)", "สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล",
+        "แบ่งวัสดุเป็นชิ้นเล็กลดน้ำหนักยก", "ใช้กล้อง/หุ่นยนต์สำรวจแทนการลงพื้นที่",
+        "ใช้พัดลมอัดอากาศบริสุทธิ์ตลอดเวลา", "ใช้ระบบไฟส่องสว่างกันระเบิดแรงดันต่ำ (24V)",
+        "กำหนดปากบ่อเป็น 'พื้นที่ควบคุมความเสี่ยง' และตั้ง 'พื้นที่ปลอดภัย' สำหรับพักฟื้น", "ผ่านกระบวนการ 'การชำระล้าง' อย่างถูกต้องก่อนออก",
+        "ใช้ท่าทางการยกของตามหลักการยศาสตร์"
     ];
 
+    // แหล่งกำเนิดอันตราย
     const SOURCES = [
-        "เครื่องมือ/อุปกรณ์ (Equipment)", 
-        "เครื่องจักร/เครื่องมือ (MC/Tool)", 
-        "วัสดุ (Material)", 
-        "วัตถุที่มีน้ำหนักมาก (Heavy Object)", 
-        "ยานพาหนะ (Vehicle)", 
+        "เครื่องมือ/อุปกรณ์ (Equipment/Tool)", 
+        "วัสดุ/ของหนัก (Material/Heavy Object)", 
+        "ยานพาหนะ/เครื่องจักร (Vehicle/MC)", 
         "เครื่องจักรหนัก (Heavy MC)", 
-        "พลัดตก (Fall Down)", 
-        "ไฟฟ้า (Electrocution)", 
+        "การพลัดตก (Fall Down)", 
+        "กระแสไฟฟ้า (Electrocution)", 
         "สารเคมี (Chemical)", 
         "งานความร้อน (Hot Work)", 
+        "สภาพแวดล้อม (Environment)",
         "อื่นๆ (Others)"
     ];
 
     // สมองกลจับคู่ (Method -> Hazards -> Measures)
     const SMART_LOGIC = {
-        'piping_prep': { // จัดเตรียมท่อ
-            hazards: ["ปวดกล้ามเนื้อจากการยก/ก้มเงย", "ชน กระแทก ครูด เสียดสี"],
-            measures: ["สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "ใช้ท่าทางการยกของตามหลักการยศาสตร์"]
+        'elec_loto': {
+            hazards: ["ปลดเบรกเกอร์ผิด/มีไฟสำรอง", "บุคคลภายนอกเดินชน/สัมผัสอุปกรณ์", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค (Arc Flash)"],
+            measures: ["ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า", "ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)", "ติดตั้งเบรกเกอร์ตัดไฟรั่ว (ELCB)"]
         },
-        'piping_position': { // จัดวางท่อ
-            hazards: ["ท่อหล่นทับ / วัสดุหล่นทับ", "ปวดกล้ามเนื้อจากการยก/ก้มเงย", "ชน กระแทก ครูด เสียดสี"],
-            measures: ["สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "ยกด้วยความระมัดระวัง และให้สัญญาณทุกครั้ง"]
+        'hot_work': {
+            hazards: ["สะเก็ดไฟไหม้ผิวหนัง/รังสีทำลายตา", "สูดดมฟูมโลหะ/ก๊าซพิษ", "ไอระเหยสะสม/ระเบิด"],
+            measures: ["ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)", "กั้นรัศมี 11 เมตร เป็น 'พื้นที่ควบคุมความเสี่ยง'", "จัดช่างเฝ้าระวังไฟ (Fire Watcher) พร้อมถังดับเพลิง", "ติดตั้งระบบดูดควัน (Portable Fume Extractor)"]
         },
-        'piping_weld': { // เชื่อมท่อ
-            hazards: ["ไฟไหม้/ประกายไฟตกใส่", "กระแสไฟฟ้ารั่ว/ช็อต", "สูดดมควันเชื่อม/สารเคมี", "ของมีคมบาด/ทิ่มแทง"],
-            measures: ["ขออนุญาตทำงาน (Permit to Work)", "จัดเตรียมถังดับเพลิงและแผ่นกันประกายไฟ", "สวมแว่นตานิรภัย/หน้ากากเชื่อม", "ตรวจเช็คสภาพเครื่องมือ/สายไฟ/ปลั๊ก"]
+        'scaffold_setup': {
+            hazards: ["ดินทรุดตัว/โครงสร้างเอียง", "ประกอบผิดวิธี/ข้อต่อไม่แน่น", "ผู้ปฏิบัติงานพลัดตกจากที่สูง", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง"],
+            measures: ["ติดตั้งราวกันตก 2 ชั้น และแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)", "สวม Full Body Harness เกี่ยวสายชูชีพตลอดเวลา", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า"]
         },
-        'work_at_height': { // งานบนที่สูง
-            hazards: ["พลัดตกจากที่สูง/ลื่นล้ม", "ท่อหล่นทับ / วัสดุหล่นทับ"],
-            measures: ["สวมใส่อุปกรณ์ป้องกัน (หมวก, รองเท้าเซฟตี้, ถุงมือ)", "กั้นเขตพื้นที่ปฏิบัติงาน/ติดตั้งป้ายเตือน"]
+        'crane_lift': {
+            hazards: ["พื้นดินอ่อน/เครนเอียง/สลิงชำรุด", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "วัสดุแกว่งตัวอย่างรุนแรง (Swinging load)", "บูมเครนตวัดโดนสายไฟแรงสูง"],
+            measures: ["จัดทำแผนการยก (Lifting Plan)", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามบุคคลอื่นเข้า", "สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล", "แบ่งวัสดุเป็นชิ้นเล็กลดน้ำหนักยก"]
         },
-        'confined_space': { // งานอับอากาศ
-            hazards: ["ขาดอากาศ/อับอากาศ", "สูดดมควันเชื่อม/สารเคมี"],
-            measures: ["ขออนุญาตทำงาน (Permit to Work)", "มีผู้เฝ้าระวัง (Standby Man) ตลอดเวลา", "ตรวจวัดปริมาณก๊าซ (Gas Test)"]
+        'confined_entry': {
+            hazards: ["สารเคมี/น้ำรั่วซึมเข้าพื้นที่", "ก๊าซพิษตกค้าง/ขาดออกซิเจนเฉียบพลัน", "แสงสว่างไม่พอ/หมดสติ/ตื่นตระหนก", "นำสารเคมีปนเปื้อนออกมาภายนอก"],
+            measures: ["ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "ใช้พัดลมอัดอากาศบริสุทธิ์ตลอดเวลา", "กำหนดปากบ่อเป็น 'พื้นที่ควบคุมความเสี่ยง' และตั้ง 'พื้นที่ปลอดภัย' สำหรับพักฟื้น", "ผ่านกระบวนการ 'การชำระล้าง' อย่างถูกต้องก่อนออก", "ใช้ระบบไฟส่องสว่างกันระเบิดแรงดันต่ำ (24V)"]
         }
     };
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      
       const urlParams = new URLSearchParams(window.location.search);
       currentPtwId = urlParams.get('ptw_id');
       if(currentPtwId) { document.getElementById('display-ptw-id').textContent = currentPtwId; }
-
-      addStep(); // โหลดหน้าปุ๊บ สร้างขั้นตอนที่ 1 ทันที
+      addStep(); 
     });
 
     // ==========================================
@@ -238,7 +225,6 @@
         const customInput = stepContainer.querySelector('.custom-method-input');
         const value = selectElement.value;
         
-        // 1. จัดการช่องพิมพ์เอง
         if (value === 'custom') {
             customInput.classList.remove('hidden');
             customInput.focus();
@@ -246,14 +232,14 @@
             customInput.classList.add('hidden');
         }
 
-        // 2. ล้างค่า Checkbox เดิมทั้งหมด
+        // ล้างค่า Checkbox เดิมทั้งหมด
         const allCards = stepContainer.querySelectorAll('.check-card');
         allCards.forEach(card => {
             card.classList.remove('active-hazard', 'active-measure');
             card.dataset.checked = "false";
         });
 
-        // 3. Auto-Select ตาม Smart Logic
+        // Auto-Select ตาม Smart Logic
         if (SMART_LOGIC[value]) {
             const { hazards, measures } = SMART_LOGIC[value];
             
@@ -274,7 +260,6 @@
       const container = document.getElementById('steps-container');
       const stepId = `step-${Date.now()}`;
 
-      // สร้าง Checkbox สำหรับอันตราย
       const hazardHTML = HAZARDS.map(h => `
         <div class="check-card" data-type="hazard" data-checked="false" onclick="toggleCheckCard(this)">
             <div class="check-box"><i data-lucide="check"></i></div>
@@ -282,7 +267,6 @@
         </div>
       `).join('');
 
-      // สร้าง Checkbox สำหรับมาตรการ
       const measureHTML = MEASURES.map(m => `
         <div class="check-card" data-type="measure" data-checked="false" onclick="toggleCheckCard(this)">
             <div class="check-box"><i data-lucide="check"></i></div>
@@ -295,7 +279,6 @@
       const html = `
         <article class="step-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4" id="${stepId}">
           
-          <!-- Card Header -->
           <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
               <span class="step-number bg-navy text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-inner">${stepCounter}</span>
@@ -313,8 +296,8 @@
               <label for="img-${stepId}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative">
                 <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500 p-4 text-center">
                   <i data-lucide="camera" class="w-6 h-6 mb-2 text-slate-400"></i>
-                  <span class="text-xs font-bold text-navy">ถ่ายภาพ หรือ แนบรูปภาพ</span>
-                  <span class="text-[10px] font-medium text-slate-500 mt-1">ประกอบขั้นตอนการปฏิบัติงาน (Photo)</span>
+                  <span class="text-[13px] font-bold text-slate-600">โปรดระบุขั้นตอนการทำงาน</span>
+                  <span class="text-[11px] font-medium mt-1">และแนบรูปภาพลงในขั้นตอนการปฏิบัติงานแต่ละขั้นตอน (Photo)</span>
                 </div>
                 <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
               </label>
@@ -327,16 +310,18 @@
               <div class="relative mb-2">
                 <select class="method-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-700 font-semibold text-[13px]" onchange="handleMethodSelection(this)">
                   <option value="" disabled selected>-- เลือกขั้นตอนการปฏิบัติงาน --</option>
-                  <optgroup label="กลุ่มงานท่อดับเพลิง / ท่อน้ำ (Piping Work)">
-                    <option value="piping_prep">จัดเตรียมท่อ วัสดุและอุปกรณ์ (Preparation)</option>
-                    <option value="piping_position">จัดวางท่อทั้งสองข้าง ให้ได้ระดับ (Positioning)</option>
-                    <option value="piping_weld">ปฏิบัติงานเชื่อมท่อ/ประสานท่อ (Connecting & Welding)</option>
-                    <option value="piping_inspect">ตรวจสอบความเรียบร้อยของรอยเชื่อมท่อ (Inspection)</option>
+                  <optgroup label="หมวด 1: งานระบบสาธารณูปโภค (MEP Work)">
+                    <option value="elec_loto">แจ้งตัดแยกระบบพลังงาน (LOTO) และตรวจสอบกระแสไฟ</option>
+                    <option value="hot_work">งานเชื่อม ตัด เจียร และป้องกันประกายไฟ (Hot Work)</option>
                   </optgroup>
-                  <optgroup label="กลุ่มงานโครงสร้างและอื่นๆ (Structural & Others)">
-                    <option value="work_at_height">ปฏิบัติงานบนที่สูง / ติดตั้งนั่งร้าน (Working at Height)</option>
-                    <option value="confined_space">ปฏิบัติงานในที่อับอากาศ (Confined Space Entry)</option>
-                    <option value="electrical_work">ปฏิบัติงานติดตั้งระบบไฟฟ้า (Electrical Installation)</option>
+                  <optgroup label="หมวด 2: งานโครงสร้างบนที่สูง (Structural & Height)">
+                    <option value="scaffold_setup">งานติดตั้ง ประกอบ และใช้งานนั่งร้าน (Scaffolding)</option>
+                  </optgroup>
+                  <optgroup label="หมวด 3: เครื่องจักรหนักและยกวัสดุ (Heavy Lifting)">
+                    <option value="crane_lift">งานยกและเคลื่อนย้ายวัสดุด้วยเครน (Crane Operations)</option>
+                  </optgroup>
+                  <optgroup label="หมวด 4: งานใต้ดินและอับอากาศ (Confined Space)">
+                    <option value="confined_entry">งานในสถานที่อับอากาศและจัดการสารเคมี</option>
                   </optgroup>
                   <option value="custom" class="text-orange-600 font-bold">✏️ พิมพ์ระบุขั้นตอนการปฏิบัติงานเอง...</option>
                 </select>
@@ -349,7 +334,7 @@
             <div class="bg-red-50/20 p-3 -mx-2 rounded-xl border border-red-100">
               <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-400 font-medium text-[11px]">(Potential Hazard)</span> <span class="text-red-500">*</span></label>
               
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+              <div class="flex flex-col gap-2 mb-3">
                 ${hazardHTML}
               </div>
               
@@ -369,15 +354,19 @@
                 <div class="flex gap-2">
                   <button type="button" class="sev-btn group" data-rank="A" onclick="selectSeverity(this)">
                     <span class="grade">A</span><span class="desc block">Fatal</span>
+                    <span class="criteria-text">เสียชีวิต/ทรัพย์สินเสียหาย > 50,000</span>
                   </button>
                   <button type="button" class="sev-btn group" data-rank="B" onclick="selectSeverity(this)">
                     <span class="grade">B</span><span class="desc block">Disability</span>
+                    <span class="criteria-text">ทุพพลภาพ/หยุดงาน > 3 วัน</span>
                   </button>
                   <button type="button" class="sev-btn group" data-rank="C" onclick="selectSeverity(this)">
                     <span class="grade">C</span><span class="desc block">Lost Time</span>
+                    <span class="criteria-text">บาดเจ็บ/หยุดงาน ≤ 3 วัน</span>
                   </button>
                   <button type="button" class="sev-btn group" data-rank="D" onclick="selectSeverity(this)">
                     <span class="grade">D</span><span class="desc block">Minor</span>
+                    <span class="criteria-text">บาดเจ็บเล็กน้อย/ไม่หยุดงาน</span>
                   </button>
                 </div>
               </div>
@@ -392,7 +381,7 @@
               </div>
               
               <!-- ช่องระบุมาตรการอื่นๆ -->
-              <input type="text" class="measure-custom-text input-field text-xs" placeholder="+ ระบุมาตรการป้องกันอื่นๆ เพิ่มเติม (ถ้ามี)...">
+              <input type="text" class="measure-custom-text input-field text-xs" placeholder="+ ระบุมาตรการควบคุมความเสี่ยงอื่นๆ เพิ่มเติม (ถ้ามี)...">
             </div>
 
             <!-- E. Remarks -->
@@ -479,13 +468,11 @@
         let isValid = true;
 
         steps.forEach((stepEl, index) => {
-            // 1. Method
             const methodSelect = stepEl.querySelector('.method-select').value;
             const methodCustom = stepEl.querySelector('.custom-method-input').value;
             let stepName = methodSelect === 'custom' ? methodCustom : stepEl.querySelector('.method-select option:checked')?.textContent;
             if (!methodSelect || (methodSelect === 'custom' && !methodCustom)) isValid = false;
 
-            // 2. Hazards
             let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"].active-hazard')).map(c => c.querySelector('.check-text').textContent);
             const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
             if (hazardCustom) hazards.push(hazardCustom);
@@ -493,18 +480,15 @@
 
             const hazardSource = stepEl.querySelector('.source-select').value;
 
-            // Severity
             const severityBtn = stepEl.querySelector('.sev-btn.active');
             const severityRank = severityBtn ? severityBtn.dataset.rank : '';
             if (!severityRank) isValid = false;
 
-            // 3. Measures
             let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"].active-measure')).map(c => c.querySelector('.check-text').textContent);
             const measureCustom = stepEl.querySelector('.measure-custom-text').value;
             if (measureCustom) measures.push(measureCustom);
             if (measures.length === 0) isValid = false;
 
-            // 4. Remark
             const remark = stepEl.querySelector('.remark-input').value;
 
             ejsaDataArray.push({
