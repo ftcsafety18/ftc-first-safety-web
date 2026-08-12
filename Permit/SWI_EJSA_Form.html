@@ -58,6 +58,11 @@
     .criteria-text { font-size: 0.65rem; font-weight: 500; color: #64748b; margin-top: 0.3rem; line-height: 1.2; display: none; }
     .sev-btn.active .criteria-text { color: rgba(255,255,255,0.9); display: block; }
 
+    /* Flexbox Ordering for Checked Items */
+    .hazards-container, .sources-container, .measures-container { display: flex; flex-direction: column; gap: 0.5rem; }
+    .check-card[data-checked="false"] { order: 1; opacity: 0.75; }
+    .check-card[data-checked="true"] { order: -1; opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
     input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; touch-action: manipulation; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
     input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
@@ -99,7 +104,6 @@
       </div>
     </div>
 
-    <!-- Steps Container -->
     <div id="steps-container" class="space-y-4"></div>
 
     <button type="button" onclick="addStep()" class="w-full py-3.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 hover:text-navy hover:border-navy/30 transition-colors">
@@ -151,10 +155,9 @@
     let stepCounter = 0;
 
     // ==========================================
-    // 🧠 SMART KNOWLEDGE BASE (Categorized)
+    // 🧠 SMART KNOWLEDGE BASE
     // ==========================================
     
-    // 1. ฐานข้อมูลหมวดหมู่งาน
     const JOB_CATEGORIES = [
         { id: 'cat_mep_elec', name: 'หมวด 1.1: งานระบบไฟฟ้า (Electrical Work)' },
         { id: 'cat_mep_hw', name: 'หมวด 1.2: งานเชื่อม ตัด เจียร (Hot Work)' },
@@ -203,7 +206,6 @@
         ]
     };
 
-    // 2. ฐานข้อมูลหมวดหมู่อันตราย (Categorized Database)
     const HAZARDS_DB = {
         "อันตรายทางกายภาพและแรงกล (Physical)": ["ท่อกลิ้งทับเท้า/สิ่งของหล่นทับ", "นิ้วถูกหนีบ (Pinch Point)", "พลัดตกจากที่สูง/ลื่นล้ม", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง", "แผลพุพองรุนแรงจากความร้อน", "ดินทรุดตัว/โครงสร้างเอียง", "นั่งร้านล้มคว่ำ/ประกอบผิดวิธี", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "ปวดเมื่อยกล้ามเนื้อจากการยก/ก้มเงย", "ของมีคมบาด/ทิ่มแทง"],
         "อันตรายจากไฟฟ้าและอัคคีภัย (Electrical & Fire)": ["ปลดเบรกเกอร์ผิด/มีไฟสำรองตกค้าง", "ไฟดูดจากการปลดเบรกเกอร์ผิดตู้", "กระแสไฟฟ้าย้อนกลับ (Backfeed)", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค", "สะเก็ดไฟกระเด็นโดนสารไวไฟ", "ไอระเหยสะสมเกิดระเบิด (Flash Fire)", "สะเก็ดไฟซ่อนเร้น (Smoldering) คุกรุ่น", "บูมเครนตวัดโดนสายไฟแรงสูง"],
@@ -348,7 +350,7 @@
             }
         });
 
-        // Auto Select
+        // Auto Select and Move to Top
         if (SMART_LOGIC[value]) {
             const { hazards, sources, measures } = SMART_LOGIC[value];
             
@@ -362,7 +364,7 @@
                     card.dataset.checked = "true";
                     card.classList.add(`active-${type}`);
                     
-                    // Move to Active Container
+                    // Move to Active Container (Top)
                     const activeContainer = stepContainer.querySelector(`.${type}-active-container`);
                     activeContainer.appendChild(card);
                 }
@@ -370,6 +372,7 @@
         }
     }
 
+    // 🐛 แก้ไขบั๊กของสไลเดอร์: ให้เปลี่ยนแค่ชื่อคลาสสี โดยไม่ลบคลาสหลัก (.badge-init / .badge-res) ทิ้ง
     function calculateRisk(stepId) {
         const card = document.getElementById(stepId);
         
@@ -388,19 +391,28 @@
         card.querySelector('.lbl-res-l').textContent = rL;
         card.querySelector('.lbl-res-s').textContent = `${rS} [${sMap[rS]}]`;
 
-        const updateBadge = (score, el) => {
+        const updateBadge = (score, el, isInitial) => {
             el.textContent = score;
-            el.className = 'risk-badge w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ';
+            // Base classes that must remain
+            const baseClass = isInitial ? 'badge-init' : 'badge-res';
+            const commonClasses = 'risk-badge w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0';
+            
+            let colorClass = '';
             let textEl = el.nextElementSibling;
-            if (score <= 4) { el.classList.add('risk-low'); textEl.textContent = "Low"; textEl.className = "font-bold text-emerald-600"; }
-            else if (score <= 9) { el.classList.add('risk-med'); textEl.textContent = "Medium"; textEl.className = "font-bold text-yellow-600"; }
-            else if (score <= 16) { el.classList.add('risk-high'); textEl.textContent = "High"; textEl.className = "font-bold text-orange-600"; }
-            else { el.classList.add('risk-ext'); textEl.textContent = "Extreme"; textEl.className = "font-bold text-red-600"; }
+            
+            if (score <= 4) { colorClass = 'risk-low'; textEl.textContent = "Low"; textEl.className = "font-bold text-emerald-600 text-[11px] uppercase w-12 text-center"; }
+            else if (score <= 9) { colorClass = 'risk-med'; textEl.textContent = "Medium"; textEl.className = "font-bold text-yellow-600 text-[11px] uppercase w-12 text-center"; }
+            else if (score <= 16) { colorClass = 'risk-high'; textEl.textContent = "High"; textEl.className = "font-bold text-orange-600 text-[11px] uppercase w-12 text-center"; }
+            else { colorClass = 'risk-ext'; textEl.textContent = "Extreme"; textEl.className = "font-bold text-red-600 text-[11px] uppercase w-12 text-center"; }
+            
+            // Assign perfectly clean class list
+            el.className = `${baseClass} ${commonClasses} ${colorClass}`;
         };
 
-        updateBadge(iScore, card.querySelector('.badge-init'));
-        updateBadge(rScore, card.querySelector('.badge-res'));
+        updateBadge(iScore, card.querySelector('.badge-init'), true);
+        updateBadge(rScore, card.querySelector('.badge-res'), false);
         
+        // ประเมินผลความปลอดภัยหลังควบคุม (Risk Acceptance Check)
         const residualStatusEl = card.querySelector('.residual-status');
         if (rScore <= 9) {
             residualStatusEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg font-bold flex items-center gap-1.5 text-xs shadow-sm border border-emerald-200"><i data-lucide="check-circle-2" class="w-4 h-4"></i> ความเสี่ยงอยู่ในระดับยอมรับได้ (เริ่มงานได้)</span>`;
@@ -429,10 +441,11 @@
 
           <div class="p-4 space-y-6">
             
-            <!-- 1. Method Statement -->
+            <!-- 1. Method Statement Cascading Dropdowns -->
             <div class="bg-slate-50/50 p-3 -mx-2 rounded-xl border border-slate-100">
               <label class="block text-[13px] font-bold text-slate-800 mb-1.5">1. เลือกขั้นตอนการปฏิบัติงาน (Method Statement) <span class="text-red-500">*</span></label>
               
+              <!-- ก๊อก 1: หมวดหมู่ -->
               <div class="relative mb-2">
                 <select class="category-select input-field appearance-none pr-8 bg-white border-slate-300 text-navy font-bold text-[13px]" onchange="handleCategorySelection(this)">
                   <option value="" disabled selected>-- 1.1 เลือกหมวดหมู่งานหลัก --</option>
@@ -441,6 +454,7 @@
                 <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
               </div>
 
+              <!-- ก๊อก 2: ขั้นตอนย่อย (ซ่อนไว้ก่อน) -->
               <div class="relative mb-2">
                 <select class="method-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-700 font-semibold text-[13px] hidden" onchange="handleMethodSelection(this)">
                   <option value="" disabled selected>-- 1.2 เลือกขั้นตอนย่อย --</option>
@@ -455,7 +469,7 @@
             <div class="bg-red-50/40 p-3 -mx-2 rounded-xl border border-red-100">
               <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-500 font-medium text-[11px]">(Hazards)</span></label>
               
-              <!-- Active/Selected Items Pool -->
+              <!-- Active/Selected Items Pool (โชว์ตัวที่ถูกเลือกไว้บนสุด) -->
               <div class="hazard-active-container active-container flex flex-col gap-1.5 mb-2 empty:hidden"></div>
               
               <details class="bg-white rounded-lg border border-red-200 overflow-hidden shadow-sm mb-3">
@@ -474,6 +488,7 @@
             <div class="bg-orange-50/40 p-3 -mx-2 rounded-xl border border-orange-100">
               <label class="block text-[13px] font-bold text-orange-600 mb-2 flex items-center gap-1.5"><i data-lucide="target" class="w-4 h-4"></i> 3. แหล่งกำเนิดอันตราย <span class="text-slate-500 font-medium text-[11px]">(Sources)</span></label>
               
+              <!-- Active/Selected Items Pool -->
               <div class="source-active-container active-container flex flex-col gap-1.5 mb-2 empty:hidden"></div>
               
               <details class="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-sm mb-3">
@@ -488,7 +503,7 @@
               <input type="text" class="source-custom-text input-field text-xs" placeholder="+ ระบุแหล่งอันตรายอื่นๆ (ถ้ามี)...">
             </div>
 
-            <!-- 4. Risk Matrix -->
+            <!-- 4. Risk Matrix Sliders -->
             <div class="bg-white p-3 -mx-2 rounded-lg border border-slate-200 shadow-sm">
                 <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
                     <p class="text-[12px] font-bold text-slate-700 uppercase">4. ความเสี่ยงก่อนควบคุม <span class="text-slate-400">(Initial Risk)</span></p>
@@ -520,6 +535,7 @@
             <div class="bg-emerald-50/40 p-3 -mx-2 rounded-xl border border-emerald-100">
               <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 5. การควบคุมความเสี่ยง <span class="text-slate-500 font-medium text-[11px]">(Risk Control)</span></label>
               
+              <!-- Active/Selected Items Pool -->
               <div class="measure-active-container active-container flex flex-col gap-1.5 mb-2 empty:hidden"></div>
 
               <details class="bg-white rounded-lg border border-emerald-200 overflow-hidden shadow-sm mb-3">
@@ -533,7 +549,7 @@
 
               <input type="text" class="measure-custom-text input-field text-xs mb-4" placeholder="+ ระบุมาตรการควบคุมอื่นๆ (ถ้ามี)...">
 
-              <!-- Residual Risk -->
+              <!-- Residual Risk Sliders -->
               <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm mt-3">
                 <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
                     <p class="text-[12px] font-bold text-slate-700 uppercase">ความเสี่ยงหลังควบคุม <span class="text-slate-400">(Residual Risk)</span></p>
@@ -558,13 +574,13 @@
                     <input type="range" min="1" max="5" value="3" step="1" class="res-s w-full" oninput="calculateRisk('${stepId}')" onchange="calculateRisk('${stepId}')">
                 </div>
                 
-                <div class="residual-status mt-3 flex justify-center">
+                <div class="residual-status mt-2 flex justify-center">
                     <!-- Javascript will inject status badge here -->
                 </div>
               </div>
             </div>
 
-            <!-- 6. Photo Upload -->
+            <!-- 6. Photo Upload (Bottom) -->
             <div class="border-t border-slate-200 pt-5 mt-2">
               <label class="block text-[13px] font-bold text-slate-800 mb-2">6. ภาพถ่ายหน้างานจริง <span class="text-slate-500 font-medium text-[11px]">(Photo Evidence)</span></label>
               <label for="img-${stepId}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative shadow-inner">
