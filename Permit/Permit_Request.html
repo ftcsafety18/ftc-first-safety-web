@@ -68,18 +68,18 @@
 
 <body class="bg-surface antialiased text-slate-800">
 
-  <!-- 🚀 Smart Gateway (LIFF Blocker) แก้ปัญหากล้อง Android 🚀 -->
+  <!-- 🚀 Smart Gateway (LIFF Blocker) แบบนุ่มนวลต้อนรับผู้ใช้งาน 🚀 -->
   <div id="liff-blocker" class="hidden min-h-screen flex-col items-center justify-center p-6 bg-white z-50 absolute inset-0">
       <div class="w-20 h-20 bg-navy/10 rounded-full flex items-center justify-center mb-6">
-          <i data-lucide="camera" class="w-10 h-10 text-navy"></i>
+          <i data-lucide="clipboard-signature" class="w-10 h-10 text-navy"></i>
       </div>
-      <h2 class="text-xl font-bold text-navy mb-1 text-center">ต้องใช้เบราว์เซอร์ภายนอก</h2>
-      <h3 class="text-md font-semibold text-orange mb-5 text-center">เพื่อเปิดใช้งานกล้องถ่ายรูป</h3>
+      <h2 class="text-xl font-bold text-navy mb-1 text-center">ยินดีต้อนรับเข้าสู่ระบบ</h2>
+      <h3 class="text-md font-semibold text-orange mb-5 text-center">ขอเปิดใบอนุญาตทำงาน (E-Permit) <br>และจัดทำ JSA</h3>
       <p class="text-sm text-gray-600 leading-relaxed text-center max-w-sm">
-          เนื่องจากข้อจำกัดของระบบ Android ในแอป LINE ทำให้ไม่สามารถเปิดกล้องเพื่อสแกน QR Code หรือถ่ายรูป JSA ได้ กรุณากดปุ่มด้านล่างเพื่อเปิดระบบใน Google Chrome ครับ
+          กรุณากดปุ่มด้านล่างเพื่อเข้าสู่ระบบอย่างเต็มรูปแบบครับ
       </p>
       <button onclick="openInExternalBrowser()" class="mt-8 w-full max-w-xs flex items-center justify-center gap-2 py-4 bg-navy text-white text-sm font-bold rounded-xl hover:bg-navy-700 shadow-md transition-all">
-          เปิดในเบราว์เซอร์ Chrome <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
+          เข้าสู่ระบบ <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
       </button>
   </div>
 
@@ -262,7 +262,7 @@
             <div id="scannedAssetsList" class="mt-2 flex flex-col gap-2 empty:hidden"></div>
           </div>
 
-          <!-- 🚀 JSA dropzone (ระบบ Hybrid) อัปเดตใหม่ 🚀 -->
+          <!-- 🚀 JSA dropzone (ระบบ Hybrid) อัปเดตคำเชิญชวน 🚀 -->
           <div id="jsaWrap" class="hidden">
             <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
             
@@ -278,12 +278,15 @@
                <p class="text-xs text-slate-600 mt-1 leading-relaxed">เมื่อกดปุ่ม "ส่งคำขอใบอนุญาต" ด้านล่าง<br>ระบบจะนำท่านไปยังหน้าทำ E-JSA อัตโนมัติ</p>
             </div>
 
-            <!-- กล่องที่ 2: อัปโหลดรูป (ซ่อนไว้ก่อน) -->
+            <!-- กล่องที่ 2: อัปโหลดรูป JSA แบบกระดาษ -->
             <div id="jsa-photo-area" class="hidden">
               <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
                 <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
-                <span id="jsaText" class="text-sm font-bold text-red-600">กดเพื่อเปิดกล้อง หรือเลือกไฟล์</span>
-                <span class="text-[11px] font-medium text-red-500/70">ระบบจะทำการบีบอัดรูปภาพให้มีขนาดเล็กที่สุดอัตโนมัติ</span>
+                <span id="jsaText" class="text-sm font-bold text-red-600">แนบรูปถ่าย JSA แบบกระดาษดั้งเดิม</span>
+                <span class="text-[11px] font-medium text-red-500/80 leading-relaxed">
+                  กรุณากดเพื่อเปิดกล้องถ่ายรูปเอกสาร<br>
+                  <span class="text-navy font-bold mt-1 inline-block">💡 แนะนำ: เลือก "ทำ E-JSA ออนไลน์" เพื่อความสะดวกรวดเร็ว</span>
+                </span>
                 <input id="jsaInput" type="file" accept="image/*" capture="environment" class="hidden" />
               </label>
               <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
@@ -480,8 +483,8 @@
     const otherPPESelect = document.getElementById('otherPPESelect');
     const otherPPEText = document.getElementById('otherPPEText');
 
-    // ---- JSA Mode Logic (อัปเดตสลับค่าเริ่มต้น) ----
-    let jsaMode = 'ejsa'; // 🚀 ตั้งให้ E-JSA เป็นค่าเริ่มต้น
+    // ---- JSA Mode Logic ----
+    let jsaMode = 'ejsa'; 
     const btnJsaPhoto = document.getElementById('btn-jsa-photo');
     const btnJsaEjsa = document.getElementById('btn-jsa-ejsa');
     const areaPhoto = document.getElementById('jsa-photo-area');
@@ -621,7 +624,6 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     let width = img.width, height = img.height;
-                    // บีบอัดภาพเพื่อลดขนาดไฟล์สูงสุด
                     const maxWidth = 1200;
                     if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
                     canvas.width = width; canvas.height = height;
@@ -635,7 +637,7 @@
                         document.getElementById('jsaText').textContent = "เปลี่ยนรูปถ่าย";
                         Swal.close();
                         refresh();
-                    }, 'image/jpeg', 0.7); // ลด Quality เหลือ 70%
+                    }, 'image/jpeg', 0.7); 
                 };
                 img.onerror = () => {
                     Swal.fire('ข้อผิดพลาด', 'ไฟล์รูปภาพนี้มีปัญหา ไม่สามารถอ่านได้ครับ', 'error');
@@ -653,7 +655,7 @@
         compressedJsaFile = null;
         jsaInput.value = '';
         document.getElementById('jsaPreviewWrap').classList.add('hidden');
-        document.getElementById('jsaText').textContent = "กดเพื่อเปิดกล้อง หรือเลือกไฟล์";
+        document.getElementById('jsaText').textContent = "แนบรูปถ่าย JSA แบบกระดาษดั้งเดิม";
         refresh();
     }
 
