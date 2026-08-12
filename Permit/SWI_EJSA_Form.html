@@ -5,53 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>จัดทำ Method Statement & E-JSA | FTC First Safety</title>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Google Fonts: Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Sarabun', 'sans-serif'] },
-          colors: {
-            navy: { DEFAULT: '#2A4365', 700: '#1e3048' },
-            surface: '#F4F7F9',
-          }
-        }
-      }
+      theme: { extend: { fontFamily: { sans: ['Sarabun', 'sans-serif'] }, colors: { navy: { DEFAULT: '#2A4365', 700: '#1e3048' } } } }
     }
   </script>
 
   <style>
     body { font-family: 'Sarabun', sans-serif; background-color: #F4F7F9; -webkit-tap-highlight-color: transparent; }
-    
     .input-field { width: 100%; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; padding: 0.75rem 1rem; font-size: 0.875rem; color: #1e293b; outline: none; transition: all 0.2s; }
     .input-field:focus { border-color: #2A4365; box-shadow: 0 0 0 3px rgba(42, 67, 101, 0.1); }
     
-    /* Custom Checkbox Cards */
     .check-card { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: #fff; cursor: pointer; transition: all 0.2s; }
     .check-card:active { transform: scale(0.98); }
     .check-box { flex-shrink: 0; width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; border: 2px solid #94a3b8; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .check-box i { width: 0.875rem; height: 0.875rem; color: white; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
     .check-text { font-size: 0.8125rem; color: #475569; font-weight: 500; line-height: 1.4; padding-top: 0.1rem;}
     
-    .check-card.active-hazard { background-color: #fef2f2; border-color: #fca5a5; }
-    .check-card.active-hazard .check-box { background-color: #dc2626; border-color: #dc2626; }
-    .check-card.active-hazard .check-text { color: #b91c1c; font-weight: 600; }
-    .check-card.active-hazard .check-box i { opacity: 1; transform: scale(1); }
+    .active-hazard { background-color: #fef2f2; border-color: #fca5a5; }
+    .active-hazard .check-box { background-color: #dc2626; border-color: #dc2626; }
+    .active-hazard .check-text { color: #b91c1c; font-weight: 600; }
+    .active-hazard .check-box i { opacity: 1; transform: scale(1); }
 
-    .check-card.active-measure { background-color: #f0fdf4; border-color: #6ee7b7; }
-    .check-card.active-measure .check-box { background-color: #059669; border-color: #059669; }
-    .check-card.active-measure .check-text { color: #047857; font-weight: 600; }
-    .check-card.active-measure .check-box i { opacity: 1; transform: scale(1); }
+    .active-source { background-color: #fff7ed; border-color: #fdba74; }
+    .active-source .check-box { background-color: #f97316; border-color: #f97316; }
+    .active-source .check-text { color: #c2410c; font-weight: 600; }
+    .active-source .check-box i { opacity: 1; transform: scale(1); }
 
-    /* Severity Buttons */
+    .active-measure { background-color: #f0fdf4; border-color: #6ee7b7; }
+    .active-measure .check-box { background-color: #059669; border-color: #059669; }
+    .active-measure .check-text { color: #047857; font-weight: 600; }
+    .active-measure .check-box i { opacity: 1; transform: scale(1); }
+
     .sev-btn { flex: 1; display: flex; flex-col; justify-content: center; align-items: center; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; background-color: #fff; cursor: pointer; transition: all 0.2s; text-align: center; }
     .sev-btn .grade { font-size: 1.2rem; font-weight: 800; line-height: 1; }
     .sev-btn .desc { font-size: 0.65rem; font-weight: 700; margin-top: 0.2rem; text-transform: uppercase; }
@@ -64,11 +55,9 @@
     .sev-btn[data-rank="C"] { color: #f59e0b; }
     .sev-btn[data-rank="D"].active { border-color: #10b981; background-color: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
     .sev-btn[data-rank="D"] { color: #10b981; }
-
     .criteria-text { font-size: 0.65rem; font-weight: 500; color: #64748b; margin-top: 0.3rem; line-height: 1.2; display: none; }
     .sev-btn.active .criteria-text { color: rgba(255,255,255,0.9); display: block; }
 
-    /* Custom Range Sliders */
     input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
@@ -79,37 +68,28 @@
     .risk-med { background-color: #facc15; color: #451a03; }
     .risk-high { background-color: #f97316; color: white; }
     .risk-ext { background-color: #dc2626; color: white; }
-
   </style>
 </head>
 
 <body class="text-slate-800 pb-24">
 
-  <!-- Header -->
   <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
     <div class="max-w-2xl mx-auto flex items-center justify-between px-4 py-3">
       <div class="flex items-center gap-3">
-        <button type="button" onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-slate-100 text-slate-600 transition">
-          <i data-lucide="chevron-left" class="w-6 h-6"></i>
-        </button>
+        <button type="button" onclick="window.history.back()" class="p-1.5 rounded-full hover:bg-slate-100 text-slate-600 transition"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
         <div>
           <h1 class="text-[15px] font-bold text-navy leading-tight">จัดทำ Method Statement & E-JSA</h1>
           <p class="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Safe Work Instruction</p>
         </div>
       </div>
-      <span class="bg-orange/10 text-orange border border-orange/20 px-2 py-1 rounded text-[10px] font-bold tracking-wider">
-        FM-SAF-34
-      </span>
+      <span class="bg-orange/10 text-orange border border-orange/20 px-2 py-1 rounded text-[10px] font-bold tracking-wider">FM-SAF-34</span>
     </div>
   </header>
 
   <main class="max-w-2xl mx-auto px-3 py-4 space-y-4">
     
-    <!-- Context Card -->
     <div class="bg-white rounded-xl p-3 border border-slate-200 flex items-start gap-3 shadow-sm">
-      <div class="bg-slate-100 p-2 rounded-lg text-slate-500 border border-slate-200 mt-0.5">
-        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-      </div>
+      <div class="bg-slate-100 p-2 rounded-lg text-slate-500 border border-slate-200 mt-0.5"><i data-lucide="clipboard-list" class="w-5 h-5"></i></div>
       <div>
         <p class="text-[11px] font-bold text-slate-500 flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> <span id="display-ptw-id">กำลังโหลด...</span></p>
         <p class="text-[13px] font-semibold text-slate-800 mt-0.5 leading-snug">อ้างอิงจากแบบฟอร์มขออนุญาตทำงาน (PTW)</p>
@@ -117,44 +97,14 @@
     </div>
 
     <!-- Steps Container -->
-    <div id="steps-container" class="space-y-4">
-      <!-- Cards will be generated here -->
-    </div>
+    <div id="steps-container" class="space-y-4"></div>
 
-    <!-- Add Step Button -->
     <button type="button" onclick="addStep()" class="w-full py-3.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 hover:text-navy hover:border-navy/30 transition-colors">
       <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มขั้นตอนการปฏิบัติงาน
     </button>
 
-    <!-- Legend -->
-    <details class="bg-white rounded-xl border border-slate-200 overflow-hidden [&_summary::-webkit-details-marker]:hidden mb-4 shadow-sm">
-      <summary class="flex justify-between items-center p-3 cursor-pointer text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition">
-        <span class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> เกณฑ์ประเมินความเสี่ยง (Risk Matrix Legend)</span>
-        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200"></i>
-      </summary>
-      <div class="p-3 text-[11px] space-y-3 border-t border-slate-100 bg-white">
-        <p class="font-bold text-slate-700 underline mb-1">ความรุนแรง (Severity: 1-5)</p>
-        <div class="grid grid-cols-1 gap-1.5 pl-2">
-            <div><span class="font-bold text-red-600">5 [A] Fatal:</span> เสียชีวิต / เสียหาย > 50,000 บ.</div>
-            <div><span class="font-bold text-orange-500">4 [B] Disability:</span> ทุพพลภาพ/หยุดงาน > 3 วัน</div>
-            <div><span class="font-bold text-yellow-500">3 [C] Lost Time:</span> บาดเจ็บ/หยุดงาน ≤ 3 วัน</div>
-            <div><span class="font-bold text-emerald-500">2 [D] Minor:</span> บาดเจ็บเล็กน้อย/ปฐมพยาบาล</div>
-            <div><span class="font-bold text-slate-500">1 No Injury:</span> ไม่บาดเจ็บ/ไม่เสียหาย</div>
-        </div>
-        <p class="font-bold text-slate-700 underline mt-2 mb-1">โอกาสเกิด (Likelihood: 1-5)</p>
-        <div class="grid grid-cols-1 gap-1.5 pl-2">
-            <div><span class="font-bold">5:</span> เกิดแน่นอน (Almost Certain)</div>
-            <div><span class="font-bold">4:</span> เกิดขึ้นบ่อย (Likely)</div>
-            <div><span class="font-bold">3:</span> ปานกลาง (Possible)</div>
-            <div><span class="font-bold">2:</span> เกิดขึ้นได้น้อย (Unlikely)</div>
-            <div><span class="font-bold">1:</span> แทบไม่เกิด (Rare)</div>
-        </div>
-      </div>
-    </details>
-
   </main>
 
-  <!-- Bottom Action Bar -->
   <div class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-3 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-40">
     <div class="max-w-2xl mx-auto">
       <button type="button" onclick="submitJsa()" class="w-full bg-[#B24D29] hover:bg-[#923e20] text-white font-bold py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 transition active:scale-[0.98]">
@@ -166,7 +116,6 @@
   <style> details[open] summary i { transform: rotate(180deg); } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); } </style>
 
   <script>
-    // ---- Supabase Initialization ----
     const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -174,85 +123,151 @@
     let stepCounter = 0;
 
     // ==========================================
-    // 🧠 ฐานข้อมูลอัจฉริยะ (แยกย่อยตามขั้นตอนการทำงาน)
+    // 🧠 SMART KNOWLEDGE BASE (อิงจากข้อมูล FTC ทั้งหมด)
     // ==========================================
-    
-    const HAZARDS = [
-        "การประเมินความเสี่ยงหน้างานผิดพลาด", "ผู้ปฏิบัติงานไม่เข้าใจถึงอันตราย", 
-        "ก๊าซพิษ สารเคมี รั่วไหลเข้าพื้นที่", "เครื่องจักรในบ่อทำงานกะทันหัน", "ไฟฟ้าดูด/ช็อต",
-        "ขาดอากาศหายใจ (O2 < 19.5%)", "สูดดมก๊าซพิษ (H2S, CO)", "เกิดการระเบิดจากก๊าซไวไฟ (LEL)", "เครื่องวัดชำรุด/แจ้งค่าเท็จ",
-        "พัดลมดูดไอเสียรถยนต์เข้าบ่อ", "มอเตอร์พัดลมเกิดประกายไฟทำให้ระเบิด", "อากาศส่งไม่ถึงก้นบ่อ/ก๊าซพิษสะสม",
-        "ขาสามหยั่ง(Tripod)/รอกทรุดตัว", "อุปกรณ์ช่วยเหลือฉุกเฉินไม่พร้อม", "ปนเปื้อนสารเคมี/เชื้อโรคออกสู่ภายนอก",
-        "ผู้ปฏิบัติงานหมดสติโดยไม่มีใครทราบ", "ผู้เฝ้าระวังละทิ้งหน้าที่/ขาดการสื่อสาร", "ผู้เฝ้าระวังตื่นตระหนกกระโดดลงไปช่วย",
-        "ปลดเบรกเกอร์ผิด/มีไฟสำรองตกค้าง", "สะเก็ดไฟไหม้/รังสีทำลายตา", "ดินทรุดตัว/โครงสร้างเอียง", "ประกอบนั่งร้านผิดวิธี/ข้อต่อหลวม",
-        "พลัดตกจากที่สูง/ลื่นล้ม", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง", "ประเมินน้ำหนักผิด/สลิงชำรุด/ของหลุด",
-        "ปวดเมื่อยกล้ามเนื้อจากการยก/ก้มเงย", "ของมีคมบาด/ทิ่มแทง"
-    ];
-
-    const MEASURES = [
-        "ผู้อนุญาตต้องผ่านอบรม 4 ผู้", "เดินสำรวจพื้นที่จริง (Site Walk)", "ทำ Toolbox Talk สื่อสารแผนฉุกเฉิน",
-        "ตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด", "ใช้แผ่นปิดกั้นชนิดทึบ (Slip Blind) ขวางท่อ", "ทดสอบระบบ (Verify Zero Energy)",
-        "ใช้เครื่องวัดก๊าซที่สอบเทียบและทำ Bump Test", "หย่อนสายวัดเก็บค่าอากาศทุกระดับความลึก", "ห้ามเข้าพื้นที่หากค่าก๊าซไม่ผ่านเกณฑ์",
-        "วางท่อดูดอากาศเหนือลม/ห่างแหล่งมลพิษ", "ใช้พัดลม/โคมไฟกันระเบิด (Explosion Proof)", "ใช้ท่อลม Flexible Duct ลึกถึงก้นบ่อ",
-        "ตรวจสอบสภาพ Tripod, Winch, SCBA", "กำหนด 'พื้นที่ควบคุมความเสี่ยง' ปากบ่อ", "ทำความสะอาดร่างกายที่จุด 'ชำระล้าง'",
-        "สวม Full Body Harness เกี่ยวรอกตลอดเวลา", "ผู้เฝ้าระวังประจำปากบ่อห้ามละทิ้งหน้าที่", "ห้ามผู้เฝ้าระวังลงบ่อเด็ดขาด ให้ดึงรอก",
-        "ใช้เครื่องมือช่างหุ้มฉนวน (Insulated)", "ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)", "จัดช่างเฝ้าระวังไฟ (Fire Watcher)",
-        "ติดตั้งราวกันตก 2 ชั้นและ Toe board", "ขึงตาข่ายกันตก (Safety Net)", "ยึดโยงนั่งร้านเข้าโครงสร้างหลัก (Tie-in)",
-        "จัดทำแผนการยก (Lifting Plan)", "ใช้ท่าทางการยกของตามหลักยศาสตร์", "สวมแว่นตานิรภัย/ถุงมือหนัง"
-    ];
-
-    const SOURCES = [
-        "บุคคลและการจัดการ (Human/Management)", "เครื่องจักรและอุปกรณ์ (Eq./Machine)", 
-        "ระบบไฟฟ้า (Electrical)", "สารเคมี/วัตถุดิบ (Chemical/Material)",
-        "สภาพแวดล้อมทางอากาศ (Environment)", "อุปกรณ์กู้ภัย/ความปลอดภัย (Rescue/Safety Eq.)",
-        "ชีวภาพและเคมี (Biological/Chemical)", "ลักษณะทางกายภาพ (Physical)",
-        "วัสดุ/ของหนัก (Material/Heavy Object)", "ยานพาหนะ/เครื่องจักรหนัก (Vehicle/Heavy MC)",
-        "งานความร้อน (Hot Work)", "สาธารณูปโภค (Utilities)", "อื่นๆ (Others)"
-    ];
-
-    // สมองกลจับคู่ (จำแนกตามขั้นตอนของงานเฉพาะกลุ่ม)
     const SMART_LOGIC = {
-        // งานอับอากาศ (Confined Space)
-        'cs_step1': { 
-            hazards: ["การประเมินความเสี่ยงหน้างานผิดพลาด", "ผู้ปฏิบัติงานไม่เข้าใจถึงอันตราย"], 
-            measures: ["ผู้อนุญาตต้องผ่านอบรม 4 ผู้", "เดินสำรวจพื้นที่จริง (Site Walk)", "ทำ Toolbox Talk สื่อสารแผนฉุกเฉิน"],
-            sources: ["บุคคลและการจัดการ (Human/Management)"]
+        // --- หมวด 1.1: งานระบบไฟฟ้า ---
+        'mep_e_1': { 
+            name: "ขั้น 1: แจ้งขออนุญาตและตัดแยกระบบพลังงาน (LOTO) ที่ตู้ควบคุมหลัก",
+            hazards: ["ปลดเบรกเกอร์ผิดตัว", "แหล่งจ่ายไฟสำรองไม่ได้ตัด"], 
+            sources: ["Human / Management (บุคคลและการจัดการ)", "Electrical (ไฟฟ้า)"],
+            measures: ["งดทำงานแบบไม่ตัดไฟ (Live Line Work)", "ใช้ระบบใบอนุญาต (Work Permit) และ LOTO อย่างเคร่งครัด", "กำหนดจุดปฏิบัติงานเป็น พื้นที่อันตราย"]
         },
-        'cs_step2': { 
-            hazards: ["ก๊าซพิษ สารเคมี รั่วไหลเข้าพื้นที่", "เครื่องจักรในบ่อทำงานกะทันหัน", "ไฟฟ้าดูด/ช็อต"], 
-            measures: ["ตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด", "ใช้แผ่นปิดกั้นชนิดทึบ (Slip Blind) ขวางท่อ", "ทดสอบระบบ (Verify Zero Energy)"],
-            sources: ["เครื่องจักรและอุปกรณ์ (Eq./Machine)", "ระบบไฟฟ้า (Electrical)", "สารเคมี/วัตถุดิบ (Chemical/Material)"]
+        'mep_e_2': { 
+            name: "ขั้น 2: กั้นอาณาเขตบริเวณตู้ควบคุมและจุดปฏิบัติงาน",
+            hazards: ["บุคคลภายนอกเดินชนหรือสัมผัสอุปกรณ์"], sources: ["Human (บุคคล)"],
+            measures: ["จัดเจ้าหน้าที่รักษาความปลอดภัยคอยลาดตระเวนรอบแนวกั้น"]
         },
-        'cs_step3': { 
-            hazards: ["ขาดอากาศหายใจ (O2 < 19.5%)", "สูดดมก๊าซพิษ (H2S, CO)", "เกิดการระเบิดจากก๊าซไวไฟ (LEL)", "เครื่องวัดชำรุด/แจ้งค่าเท็จ"], 
-            measures: ["ใช้เครื่องวัดก๊าซที่สอบเทียบและทำ Bump Test", "หย่อนสายวัดเก็บค่าอากาศทุกระดับความลึก", "ห้ามเข้าพื้นที่หากค่าก๊าซไม่ผ่านเกณฑ์"],
-            sources: ["สภาพแวดล้อมทางอากาศ (Environment)", "อุปกรณ์กู้ภัย/ความปลอดภัย (Rescue/Safety Eq.)"]
+        'mep_e_3': { 
+            name: "ขั้น 3: ใช้เครื่องมือวัดเพื่อยืนยันว่าไม่มีกระแสไฟฟ้า (Verify Zero Energy)",
+            hazards: ["เครื่องมือวัดชำรุด ทำให้แจ้งค่าผิดพลาด (False Negative)"], sources: ["Equipment (เครื่องมือ/อุปกรณ์)"],
+            measures: ["ตรวจสอบสภาพและสอบเทียบเครื่องมือวัดก่อนใช้งาน"]
         },
-        'cs_step4': { 
-            hazards: ["พัดลมดูดไอเสียรถยนต์เข้าบ่อ", "มอเตอร์พัดลมเกิดประกายไฟทำให้ระเบิด", "อากาศส่งไม่ถึงก้นบ่อ/ก๊าซพิษสะสม"], 
-            measures: ["วางท่อดูดอากาศเหนือลม/ห่างแหล่งมลพิษ", "ใช้พัดลม/โคมไฟกันระเบิด (Explosion Proof)", "ใช้ท่อลม Flexible Duct ลึกถึงก้นบ่อ"],
-            sources: ["เครื่องจักรและอุปกรณ์ (Eq./Machine)", "ระบบไฟฟ้า (Electrical)", "สภาพแวดล้อมทางอากาศ (Environment)"]
+        'mep_e_4': { 
+            name: "ขั้น 4: ปฏิบัติงานติดตั้ง ซ่อมแซม หรือเดินสายไฟ",
+            hazards: ["กระแสไฟฟ้าลัดวงจร", "ประกายไฟอาร์ค (Arc Flash) กระเด็นเข้าตา/ผิวหนัง"], sources: ["Electrical (ไฟฟ้า)"],
+            measures: ["ใช้เครื่องมือช่างหุ้มฉนวน (Insulated Tools)", "ติดตั้งเบรกเกอร์ตัดไฟรั่ว (ELCB)", "สวมถุงมือยางกันไฟฟ้า/แว่นตานิรภัย/รองเท้ากันไฟฟ้า"]
         },
-        'cs_step5': { 
-            hazards: ["ขาสามหยั่ง(Tripod)/รอกทรุดตัว", "อุปกรณ์ช่วยเหลือฉุกเฉินไม่พร้อม", "ปนเปื้อนสารเคมี/เชื้อโรคออกสู่ภายนอก"], 
-            measures: ["ตรวจสอบสภาพ Tripod, Winch, SCBA", "กำหนด 'พื้นที่ควบคุมความเสี่ยง' ปากบ่อ", "ทำความสะอาดร่างกายที่จุด 'ชำระล้าง'"],
-            sources: ["อุปกรณ์กู้ภัย/ความปลอดภัย (Rescue/Safety Eq.)", "ชีวภาพและเคมี (Biological/Chemical)"]
+        'mep_e_5': { 
+            name: "ขั้น 5: ปลดระบบ LOTO ตรวจสอบความเรียบร้อย และจ่ายกระแสไฟกลับ",
+            hazards: ["จ่ายไฟกลับขณะยังมีคนทำงานอยู่", "ลืมเก็บเครื่องมือช่างออกจากตู้ไฟ"], sources: ["Human / Management (บุคคลและการจัดการ)"],
+            measures: ["ตรวจสอบความเรียบร้อยและนับจำนวนคนก่อนปลด LOTO"]
         },
-        'cs_step6': { 
-            hazards: ["ผู้ปฏิบัติงานหมดสติโดยไม่มีใครทราบ", "ผู้เฝ้าระวังละทิ้งหน้าที่/ขาดการสื่อสาร", "ผู้เฝ้าระวังตื่นตระหนกกระโดดลงไปช่วย"], 
-            measures: ["สวม Full Body Harness เกี่ยวรอกตลอดเวลา", "ผู้เฝ้าระวังประจำปากบ่อห้ามละทิ้งหน้าที่", "ห้ามผู้เฝ้าระวังลงบ่อเด็ดขาด ให้ดึงรอก"],
-            sources: ["บุคคลและการจัดการ (Human/Management)", "ลักษณะทางกายภาพ (Physical)"]
+        // --- หมวด 1.2: งานเชื่อม ตัด (Hot Work) ---
+        'hw_1': { 
+            name: "ขั้น 1: เคลียร์พื้นที่และย้ายสารเคมีหรือวัสดุติดไฟออกจากบริเวณ",
+            hazards: ["ประเมินรัศมีสะเก็ดไฟผิด วัสดุติดไฟยังอยู่ในระยะ"], sources: ["Human (บุคคล)"],
+            measures: ["หากเป็นไปได้ เปลี่ยนจากเชื่อมเป็นการใช้น็อต (Substitution)"]
         },
-
-        // งานระบบไฟฟ้า
-        'mep_elec': { hazards: ["ปลดเบรกเกอร์ผิด/มีไฟสำรองตกค้าง", "ไฟฟ้าดูด/ช็อต"], measures: ["ตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด", "ใช้เครื่องมือช่างหุ้มฉนวน (Insulated)", "ทดสอบระบบ (Verify Zero Energy)"] },
-        // งานร้อน
-        'hw_weld': { hazards: ["สะเก็ดไฟไหม้/รังสีทำลายตา", "เกิดการระเบิดจากก๊าซไวไฟ (LEL)", "สูดดมก๊าซพิษ (H2S, CO)"], measures: ["ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)", "จัดช่างเฝ้าระวังไฟ (Fire Watcher)", "เคลียร์พื้นที่/ย้ายวัสดุไวไฟ"] },
-        // นั่งร้าน
-        'scaf_erect': { hazards: ["ประกอบนั่งร้านผิดวิธี/ข้อต่อหลวม", "พลัดตกจากที่สูง/ลื่นล้ม", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง"], measures: ["สวม Full Body Harness เกี่ยวรอกตลอดเวลา", "ติดตั้งราวกันตก 2 ชั้นและ Toe board", "ยึดโยงนั่งร้านเข้าโครงสร้างหลัก (Tie-in)"] },
-        // ยกของหนัก
-        'lift_crane': { hazards: ["ประเมินน้ำหนักผิด/สลิงชำรุด/ของหลุด", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง"], measures: ["จัดทำแผนการยก (Lifting Plan)", "กำหนด 'พื้นที่ควบคุมความเสี่ยง' ปากบ่อ"] }
+        'hw_2': { 
+            name: "ขั้น 2: ติดตั้งฉนวนกันไฟ และจัดเตรียมอุปกรณ์ดับเพลิง",
+            hazards: ["ถังดับเพลิงเสื่อมสภาพ/แรงดันตก", "ฉนวนกันไฟมีรอยขาด"], sources: ["Equipment (เครื่องมือ/อุปกรณ์)"],
+            measures: ["ตรวจสอบถังดับเพลิงและแผ่นกันไฟก่อนเริ่มงาน"]
+        },
+        'hw_3': { 
+            name: "ขั้น 3: ตรวจวัดปริมาณก๊าซไวไฟในอากาศ",
+            hazards: ["การสะสมของไอระเหยสารเคมีในจุดอับลม นำไปสู่การระเบิด"], sources: ["Chemical (สารเคมี)", "Environment (สภาพแวดล้อม)"],
+            measures: ["ติดตั้งระบบดูดควันเชื่อมแบบเคลื่อนที่ (Portable Fume Extractor)"]
+        },
+        'hw_4': { 
+            name: "ขั้น 4: ดำเนินการเชื่อม ตัด หรือเจียรโลหะ",
+            hazards: ["สะเก็ดไฟไหม้ผิวหนัง", "รังสี UV/IR ทำลายตา", "สูดดมฟูมโลหะและก๊าซพิษ"], sources: ["Hot Work (งานความร้อน)"],
+            measures: ["ใช้แผ่นปิดกั้นประกายไฟ (Fire Blanket)", "สวมหน้ากากเชื่อมปรับแสงอัตโนมัติ/หน้ากากกรองฟูม", "สวมถุงมือหนัง/ชุดกันสะเก็ดไฟ"]
+        },
+        'hw_5': { 
+            name: "ขั้น 5: เฝ้าระวังหลังปฏิบัติงานเสร็จสิ้น (Fire Watch) 30-60 นาที",
+            hazards: ["สะเก็ดไฟที่คุกรุ่นตามซอกหลืบ ลุกไหม้ขึ้นมา"], sources: ["Hot Work (งานความร้อน)"],
+            measures: ["จัดช่างเฝ้าระวังไฟ (Fire Watcher) ประจำจุดพร้อมถังดับเพลิง"]
+        },
+        // --- หมวด 2.1: นั่งร้าน (Scaffolding) ---
+        'scaf_1': { 
+            name: "ขั้น 1: สำรวจและปรับระดับพื้นผิวดินให้แน่นและได้ระนาบ",
+            hazards: ["ดินทรุดตัวเมื่อรับน้ำหนัก ทำให้โครงสร้างเอียง"], sources: ["Environment (สภาพแวดล้อม)"],
+            measures: ["ตรวจสอบและบดอัดดินให้แน่น"]
+        },
+        'scaf_2': { 
+            name: "ขั้น 2: วางแผ่นรองฐาน (Base Plate) และประกอบโครงสร้างชั้นล่าง",
+            hazards: ["การประกอบผิดวิธี", "ข้อต่อ (Clamp) ขันไม่แน่น"], sources: ["Human (บุคคล)", "Equipment (อุปกรณ์)"],
+            measures: ["ตรวจสอบข้อต่อโดยผู้ควบคุมที่ชำนาญการ"]
+        },
+        'scaf_3': { 
+            name: "ขั้น 3: ประกอบชั้นต่อๆ ไป ติดตั้งราวกันตก ทางเดิน ท่อค้ำยัน",
+            hazards: ["ผู้ติดตั้งพลัดตกจากที่สูง", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง", "แผ่นทางเดินกระดก"], sources: ["Fall Down (พลัดตก)", "Heavy Object (ของหนัก/ตกหล่น)"],
+            measures: ["ติดตั้งราวกันตก 2 ชั้น (Top/Mid rail)", "ติดตั้งแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)", "สวม Full Body Harness"]
+        },
+        'scaf_4': { 
+            name: "ขั้น 4: ยึดโยงนั่งร้านเข้ากับโครงสร้างหลักของอาคาร (Tie-in)",
+            hazards: ["ลมพายุพัดกระโชกทำให้นั่งร้านล้มคว่ำ"], sources: ["Environment (สภาพแวดล้อม)"],
+            measures: ["ยึด Tie-in ตามมาตรฐานวิศวกรรม"]
+        },
+        'scaf_5': { 
+            name: "ขั้น 5: จป. ตรวจสอบความแข็งแรง และแขวนป้ายสถานะ (Scafftag)",
+            hazards: ["ผู้ปฏิบัติงานอื่นขึ้นไปใช้งานบนนั่งร้านที่ยังประกอบไม่เสร็จ", "แอบดัดแปลงโครงสร้างเอง"], sources: ["Human / Management (บุคคลและการจัดการ)"],
+            measures: ["กั้นเขตใต้จุดตั้งนั่งร้านเป็น 'พื้นที่อันตราย'", "อนุญาตให้ใช้งานเฉพาะนั่งร้านที่มีป้ายสีเขียวเท่านั้น"]
+        },
+        // --- หมวด 3.1: เครนและยกของหนัก (Heavy Lifting) ---
+        'crane_1': { 
+            name: "ขั้น 1: ตรวจสอบความพร้อมของรถเครน สลิง รอก และสภาพพื้นดิน",
+            hazards: ["พื้นดินอ่อนตัวรถเครนเอียง", "ลวดสลิงชำรุด/เป็นสนิม"], sources: ["Equipment / MC (เครื่องจักร)", "Environment (สภาพแวดล้อม)"],
+            measures: ["ตรวจสอบอุปกรณ์โดยละเอียด (Pre-use check) ก่อนปฏิบัติงาน"]
+        },
+        'crane_2': { 
+            name: "ขั้น 2: กางขาหยั่ง (Outrigger) เต็มระยะ และใช้แผ่นรองขา",
+            hazards: ["ขาหยั่งกดทับท่อประปาหรือสาธารณูปโภคใต้ดินจนแตก"], sources: ["Utilities (สาธารณูปโภค)"],
+            measures: ["สำรวจแนวท่อใต้ดินและอุปสรรคก่อนกางขา"]
+        },
+        'crane_3': { 
+            name: "ขั้น 3: คำนวณน้ำหนักวัสดุ และผู้ให้สัญญาณผูกรัดวัสดุ",
+            hazards: ["ประเมินน้ำหนักผิดพลาด", "ผูกสลิงผิดวิธีทำให้ของลื่นหลุด"], sources: ["Heavy Object (วัตถุน้ำหนักมาก)", "Human (บุคคล)"],
+            measures: ["ติดตั้งระบบตัดการทำงานเมื่อรับน้ำหนักเกิน (LMI)", "ให้ผู้เชี่ยวชาญ (Rigger) เป็นผู้ผูกรัด"]
+        },
+        'crane_4': { 
+            name: "ขั้น 4: ยกวัสดุขึ้นจากพื้นเล็กน้อยเพื่อทดสอบสมดุล (Test Lift)",
+            hazards: ["วัสดุแกว่งตัวอย่างรุนแรง (Swinging load) กระแทกโครงสร้าง"], sources: ["Heavy Object (วัตถุน้ำหนักมาก)"],
+            measures: ["จัดทำแผนการยก (Lifting Plan)", "ตีวงรัศมีสวิงของเครนเป็น 'พื้นที่อันตราย'"]
+        },
+        'crane_5': { 
+            name: "ขั้น 5: เคลื่อนย้ายวัสดุตามสัญญาณมือ และวางลง",
+            hazards: ["ยกข้ามศีรษะผู้ปฏิบัติงานด้านล่าง", "บูมเครนตวัดไปโดนสายไฟฟ้าแรงสูง"], sources: ["Heavy Object (ของตกหล่น)", "Electrical (ไฟฟ้า)"],
+            measures: ["สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล", "สวมหมวกนิรภัยรัดคาง 4 จุด/เสื้อสะท้อนแสง/รองเท้าหัวเหล็ก"]
+        },
+        // --- หมวด 4.1: อับอากาศ (Confined Space) ---
+        'cs_1': { 
+            name: "ขั้น 1: ประเมินความเสี่ยงและขอใบอนุญาตทำงาน (Work Permit)",
+            hazards: ["ประเมินความเสี่ยงหน้างานผิดพลาด", "ระบุมาตรการไม่ครบถ้วน", "ผู้ปฏิบัติงานไม่เข้าใจอันตราย"], sources: ["Human / Management (บุคคลและการจัดการ)"],
+            measures: ["ผู้อนุญาต/ผู้ประเมินต้องผ่านอบรม 4 ผู้", "เดินสำรวจพื้นที่หน้างานจริง (Site Walk)", "จัดทำกิจกรรม Toolbox Talk ก่อนเริ่มงาน"]
+        },
+        'cs_2': { 
+            name: "ขั้น 2: ตัดแยกระบบพลังงาน (LOTO) และปิดกั้นวาล์ว",
+            hazards: ["ก๊าซพิษ สารเคมี หรือน้ำ รั่วไหลกลับเข้ามา", "เครื่องจักร/ใบพัดทำงานกะทันหัน", "ไฟฟ้าดูด/ช็อต"], sources: ["Equipment / MC (เครื่องจักร)", "Electrical (ไฟฟ้า)", "Chemical / Material (สารเคมี)"],
+            measures: ["ใช้มาตรการตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด", "ใช้แผ่นปิดกั้นชนิดทึบ (Slip Blind)", "ทดสอบระบบ (Verify Zero Energy) ก่อนลงพื้นที่"]
+        },
+        'cs_3': { 
+            name: "ขั้น 3: ตรวจวัดปริมาณออกซิเจนและก๊าซพิษก่อนเข้าพื้นที่",
+            hazards: ["ขาดอากาศหายใจ (O2 < 19.5%)", "สูดดมก๊าซพิษ (H2S, CO)", "ระเบิดจากก๊าซไวไฟ (LEL)", "เครื่องวัดทำงานผิดพลาด/เสีย"], sources: ["Environment (สภาพแวดล้อมทางอากาศ)", "Equipment (เครื่องมือชำรุด)"],
+            measures: ["ใช้เครื่องวัดก๊าซที่ผ่านสอบเทียบและทำ Bump Test", "หย่อนสายวัดเก็บค่าอากาศทุกระดับความลึก (บน กลาง ล่าง)", "ไม่อนุญาตให้เข้าพื้นที่เด็ดขาด หากค่าไม่อยู่ในเกณฑ์"]
+        },
+        'cs_4': { 
+            name: "ขั้น 4: ระบายอากาศอย่างต่อเนื่อง",
+            hazards: ["พัดลมดูดไอเสียรถยนต์อัดเข้าไปในบ่อ", "มอเตอร์พัดลมเกิดประกายไฟทำให้ระเบิด", "อากาศส่งไม่ถึงก้นบ่อ"], sources: ["Equipment / MC (เครื่องจักร)", "Electrical (ไฟฟ้า)", "Environment (สภาพแวดล้อม)"],
+            measures: ["วางตำแหน่งท่อดูดอากาศให้อยู่เหนือลม ห่างแหล่งมลพิษ", "ใช้พัดลม/โคมไฟกันระเบิด (Explosion Proof)", "ใช้ท่อลมมีโครงลวด (Flexible Duct) ส่งให้ลึกถึงจุดทำงาน"]
+        },
+        'cs_5': { 
+            name: "ขั้น 5: จัดเตรียมทีมช่วยเหลือและจุดชำระล้างการปนเปื้อน",
+            hazards: ["ขาสามหยั่ง(Tripod)/รอกกู้ภัย ทรุดตัวหรือชำรุด", "ปนเปื้อนสารเคมี/เชื้อโรคออกสู่ภายนอก"], sources: ["Equipment (อุปกรณ์กู้ภัย)", "Biological / Chemical (ชีวภาพและเคมี)"],
+            measures: ["ตรวจสอบสภาพ Tripod, Winch และ SCBA อย่างละเอียด", "กำหนดปากบ่อเป็น 'พื้นที่ควบคุมความเสี่ยง'", "เตรียมจุด 'การชำระล้าง' ผู้ปฏิบัติงานต้องทำความสะอาดทันทีเมื่อขึ้นมา"]
+        },
+        'cs_6': { 
+            name: "ขั้น 6: ปฏิบัติงานโดยมีผู้เฝ้าระวัง (Standby Person) ตลอดเวลา",
+            hazards: ["ผู้ปฏิบัติงานหมดสติโดยไม่มีใครทราบ", "ผู้เฝ้าระวังละทิ้งหน้าที่", "ผู้เฝ้าระวังตื่นตระหนกกระโดดลงไปช่วย", "ขาดการติดต่อสื่อสาร"], sources: ["Human (บุคคล)", "Physical (เสียงดัง/ความร้อนสะสม)"],
+            measures: ["ผู้ปฏิบัติงานสวม Full Body Harness เกี่ยวรอกตลอดเวลา", "ผู้เฝ้าระวังประจำปากบ่อห้ามละทิ้งหน้าที่และสื่อสารเป็นระยะ", "ห้ามผู้เฝ้าระวังลงบ่อเด็ดขาด ให้ใช้รอกดึงและแจ้งทีมช่วยเหลือ"]
+        }
     };
+
+    // Common fallbacks
+    const COMMON_HAZARDS = ["ของมีคมบาด", "ตกจากที่สูง", "ไฟฟ้าช็อต", "สารเคมีสัมผัส", "เสียงดัง/สั่นสะเทือน", "ไฟไหม้/ระเบิด"];
+    const COMMON_SOURCES = ["เครื่องมือ/อุปกรณ์ (Equipment/Tool)", "วัสดุ/ของหนัก (Material)", "สภาพแวดล้อม (Environment)"];
+    const COMMON_MEASURES = ["สวม PPE ครบถ้วน", "ขอ Permit to Work", "ตรวจสอบอุปกรณ์ก่อนใช้งาน", "กั้นเขตพื้นที่"];
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
@@ -274,34 +289,44 @@
         if (value === 'custom') {
             customInput.classList.remove('hidden');
             customInput.focus();
-        } else {
+            renderDynamicOptions(stepContainer, COMMON_HAZARDS, COMMON_SOURCES, COMMON_MEASURES, true);
+        } else if (SMART_LOGIC[value]) {
             customInput.classList.add('hidden');
+            const data = SMART_LOGIC[value];
+            // Render specific options based on selected step
+            renderDynamicOptions(stepContainer, data.hazards, data.sources, data.measures, false);
         }
+    }
 
-        // ล้างค่า Checkbox และ Dropdown เดิม
-        const allCards = stepContainer.querySelectorAll('.check-card');
-        allCards.forEach(card => {
-            card.classList.remove('active-hazard', 'active-measure');
-            card.dataset.checked = "false";
-        });
-        const sourceSelect = stepContainer.querySelector('.source-select');
-        sourceSelect.value = '';
+    function renderDynamicOptions(container, hazards, sources, measures, isCustom) {
+        // 1. Render Hazards
+        const hzContainer = container.querySelector('.hazards-container');
+        hzContainer.innerHTML = hazards.map(h => `
+            <div class="check-card ${!isCustom ? 'active-hazard' : ''}" data-type="hazard" data-checked="${!isCustom}" onclick="toggleCheckCard(this)">
+                <div class="check-box"><i data-lucide="check"></i></div>
+                <span class="check-text">${h}</span>
+            </div>
+        `).join('');
 
-        // Auto-Select ตาม Smart Logic
-        if (SMART_LOGIC[value]) {
-            const { hazards, measures, sources } = SMART_LOGIC[value];
-            
-            allCards.forEach(card => {
-                const text = card.querySelector('.check-text').textContent;
-                if (card.dataset.type === 'hazard' && hazards.includes(text)) toggleCheckCard(card);
-                if (card.dataset.type === 'measure' && measures.includes(text)) toggleCheckCard(card);
-            });
+        // 2. Render Sources
+        const srcContainer = container.querySelector('.sources-container');
+        srcContainer.innerHTML = sources.map(s => `
+            <div class="check-card ${!isCustom ? 'active-source' : ''}" data-type="source" data-checked="${!isCustom}" onclick="toggleCheckCard(this)">
+                <div class="check-box"><i data-lucide="check"></i></div>
+                <span class="check-text">${s}</span>
+            </div>
+        `).join('');
 
-            if (sources && sources.length > 0) {
-                // เลือก Source ตัวแรกในอาร์เรย์ให้เป็น Default (สามารถพัฒนาเป็นติ๊กถูกหลายอันได้ในอนาคต)
-                sourceSelect.value = sources[0];
-            }
-        }
+        // 3. Render Measures
+        const msContainer = container.querySelector('.measures-container');
+        msContainer.innerHTML = measures.map(m => `
+            <div class="check-card ${!isCustom ? 'active-measure' : ''}" data-type="measure" data-checked="${!isCustom}" onclick="toggleCheckCard(this)">
+                <div class="check-box"><i data-lucide="check"></i></div>
+                <span class="check-text">${m}</span>
+            </div>
+        `).join('');
+
+        lucide.createIcons();
     }
 
     function calculateRisk(stepId) {
@@ -339,10 +364,6 @@
       const container = document.getElementById('steps-container');
       const stepId = `step-${Date.now()}`;
 
-      const hazardHTML = HAZARDS.map(h => `<div class="check-card" data-type="hazard" data-checked="false" onclick="toggleCheckCard(this)"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${h}</span></div>`).join('');
-      const measureHTML = MEASURES.map(m => `<div class="check-card" data-type="measure" data-checked="false" onclick="toggleCheckCard(this)"><div class="check-box"><i data-lucide="check"></i></div><span class="check-text">${m}</span></div>`).join('');
-      const sourceOptions = SOURCES.map(s => `<option value="${s}">${s}</option>`).join('');
-
       const html = `
         <article class="step-card bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4" id="${stepId}">
           
@@ -356,76 +377,83 @@
 
           <div class="p-4 space-y-6">
             
-            <!-- A. Photo Upload -->
+            <!-- 1. Method Statement -->
             <div>
-              <label for="img-${stepId}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative">
-                <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500 p-4 text-center">
-                  <i data-lucide="camera" class="w-6 h-6 mb-2 text-slate-400"></i>
-                  <span class="text-[13px] font-bold text-slate-600">โปรดระบุขั้นตอนการทำงาน</span>
-                  <span class="text-[11px] font-medium mt-1">และแนบรูปภาพลงในขั้นตอนการปฏิบัติงานแต่ละขั้นตอน (Photo)</span>
-                </div>
-                <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
-              </label>
-              <input type="file" id="img-${stepId}" class="hidden" accept="image/*" onchange="previewImage(this)">
-            </div>
-
-            <!-- B. Method Statement -->
-            <div>
-              <label class="block text-[13px] font-bold text-slate-800 mb-1.5">1. ขั้นตอนการปฏิบัติงาน (Method Statement) <span class="text-red-500">*</span></label>
+              <label class="block text-[13px] font-bold text-slate-800 mb-1.5">1. เลือกขั้นตอนการปฏิบัติงาน (Method Statement) <span class="text-red-500">*</span></label>
               <div class="relative mb-2">
                 <select class="method-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-700 font-semibold text-[13px]" onchange="handleMethodSelection(this)">
-                  <option value="" disabled selected>-- เลือกขั้นตอนการปฏิบัติงาน --</option>
+                  <option value="" disabled selected>-- เลือกขั้นตอน --</option>
                   
-                  <optgroup label="หมวด 4: งานใต้ดินและอับอากาศ (Confined Space) - ละเอียด">
-                    <option value="cs_step1">ขั้น 1: ประเมินความเสี่ยงและขอใบอนุญาตทำงาน (PTW)</option>
-                    <option value="cs_step2">ขั้น 2: ตัดแยกระบบพลังงาน (LOTO) และปิดกั้นวาล์ว</option>
-                    <option value="cs_step3">ขั้น 3: ตรวจวัดปริมาณออกซิเจนและก๊าซพิษก่อนเข้าพื้นที่</option>
-                    <option value="cs_step4">ขั้น 4: ระบายอากาศอย่างต่อเนื่อง (Ventilation)</option>
-                    <option value="cs_step5">ขั้น 5: จัดเตรียมทีมช่วยเหลือและจุดชำระล้าง (Decon)</option>
-                    <option value="cs_step6">ขั้น 6: ปฏิบัติงานโดยมีผู้เฝ้าระวัง (Standby Person)</option>
-                  </optgroup>
-
-                  <optgroup label="หมวด 1: งานระบบสาธารณูปโภค (MEP Work)">
-                    <option value="mep_elec">งานระบบไฟฟ้าและซ่อมบำรุง (Electrical Work)</option>
-                    <option value="hw_weld">งานเชื่อม ตัด เจียรโลหะ (Welding & Hot Work)</option>
+                  <optgroup label="หมวด 1.1: งานระบบไฟฟ้า (Electrical Work)">
+                    <option value="mep_e_1">${SMART_LOGIC['mep_e_1'].name}</option>
+                    <option value="mep_e_2">${SMART_LOGIC['mep_e_2'].name}</option>
+                    <option value="mep_e_3">${SMART_LOGIC['mep_e_3'].name}</option>
+                    <option value="mep_e_4">${SMART_LOGIC['mep_e_4'].name}</option>
+                    <option value="mep_e_5">${SMART_LOGIC['mep_e_5'].name}</option>
                   </optgroup>
                   
-                  <optgroup label="หมวด 2: งานโครงสร้างบนที่สูง (Structural & Height)">
-                    <option value="scaf_erect">งานติดตั้ง ประกอบ และใช้งานนั่งร้าน (Scaffolding)</option>
+                  <optgroup label="หมวด 1.2: งานเชื่อม ตัด เจียร (Hot Work)">
+                    <option value="hw_1">${SMART_LOGIC['hw_1'].name}</option>
+                    <option value="hw_2">${SMART_LOGIC['hw_2'].name}</option>
+                    <option value="hw_3">${SMART_LOGIC['hw_3'].name}</option>
+                    <option value="hw_4">${SMART_LOGIC['hw_4'].name}</option>
+                    <option value="hw_5">${SMART_LOGIC['hw_5'].name}</option>
                   </optgroup>
 
-                  <optgroup label="หมวด 3: เครื่องจักรหนักและยกวัสดุ (Heavy Lifting)">
-                    <option value="lift_crane">งานยกและเคลื่อนย้ายวัสดุด้วยเครน (Crane Ops)</option>
+                  <optgroup label="หมวด 2.1: งานนั่งร้าน (Scaffolding)">
+                    <option value="scaf_1">${SMART_LOGIC['scaf_1'].name}</option>
+                    <option value="scaf_2">${SMART_LOGIC['scaf_2'].name}</option>
+                    <option value="scaf_3">${SMART_LOGIC['scaf_3'].name}</option>
+                    <option value="scaf_4">${SMART_LOGIC['scaf_4'].name}</option>
+                    <option value="scaf_5">${SMART_LOGIC['scaf_5'].name}</option>
+                  </optgroup>
+
+                  <optgroup label="หมวด 3.1: งานยกวัสดุด้วยเครน (Crane)">
+                    <option value="crane_1">${SMART_LOGIC['crane_1'].name}</option>
+                    <option value="crane_2">${SMART_LOGIC['crane_2'].name}</option>
+                    <option value="crane_3">${SMART_LOGIC['crane_3'].name}</option>
+                    <option value="crane_4">${SMART_LOGIC['crane_4'].name}</option>
+                    <option value="crane_5">${SMART_LOGIC['crane_5'].name}</option>
+                  </optgroup>
+
+                  <optgroup label="หมวด 4.1: สถานที่อับอากาศ (Confined Space)">
+                    <option value="cs_1">${SMART_LOGIC['cs_1'].name}</option>
+                    <option value="cs_2">${SMART_LOGIC['cs_2'].name}</option>
+                    <option value="cs_3">${SMART_LOGIC['cs_3'].name}</option>
+                    <option value="cs_4">${SMART_LOGIC['cs_4'].name}</option>
+                    <option value="cs_5">${SMART_LOGIC['cs_5'].name}</option>
+                    <option value="cs_6">${SMART_LOGIC['cs_6'].name}</option>
                   </optgroup>
 
                   <option value="custom" class="text-orange-600 font-bold">✏️ พิมพ์ระบุขั้นตอนการปฏิบัติงานเอง (อื่นๆ)...</option>
                 </select>
                 <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
               </div>
-              <textarea class="custom-method-input input-field resize-none hidden text-[13px]" rows="2" placeholder="โปรดพิมพ์อธิบายรายละเอียดขั้นตอนการทำงาน..."></textarea>
+              <textarea class="custom-method-input input-field resize-none hidden text-[13px]" rows="2" placeholder="โปรดพิมพ์อธิบายรายละเอียดขั้นตอน..."></textarea>
             </div>
 
-            <!-- C. Hazards -->
+            <!-- 2. Hazards -->
             <div class="bg-red-50/40 p-3 -mx-2 rounded-xl border border-red-100">
-              <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-500 font-medium text-[11px]">(Potential Hazard)</span></label>
-              
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 h-48 overflow-y-auto pr-1 border border-red-100 bg-white p-2 rounded-lg">
-                ${hazardHTML}
+              <label class="block text-[13px] font-bold text-red-600 mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 2. อันตรายที่อาจเกิดขึ้น <span class="text-slate-500 font-medium text-[11px]">(Hazards)</span></label>
+              <div class="hazards-container grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                 <div class="text-xs text-slate-400 p-2 text-center w-full col-span-full border border-dashed border-red-200 rounded-lg">โปรดเลือกขั้นตอนการทำงานด้านบน เพื่อดูอันตรายที่เกี่ยวข้อง</div>
               </div>
-              <input type="text" class="hazard-custom-text input-field text-xs mb-4" placeholder="+ ระบุอันตรายอื่นๆ เพิ่มเติม (ถ้ามี)...">
+              <input type="text" class="hazard-custom-text input-field text-xs" placeholder="+ ระบุอันตรายอื่นๆ (ถ้ามี)...">
+            </div>
 
-              <div class="relative mb-4">
-                <select class="source-select input-field appearance-none pr-8 bg-white border-slate-300 text-slate-600 text-[13px] font-medium">
-                  <option value="" disabled selected>-- เลือกแหล่งที่มาของอันตราย (Source of Hazard) --</option>
-                  ${sourceOptions}
-                </select>
-                <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+            <!-- 3. Sources -->
+            <div class="bg-orange-50/40 p-3 -mx-2 rounded-xl border border-orange-100">
+              <label class="block text-[13px] font-bold text-orange-600 mb-2 flex items-center gap-1.5"><i data-lucide="target" class="w-4 h-4"></i> 3. แหล่งกำเนิดอันตราย <span class="text-slate-500 font-medium text-[11px]">(Sources)</span></label>
+              <div class="sources-container grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                 <!-- Injected by JS -->
               </div>
+              <input type="text" class="source-custom-text input-field text-xs" placeholder="+ ระบุแหล่งอันตรายอื่นๆ (ถ้ามี)...">
+            </div>
 
-              <!-- Initial Risk Matrix Sliders -->
-              <div class="bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+            <!-- 4. Risk Matrix Sliders -->
+            <div class="bg-white p-3 -mx-2 rounded-lg border border-slate-200 shadow-sm">
                 <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
-                    <p class="text-[12px] font-bold text-slate-700 uppercase">ความเสี่ยงก่อนควบคุม <span class="text-slate-400">(Initial Risk)</span></p>
+                    <p class="text-[12px] font-bold text-slate-700 uppercase">4. ความเสี่ยงก่อนควบคุม <span class="text-slate-400">(Initial Risk)</span></p>
                     <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
                         <span class="text-[10px] text-slate-500 font-bold">SCORE:</span>
                         <div class="badge-init risk-badge w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 risk-med">9</div>
@@ -444,24 +472,22 @@
                 <div>
                     <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
                         <span>ความรุนแรง (Severity): <span class="lbl-init-s text-navy text-[13px]">3 [C (Lost Time)]</span></span>
-                        <span class="text-slate-400">1 (No Injury) ➔ 5 (Fatal)</span>
+                        <span class="text-slate-400">1 (No) ➔ 5 (Fatal)</span>
                     </div>
                     <input type="range" min="1" max="5" value="3" class="init-s w-full" oninput="calculateRisk('${stepId}')">
                 </div>
-              </div>
             </div>
 
-            <!-- D. Measures -->
+            <!-- 5. Measures -->
             <div class="bg-emerald-50/40 p-3 -mx-2 rounded-xl border border-emerald-100">
-              <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 3. การควบคุมความเสี่ยง <span class="text-slate-500 font-medium text-[11px]">(Risk Control)</span></label>
-              
-              <div class="flex flex-col gap-2 mb-3 h-48 overflow-y-auto pr-1 border border-emerald-100 bg-white p-2 rounded-lg">
-                ${measureHTML}
+              <label class="block text-[13px] font-bold text-emerald-600 mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4"></i> 5. การควบคุมความเสี่ยง <span class="text-slate-500 font-medium text-[11px]">(Risk Control)</span></label>
+              <div class="measures-container flex flex-col gap-2 mb-3">
+                 <!-- Injected by JS -->
               </div>
-              <input type="text" class="measure-custom-text input-field text-xs mb-4" placeholder="+ ระบุมาตรการควบคุมความเสี่ยงอื่นๆ เพิ่มเติม (ถ้ามี)...">
+              <input type="text" class="measure-custom-text input-field text-xs mb-4" placeholder="+ ระบุมาตรการควบคุมอื่นๆ (ถ้ามี)...">
 
-              <!-- Residual Risk Matrix Sliders -->
-              <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm">
+              <!-- Residual Risk Sliders -->
+              <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm mt-3">
                 <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
                     <p class="text-[12px] font-bold text-slate-700 uppercase">ความเสี่ยงหลังควบคุม <span class="text-slate-400">(Residual Risk)</span></p>
                     <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
@@ -487,10 +513,17 @@
               </div>
             </div>
 
-            <!-- E. Remarks -->
-            <div class="border-t border-slate-100 pt-3">
-              <label class="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wide">4. หมายเหตุ (Remark)</label>
-              <input type="text" class="remark-input input-field text-[13px] bg-slate-50 border-transparent focus:bg-white" placeholder="ระบุหมายเหตุเพิ่มเติม (ถ้ามี)...">
+            <!-- 6. Photo Upload (Bottom) -->
+            <div class="border-t border-slate-200 pt-5">
+              <label class="block text-[13px] font-bold text-slate-800 mb-2">6. ภาพถ่ายประกอบขั้นตอน <span class="text-slate-500 font-medium text-[11px]">(Photo)</span></label>
+              <label for="img-${stepId}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative">
+                <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500 p-4 text-center">
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 text-slate-400"></i>
+                  <span class="text-xs font-bold text-navy">ถ่ายภาพ หรือ แนบรูปภาพที่นี่</span>
+                </div>
+                <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
+              </label>
+              <input type="file" id="img-${stepId}" class="hidden" accept="image/*" onchange="previewImage(this)">
             </div>
 
           </div>
@@ -527,7 +560,6 @@
           const area = input.parentElement.querySelector('label');
           const preview = area.querySelector('.image-preview');
           const placeholder = area.querySelector('.upload-placeholder');
-          
           preview.src = e.target.result;
           preview.classList.remove('hidden');
           placeholder.classList.add('hidden');
@@ -539,8 +571,9 @@
     }
 
     function toggleCheckCard(element) {
-        const isHazard = element.dataset.type === 'hazard';
-        const activeClass = isHazard ? 'active-hazard' : 'active-measure';
+        let activeClass = 'active-hazard';
+        if (element.dataset.type === 'measure') activeClass = 'active-measure';
+        if (element.dataset.type === 'source') activeClass = 'active-source';
         
         if(element.dataset.checked === "true") {
             element.dataset.checked = "false";
@@ -549,13 +582,6 @@
             element.dataset.checked = "true";
             element.classList.add(activeClass);
         }
-    }
-
-    function selectSeverity(btn) {
-      const container = btn.closest('.flex');
-      const buttons = container.querySelectorAll('.sev-btn');
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
     }
 
     // ==========================================
@@ -580,9 +606,10 @@
             let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"].active-hazard')).map(c => c.querySelector('.check-text').textContent);
             const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
             if (hazardCustom) hazards.push(hazardCustom);
-            if (hazards.length === 0) isValid = false;
-
-            const hazardSource = stepEl.querySelector('.source-select').value;
+            
+            let sources = Array.from(stepEl.querySelectorAll('.check-card[data-type="source"].active-source')).map(c => c.querySelector('.check-text').textContent);
+            const sourceCustom = stepEl.querySelector('.source-custom-text').value;
+            if (sourceCustom) sources.push(sourceCustom);
 
             const initScore = parseInt(stepEl.querySelector('.badge-init').textContent);
             const resScore = parseInt(stepEl.querySelector('.badge-res').textContent);
@@ -590,24 +617,20 @@
             let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"].active-measure')).map(c => c.querySelector('.check-text').textContent);
             const measureCustom = stepEl.querySelector('.measure-custom-text').value;
             if (measureCustom) measures.push(measureCustom);
-            if (measures.length === 0) isValid = false;
-
-            const remark = stepEl.querySelector('.remark-input').value;
 
             ejsaDataArray.push({
                 step_no: index + 1,
                 step_name: stepName,
                 hazards: hazards,
-                hazard_source: hazardSource,
+                sources: sources,
                 initial_risk: initScore,
                 residual_risk: resScore,
-                measures: measures,
-                remark: remark
+                measures: measures
             });
         });
 
         if (!isValid) {
-            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนงาน, เลือกอันตราย และมาตรการป้องกันให้ครบทุกส่วน', 'warning');
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุขั้นตอนงานให้ครบทุกส่วน', 'warning');
             return;
         }
 
