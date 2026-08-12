@@ -198,7 +198,7 @@
 
           <div id="riskAlert" role="alert" class="hidden items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">
             <i data-lucide="alert-triangle" class="h-5 w-5 shrink-0 text-red-600 animate-pulse"></i>
-            <p class="text-[13px] font-bold leading-snug">⚠️ งานเสี่ยงสูงจำเป็นต้องแนบรูปเอกสาร JSA</p>
+            <p class="text-[13px] font-bold leading-snug">⚠️ งานเสี่ยงสูงจำเป็นต้องแนบเอกสาร JSA</p>
           </div>
         </div>
       </section>
@@ -219,18 +219,35 @@
             สแกน QR เครื่องมือช่าง (E-Tagging)
           </button>
 
-          <!-- JSA dropzone -->
+          <!-- JSA dropzone (อัปเกรดระบบ Hybrid) -->
           <div id="jsaWrap" class="hidden">
-            <label class="mb-2 block text-sm font-bold text-red-600">แนบรูปเอกสาร JSA <span class="text-red-500">*</span></label>
-            <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
-              <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
-              <span id="jsaText" class="text-sm font-bold text-red-600">กดเพื่อถ่ายรูป หรือเลือกไฟล์</span>
-              <span class="text-[11px] font-medium text-red-500/70">ระบบจะทำการบีบอัดรูปภาพอัตโนมัติ</span>
-              <input id="jsaInput" type="file" accept="image/*,application/pdf" capture="environment" class="hidden" />
-            </label>
-            <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
-               <img id="jsaPreview" src="" class="w-full h-full object-cover" />
-               <button type="button" onclick="removeJsa()" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 shadow-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <label class="mb-2 block text-sm font-bold text-red-600">เอกสารความปลอดภัย JSA <span class="text-red-500">*</span></label>
+            
+            <!-- สวิตช์เลือกรูปแบบ JSA -->
+            <div class="flex p-1 bg-slate-100 rounded-lg mb-3">
+               <button type="button" id="btn-jsa-photo" class="flex-1 py-2 text-[13px] font-bold bg-white text-red-600 shadow-sm rounded-md transition-all border border-slate-200">📸 แนบรูปถ่าย</button>
+               <button type="button" id="btn-jsa-ejsa" class="flex-1 py-2 text-[13px] font-bold text-slate-500 hover:text-navy transition-all border border-transparent">✨ ทำ E-JSA ออนไลน์</button>
+            </div>
+
+            <!-- กล่องที่ 1: อัปโหลดรูป (จะโชว์เป็นค่าเริ่มต้น) -->
+            <div id="jsa-photo-area">
+              <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-6 text-center transition hover:bg-red-50">
+                <i data-lucide="camera" class="h-8 w-8 text-red-500"></i>
+                <span id="jsaText" class="text-sm font-bold text-red-600">กดเพื่อถ่ายรูป หรือเลือกไฟล์</span>
+                <span class="text-[11px] font-medium text-red-500/70">ระบบจะทำการบีบอัดรูปภาพอัตโนมัติ</span>
+                <input id="jsaInput" type="file" accept="image/*,application/pdf" capture="environment" class="hidden" />
+              </label>
+              <div id="jsaPreviewWrap" class="hidden mt-3 relative w-full h-32 rounded-xl overflow-hidden border border-slate-200">
+                 <img id="jsaPreview" src="" class="w-full h-full object-cover" />
+                 <button type="button" onclick="removeJsa()" class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 shadow-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+              </div>
+            </div>
+
+            <!-- กล่องที่ 2: เลือกทำ E-JSA (จะซ่อนไว้ก่อน) -->
+            <div id="jsa-ejsa-area" class="hidden flex-col items-center justify-center p-6 bg-navy/5 border-2 border-navy/20 border-dashed rounded-xl text-center">
+               <i data-lucide="sparkles" class="w-8 h-8 text-navy mb-2"></i>
+               <p class="text-sm font-extrabold text-navy">จัดทำ E-JSA ด้วยระบบอัจฉริยะ</p>
+               <p class="text-xs text-slate-600 mt-1 leading-relaxed">เมื่อกดปุ่ม "ส่งคำขอใบอนุญาต" ด้านล่าง<br>ระบบจะนำท่านไปยังหน้าทำ E-JSA อัตโนมัติ</p>
             </div>
           </div>
 
@@ -391,6 +408,39 @@
     const otherPPESelect = document.getElementById('otherPPESelect');
     const otherPPEText = document.getElementById('otherPPEText');
 
+    // ---- JSA Mode Logic ----
+    let jsaMode = 'photo'; // ค่าเริ่มต้นคือถ่ายรูป
+    const btnJsaPhoto = document.getElementById('btn-jsa-photo');
+    const btnJsaEjsa = document.getElementById('btn-jsa-ejsa');
+    const areaPhoto = document.getElementById('jsa-photo-area');
+    const areaEjsa = document.getElementById('jsa-ejsa-area');
+
+    btnJsaPhoto.addEventListener('click', () => {
+        jsaMode = 'photo';
+        btnJsaPhoto.classList.add('bg-white', 'text-red-600', 'shadow-sm', 'border-slate-200');
+        btnJsaPhoto.classList.remove('text-slate-500', 'border-transparent');
+        btnJsaEjsa.classList.remove('bg-white', 'text-navy', 'shadow-sm', 'border-slate-200');
+        btnJsaEjsa.classList.add('text-slate-500', 'border-transparent');
+        areaPhoto.classList.remove('hidden');
+        areaEjsa.classList.add('hidden');
+        areaEjsa.classList.remove('flex');
+        refresh();
+    });
+
+    btnJsaEjsa.addEventListener('click', () => {
+        jsaMode = 'ejsa';
+        btnJsaEjsa.classList.add('bg-white', 'text-navy', 'shadow-sm', 'border-slate-200');
+        btnJsaEjsa.classList.remove('text-slate-500', 'border-transparent');
+        btnJsaPhoto.classList.remove('bg-white', 'text-red-600', 'shadow-sm', 'border-slate-200');
+        btnJsaPhoto.classList.add('text-slate-500', 'border-transparent');
+        areaEjsa.classList.remove('hidden');
+        areaEjsa.classList.add('flex');
+        areaPhoto.classList.add('hidden');
+        
+        removeJsa(); 
+        refresh();
+    });
+
     function toggleRisk(id, name, btn) {
       if (generalWork) { generalWork = false; generalBtn.classList.remove('active'); }
       
@@ -541,7 +591,8 @@
       riskAlert.classList.toggle('flex', hasHighRisk);
       jsaWrap.classList.toggle('hidden', !hasHighRisk);
       
-      const hasJsaIfNeeded = hasHighRisk ? (compressedJsaFile !== null) : true;
+      // ดักจับเงื่อนไข JSA (ถ้าเสี่ยงสูง ต้องมีรูป หรือเลือก E-JSA)
+      const hasJsaIfNeeded = hasHighRisk ? (jsaMode === 'ejsa' || compressedJsaFile !== null) : true;
       const hasBasicInfo = document.getElementById('project-input').value && document.getElementById('wbs-input').value && document.getElementById('location-input').value && document.getElementById('start-time').value && document.getElementById('end-time').value;
       
       // ดักจับ: ถ้ากดเลือก "อื่นๆ" ต้องเช็คเงื่อนไขย่อย
@@ -604,7 +655,7 @@
 
         try {
             let jsaUrl = null;
-            if (compressedJsaFile) {
+            if (jsaMode === 'photo' && compressedJsaFile) {
                 Swal.update({ title: 'กำลังอัปโหลดเอกสาร JSA...' });
                 const filePath = 'jsa-docs/' + Date.now() + '.jpg';
                 const { error: uploadError } = await supabaseClient.storage.from('safety-documents').upload(filePath, compressedJsaFile);
@@ -663,16 +714,21 @@
             if (dbError) throw dbError;
 
             Swal.fire({
-                title: 'ส่งคำขอใบอนุญาตสำเร็จ!',
-                text: 'ข้อมูลของคุณถูกส่งไปยัง จป. เพื่อรอการอนุมัติแล้ว',
+                title: 'ส่งคำขอเบื้องต้นสำเร็จ!',
+                text: jsaMode === 'ejsa' ? 'ระบบกำลังพาท่านไปจัดทำ E-JSA...' : 'ข้อมูลของคุณถูกส่งไปยัง จป. เพื่อรอการอนุมัติแล้ว',
                 icon: 'success',
                 confirmButtonColor: '#2A4365',
-                confirmButtonText: 'กลับสู่หน้าหลัก'
+                confirmButtonText: jsaMode === 'ejsa' ? 'ไปหน้าทำ E-JSA' : 'กลับสู่หน้าหลัก'
             }).then(() => {
-                if (typeof liff !== 'undefined' && liff.isInClient()) { 
-                    liff.closeWindow();
-                } else { 
-                    window.location.reload(); 
+                if (jsaMode === 'ejsa') {
+                    // ไปหน้าทำ E-JSA พร้อมส่งรหัส PTW อ้างอิงไปด้วย
+                    window.location.href = `E_JSA_Form.html?ptw_id=${payload.ptw_id}`;
+                } else {
+                    if (typeof liff !== 'undefined' && liff.isInClient()) { 
+                        liff.closeWindow();
+                    } else { 
+                        window.location.reload(); 
+                    }
                 }
             });
 
