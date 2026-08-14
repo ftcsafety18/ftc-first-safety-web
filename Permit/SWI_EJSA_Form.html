@@ -43,7 +43,6 @@
     .active-measure .check-text { color: #047857; font-weight: 600; }
     .active-measure .check-box i { opacity: 1; transform: scale(1); }
 
-    /* Flexbox Ordering */
     .hazards-container, .sources-container, .measures-container { display: flex; flex-direction: column; gap: 0.5rem; }
     .check-card[data-checked="false"] { order: 1; opacity: 0.75; }
     .check-card[data-checked="true"] { order: -1; opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -325,7 +324,6 @@
       const urlParams = new URLSearchParams(window.location.search);
       currentPtwId = urlParams.get('ptw_id');
       
-      // 💡 ระบบเตือนตั้งแต่หน้าแรก หากไม่มีรหัส PTW-ID
       if(currentPtwId) { 
           document.getElementById('display-ptw-id').textContent = currentPtwId; 
       } else {
@@ -686,14 +684,14 @@
             <div class="border-t border-slate-200 pt-5 mt-2">
               <label class="block text-[13px] font-bold text-slate-800 mb-2 flex items-center gap-1.5"><i data-lucide="camera" class="w-4 h-4"></i> 6. ภาพถ่ายหน้างานจริง</label>
               
-              <!-- 🐛 แก้ไขจุดนี้ให้ querySelector หาง่ายขึ้น -->
+              <!-- 🐛 แก้ไขโครงสร้างให้อ้างอิง (closest) ง่ายและชัวร์ที่สุด -->
               <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative shadow-inner">
                 <div class="upload-placeholder flex flex-col items-center justify-center text-slate-500 p-4 text-center">
                   <i data-lucide="image-plus" class="w-8 h-8 mb-2 text-slate-400"></i>
                   <span class="text-xs font-bold text-navy">กดเพื่อถ่ายภาพ หรือ เลือกรูปจากอัลบั้ม</span>
                 </div>
                 <img class="image-preview absolute inset-0 w-full h-full object-cover hidden" src="" alt="Preview">
-                <input type="file" id="img-${stepId}" class="hidden" accept="image/*" capture="environment" onchange="previewImage(this)">
+                <input type="file" id="img-${stepId}" class="hidden" accept="image/*" onchange="previewImage(this)">
               </label>
             </div>
 
@@ -734,25 +732,41 @@
       });
     }
 
-    // 🐛 แก้ไขฟังก์ชันพรีวิวรูปภาพให้หาเป้าหมายได้แม่นยำ
+    // 🐛 ฟังก์ชันพรีวิวภาพฉบับสมบูรณ์ (Bulletproof)
     function previewImage(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const area = input.parentElement; // ตอนนี้ input อยู่ใน label โดยตรงแล้ว
-          const preview = area.querySelector('.image-preview');
-          const placeholder = area.querySelector('.upload-placeholder');
-          
-          if (preview) {
-              preview.src = e.target.result;
-              preview.classList.remove('hidden');
-              placeholder.classList.add('hidden');
-              area.classList.replace('border-dashed', 'border-solid');
-              area.classList.replace('border-slate-300', 'border-navy/20');
-          }
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // 1. วิ่งหา Container แม่อย่างปลอดภัย
+                const uploadContainer = input.closest('.border-t.border-slate-200.pt-5');
+                
+                if (uploadContainer) {
+                    // 2. ควานหา element ด้านในที่ต้องการ
+                    const preview = uploadContainer.querySelector('.image-preview');
+                    const placeholder = uploadContainer.querySelector('.upload-placeholder');
+                    const area = input.closest('label');
+
+                    // 3. ตรวจสอบไม่ให้เป็น null ก่อนใช้งาน
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                        
+                        if (placeholder) {
+                            placeholder.classList.add('hidden');
+                        }
+                        if (area) {
+                            area.classList.remove('border-dashed', 'border-slate-300');
+                            area.classList.add('border-solid', 'border-navy/20');
+                        }
+                    } else {
+                        console.error('Debug: ไม่พบ .image-preview ใน DOM');
+                    }
+                } else {
+                    console.error('Debug: ไม่พบ container .border-t.border-slate-200.pt-5');
+                }
+            }
+            reader.readAsDataURL(input.files[0]);
         }
-        reader.readAsDataURL(input.files[0]);
-      }
     }
 
     function toggleCheckCard(element) {
@@ -902,7 +916,7 @@
             resetSubmitButton();
             Swal.fire({
                 title: 'บันทึกไม่สำเร็จ', 
-                html: `<p class="text-sm">เกิดข้อผิดพลาด:</p><p class="text-xs text-red-500 mt-2 bg-red-50 p-2 rounded">${error.message}</p>`,
+                html: `<p class="text-sm">เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล:</p><p class="text-xs text-red-500 mt-2 bg-red-50 p-2 rounded">${error.message}</p><p class="text-xs text-slate-500 mt-2">โปรดตรวจสอบว่าเปิดเข้าใช้งานผ่านระบบขอใบอนุญาตหลัก (PTW) หรือไม่</p>`,
                 icon: 'error'
             });
         }
