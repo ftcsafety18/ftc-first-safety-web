@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSA Print Report | FTC First Safety</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #525659; margin: 0; padding: 20px; }
+
+        /* 📄 ตั้งค่ากระดาษ A4 แนวนอน */
+        .a4-page { width: 297mm; min-height: 210mm; margin: 0 auto; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); padding: 10mm; box-sizing: border-box; }
+
+        @media print {
+            @page { size: A4 landscape; margin: 5mm; }
+            body { background-color: white; padding: 0; }
+            .a4-page { width: 100%; min-height: auto; box-shadow: none; padding: 0; }
+            .no-print { display: none !important; }
+        }
+
+        /* 📊 สไตล์ตาราง (เลียนแบบ Form มาตรฐาน) */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { border: 1px solid #64748b; padding: 4px 6px; vertical-align: top; }
+        th { text-align: center; font-weight: bold; }
+        .bg-blue-header { background-color: #bfdbfe !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+        
+        .col-no { width: 4%; text-align: center; }
+        .col-photo { width: 15%; text-align: center; }
+        .col-step { width: 20%; }
+        .col-hazard { width: 20%; }
+        .col-source { width: 6%; text-align: center; }
+        .col-measure { width: 25%; }
+        .col-remark { width: 10%; }
+
+        /* สีกล่อง Rank ความรุนแรง */
+        .rank-box { display: inline-block; width: 16px; height: 16px; line-height: 16px; text-align: center; color: white; font-weight: bold; border-radius: 2px; font-size: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+        .r-A { background-color: #dc2626; } /* แดง */
+        .r-B { background-color: #f97316; } /* ส้ม */
+        .r-C { background-color: #eab308; } /* เหลือง */
+        .r-D { background-color: #22c55e; } /* เขียว */
+    </style>
+</head>
+<body>
+
+    <div class="max-w-[297mm] mx-auto mb-4 flex justify-end no-print">
+        <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded-md font-bold shadow-md hover:bg-blue-700">🖨️ บันทึกเป็น PDF / พิมพ์</button>
+    </div>
+
+    <div class="a4-page">
+        <!-- 📝 หัวกระดาษ -->
+        <table class="mb-2">
+            <tbody>
+                <tr>
+                    <td rowspan="2" class="w-[20%] text-center align-middle font-black text-lg text-blue-900 tracking-wider">
+                        FIRST <span class="text-[9px] font-normal text-slate-500 block leading-tight">TECHNOLOGY CO., LTD.</span>
+                    </td>
+                    <td class="w-[50%] text-center align-middle font-bold text-sm bg-blue-50">
+                        Work Instruction for Safe Work Practice<br><span class="font-normal text-xs">(ขั้นตอนการปฏิบัติงานเพื่อความปลอดภัย)</span>
+                    </td>
+                    <td class="w-[30%] text-center align-middle font-bold text-sm bg-blue-50 text-blue-800" id="header-task">
+                        กำลังโหลด...
+                    </td>
+                </tr>
+                <tr class="text-xs text-center">
+                    <td class="font-bold">Method Statement (ขั้นตอนการปฏิบัติงาน)</td>
+                    <td class="font-bold">Document No. <span id="header-ptw" class="font-normal ml-2">PTW-XXXX</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 📊 ตาราง JSA หลัก -->
+        <table>
+            <thead>
+                <tr class="bg-blue-header text-[10px]">
+                    <th class="col-no">No.<br>(ลำดับ)</th>
+                    <th class="col-photo">Photo<br>(รูปขั้นตอน)</th>
+                    <th class="col-step">Method Statement<br>(ขั้นตอนการปฏิบัติงาน)</th>
+                    <th class="col-hazard">Potential Hazard<br>(อันตรายที่อาจเกิดขึ้น)</th>
+                    <th class="col-source">Rank<br>(ระดับ)</th>
+                    <th class="col-measure">Risk Control<br>(การควบคุมความเสี่ยง)</th>
+                    <th class="col-remark align-middle">Remark<br>(หมายเหตุ)</th>
+                </tr>
+            </thead>
+            <tbody id="jsa-table-body">
+                <tr><td colspan="7" class="text-center py-10">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+        </table>
+
+        <!-- 🖋️ ท้ายกระดาษ (Footer) -->
+        <div class="grid grid-cols-5 gap-2 mt-4 text-[10px]">
+            <div class="col-span-2">
+                <table class="w-full h-full">
+                    <tr><td class="w-1/3 bg-slate-100 font-bold">Project Name :</td><td id="foot-project">-</td></tr>
+                    <tr><td class="bg-slate-100 font-bold">Location :</td><td id="foot-location">-</td></tr>
+                    <tr><td class="bg-slate-100 font-bold">Effective Date :</td><td id="foot-date">-</td></tr>
+                </table>
+            </div>
+            <div class="col-span-3">
+                <table class="w-full text-center h-full">
+                    <tr class="bg-slate-100 font-bold"><td>Prepared by :</td><td>Reviewed by :</td><td>Approved by :</td></tr>
+                    <tr class="h-12 align-bottom">
+                        <td class="pb-1" id="sign-req">ผู้ขออนุญาต</td>
+                        <td class="pb-1">จป. วิชาชีพ (JPO)</td>
+                        <td class="pb-1">ผู้จัดการโครงการ (PM)</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 🚦 Legend สี -->
+        <table class="w-full mt-2 text-[8px] border-none">
+            <tr>
+                <td colspan="4" class="text-center font-bold bg-slate-200 border border-slate-300">Rank of Hazard Severity (ระดับความรุนแรงของอันตราย)</td>
+            </tr>
+            <tr class="text-center">
+                <td class="border border-slate-300 w-1/4 py-1"><span class="rank-box r-A mr-1">A</span> เสียชีวิต / เสียหาย > 50,000 บ.</td>
+                <td class="border border-slate-300 w-1/4 py-1"><span class="rank-box r-B mr-1">B</span> ทุพพลภาพ/หยุดงาน > 3 วัน</td>
+                <td class="border border-slate-300 w-1/4 py-1"><span class="rank-box r-C mr-1">C</span> บาดเจ็บ/หยุดงาน ≤ 3 วัน</td>
+                <td class="border border-slate-300 w-1/4 py-1"><span class="rank-box r-D mr-1">D</span> บาดเจ็บเล็กน้อย/ปฐมพยาบาล</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ptwId = urlParams.get('ptw_id');
+
+            if (!ptwId) { document.getElementById('jsa-table-body').innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">ไม่พบรหัสใบงาน</td></tr>`; return; }
+
+            const { data, error } = await supabaseClient.from('tb_work_permits').select('*').eq('ptw_id', ptwId).single();
+            if (error || !data) return;
+
+            const spData = data.specific_data || {};
+            const ejsaData = spData.ejsa_data || [];
+
+            document.getElementById('header-ptw').textContent = data.ptw_id;
+            document.getElementById('header-task').textContent = data.ptw_type || "JSA Report";
+            document.getElementById('foot-project').textContent = spData.project_id || "-";
+            document.getElementById('foot-location').textContent = data.work_description || "-";
+            document.getElementById('foot-date').textContent = new Date(data.created_at).toLocaleDateString('th-TH');
+            document.getElementById('sign-req').innerHTML = `<b>${spData.req_name || 'Engineer'}</b><br>Engineer`;
+
+            // ฟังก์ชันแปลงคะแนนความเสี่ยง (1-25) เป็น Rank A, B, C, D ให้ตรงกับตาราง
+            const getRank = (score) => {
+                if (score >= 15) return `<div class="rank-box r-A">A</div>`;
+                if (score >= 10) return `<div class="rank-box r-B">B</div>`;
+                if (score >= 5)  return `<div class="rank-box r-C">C</div>`;
+                return `<div class="rank-box r-D">D</div>`;
+            };
+
+            let tableHtml = '';
+            ejsaData.forEach((step, index) => {
+                // โชว์รูปภาพที่อัปโหลดไว้ ถ้าไม่มีโชว์ช่องว่างๆ
+                const photoHtml = step.image_url 
+                    ? `<img src="${step.image_url}" class="max-w-[120px] max-h-[80px] object-contain mx-auto">` 
+                    : `<div class="h-16 flex items-center justify-center text-slate-300 text-[9px] bg-slate-50 border border-slate-200">[ไม่มีภาพ]</div>`;
+                
+                const hazards = (step.hazards || []).map((h, i) => `<div>${step.step_no}.${i+1} ${h}</div>`).join('');
+                const measures = (step.measures || []).map((m, i) => `<div>${step.step_no}.${i+1} ${m}</div>`).join('');
+
+                tableHtml += `
+                    <tr>
+                        <td class="col-no font-bold text-center">${index + 1}</td>
+                        <td class="col-photo p-1">${photoHtml}</td>
+                        <td class="col-step text-blue-900 font-bold leading-tight">${step.step_no}. ${step.step_name}</td>
+                        <td class="col-hazard text-red-700 leading-tight">${hazards}</td>
+                        <td class="col-source text-center align-middle">${getRank(step.residual_risk)}</td>
+                        <td class="col-measure text-emerald-800 leading-tight">${measures}</td>
+                        <td class="col-remark text-slate-500">${step.remark || ''}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('jsa-table-body').innerHTML = tableHtml || `<tr><td colspan="7" class="text-center py-4">ไม่มีข้อมูล</td></tr>`;
+        });
+    </script>
+</body>
+</html>
