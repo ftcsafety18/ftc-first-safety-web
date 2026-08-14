@@ -43,7 +43,6 @@
     .active-measure .check-text { color: #047857; font-weight: 600; }
     .active-measure .check-box i { opacity: 1; transform: scale(1); }
 
-    /* Flexbox Ordering for Checked Items */
     .hazards-container, .sources-container, .measures-container { display: flex; flex-direction: column; gap: 0.5rem; }
     .check-card[data-checked="false"] { order: 1; opacity: 0.75; }
     .check-card[data-checked="true"] { order: -1; opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -91,7 +90,6 @@
       </div>
     </div>
 
-    <!-- Steps Container -->
     <div id="steps-container" class="space-y-4"></div>
 
     <button type="button" onclick="addStep()" class="w-full py-3.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 hover:text-navy hover:border-navy/30 transition-colors shadow-sm">
@@ -136,6 +134,13 @@
   <style> details[open] summary i { transform: rotate(180deg); } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); } </style>
 
   <script>
+    // 🛡️ Global Error Handler (กันระบบเงียบหาย)
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+        console.error("Global JS Error: ", msg, error);
+        Swal.fire('ตรวจพบข้อผิดพลาด', 'ระบบทำงานขัดข้อง กรุณาลองใหม่อีกครั้ง (' + msg + ')', 'error');
+        return false;
+    };
+
     const SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_IVdSBILj_etRSNF48ig1PA_sBAt23NG';
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -143,7 +148,7 @@
     let stepCounter = 0;
 
     // ==========================================
-    // 🧠 THE ULTIMATE MASTER DATA 
+    // 🧠 THE ULTIMATE MASTER DATA
     // ==========================================
     const JOB_CATEGORIES = [
         { id: 'cat_mep_elec', name: 'หมวด 1.1: งานระบบไฟฟ้า (Electrical Work)' },
@@ -226,7 +231,7 @@
     const SMART_LOGIC = {
         'm1_elec_1': { hazards: ["ประเมินความเสี่ยงหน้างานผิดพลาด", "ปลดเบรกเกอร์ผิด/มีไฟสำรองตกค้าง"], sources: ["บุคคลและการจัดการ (Human/Management)", "ระบบไฟฟ้า (Electrical)"], measures: ["ผู้อนุญาตต้องผ่านอบรม 4 ผู้/เดินสำรวจหน้างาน (Site Walk)", "ใช้มาตรการตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด"] },
         'm1_elec_2': { hazards: ["บุคคลภายนอกเดินชนหรือสัมผัสอุปกรณ์"], sources: ["บุคคลและการจัดการ (Human/Management)"], measures: ["กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามคนนอกเข้า"] },
-        'm1_elec_3': { hazards: ["เครื่องมือวัดชำรุด/แจ้งค่าเท็จ"], sources: ["เครื่องมือ/อุปกรณ์ (Equipment/Tool)"], measures: ["ทดสอบเครื่องมือวัดก่อนใช้งาน"] },
+        'm1_elec_3': { hazards: ["เครื่องมือวัดชำรุด/แจ้งค่าเท็จ"], sources: ["เครื่องมือ/อุปกรณ์ (Equipment/Tool)"], measures: ["ตรวจสอบเครื่องวัดไฟ (Bump test) ก่อนนำไปวัดจุดที่ตัดไฟ"] },
         'm1_elec_4': { hazards: ["กระแสไฟฟ้าย้อนกลับ (Backfeed)"], sources: ["ระบบไฟฟ้า (Electrical)"], measures: ["ติดตั้งสายดินชั่วคราวให้ได้มาตรฐาน"] },
         'm1_elec_5': { hazards: ["กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค", "ประกายไฟ Arc Flash กระเด็นเข้าตา"], sources: ["ระบบไฟฟ้า (Electrical)"], measures: ["ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)", "ติดตั้งระบบเบรกเกอร์ตัดไฟรั่ว (ELCB)", "สวมถุงมือยางกันไฟฟ้า/รองเท้ากันไฟฟ้า"] },
         'm1_elec_6': { hazards: ["ระเบิดหากต่อสายผิด/ลืมเครื่องมือทิ้งไว้"], sources: ["บุคคลและการจัดการ (Human/Management)", "ระบบไฟฟ้า (Electrical)"], measures: ["ตรวจนับเครื่องมือช่างให้ครบถ้วนก่อนปลด LOTO"] },
@@ -646,7 +651,7 @@
               </div>
             </div>
 
-            <!-- 6. Photo Upload -->
+            <!-- 6. Photo Upload (Bottom) -->
             <div class="border-t border-slate-200 pt-5 mt-2">
               <label class="block text-[13px] font-bold text-slate-800 mb-2 flex items-center gap-1.5"><i data-lucide="camera" class="w-4 h-4"></i> 6. ภาพถ่ายหน้างานจริง</label>
               <label for="img-${stepId}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer overflow-hidden relative shadow-inner">
@@ -733,76 +738,92 @@
     }
 
     // ==========================================
-    // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase)
+    // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase) แบบไร้บั๊ก!
     // ==========================================
     async function submitJsa() {
-        if (!currentPtwId) {
-            Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสอ้างอิงใบงาน (PTW-ID)', 'error');
-            return;
-        }
-
-        const steps = document.querySelectorAll('.step-card');
-        let ejsaDataArray = [];
-        let isValid = true;
-
-        steps.forEach((stepEl, index) => {
-            const catSelect = stepEl.querySelector('.category-select').value;
-            const methodSelect = stepEl.querySelector('.method-select').value;
-            const methodCustom = stepEl.querySelector('.custom-method-input').value;
+        try {
+            console.log("Submit button clicked.");
             
-            let stepName = "";
-            if (catSelect === 'cat_other' || methodSelect === 'custom') {
-                stepName = methodCustom;
-                if (!methodCustom) isValid = false;
-            } else {
-                stepName = stepEl.querySelector('.method-select option:checked')?.textContent;
-                if (!methodSelect) isValid = false;
+            if (!currentPtwId) {
+                Swal.fire('ข้อผิดพลาด', 'ไม่พบรหัสอ้างอิงใบงาน (PTW-ID) โปรดเข้าผ่านระบบขอใบอนุญาตหลัก', 'error');
+                return;
             }
 
-            let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
-            const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
-            if (hazardCustom) hazards.push(hazardCustom);
-            
-            let sources = Array.from(stepEl.querySelectorAll('.check-card[data-type="source"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
-            const sourceCustom = stepEl.querySelector('.source-custom-text').value;
-            if (sourceCustom) sources.push(sourceCustom);
+            const steps = document.querySelectorAll('.step-card');
+            if (steps.length === 0) {
+                 Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาเพิ่มขั้นตอนการปฏิบัติงานอย่างน้อย 1 ขั้นตอน', 'warning');
+                 return;
+            }
 
-            const initScore = parseInt(stepEl.querySelector('.badge-init').textContent);
-            const resScore = parseInt(stepEl.querySelector('.badge-res').textContent);
+            let ejsaDataArray = [];
+            let isValid = true;
+            let errorReason = "";
 
-            let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
-            const measureCustom = stepEl.querySelector('.measure-custom-text').value;
-            if (measureCustom) measures.push(measureCustom);
+            steps.forEach((stepEl, index) => {
+                const catSelect = stepEl.querySelector('.category-select')?.value;
+                const methodSelect = stepEl.querySelector('.method-select')?.value;
+                const methodCustom = stepEl.querySelector('.custom-method-input')?.value;
+                
+                let stepName = "";
+                if (!catSelect || catSelect === "") {
+                     isValid = false; errorReason = `ขั้นตอนที่ ${index+1}: ยังไม่ได้เลือกหมวดหมู่งาน`; return;
+                }
+                
+                if (catSelect === 'cat_other' || methodSelect === 'custom') {
+                    stepName = methodCustom;
+                    if (!methodCustom || methodCustom.trim() === "") { 
+                        isValid = false; errorReason = `ขั้นตอนที่ ${index+1}: โปรดระบุรายละเอียดงานในช่องพิมพ์`; return; 
+                    }
+                } else {
+                    if (!methodSelect || methodSelect === "") { 
+                        isValid = false; errorReason = `ขั้นตอนที่ ${index+1}: ยังไม่ได้เลือกขั้นตอนย่อย`; return; 
+                    }
+                    stepName = stepEl.querySelector('.method-select option:checked')?.textContent;
+                }
 
-            ejsaDataArray.push({
-                step_no: index + 1,
-                step_name: stepName,
-                hazards: hazards,
-                sources: sources,
-                initial_risk: initScore,
-                residual_risk: resScore,
-                measures: measures
+                let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
+                const hazardCustom = stepEl.querySelector('.hazard-custom-text').value;
+                if (hazardCustom) hazards.push(hazardCustom);
+                
+                let sources = Array.from(stepEl.querySelectorAll('.check-card[data-type="source"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
+                const sourceCustom = stepEl.querySelector('.source-custom-text').value;
+                if (sourceCustom) sources.push(sourceCustom);
+
+                const initScore = parseInt(stepEl.querySelector('.badge-init').textContent);
+                const resScore = parseInt(stepEl.querySelector('.badge-res').textContent);
+
+                let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
+                const measureCustom = stepEl.querySelector('.measure-custom-text').value;
+                if (measureCustom) measures.push(measureCustom);
+
+                ejsaDataArray.push({
+                    step_no: index + 1,
+                    step_name: stepName,
+                    hazards: hazards,
+                    sources: sources,
+                    initial_risk: initScore,
+                    residual_risk: resScore,
+                    measures: measures
+                });
             });
-        });
 
-        if (!isValid) {
-            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุหมวดหมู่และขั้นตอนการทำงานให้ครบถ้วน', 'warning');
-            return;
-        }
+            if (!isValid) {
+                Swal.fire('ข้อมูลไม่ครบถ้วน', errorReason, 'warning');
+                return;
+            }
 
-        Swal.fire({ title: 'กำลังบันทึก E-JSA...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'กำลังบันทึก E-JSA...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-        try {
-            if (!supabaseClient) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+            if (!supabaseClient) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ (Supabase SDK not initialized)");
 
             const { data: permitData, error: fetchError } = await supabaseClient.from('tb_work_permits').select('specific_data').eq('ptw_id', currentPtwId).single();
-            if (fetchError) throw fetchError;
+            if (fetchError) throw new Error("ค้นหาใบงานไม่พบในฐานข้อมูล: " + fetchError.message);
 
             let specificData = permitData.specific_data || {};
             specificData.ejsa_data = ejsaDataArray; 
 
             const { error: updateError } = await supabaseClient.from('tb_work_permits').update({ specific_data: specificData }).eq('ptw_id', currentPtwId);
-            if (updateError) throw updateError;
+            if (updateError) throw new Error("ไม่สามารถอัปเดตข้อมูลได้: " + updateError.message);
 
             Swal.fire({
                 title: 'บันทึก E-JSA สำเร็จ!',
@@ -816,8 +837,8 @@
             });
 
         } catch (error) {
-            console.error('Save E-JSA Error:', error);
-            Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+            console.error('Submit JSA Error:', error);
+            Swal.fire('บันทึกไม่สำเร็จ', error.message, 'error');
         }
     }
   </script>
