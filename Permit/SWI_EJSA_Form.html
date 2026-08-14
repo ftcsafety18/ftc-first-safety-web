@@ -43,12 +43,13 @@
     .active-measure .check-text { color: #047857; font-weight: 600; }
     .active-measure .check-box i { opacity: 1; transform: scale(1); }
 
+    /* Flexbox Ordering */
     .hazards-container, .sources-container, .measures-container { display: flex; flex-direction: column; gap: 0.5rem; }
     .check-card[data-checked="false"] { order: 1; opacity: 0.75; }
     .check-card[data-checked="true"] { order: -1; opacity: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
     input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; touch-action: manipulation; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -9px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); border: 2px solid white; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #2A4365; cursor: pointer; margin-top: -10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
     input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
     input[type=range]:focus { outline: none; }
     
@@ -66,7 +67,7 @@
 
 <body class="text-slate-800 pb-24">
 
-  <!-- Sticky Header with Breadcrumb -->
+  <!-- Header -->
   <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
     <div class="max-w-2xl mx-auto flex items-center justify-between px-4 py-2">
       <div class="flex items-center gap-3 w-full">
@@ -90,6 +91,7 @@
       </div>
     </div>
 
+    <!-- Steps Container -->
     <div id="steps-container" class="space-y-4"></div>
 
     <button type="button" onclick="addStep()" class="w-full py-3.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 hover:text-navy hover:border-navy/30 transition-colors shadow-sm">
@@ -125,19 +127,24 @@
 
   <div class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-3 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-40">
     <div class="max-w-2xl mx-auto">
-      <button type="button" onclick="submitJsa()" class="w-full bg-[#B24D29] hover:bg-[#923e20] text-white font-bold py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 transition active:scale-[0.98]">
-        <i data-lucide="save" class="w-5 h-5"></i> บันทึกข้อมูล SWI & E-JSA
+      <button type="button" id="btn-submit-jsa" onclick="submitJsa()" class="w-full bg-[#B24D29] hover:bg-[#923e20] text-white font-bold py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 transition-all active:scale-[0.98]">
+        <i data-lucide="save" class="w-5 h-5"></i> <span id="btn-submit-text">บันทึกข้อมูล SWI & E-JSA</span>
       </button>
     </div>
   </div>
 
   <style> details[open] summary i { transform: rotate(180deg); } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1rem); } </style>
 
+  <!-- SweetAlert2 & Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <script>
-    // 🛡️ Global Error Handler (กันระบบเงียบหาย)
+    // 🛡️ Global Error Handler ป้องกันระบบตายเงียบ
     window.onerror = function(msg, url, lineNo, columnNo, error) {
         console.error("Global JS Error: ", msg, error);
-        Swal.fire('ตรวจพบข้อผิดพลาด', 'ระบบทำงานขัดข้อง กรุณาลองใหม่อีกครั้ง (' + msg + ')', 'error');
+        Swal.fire('ข้อผิดพลาดของระบบ', 'โปรแกรมสะดุดกลางทาง: ' + msg, 'error');
+        resetSubmitButton();
         return false;
     };
 
@@ -153,78 +160,38 @@
     const JOB_CATEGORIES = [
         { id: 'cat_mep_elec', name: 'หมวด 1.1: งานระบบไฟฟ้า (Electrical Work)' },
         { id: 'cat_mep_hw', name: 'หมวด 1.2: งานเชื่อม ตัด เจียร (Hot Work)' },
-        { id: 'cat_mep_hdpe', name: 'หมวด 1.3: งานเชื่อมประกอบท่อ HDPE' },
-        { id: 'cat_mep_fire', name: 'หมวด 1.4: งานติดตั้งระบบดับเพลิง' },
-        { id: 'cat_mep_pt', name: 'หมวด 1.5: งานทดสอบแรงดัน (Pressure Test)' },
-        { id: 'cat_mep_tel', name: 'หมวด 1.6: งานเสาโทรคมนาคม (Telecom)' },
-        { id: 'cat_str_hw', name: 'หมวด 2.1: งานบนที่สูงทั่วไป (Work at Height)' },
-        { id: 'cat_str_scaf', name: 'หมวด 2.2: งานนั่งร้าน (Scaffolding)' },
-        { id: 'cat_str_demo', name: 'หมวด 2.3: งานรื้อถอนดัดแปลง (Minor Demolition)' },
-        { id: 'cat_str_hdemo', name: 'หมวด 2.4: งานรื้อถอนสเกลใหญ่ (Heavy Demolition)' },
-        { id: 'cat_str_pt', name: 'หมวด 2.5: งานดึงลวดอัดแรง (Post-Tension)' },
-        { id: 'cat_str_prec', name: 'หมวด 2.6: งานติดตั้ง Precast' },
-        { id: 'cat_str_alt', name: 'หมวด 2.7: งานดัดแปลงโครงสร้าง (Structural Alteration)' },
+        { id: 'cat_str_scaf', name: 'หมวด 2.1: งานนั่งร้าน (Scaffolding)' },
         { id: 'cat_lift_crane', name: 'หมวด 3.1: งานยกและเคลื่อนย้ายด้วยเครน (Crane)' },
-        { id: 'cat_lift_traf', name: 'หมวด 3.2: งานบนพื้นที่จราจร (Traffic Work)' },
-        { id: 'cat_ug_tun', name: 'หมวด 4.1: งานขุดเจาะอุโมงค์ (Tunneling)' },
-        { id: 'cat_ug_dive', name: 'หมวด 4.2: งานประดาน้ำ (Diving)' },
-        { id: 'cat_ug_cs', name: 'หมวด 4.3: งานสถานที่อับอากาศ (Confined Space)' },
-        { id: 'cat_exc_dig', name: 'หมวด 5.1: งานเจาะและขุดดิน (Excavation)' },
-        { id: 'cat_exc_pile', name: 'หมวด 5.2: งานตอกเสาเข็ม (Piling)' },
-        { id: 'cat_chem_haz', name: 'หมวด 6.1: งานจัดการสารเคมี (Chemical)' },
-        { id: 'cat_chem_paint', name: 'หมวด 6.2: งานพ่นสีอุตสาหกรรม (Painting)' },
-        { id: 'cat_chem_asb', name: 'หมวด 6.3: งานรื้อถอนแร่ใยหิน (Asbestos)' },
-        { id: 'cat_chem_ndt', name: 'หมวด 6.4: งานตรวจสอบ NDT (Radiography)' },
-        { id: 'cat_chem_blast', name: 'หมวด 6.5: งานใช้วัตถุระเบิด (Blasting)' },
+        { id: 'cat_ug_cs', name: 'หมวด 4.1: งานสถานที่อับอากาศ (Confined Space)' },
         { id: 'cat_other', name: 'อื่นๆ (โปรดระบุเอง)' }
     ];
 
     const JOB_STEPS = {
         'cat_mep_elec': [{ id: 'm1_elec_1', name: 'ขั้น 1: แจ้งขออนุญาตและตัดแยกระบบพลังงาน (LOTO) ที่ตู้ควบคุมหลัก' }, { id: 'm1_elec_2', name: 'ขั้น 2: กั้นอาณาเขตบริเวณตู้ควบคุมและจุดปฏิบัติงาน' }, { id: 'm1_elec_3', name: 'ขั้น 3: ใช้เครื่องมือวัดเพื่อยืนยันว่าไม่มีกระแสไฟฟ้า (Verify Zero Energy)' }, { id: 'm1_elec_4', name: 'ขั้น 4: ติดตั้งสายดินชั่วคราว' }, { id: 'm1_elec_5', name: 'ขั้น 5: ปฏิบัติงานติดตั้ง ซ่อมแซม หรือเดินสายไฟ' }, { id: 'm1_elec_6', name: 'ขั้น 6: ปลดระบบ LOTO ตรวจสอบความเรียบร้อย และจ่ายกระแสไฟกลับ' }],
         'cat_mep_hw': [{ id: 'm1_hw_1', name: 'ขั้น 1: เคลียร์พื้นที่และย้ายสารเคมีหรือวัสดุติดไฟออกจากบริเวณ' }, { id: 'm1_hw_2', name: 'ขั้น 2: ติดตั้งฉนวนกันไฟ และจัดเตรียมอุปกรณ์ดับเพลิง' }, { id: 'm1_hw_3', name: 'ขั้น 3: ตรวจวัดปริมาณก๊าซไวไฟในอากาศ' }, { id: 'm1_hw_4', name: 'ขั้น 4: ดำเนินการเชื่อม ตัด หรือเจียรโลหะ' }, { id: 'm1_hw_5', name: 'ขั้น 5: เฝ้าระวังหลังปฏิบัติงานเสร็จสิ้น (Fire Watch) 30-60 นาที' }],
-        'cat_mep_hdpe': [{ id: 'm1_hdpe_1', name: 'ขั้น 1: จัดเตรียม/เคลื่อนย้ายท่อ' }, { id: 'm1_hdpe_2', name: 'ขั้น 2: จัดวางหน้าท่อให้ได้ระดับ' }, { id: 'm1_hdpe_3', name: 'ขั้น 3: เตรียมแผ่นความร้อน' }, { id: 'm1_hdpe_4', name: 'ขั้น 4: ดันหน้าท่อเข้าแผ่นความร้อน' }, { id: 'm1_hdpe_5', name: 'ขั้น 5: ประสานท่อเข้าด้วยกัน' }],
-        'cat_mep_fire': [{ id: 'm1_fire_1', name: 'ขั้น 1: ตรวจสอบแบบและกั้นพื้นที่' }, { id: 'm1_fire_2', name: 'ขั้น 2: ติดตั้งโครงเหล็กรับท่อ' }, { id: 'm1_fire_3', name: 'ขั้น 3: ยกท่อเหล็กดำขึ้นตำแหน่ง' }, { id: 'm1_fire_4', name: 'ขั้น 4: ต่อท่อ/อุปกรณ์ดับเพลิง' }, { id: 'm1_fire_5', name: 'ขั้น 5: ทดสอบแรงดัน (Hydrostatic)' }],
-        'cat_mep_pt': [{ id: 'm1_pt_1', name: 'ขั้น 1: ปิดหน้าแปลน/วาล์ว' }, { id: 'm1_pt_2', name: 'ขั้น 2: กั้นเชือกและป้ายเตือน' }, { id: 'm1_pt_3', name: 'ขั้น 3: อัดน้ำ/อากาศเข้าสู่ระบบ' }, { id: 'm1_pt_4', name: 'ขั้น 4: รักษาระดับแรงดัน (Hold Time)' }, { id: 'm1_pt_5', name: 'ขั้น 5: ตรวจสอบรอยรั่วซึม' }, { id: 'm1_pt_6', name: 'ขั้น 6: คลายแรงดันออกจากระบบ' }],
-        'cat_mep_tel': [{ id: 'm1_tel_1', name: 'ขั้น 1: ตัดระบบสัญญาณคลื่น (RF)' }, { id: 'm1_tel_2', name: 'ขั้น 2: สวมอุปกรณ์และปีนเสา' }, { id: 'm1_tel_3', name: 'ขั้น 3: นำเครื่องมือขึ้นที่สูง' }, { id: 'm1_tel_4', name: 'ขั้น 4: ปฏิบัติงานติดตั้ง' }, { id: 'm1_tel_5', name: 'ขั้น 5: โรยตัวลงและคืนระบบ' }],
-        'cat_str_hw': [{ id: 'm2_hw_1', name: 'ขั้น 1: ตรวจสอบโครงสร้าง/สภาพอากาศ' }, { id: 'm2_hw_2', name: 'ขั้น 2: ติดตั้งจุดยึดเหนี่ยว (Anchor Point)' }, { id: 'm2_hw_3', name: 'ขั้น 3: กั้นพื้นที่ด้านล่าง' }, { id: 'm2_hw_4', name: 'ขั้น 4: ปฏิบัติงานบนที่สูง' }],
         'cat_str_scaf': [{ id: 'm2_scaf_1', name: 'ขั้น 1: สำรวจและปรับระดับพื้นผิวดินให้แน่นและได้ระนาบ' }, { id: 'm2_scaf_2', name: 'ขั้น 2: วางแผ่นรองฐาน (Base Plate) และประกอบโครงสร้างชั้นล่าง' }, { id: 'm2_scaf_3', name: 'ขั้น 3: ประกอบชั้นต่อๆ ไป ติดตั้งราวกันตก ทางเดิน ท่อค้ำยัน' }, { id: 'm2_scaf_4', name: 'ขั้น 4: ยึดโยงนั่งร้านเข้ากับโครงสร้างหลักของอาคาร (Tie-in)' }, { id: 'm2_scaf_5', name: 'ขั้น 5: จป. ตรวจสอบความแข็งแรง และแขวนป้ายสถานะ (Scafftag)' }],
-        'cat_str_demo': [{ id: 'm2_demo_1', name: 'ขั้น 1: สำรวจโครงสร้างและระบบ' }, { id: 'm2_demo_2', name: 'ขั้น 2: ตัดแยกระบบไฟ/ประปา' }, { id: 'm2_demo_3', name: 'ขั้น 3: กั้นพื้นที่และคุมฝุ่น' }, { id: 'm2_demo_4', name: 'ขั้น 4: ทุบตัดผนัง/รื้อถอน' }],
-        'cat_str_hdemo': [{ id: 'm2_hdemo_1', name: 'ขั้น 1: ตัดแยกระบบสาธารณูปโภคทั้งหมด' }, { id: 'm2_hdemo_2', name: 'ขั้น 2: ติดตั้งค้ำยันชั่วคราว' }, { id: 'm2_hdemo_3', name: 'ขั้น 3: กั้นเขต/ใช้เครื่องจักรทุบทำลาย' }, { id: 'm2_hdemo_4', name: 'ขั้น 4: คัดแยกและขนย้าย' }],
-        'cat_str_pt': [{ id: 'm2_pt_1', name: 'ขั้น 1: เทคอนกรีตและบ่ม' }, { id: 'm2_pt_2', name: 'ขั้น 2: ร้อยลวด/กั้นพื้นที่' }, { id: 'm2_pt_3', name: 'ขั้น 3: ดึงลวดด้วยแม่แรงไฮดรอลิก' }, { id: 'm2_pt_4', name: 'ขั้น 4: ล็อกลวดและอัดน้ำปูน' }],
-        'cat_str_prec': [{ id: 'm2_prec_1', name: 'ขั้น 1: เครนยกแผ่นคอนกรีต' }, { id: 'm2_prec_2', name: 'ขั้น 2: ประคองแผ่นเข้าตำแหน่ง' }, { id: 'm2_prec_3', name: 'ขั้น 3: ติดตั้งค้ำยัน (Bracing)' }, { id: 'm2_prec_4', name: 'ขั้น 4: ปลดสลิงและเกร้าท์' }],
-        'cat_str_alt': [{ id: 'm2_alt_1', name: 'ขั้น 1: อพยพและกั้นเขต' }, { id: 'm2_alt_2', name: 'ขั้น 2: ติดตั้งเหล็กค้ำยัน (Shoring)' }, { id: 'm2_alt_3', name: 'ขั้น 3: ทุบตัด/ส่องกล้องระดับ' }, { id: 'm2_alt_4', name: 'ขั้น 4: เสริมโครงสร้างใหม่และถอดค้ำยัน' }],
         'cat_lift_crane': [{ id: 'm3_crane_1', name: 'ขั้น 1: ตรวจสอบความพร้อมของรถเครน สลิง รอก และสภาพพื้นดิน' }, { id: 'm3_crane_2', name: 'ขั้น 2: กางขาหยั่ง (Outrigger) เต็มระยะ และใช้แผ่นรองขา' }, { id: 'm3_crane_3', name: 'ขั้น 3: คำนวณน้ำหนักวัสดุ และให้สัญญาณผูกรัดวัสดุ' }, { id: 'm3_crane_4', name: 'ขั้น 4: ยกวัสดุขึ้นจากพื้นเล็กน้อยเพื่อทดสอบสมดุล (Test Lift)' }, { id: 'm3_crane_5', name: 'ขั้น 5: เคลื่อนย้ายวัสดุตามสัญญาณมือ และวางลง' }],
-        'cat_lift_traf': [{ id: 'm3_traf_1', name: 'ขั้น 1: ขออนุญาตปิดจราจร/วางกรวย' }, { id: 'm3_traf_2', name: 'ขั้น 2: ติดตั้งแบริเออร์/จัด Flagman' }, { id: 'm3_traf_3', name: 'ขั้น 3: ดำเนินการปูยาง/ซ่อมแซม' }],
-        'cat_ug_tun': [{ id: 'm4_tun_1', name: 'ขั้น 1: เจาะเปิดหน้าดิน/ค้ำยัน' }, { id: 'm4_tun_2', name: 'ขั้น 2: ขุดเจาะเนื้อหิน/ระบายอากาศ' }, { id: 'm4_tun_3', name: 'ขั้น 3: ขนถ่ายเศษดิน/พ่นคอนกรีต' }, { id: 'm4_tun_4', name: 'ขั้น 4: เฝ้าระวังน้ำใต้ดิน' }],
-        'cat_ug_dive': [{ id: 'm4_dive_1', name: 'ขั้น 1: เตรียมระบบจ่ายอากาศ/ประเมินกระแสน้ำ' }, { id: 'm4_dive_2', name: 'ขั้น 2: ปฏิบัติงานใต้น้ำ' }, { id: 'm4_dive_3', name: 'ขั้น 3: กลับขึ้นผิวน้ำ' }],
-        'cat_ug_cs': [{ id: 'cs_1', name: 'ขั้น 1: ประเมินความเสี่ยงและขอใบอนุญาตทำงาน (Work Permit)' }, { id: 'cs_2', name: 'ขั้น 2: ตัดแยกระบบพลังงาน (LOTO) และปิดกั้นวาล์ว' }, { id: 'cs_3', name: 'ขั้น 3: ตรวจวัดปริมาณออกซิเจนและก๊าซพิษก่อนเข้าพื้นที่' }, { id: 'cs_4', name: 'ขั้น 4: ระบายอากาศอย่างต่อเนื่อง' }, { id: 'cs_5', name: 'ขั้น 5: จัดเตรียมทีมช่วยเหลือและจุดชำระล้างการปนเปื้อน' }, { id: 'cs_6', name: 'ขั้น 6: ปฏิบัติงานโดยมีผู้เฝ้าระวัง (Standby Person) ตลอดเวลา' }],
-        'cat_exc_dig': [{ id: 'm5_exc_1', name: 'ขั้น 1: สำรวจแนวสาธารณูปโภค' }, { id: 'm5_exc_2', name: 'ขั้น 2: ขุดเปิดดินและตั้งค้ำยัน (Shoring)' }, { id: 'm5_exc_3', name: 'ขั้น 3: จัดบันได/กองดิน' }],
-        'cat_exc_pile': [{ id: 'm5_pile_1', name: 'ขั้น 1: ตั้งปั้นจั่น/ยกเสาเข็ม' }, { id: 'm5_pile_2', name: 'ขั้น 2: กั้นเขต/ตอกเสาเข็ม' }, { id: 'm5_pile_3', name: 'ขั้น 3: ตัดหัวเสาเข็ม' }],
-        'cat_chem_haz': [{ id: 'm6_chem_1', name: 'ขั้น 1: จัดพื้นที่เก็บ/ใช้งาน' }, { id: 'm6_chem_2', name: 'ขั้น 2: จัดการของเสีย/หกเปื้อน' }, { id: 'm6_chem_3', name: 'ขั้น 3: การชำระล้าง (Decontamination)' }],
-        'cat_chem_paint': [{ id: 'm6_paint_1', name: 'ขั้น 1: เตรียมพ่นทราย/ตั้งพัดลม' }, { id: 'm6_paint_2', name: 'ขั้น 2: ผสมสีและพ่นสี' }, { id: 'm6_paint_3', name: 'ขั้น 3: จัดการเศษผ้าเปื้อนทินเนอร์' }],
-        'cat_chem_asb': [{ id: 'm6_asb_1', name: 'ขั้น 1: ปิดผนึกพื้นที่/ตั้งเครื่องดูด (Negative Pressure)' }, { id: 'm6_asb_2', name: 'ขั้น 2: รื้อถอน/บรรจุถุง' }, { id: 'm6_asb_3', name: 'ขั้น 3: ผ่านห้องชำระล้าง' }],
-        'cat_chem_ndt': [{ id: 'm6_ndt_1', name: 'ขั้น 1: คำนวณระยะ/กั้นพื้นที่' }, { id: 'm6_ndt_2', name: 'ขั้น 2: บังคับเครื่องยิง/วัดรังสี' }, { id: 'm6_ndt_3', name: 'ขั้น 3: เก็บแหล่งกำเนิดรังสี' }],
-        'cat_chem_blast': [{ id: 'm6_blast_1', name: 'ขั้น 1: บรรจุระเบิด/เดินสายชนวน' }, { id: 'm6_blast_2', name: 'ขั้น 2: อพยพคน/กดจุดระเบิด' }, { id: 'm6_blast_3', name: 'ขั้น 3: ตรวจสอบระเบิดด้าน (Misfire)' }]
+        'cat_ug_cs': [{ id: 'cs_1', name: 'ขั้น 1: ประเมินความเสี่ยงและขอใบอนุญาตทำงาน (Work Permit)' }, { id: 'cs_2', name: 'ขั้น 2: ตัดแยกระบบพลังงาน (LOTO) และปิดกั้นวาล์ว' }, { id: 'cs_3', name: 'ขั้น 3: ตรวจวัดปริมาณออกซิเจนและก๊าซพิษก่อนเข้าพื้นที่' }, { id: 'cs_4', name: 'ขั้น 4: ระบายอากาศอย่างต่อเนื่อง' }, { id: 'cs_5', name: 'ขั้น 5: จัดเตรียมทีมช่วยเหลือและจุดชำระล้างการปนเปื้อน' }, { id: 'cs_6', name: 'ขั้น 6: ปฏิบัติงานโดยมีผู้เฝ้าระวัง (Standby Person) ตลอดเวลา' }]
     };
 
     const HAZARDS_DB = {
-        "อันตรายจากไฟฟ้าและอัคคีภัย (Electrical & Fire)": ["ประเมินแหล่งจ่ายไฟสำรอง/UPS ผิดพลาด", "ไฟดูดจากการปลดเบรกเกอร์ผิดตู้", "กระแสไฟฟ้าย้อนกลับ (Backfeed)", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค", "สะเก็ดไฟกระเด็นโดนสารไวไฟ", "ไอระเหยสะสมเกิดระเบิด (Flash Fire)", "สะเก็ดไฟซ่อนเร้น (Smoldering) คุกรุ่น", "บูมเครนตวัดโดนสายไฟแรงสูง", "สกัดโดนสายไฟเมนที่ซ่อนอยู่ในกำแพง", "มอเตอร์พัดลมเกิดประกายไฟ ห้องพ่นสีระเบิด (Vapor Cloud)"],
-        "อันตรายทางกายภาพและแรงกล (Physical)": ["ท่อกลิ้งทับเท้า/สิ่งของหล่นทับ", "นิ้วถูกหนีบ (Pinch Point)", "พลัดตกจากที่สูง/ลื่นล้ม", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง", "แผลพุพองรุนแรงจากความร้อน", "ดินทรุดตัว/โครงสร้างเอียง", "นั่งร้านล้มคว่ำ/ประกอบผิดวิธี", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "ปวดเมื่อยกล้ามเนื้อจากการยก/ก้มเงย", "ของมีคมบาด/ทิ่มแทง", "วัสดุแกว่งตัวอย่างรุนแรง (Swinging load)", "รถพุ่งทะลุแนวกั้น/เฉี่ยวชน", "กองเศษวัสดุสูงเกินไปสไลด์ทับคน"],
-        "อันตรายจากสภาพแวดล้อมและสารเคมี (Environment/Chemical)": ["รังสี UV ทำลายตา, สูดดมฟูมโลหะ", "ขาดอากาศหายใจ (O2 < 19.5%)", "สูดดมก๊าซพิษ (H2S, CO)", "พัดลมดูดไอเสียรถยนต์อัดเข้าไปในบ่อ", "สารเคมี/น้ำรั่วซึมเข้าพื้นที่", "นำสารเคมีปนเปื้อนออกมาภายนอก", "ฝุ่นปูนเข้าตาขณะเจาะ", "น้ำยาประสานท่อกัดผิว", "ผสมของเสียผิดเกิดก๊าซพิษ/ปนเปื้อนแหล่งน้ำ"],
-        "อันตรายด้านการจัดการและแรงดัน (Mgt & Pressure)": ["ประเมินความเสี่ยงหน้างานผิดพลาด", "ผู้ปฏิบัติงานไม่เข้าใจอันตราย", "บุคคลภายนอกเดินชนหรือสัมผัสอุปกรณ์", "เครื่องมือวัดชำรุด/แจ้งค่าเท็จ", "ผู้เฝ้าระวังละทิ้งหน้าที่/ขาดการสื่อสาร", "ผู้ปฏิบัติงานหมดสติโดยไม่มีใครทราบ", "ขันน็อตไม่แน่น ปะเก็นปลิ้นเมื่อรับแรงดัน", "ท่อปริแตกหรือระเบิด (โดยเฉพาะลม Pneumatic)", "น้ำแรงดันสูงทะลุผิวหนัง (High-Pressure Injection)"]
+        "อันตรายจากไฟฟ้าและอัคคีภัย (Electrical & Fire)": ["ประเมินแหล่งจ่ายไฟสำรอง/UPS ผิดพลาด", "ไฟดูดจากการปลดเบรกเกอร์ผิดตู้", "กระแสไฟฟ้าย้อนกลับ (Backfeed)", "กระแสไฟฟ้าลัดวงจร/ประกายไฟอาร์ค", "สะเก็ดไฟกระเด็นโดนสารไวไฟ", "ไอระเหยสะสมเกิดระเบิด (Flash Fire)", "สะเก็ดไฟซ่อนเร้น (Smoldering) คุกรุ่น", "บูมเครนตวัดโดนสายไฟแรงสูง"],
+        "อันตรายทางกายภาพและแรงกล (Physical)": ["ท่อกลิ้งทับเท้า/สิ่งของหล่นทับ", "นิ้วถูกหนีบ (Pinch Point)", "พลัดตกจากที่สูง/ลื่นล้ม", "วัสดุ/เครื่องมือร่วงหล่นใส่คนด้านล่าง", "แผลพุพองรุนแรงจากความร้อน", "ดินทรุดตัว/โครงสร้างเอียง", "นั่งร้านล้มคว่ำ/ประกอบผิดวิธี", "ประเมินน้ำหนักผิด/ของหลุดขณะยก", "ปวดเมื่อยกล้ามเนื้อจากการยก/ก้มเงย", "ของมีคมบาด/ทิ่มแทง"],
+        "อันตรายจากสภาพแวดล้อมและสารเคมี (Environment/Chemical)": ["รังสี UV ทำลายตา, สูดดมฟูมโลหะ", "ขาดอากาศหายใจ (O2 < 19.5%)", "สูดดมก๊าซพิษ (H2S, CO)", "พัดลมดูดไอเสียรถยนต์อัดเข้าไปในบ่อ", "สารเคมี/น้ำรั่วซึมเข้าพื้นที่", "นำสารเคมีปนเปื้อนออกมาภายนอก"],
+        "อันตรายด้านการจัดการและบุคคล (Human/Management)": ["ประเมินความเสี่ยงหน้างานผิดพลาด", "ผู้ปฏิบัติงานไม่เข้าใจอันตราย", "บุคคลภายนอกเดินชนหรือสัมผัสอุปกรณ์", "เครื่องมือวัดชำรุด/แจ้งค่าเท็จ", "ผู้เฝ้าระวังละทิ้งหน้าที่/ขาดการสื่อสาร", "ผู้ปฏิบัติงานหมดสติโดยไม่มีใครทราบ"]
     };
 
     const SOURCES_DB = {
         "บุคคลและการจัดการ (Human & Management)": ["บุคคลและการจัดการ (Human/Management)", "การยศาสตร์ (Ergonomics)"],
         "ทรัพยากรและเครื่องจักร (Resource & Machine)": ["เครื่องมือ/อุปกรณ์ (Equipment/Tool)", "เครื่องจักรหนัก (Heavy MC)", "ยานพาหนะ (Vehicle)"],
         "สภาพแวดล้อมและพลังงาน (Environment & Energy)": ["ระบบไฟฟ้า (Electrical)", "สภาพแวดล้อมทางอากาศ (Environment)", "แรงโน้มถ่วง/ความสูง (Gravity)", "สารเคมี/วัตถุดิบ (Chemical/Material)", "ความร้อน (Thermal)"],
-        "โครงสร้างและกายภาพ (Structural & Physical)": ["โครงสร้าง (Structural)", "กลศาสตร์ (Mechanical)", "ลักษณะทางกายภาพ (Physical)", "แรงดัน (Pressure)", "รังสีคลื่นแม่เหล็กไฟฟ้า (Radiation)"]
+        "โครงสร้างและกายภาพ (Structural & Physical)": ["โครงสร้าง (Structural)", "กลศาสตร์ (Mechanical)", "ลักษณะทางกายภาพ (Physical)"]
     };
 
     const MEASURES_DB = {
         "1. การกำจัดและทดแทน (Elimination/Substitution)": ["เปลี่ยนจากการเชื่อมเป็นการใช้น็อต (Substitution)", "ใช้รถกระเช้าแทนการตั้งนั่งร้าน (ถ้าหน้างานเอื้ออำนวย)", "เคลียร์พื้นที่และเคลื่อนย้ายสารเคมี/วัสดุติดไฟออก", "แบ่งวัสดุออกเป็นชิ้นเล็กๆ เพื่อลดน้ำหนักยก"],
-        "2. การควบคุมทางวิศวกรรม (Engineering Controls)": ["ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)", "ติดตั้งระบบเบรกเกอร์ตัดไฟรั่ว (ELCB)", "ติดตั้งระบบดูดควันเชื่อมแบบเคลื่อนที่", "ติดตั้งราวกันตก 2 ชั้น และแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)", "ติดตั้งระบบเตือนน้ำหนักเกิน (LMI)", "ติดตั้งระบบพัดลมอัดอากาศบริสุทธิ์ (Forced Air)", "ใช้อุปกรณ์กันระเบิด (Explosion Proof) ทุกชนิดในบริเวณ"],
-        "3. การควบคุมเชิงบริหาร (Administrative Controls)": ["ใช้มาตรการตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามคนนอกเข้า", "จัดช่างเฝ้าระวังไฟ (Fire Watcher) อย่างน้อย 30-60 นาที", "จัดทำแผนการยก (Lifting Plan)", "สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล", "ผู้อนุญาตต้องผ่านอบรม 4 ผู้/เดินสำรวจหน้างาน (Site Walk)", "เตรียมจุด 'การชำระล้าง' ก่อนออกพื้นที่", "ผู้เฝ้าระวังประจำปากบ่อห้ามละทิ้งหน้าที่เด็ดขาด", "ตรวจวัดปริมาณก๊าซไวไฟ/ก๊าซพิษ (Gas Test)", "วิศวกรตรวจสอบแบบ As-built ก่อนระบุจุดทุบ"],
+        "2. การควบคุมทางวิศวกรรม (Engineering Controls)": ["ใช้เครื่องมือช่างชนิดหุ้มฉนวน (Insulated Tools)", "ติดตั้งระบบเบรกเกอร์ตัดไฟรั่ว (ELCB)", "ติดตั้งระบบดูดควันเชื่อมแบบเคลื่อนที่", "ติดตั้งราวกันตก 2 ชั้น และแผ่นกันของตก (Toe board)", "ขึงตาข่ายกันตก (Safety Net)", "ติดตั้งระบบเตือนน้ำหนักเกิน (LMI)", "ติดตั้งระบบพัดลมอัดอากาศบริสุทธิ์ (Forced Air)"],
+        "3. การควบคุมเชิงบริหาร (Administrative Controls)": ["ใช้มาตรการตัดแยกพลังงาน (LOTO) อย่างเคร่งครัด", "กั้นพื้นที่เป็น 'พื้นที่อันตราย' ห้ามคนนอกเข้า", "จัดช่างเฝ้าระวังไฟ (Fire Watcher) อย่างน้อย 30-60 นาที", "จัดทำแผนการยก (Lifting Plan)", "สื่อสารด้วยวิทยุ/สัญญาณมือมาตรฐานสากล", "ผู้อนุญาตต้องผ่านอบรม 4 ผู้/เดินสำรวจหน้างาน (Site Walk)", "เตรียมจุด 'การชำระล้าง' ก่อนออกพื้นที่", "ผู้เฝ้าระวังประจำปากบ่อห้ามละทิ้งหน้าที่เด็ดขาด", "ตรวจวัดปริมาณก๊าซไวไฟ/ก๊าซพิษ (Gas Test)"],
         "4. อุปกรณ์ป้องกัน (PPE)": ["สวมหน้ากากเชื่อมปรับแสงอัตโนมัติ/หน้ากากกรองฟูม", "สวมเข็มขัดนิรภัยแบบเต็มตัว (Full Body Harness) เกี่ยวตะขอตลอดเวลา", "สวมถุงมือยางกันไฟฟ้า/รองเท้ากันไฟฟ้า", "สวมแว่นตานิรภัย/ถุงมือหนัง/ถุงมือกันความร้อน", "ใช้เครื่องช่วยหายใจชนิดถังติดตัว (SCBA) สำหรับฉุกเฉิน", "สวมรองเท้านิรภัยหัวเหล็ก/เสื้อสะท้อนแสง"]
     };
 
@@ -239,7 +206,7 @@
         'm1_hw_1': { hazards: ["สะเก็ดไฟกระเด็นโดนสารไวไฟ"], sources: ["สภาพแวดล้อมทางอากาศ (Environment)"], measures: ["เคลียร์พื้นที่และเคลื่อนย้ายสารเคมี/วัสดุติดไฟออก"] },
         'm1_hw_2': { hazards: ["ถังดับเพลิงเสื่อมสภาพ แรงดันตก"], sources: ["เครื่องมือ/อุปกรณ์ (Equipment/Tool)"], measures: ["จัดเตรียมถังดับเพลิงและแผ่นกันไฟ"] },
         'm1_hw_3': { hazards: ["ไอระเหยสะสมเกิดระเบิด (Flash Fire)"], sources: ["สารเคมี/วัตถุดิบ (Chemical/Material)"], measures: ["ตรวจวัดปริมาณก๊าซไวไฟ/ก๊าซพิษ (Gas Test)"] },
-        'm1_hw_4': { hazards: ["รังสี UV ทำลายตา, สูดดมฟูมโลหะ"], sources: ["สภาพแวดล้อมทางอากาศ (Environment)", "งานความร้อน (Hot Work)"], measures: ["ติดตั้งระบบดูดควันเชื่อมแบบเคลื่อนที่", "สวมหน้ากากเชื่อมปรับแสงอัตโนมัติ/หน้ากากกรองฟูม"] },
+        'm1_hw_4': { hazards: ["รังสี UV ทำลายตา, สูดดมฟูมโลหะ"], sources: ["สภาพแวดล้อมทางอากาศ (Environment)", "ความร้อน (Thermal)"], measures: ["ติดตั้งระบบดูดควันเชื่อมแบบเคลื่อนที่", "สวมหน้ากากเชื่อมปรับแสงอัตโนมัติ/หน้ากากกรองฟูม"] },
         'm1_hw_5': { hazards: ["สะเก็ดไฟซ่อนเร้น (Smoldering) คุกรุ่น"], sources: ["ความร้อน (Thermal)"], measures: ["จัดช่างเฝ้าระวังไฟ (Fire Watcher) อย่างน้อย 30-60 นาที"] },
         
         'm2_scaf_1': { hazards: ["ดินทรุดตัว/โครงสร้างเอียง"], sources: ["โครงสร้าง (Structural)"], measures: ["ใช้แผ่นไม้รองฐาน (Sole board)/รองขาเครน (Outrigger pad)"] },
@@ -262,7 +229,6 @@
         'cs_6': { hazards: ["ผู้ปฏิบัติงานหมดสติโดยไม่มีใครทราบ", "ผู้เฝ้าระวังละทิ้งหน้าที่/ขาดการสื่อสาร"], sources: ["บุคคลและการจัดการ (Human/Management)"], measures: ["สวมเข็มขัดนิรภัยแบบเต็มตัว (Full Body Harness) เกี่ยวตะขอตลอดเวลา", "ผู้เฝ้าระวังประจำปากบ่อห้ามละทิ้งหน้าที่เด็ดขาด", "ใช้เครื่องช่วยหายใจชนิดถังติดตัว (SCBA) สำหรับฉุกเฉิน"] }
     };
 
-    // Intersection Observer for Breadcrumb
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if(entry.isIntersecting) {
@@ -327,7 +293,6 @@
         customInput.classList.add('hidden');
         customInput.value = '';
         
-        // Reset all checks
         const allCards = stepContainer.querySelectorAll('.check-card');
         allCards.forEach(card => {
             card.classList.remove('active-hazard', 'active-source', 'active-measure');
@@ -366,7 +331,6 @@
             customInput.classList.add('hidden');
         }
 
-        // Reset all
         const allCards = stepContainer.querySelectorAll('.check-card');
         allCards.forEach(card => {
             card.classList.remove('active-hazard', 'active-source', 'active-measure');
@@ -377,7 +341,6 @@
             }
         });
 
-        // Smart Auto Select & Move to Top
         if (SMART_LOGIC[value]) {
             const { hazards, sources, measures } = SMART_LOGIC[value];
             
@@ -397,7 +360,6 @@
             });
         }
 
-        // Smart Accordion Sorting
         let targetHzCat = "อันตรายทางกายภาพและแรงกล (Physical)"; 
         if(catSelectValue.includes('elec') || catSelectValue.includes('hw')) targetHzCat = "อันตรายจากไฟฟ้าและอัคคีภัย (Electrical & Fire)";
         else if(catSelectValue.includes('chem') || catSelectValue.includes('cs') || catSelectValue.includes('paint')) targetHzCat = "อันตรายจากสภาพแวดล้อมและสารเคมี (Environment/Chemical)";
@@ -419,7 +381,6 @@
         updateBreadcrumb(stepContainer);
     }
 
-    // 🧠 THE NEW RISK MATRIX CALCULATION UI
     function calculateRisk(stepId) {
         const card = document.getElementById(stepId);
         
@@ -431,23 +392,19 @@
         const rS = parseInt(card.querySelector('.res-s').value); 
         const rScore = rL * rS;
 
-        // Maps for explicit text
         const lMap = { 1: 'แทบไม่เกิด (Rare)', 2: 'เกิดได้น้อย (Unlikely)', 3: 'ปานกลาง (Possible)', 4: 'เกิดบ่อย (Likely)', 5: 'เกิดแน่นอน (Certain)' };
         const sMap = { 1: 'ไม่บาดเจ็บ (No Injury)', 2: 'D (Minor)', 3: 'C (Lost Time)', 4: 'B (Disability)', 5: 'A (Fatal)' };
 
-        // Update Slider End Labels
         card.querySelector('.lbl-init-l').textContent = iL;
         card.querySelector('.lbl-init-s').textContent = `${iS} [${sMap[iS].split(' ')[0]}]`;
         card.querySelector('.lbl-res-l').textContent = rL;
         card.querySelector('.lbl-res-s').textContent = `${rS} [${sMap[rS].split(' ')[0]}]`;
 
-        // Update Explicit Equations Box
         card.querySelector('.eq-init-l').textContent = `L: ${iL} (${lMap[iL].split(' ')[0]})`;
         card.querySelector('.eq-init-s').textContent = `S: ${iS} (${sMap[iS].split(' ')[0]})`;
         card.querySelector('.eq-res-l').textContent = `L: ${rL} (${lMap[rL].split(' ')[0]})`;
         card.querySelector('.eq-res-s').textContent = `S: ${rS} (${sMap[rS].split(' ')[0]})`;
 
-        // Badge Update Function
         const updateBadge = (score, el, isInitial) => {
             el.textContent = score;
             const baseClass = isInitial ? 'badge-init' : 'badge-res';
@@ -467,7 +424,6 @@
         updateBadge(iScore, card.querySelector('.badge-init'), true);
         updateBadge(rScore, card.querySelector('.badge-res'), false);
         
-        // Residual Status Gate
         const residualStatusEl = card.querySelector('.residual-status');
         if (rScore <= 9) {
             residualStatusEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-[11px] shadow-sm border border-emerald-200 w-full"><i data-lucide="check-circle-2" class="w-4 h-4"></i> ความเสี่ยงอยู่ในระดับยอมรับได้ (เริ่มงานได้)</span>`;
@@ -551,13 +507,12 @@
                 <div class="flex justify-between items-center mb-1">
                     <p class="text-[13px] font-bold text-slate-700 uppercase flex items-center gap-1"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> 4. ความเสี่ยงก่อนควบคุม</p>
                 </div>
-                <!-- Acceptance Criteria Guide -->
+                
                 <div class="text-[10px] text-slate-500 mb-2 font-medium bg-slate-50 p-1.5 rounded border border-slate-100 flex justify-center gap-3">
                     <span><i data-lucide="check-circle-2" class="w-3 h-3 inline text-emerald-500"></i> <span class="font-bold text-slate-600">1-9</span> ยอมรับได้</span>
                     <span><i data-lucide="x-circle" class="w-3 h-3 inline text-red-500"></i> <span class="font-bold text-slate-600">10-25</span> ห้ามทำงาน</span>
                 </div>
 
-                <!-- Equation Bar -->
                 <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-200 mb-4 shadow-inner">
                     <div class="flex flex-col gap-0.5 text-[11px]">
                         <div class="eq-init-l font-bold text-navy">L: 3 (ปานกลาง)</div>
@@ -737,10 +692,18 @@
         }
     }
 
-    // ==========================================
-    // 🚀 ระบบบันทึกข้อมูล (ส่งเข้า Supabase) แบบไร้บั๊ก!
-    // ==========================================
+    // 🚀 ระบบบันทึกข้อมูล (Bulletproof Submit)
+    function resetSubmitButton() {
+        const submitBtn = document.getElementById('btn-submit-jsa');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-75', 'cursor-wait', 'bg-emerald-600', 'hover:bg-emerald-700');
+        submitBtn.classList.add('bg-[#B24D29]', 'hover:bg-[#923e20]');
+        submitBtn.innerHTML = `<i data-lucide="save" class="w-5 h-5"></i> <span id="btn-submit-text">บันทึกข้อมูล SWI & E-JSA</span>`;
+        lucide.createIcons();
+    }
+
     async function submitJsa() {
+        const submitBtn = document.getElementById('btn-submit-jsa');
         try {
             console.log("Submit button clicked.");
             
@@ -778,7 +741,8 @@
                     if (!methodSelect || methodSelect === "") { 
                         isValid = false; errorReason = `ขั้นตอนที่ ${index+1}: ยังไม่ได้เลือกขั้นตอนย่อย`; return; 
                     }
-                    stepName = stepEl.querySelector('.method-select option:checked')?.textContent;
+                    const optChecked = stepEl.querySelector('.method-select option:checked');
+                    stepName = optChecked ? optChecked.textContent : "";
                 }
 
                 let hazards = Array.from(stepEl.querySelectorAll('.check-card[data-type="hazard"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
@@ -789,8 +753,10 @@
                 const sourceCustom = stepEl.querySelector('.source-custom-text').value;
                 if (sourceCustom) sources.push(sourceCustom);
 
-                const initScore = parseInt(stepEl.querySelector('.badge-init').textContent);
-                const resScore = parseInt(stepEl.querySelector('.badge-res').textContent);
+                const initBadge = stepEl.querySelector('.badge-init');
+                const resBadge = stepEl.querySelector('.badge-res');
+                const initScore = initBadge ? parseInt(initBadge.textContent) || 0 : 0;
+                const resScore = resBadge ? parseInt(resBadge.textContent) || 0 : 0;
 
                 let measures = Array.from(stepEl.querySelectorAll('.check-card[data-type="measure"][data-checked="true"]')).map(c => c.querySelector('.check-text').textContent);
                 const measureCustom = stepEl.querySelector('.measure-custom-text').value;
@@ -812,7 +778,17 @@
                 return;
             }
 
-            Swal.fire({ title: 'กำลังบันทึก E-JSA...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            // --- UI Loading State ---
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-wait');
+            submitBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span class="tracking-wide">กำลังบันทึกข้อมูล...</span>`;
+            
+            Swal.fire({ 
+                title: 'กำลังอัปเดตฐานข้อมูล...', 
+                html: 'โปรดรอสักครู่ ระบบกำลังจัดเก็บ E-JSA<br><span class="text-xs text-slate-400">Ref: ' + currentPtwId + '</span>',
+                allowOutsideClick: false, 
+                didOpen: () => Swal.showLoading() 
+            });
 
             if (!supabaseClient) throw new Error("ไม่สามารถเชื่อมต่อฐานข้อมูลได้ (Supabase SDK not initialized)");
 
@@ -825,12 +801,19 @@
             const { error: updateError } = await supabaseClient.from('tb_work_permits').update({ specific_data: specificData }).eq('ptw_id', currentPtwId);
             if (updateError) throw new Error("ไม่สามารถอัปเดตข้อมูลได้: " + updateError.message);
 
+            // --- UI Success State ---
+            submitBtn.classList.remove('bg-[#B24D29]', 'hover:bg-[#923e20]', 'opacity-75', 'cursor-wait');
+            submitBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            submitBtn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> <span class="tracking-wide">บันทึกข้อมูลเรียบร้อยแล้ว!</span>`;
+            lucide.createIcons();
+
             Swal.fire({
                 title: 'บันทึก E-JSA สำเร็จ!',
-                text: 'ข้อมูลเชื่อมโยงเข้ากับใบอนุญาต ' + currentPtwId + ' เรียบร้อยแล้ว',
+                text: 'ข้อมูล JSA ถูกเชื่อมโยงเข้ากับใบอนุญาต ' + currentPtwId + ' เรียบร้อยแล้ว',
                 icon: 'success',
-                confirmButtonColor: '#B24D29',
-                confirmButtonText: 'ปิดหน้าต่าง'
+                confirmButtonColor: '#059669',
+                confirmButtonText: 'ปิดและกลับสู่หน้าหลัก',
+                showClass: { popup: 'animate__animated animate__zoomIn' }
             }).then(() => {
                 if (typeof liff !== 'undefined' && liff.isInClient()) { liff.closeWindow(); } 
                 else { window.location.href = 'index.html'; }
@@ -838,7 +821,12 @@
 
         } catch (error) {
             console.error('Submit JSA Error:', error);
-            Swal.fire('บันทึกไม่สำเร็จ', error.message, 'error');
+            resetSubmitButton();
+            Swal.fire({
+                title: 'บันทึกไม่สำเร็จ', 
+                html: `<p class="text-sm">เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล:</p><p class="text-xs text-red-500 mt-2 bg-red-50 p-2 rounded">${error.message}</p><p class="text-xs text-slate-500 mt-2">โปรดตรวจสอบว่าเปิดเข้าใช้งานผ่านระบบขอใบอนุญาตหลัก (PTW) หรือไม่</p>`,
+                icon: 'error'
+            });
         }
     }
   </script>
