@@ -176,7 +176,8 @@ tailwind.config = { theme: { extend: {
     </div>
 
     <p class="mt-4 text-[11px] text-slate-400">
-      รหัสผู้รับเหมา: C = นิติบุคคล / P = บุคคลธรรมดา — บุคคลธรรมดาถูกระบบห้ามขอใบอนุญาตงานเสี่ยงสูงโดยอัตโนมัติ
+      รหัสผู้รับเหมาใช้เลข 5 หลักชุดเดียวกับระบบบัญชีและ PR/WO เดิม เพื่อให้ตามรอยประวัติการสั่งจ้างย้อนกลับได้
+      — บุคคลธรรมดาถูกระบบห้ามขอใบอนุญาตงานเสี่ยงสูงโดยอัตโนมัติ
     </p>
   </main>
 </div>
@@ -214,7 +215,7 @@ tailwind.config = { theme: { extend: {
         <div>
           <label class="lbl">รหัสผู้รับเหมา <span class="text-red-500">*</span></label>
           <input id="e-id" class="fld font-mono">
-          <p class="text-[10px] text-slate-400 mt-1">แก้ไขไม่ได้หลังบันทึก</p>
+          <p class="text-[10px] text-slate-400 mt-1">เลข 5 หลักต่อเนื่องจากทะเบียนเดิม แก้ไขไม่ได้หลังบันทึก</p>
         </div>
         <div class="sm:col-span-2">
           <label class="lbl">ชื่อผู้รับเหมา <span class="text-red-500">*</span></label>
@@ -253,10 +254,12 @@ tailwind.config = { theme: { extend: {
           </div>
         </div>
 
-        <!-- บุคคลธรรมดา : E-Agreement -->
+        <!-- บุคคลธรรมดา : ข้อตกลงสละสิทธิเรียกร้อง -->
         <div id="box-agree" class="hidden">
-          <div class="rounded-lg bg-slate-50 border border-slate-200 p-3 mb-3 max-h-40 overflow-y-auto">
-            <p class="text-[11px] font-bold text-brand-navy mb-1">ข้อตกลงรับภาระภาษีหัก ณ ที่จ่าย</p>
+          <div class="rounded-lg bg-slate-50 border border-slate-200 p-3 mb-3 max-h-48 overflow-y-auto">
+            <p class="text-[11px] font-bold text-brand-navy mb-1">
+              ข้อตกลงรับภาระภาษีและสละสิทธิเรียกร้อง (Hold Harmless Agreement)
+            </p>
             <p id="agreement-text" class="text-[11px] text-slate-600 leading-relaxed"></p>
           </div>
           <label class="flex items-start gap-2.5 cursor-pointer">
@@ -265,8 +268,25 @@ tailwind.config = { theme: { extend: {
               ผู้รับเหมารายนี้ได้รับทราบและยอมรับข้อตกลงข้างต้นแล้ว
             </span>
           </label>
-          <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mt-3">
-            ⚠️ ข้อความข้างต้นเป็นฉบับร่างชั่วคราว ต้องเปลี่ยนเป็นถ้อยคำที่ฝ่ายบัญชีหรือฝ่ายกฎหมายของ FTC รับรองก่อนใช้งานจริง
+
+          <div class="mt-3">
+            <label class="lbl">ผู้ยอมรับข้อตกลง</label>
+            <select id="e-agree-channel" class="fld">
+              <option value="Admin">เจ้าหน้าที่ FTC ติ๊กแทน (จากเอกสารกระดาษหรือทางโทรศัพท์)</option>
+              <option value="Vendor_LIFF">ผู้รับเหมากดยอมรับเองผ่านลิงก์ LINE</option>
+            </select>
+            <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mt-2">
+              ⚠️ กรณีเจ้าหน้าที่ติ๊กแทน จะมีน้ำหนักเป็นหลักฐานน้อยกว่ามาก
+              เพราะพิสูจน์ไม่ได้ว่าผู้รับเหมาได้เห็นข้อความจริง
+              ควรให้ผู้รับเหมากดยอมรับเองผ่านลิงก์ที่ส่งไปกับการเชิญเข้าระบบ
+            </p>
+          </div>
+
+          <p class="text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5 mt-3">
+            🔴 ถ้อยคำฉบับนี้ยังไม่ผ่านการรับรองจากทนายความหรือฝ่ายกฎหมายของ FTC
+            (เวอร์ชัน <span class="font-mono">HHA-2569.1-DRAFT</span>)
+            ข้อตกลงยกเว้นความรับผิดล่วงหน้ามีข้อจำกัดตามกฎหมาย
+            และไม่ครอบคลุมหน้าที่ตาม พ.ร.บ.ความปลอดภัยฯ ต้องให้ทนายตรวจก่อนใช้งานจริง
           </p>
         </div>
       </div>
@@ -294,6 +314,22 @@ tailwind.config = { theme: { extend: {
             <label class="lbl">LINE ID ที่ใช้ติดต่อ</label>
             <input id="e-lineid" class="fld" placeholder="@vendor">
           </div>
+        </div>
+
+        <!-- สวัสดิการ : แสดงเฉพาะบุคคลธรรมดา ใช้ประกอบการจัดเกรด -->
+        <div id="box-welfare" class="hidden mt-4">
+          <label class="lbl">สวัสดิการคุ้มครองลูกจ้าง <span class="text-red-500">*</span></label>
+          <select id="e-welfare" class="fld" onchange="onWelfareChange()">
+            <option value="">-- เลือกสถานะสวัสดิการ --</option>
+            <option value="Insured">มีประกันอุบัติเหตุ / ประกันสังคมให้ลูกจ้าง</option>
+            <option value="None">ไม่มี</option>
+          </select>
+          <input id="e-welfare-note" class="fld mt-2" placeholder="ระบุบริษัทประกันหรือเลขกรมธรรม์ (ถ้ามี)">
+          <p id="welfare-warn" class="hidden text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5 mt-2">
+            🔴 ผู้รับเหมาที่ไม่มีประกันให้ลูกจ้าง คือความเสี่ยงสูงสุดของ FTC เมื่อเกิดอุบัติเหตุ
+            เพราะข้อตกลงสละสิทธิ์ไม่ได้ทำให้ผู้บาดเจ็บมีเงินรักษาพยาบาล
+            ควรบันทึกไว้และนำไปพิจารณาตอนจัดเกรดผู้รับเหมา
+          </p>
         </div>
       </div>
 
@@ -393,12 +429,12 @@ tailwind.config = { theme: { extend: {
 /* =====================================================================
  * ข้อความข้อตกลงชั่วคราว — ⚠️ ต้องเปลี่ยนเป็นฉบับที่ฝ่ายกฎหมายรับรอง
  * ===================================================================== */
-const AGREEMENT_DRAFT =
-  'ผู้รับจ้างซึ่งเป็นบุคคลธรรมดา รับทราบและตกลงว่า ผู้ว่าจ้างมีสิทธิและหน้าที่ตามกฎหมาย ' +
-  'ในการหักภาษี ณ ที่จ่ายจากค่าจ้างตามอัตราที่กฎหมายกำหนด และผู้รับจ้างมีหน้าที่ยื่นแบบแสดง ' +
-  'รายการภาษีเงินได้บุคคลธรรมดาด้วยตนเอง อีกทั้งรับทราบว่าเมื่อรายได้จากการรับจ้างในปีภาษี ' +
-  'ถึงเกณฑ์ที่กฎหมายกำหนด ผู้รับจ้างมีหน้าที่จดทะเบียนภาษีมูลค่าเพิ่มตามประมวลรัษฎากร ' +
-  'โดยผู้ว่าจ้างไม่ต้องรับผิดชอบภาระภาษีดังกล่าวแทนผู้รับจ้าง';
+const AGREEMENT_VERSION = 'HHA-2569.1-DRAFT';
+const AGREEMENT_TEXT =
+  'ผู้รับจ้างตกลงรับภาระภาษีเงินได้ด้วยตนเอง และรับทราบว่าการรับงานนี้เป็นสัญญาจ้างทำของ ' +
+  'มิใช่สัญญาจ้างแรงงาน หากเกิดการบาดเจ็บหรือความเสียหายใดๆ ต่อผู้รับจ้างหรือบุคคลในสังกัด ' +
+  'ระหว่างปฏิบัติงาน ผู้รับจ้างตกลงเป็นผู้รับผิดชอบค่ารักษาพยาบาลและค่าเสียหายทั้งหมด ' +
+  'แต่เพียงผู้เดียว โดยสละสิทธิ์การเรียกร้องใดๆ จาก FTC ทุกประการ';
 
 const TAX_THRESHOLD = 1500000;   // เพดานที่ต้องจดทะเบียนภาษีมูลค่าเพิ่ม
 const TAX_WARN_AT   = 1200000;   // เริ่มเตือนล่วงหน้าที่ 80%
@@ -434,7 +470,7 @@ async function doLogout() { await sb.auth.signOut(); location.reload(); }
 async function enterApp() {
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  document.getElementById('agreement-text').textContent = AGREEMENT_DRAFT;
+  document.getElementById('agreement-text').textContent = AGREEMENT_TEXT;
   await loadVendors();
 }
 
@@ -444,7 +480,8 @@ async function loadVendors() {
     .select('vendor_id, vendor_name, entity_type, tax_id, contract_value_thb, verification_status, ' +
             'kt20_uploaded, kt20_file_url, kt20_expiry_date, e_agreement_signed, e_agreement_at, ' +
             'accum_billing_thb, is_blacklisted, blacklist_reason, contact_person, contact_email, ' +
-            'contact_phone, line_display_id, line_uid, invite_token, invite_status')
+            'contact_phone, line_display_id, line_uid, invite_token, invite_status, ' +
+            'worker_welfare, welfare_note, agreement_version, agreement_channel')
     .order('vendor_id');
 
   if (error) { reportError('โหลดข้อมูลผู้รับเหมาไม่สำเร็จ', error, 'select tb_vendors'); return; }
@@ -524,6 +561,16 @@ function render() {
       const pct  = Math.min(100, Math.round(used / TAX_THRESHOLD * 100));
       const bar  = used >= TAX_THRESHOLD ? 'bg-red-500'
                  : used >= TAX_WARN_AT   ? 'bg-amber-500' : 'bg-emerald-500';
+      if (v.agreement_channel === 'Admin') {
+        docCell += `<span class="chip bg-slate-100 text-slate-500 border border-slate-200 ml-1"
+          title="เจ้าหน้าที่ติ๊กแทน หลักฐานอ่อน">แอดมินติ๊กแทน</span>`;
+      }
+      docCell += v.worker_welfare === 'None'
+        ? `<div class="mt-1"><span class="chip bg-red-50 text-red-700 border border-red-200">
+             <i data-lucide="shield-off" class="w-3 h-3"></i> ลูกจ้างไม่มีประกัน</span></div>`
+        : (v.worker_welfare === 'Insured'
+            ? `<div class="mt-1"><span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">
+                 <i data-lucide="shield-check" class="w-3 h-3"></i> ลูกจ้างมีประกัน</span></div>` : '');
       docCell += `<div class="mt-1.5 w-32">
           <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
             <div class="h-full ${bar}" style="width:${pct}%"></div>
@@ -587,18 +634,28 @@ function setEntity(type) {
   // หัวใจของ Tax Shield : สองประเภทใช้เอกสารคนละชุด
   document.getElementById('box-kt20').classList.toggle('hidden',  type !== 'Company');
   document.getElementById('box-agree').classList.toggle('hidden', type !== 'Personal');
+  document.getElementById('box-welfare').classList.toggle('hidden', type !== 'Personal');
 
-  if (!editingId) document.getElementById('e-id').value = suggestId(type);
   lucide.createIcons();
 }
 
-function suggestId(type) {
-  const prefix = type === 'Personal' ? 'P' : 'C';
-  const nums = VENDORS
-    .map(v => new RegExp('^' + prefix + '(\\d+)$').exec(v.vendor_id || ''))
-    .filter(Boolean).map(m => parseInt(m[1], 10));
-  const next = (nums.length ? Math.max.apply(null, nums) : 0) + 1;
-  return prefix + String(next).padStart(3, '0');
+/**
+ * สร้างรหัสผู้รับเหมาใหม่แบบเลข 5 หลัก ต่อเนื่องจากเลขสูงสุดที่มีอยู่
+ *
+ * เดิมใช้รูปแบบ C001 / P001 แยกตามประเภทนิติบุคคล แต่เลิกใช้แล้วเพราะ
+ *   1. รหัสเดิม 5 หลักคือสะพานเชื่อมกับระบบบัญชีและ PR/WO ที่ใช้อยู่จริง
+ *      ถ้าเปลี่ยนรูปแบบ ประวัติการสั่งจ้างจะเทียบกลับไม่ได้
+ *   2. การฝังประเภทไว้ในรหัสซ้ำซ้อนกับคอลัมน์ entity_type และจะกลายเป็น
+ *      ข้อมูลที่ผิดทันทีที่บุคคลธรรมดาจดทะเบียนเป็นนิติบุคคล
+ *      แต่แก้ไม่ได้เพราะรหัสเป็น Primary Key ที่ตารางอื่นอ้างอิงอยู่
+ */
+function suggestId() {
+  var maxNum = 0;
+  VENDORS.forEach(function (v) {
+    var m = /^(\d{1,6})$/.exec(String(v.vendor_id || '').trim());
+    if (m) { var n = parseInt(m[1], 10); if (n > maxNum) maxNum = n; }
+  });
+  return String(maxNum + 1).padStart(5, '0');
 }
 
 function fmtPhone(el) {
@@ -617,7 +674,7 @@ function openEdit(vendorId) {
 
   setEntity(v ? (isPersonal(v) ? 'Personal' : 'Company') : 'Company');
 
-  document.getElementById('e-id').value       = v ? v.vendor_id : suggestId('Company');
+  document.getElementById('e-id').value       = v ? v.vendor_id : suggestId();
   document.getElementById('e-name').value     = v ? (v.vendor_name || '') : '';
   document.getElementById('e-tax').value      = v ? (v.tax_id || '') : '';
   document.getElementById('e-value').value    = v ? (v.contract_value_thb || '') : '';
@@ -628,6 +685,10 @@ function openEdit(vendorId) {
   document.getElementById('e-phone').value    = v ? (v.contact_phone || '') : '';
   document.getElementById('e-email').value    = v ? (v.contact_email || '') : '';
   document.getElementById('e-lineid').value   = v ? (v.line_display_id || '') : '';
+  document.getElementById('e-welfare').value  = v ? (v.worker_welfare || '') : '';
+  document.getElementById('e-welfare-note').value = v ? (v.welfare_note || '') : '';
+  document.getElementById('e-agree-channel').value = v ? (v.agreement_channel || 'Admin') : 'Admin';
+  onWelfareChange();
   document.getElementById('e-verify').value   = v ? (v.verification_status || 'Pending') : 'Pending';
   document.getElementById('e-blacklist').value = v && v.is_blacklisted ? 'true' : 'false';
   document.getElementById('e-blacklist-reason').value = v ? (v.blacklist_reason || '') : '';
@@ -640,6 +701,11 @@ function openEdit(vendorId) {
   } else { cur.classList.add('hidden'); }
 
   openModal('modal-edit');
+}
+
+function onWelfareChange() {
+  const none = document.getElementById('e-welfare').value === 'None';
+  document.getElementById('welfare-warn').classList.toggle('hidden', !none);
 }
 
 document.getElementById('e-blacklist').addEventListener('change', toggleBlacklistReason);
@@ -673,9 +739,26 @@ async function saveVendor() {
       return Swal.fire('ยังไม่มีเอกสาร กท.20',
         'ผู้รับเหมาประเภทนิติบุคคลต้องแนบแบบ กท.20 ก่อนขึ้นทะเบียน', 'warning');
     }
-    if (currentEntity === 'Personal' && !document.getElementById('e-agree').checked) {
-      return Swal.fire('ยังไม่ได้ยอมรับข้อตกลง',
-        'ผู้รับเหมาประเภทบุคคลธรรมดาต้องยอมรับข้อตกลงรับภาระภาษีก่อนขึ้นทะเบียน', 'warning');
+    if (currentEntity === 'Personal') {
+      const val = parseFloat(document.getElementById('e-value').value) || 0;
+      if (val >= TAX_THRESHOLD) {
+        return Swal.fire({
+          icon: 'error',
+          title: 'มูลค่าสัญญาเกินเพดานบุคคลธรรมดา',
+          html: 'มูลค่าสัญญา <b>' + money(val) + '</b> บาท ตั้งแต่ ' + money(TAX_THRESHOLD) +
+                ' บาทขึ้นไป<br>ผู้รับเหมาต้องจดทะเบียนเป็นนิติบุคคลเท่านั้น<br>' +
+                '<span style="font-size:.8rem;color:#64748B">แยกงานเป็นหลายสัญญาเพื่อเลี่ยงเพดาน ' +
+                'อาจถูกมองว่าเป็นการหลีกเลี่ยงภาษี ควรปรึกษาฝ่ายบัญชีก่อน</span>'
+        });
+      }
+      if (!document.getElementById('e-welfare').value) {
+        return Swal.fire('ยังไม่ได้ระบุสวัสดิการ',
+          'ต้องระบุว่าผู้รับเหมามีประกันอุบัติเหตุหรือประกันสังคมให้ลูกจ้างหรือไม่', 'warning');
+      }
+      if (!document.getElementById('e-agree').checked) {
+        return Swal.fire('ยังไม่ได้ยอมรับข้อตกลง',
+          'ผู้รับเหมาประเภทบุคคลธรรมดาต้องยอมรับข้อตกลงสละสิทธิเรียกร้องก่อนขึ้นทะเบียน', 'warning');
+      }
     }
 
     btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
@@ -710,10 +793,20 @@ async function saveVendor() {
         payload.kt20_uploaded = true;
       }
     } else {
-      payload.kt20_uploaded = false;
+      payload.kt20_uploaded  = false;
+      payload.worker_welfare = document.getElementById('e-welfare').value;
+      payload.welfare_note   = document.getElementById('e-welfare-note').value.trim() || null;
       payload.e_agreement_signed = true;
+
+      // เก็บสำเนาข้อความฉบับที่เห็นตอนยอมรับ ไม่ใช่แค่ค่า true/false
+      // เพราะถ้าถ้อยคำถูกแก้ในอนาคต ต้องพิสูจน์ได้ว่าตอนนั้นยอมรับข้อความว่าอย่างไร
+      payload.agreement_version = AGREEMENT_VERSION;
+      payload.agreement_text    = AGREEMENT_TEXT;
+      payload.agreement_channel = document.getElementById('e-agree-channel').value;
       if (!existing || !existing.e_agreement_signed) {
         payload.e_agreement_at = new Date().toISOString();
+        const { data: u } = await sb.auth.getUser();
+        payload.agreement_accepted_by = (u && u.user && u.user.email) || 'unknown';
       }
     }
 
