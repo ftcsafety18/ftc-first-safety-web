@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตั้งค่าโครงการ | FTC First Safety</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../shared/config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#19335A', 'navy-light':'#254B82', orange:'#DB5A24', 'orange-hover':'#C14B1A' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+
+<style>
+  body { background:#EEF2F7; font-family:'Sarabun',sans-serif; }
+  .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid #D1D8E0;
+         background:#F9FAFB; font-size:.875rem; transition:.15s; }
+  .fld:focus { outline:none; border-color:#19335A; background:#fff; box-shadow:0 0 0 3px rgba(25,51,90,.1); }
+  .lbl { display:block; font-size:.8rem; font-weight:600; color:#334155; margin-bottom:.35rem; }
+  .chip { display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .6rem;
+          border-radius:999px; font-size:.7rem; font-weight:700; white-space:nowrap; }
+  .tab { padding:.7rem 1.1rem; font-size:.82rem; font-weight:700; color:#64748B;
+         border-bottom:3px solid transparent; white-space:nowrap; transition:.15s; }
+  .tab:hover { color:#19335A; }
+  .tab.on { color:#19335A; border-bottom-color:#DB5A24; }
+  .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:60;
+                display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  .card { background:#fff; border:1px solid #E2E8F0; border-radius:1rem; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  @media (prefers-reduced-motion: no-preference) {
+    .pop { animation: pop .18s ease-out; }
+    @keyframes pop { from { opacity:0; transform:translateY(-8px);} to { opacity:1; transform:none;} }
+  }
+  :focus-visible { outline:2px solid #DB5A24; outline-offset:2px; }
+</style>
+</head>
+<body class="text-slate-800 min-h-screen">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm card p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-11 h-11 rounded-xl bg-brand-navy flex items-center justify-center">
+        <i data-lucide="folder-cog" class="w-6 h-6 text-white"></i>
+      </div>
+      <div>
+        <p class="text-base font-bold text-brand-navy leading-tight">FTC First Safety</p>
+        <p class="text-xs text-slate-500 leading-tight">ตั้งค่าโครงการ</p>
+      </div>
+    </div>
+    <label class="lbl">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="lbl">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login"
+      class="w-full py-3 rounded-xl bg-brand-navy text-white text-sm font-bold hover:bg-brand-navy-light transition">
+      เข้าสู่ระบบ
+    </button>
+    <p id="log-err" class="hidden mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-3"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden">
+
+  <header class="sticky top-0 z-40 bg-brand-navy shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-white/10 ring-1 ring-white/20 flex items-center justify-center shrink-0">
+          <i data-lucide="folder-cog" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-bold text-white leading-tight truncate">ตั้งค่าโครงการ</h1>
+          <p class="text-[10px] sm:text-xs text-white/60 leading-tight">สร้างโครงการ ผังองค์กร และค่าความปลอดภัยประจำไซต์</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="Vendor_Hub.html" class="hidden md:block text-xs font-semibold text-white/70 hover:text-white border border-white/25 rounded-lg px-3 py-1.5 transition">ผู้รับเหมา</a>
+        <a href="Staff_Management.html" class="hidden md:block text-xs font-semibold text-white/70 hover:text-white border border-white/25 rounded-lg px-3 py-1.5 transition">บุคลากร</a>
+        <button onclick="doLogout()" class="text-xs font-semibold text-white/80 hover:text-white border border-white/25 rounded-lg px-3 py-1.5 transition">ออกจากระบบ</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ---- เลือกโครงการ ---- -->
+    <div class="flex flex-wrap items-end gap-3 mb-5">
+      <div class="flex-1 min-w-[260px]">
+        <label class="lbl">โครงการที่กำลังทำงาน</label>
+        <select id="proj-select" class="fld" onchange="selectProject(this.value)">
+          <option value="">-- ยังไม่มีโครงการ --</option>
+        </select>
+      </div>
+      <button onclick="openQuickCreate()"
+        class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow-md transition">
+        <i data-lucide="plus" class="w-4 h-4"></i> สร้างโครงการใหม่
+      </button>
+    </div>
+
+    <!-- ---- ยังไม่มีโครงการ ---- -->
+    <div id="no-project" class="card p-12 text-center">
+      <i data-lucide="folder-plus" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+      <h2 class="text-lg font-bold text-brand-navy mb-2">ยังไม่มีโครงการในระบบ</h2>
+      <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+        เริ่มด้วยการสร้างโครงการเพียง 5 ช่อง ใช้เวลาไม่ถึงหนึ่งนาที
+        แล้วค่อยกลับมาเติมรายละเอียดทีหลังเมื่อได้ข้อมูลจากฝ่ายที่เกี่ยวข้อง
+      </p>
+    </div>
+
+    <!-- ---- พื้นที่ทำงานของโครงการ ---- -->
+    <div id="workspace" class="hidden">
+
+      <!-- แถบสถานะ + ความสมบูรณ์ -->
+      <section class="card p-5 sm:p-6 mb-5">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 id="ws-name" class="text-xl font-bold text-brand-navy leading-tight"></h2>
+              <span id="ws-status" class="chip"></span>
+            </div>
+            <p id="ws-sub" class="text-xs text-slate-500 font-mono"></p>
+          </div>
+          <div class="text-right">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">ความสมบูรณ์ของข้อมูล</p>
+            <p class="text-2xl font-bold text-brand-navy"><span id="ws-pct">0</span>%</p>
+          </div>
+        </div>
+
+        <div class="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden mb-4">
+          <div id="ws-bar" class="h-full bg-gradient-to-r from-brand-navy to-brand-navy-light transition-all duration-500" style="width:0%"></div>
+        </div>
+
+        <div id="ws-gate" class="rounded-xl border-2 p-4"></div>
+      </section>
+
+      <!-- แท็บ -->
+      <div class="card overflow-hidden">
+        <div class="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
+          <button class="tab on" data-tab="contract" onclick="showTab('contract')">สัญญาและเอกสาร</button>
+          <button class="tab"    data-tab="team"     onclick="showTab('team')">ผังองค์กร C3</button>
+          <button class="tab"    data-tab="site"     onclick="showTab('site')">พื้นที่และความปลอดภัย</button>
+          <button class="tab"    data-tab="vendor"   onclick="showTab('vendor')">ผู้รับเหมาในโครงการ</button>
+        </div>
+
+        <!-- ============ แท็บ 1 : สัญญา ============ -->
+        <div id="tab-contract" class="p-5 sm:p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="lbl">ชื่อโครงการ <span class="text-red-500">*</span></label>
+              <input id="c-name" class="fld">
+            </div>
+            <div>
+              <label class="lbl">รหัสอ้างอิงของจัดซื้อ</label>
+              <input id="c-ref" class="fld font-mono" placeholder="APT-2569-001">
+              <p class="text-[10px] text-slate-400 mt-1">แก้ได้ ต่างจากรหัสโครงการที่ล็อกถาวร</p>
+            </div>
+            <div>
+              <label class="lbl">ประเภทโครงการ</label>
+              <select id="c-type" class="fld">
+                <option value="">-- เลือกประเภท --</option>
+                <option value="Construction">งานก่อสร้างใหม่</option>
+                <option value="MEP">งานระบบประกอบอาคาร</option>
+                <option value="Renovation">งานปรับปรุง/ต่อเติม</option>
+                <option value="Maintenance">งานซ่อมบำรุง</option>
+                <option value="Shutdown">งานหยุดซ่อมโรงงาน</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="lbl">ที่อยู่ที่ตั้งโครงการ</label>
+            <textarea id="c-address" rows="2" class="fld"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="lbl">มูลค่าสัญญา (บาท)</label>
+              <input id="c-value" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+            </div>
+            <div>
+              <label class="lbl">วันเริ่มสัญญา</label>
+              <input type="date" id="c-start" class="fld" onchange="calcDuration()">
+            </div>
+            <div>
+              <label class="lbl">วันสิ้นสุดสัญญา</label>
+              <input type="date" id="c-end" class="fld" onchange="calcDuration()">
+            </div>
+          </div>
+
+          <div class="rounded-xl border-2 border-slate-200 p-4 mb-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">ค่าปรับกรณีล่าช้า</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="lbl">วิธีคิดค่าปรับ</label>
+                <select id="c-pen-type" class="fld" onchange="togglePenalty()">
+                  <option value="">ไม่ระบุ</option>
+                  <option value="PerDay">เป็นจำนวนเงินต่อวัน</option>
+                  <option value="Percent">เป็นร้อยละของมูลค่าสัญญา</option>
+                </select>
+                <p class="text-[10px] text-slate-400 mt-1">เลือกได้อย่างใดอย่างหนึ่ง</p>
+              </div>
+              <div id="box-pen-day">
+                <label class="lbl">ค่าปรับ (บาท/วัน)</label>
+                <input id="c-pen-day" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+              </div>
+              <div id="box-pen-pct" class="hidden">
+                <label class="lbl">ค่าปรับ (% ของมูลค่ารวม)</label>
+                <input id="c-pen-pct" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label class="lbl">ฐานการนับวัน</label>
+                <select id="c-basis" class="fld">
+                  <option value="Calendar">นับวันตามปฏิทิน</option>
+                  <option value="Working">นับเฉพาะวันทำงาน</option>
+                </select>
+                <p class="text-[10px] text-slate-400 mt-1">มีผลโดยตรงกับการคำนวณค่าปรับ</p>
+              </div>
+              <div>
+                <label class="lbl">ระยะเวลาดำเนินการ</label>
+                <input id="c-duration" class="fld bg-slate-100" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="lbl">เงื่อนไขพิเศษอื่นๆ</label>
+            <textarea id="c-special" rows="2" class="fld"></textarea>
+          </div>
+
+          <div class="rounded-xl border-2 border-slate-200 p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">เอกสารแนบ</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="lbl">สัญญาโครงการ (PDF)</label>
+                <input type="file" id="f-contract" accept="application/pdf,image/*" class="block w-full text-xs">
+                <p id="cur-contract" class="hidden text-[11px] mt-1"></p>
+              </div>
+              <div>
+                <label class="lbl">ข้อตกลงด้านความปลอดภัย</label>
+                <input type="file" id="f-safety" accept="application/pdf,image/*" class="block w-full text-xs">
+                <p id="cur-safety" class="hidden text-[11px] mt-1"></p>
+              </div>
+              <div>
+                <label class="lbl">ผังโครงการ 2 มิติ</label>
+                <input type="file" id="f-plan" accept="application/pdf,image/*" class="block w-full text-xs">
+                <p id="cur-plan" class="hidden text-[11px] mt-1"></p>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="saveContract()" id="btn-contract"
+            class="mt-5 w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">
+            บันทึกแท็บนี้
+          </button>
+        </div>
+
+        <!-- ============ แท็บ 2 : ผังองค์กร ============ -->
+        <div id="tab-team" class="hidden p-5 sm:p-6">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <p class="text-sm font-bold text-brand-navy">ผู้เกี่ยวข้องฝั่งเจ้าของงานและที่ปรึกษา</p>
+              <p class="text-xs text-slate-500">ใช้กำหนดว่าจะแจ้งเตือนถึงใครเมื่อเกิดเหตุในโครงการนี้</p>
+            </div>
+            <button onclick="openContact(null)"
+              class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">
+              เพิ่มผู้เกี่ยวข้อง
+            </button>
+          </div>
+
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 border-y border-slate-200">
+                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-3 py-2.5 font-bold">ฝ่าย / บทบาท</th>
+                  <th class="px-3 py-2.5 font-bold">ชื่อ-สกุล</th>
+                  <th class="px-3 py-2.5 font-bold">ช่องทางติดต่อ</th>
+                  <th class="px-3 py-2.5 font-bold">LINE</th>
+                  <th class="px-3 py-2.5 font-bold text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="contact-rows" class="divide-y divide-slate-100"></tbody>
+            </table>
+            <p id="contact-empty" class="hidden text-center text-sm text-slate-400 py-8">ยังไม่มีผู้เกี่ยวข้องในโครงการนี้</p>
+          </div>
+
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2 border-t border-slate-200 pt-6">
+            <div>
+              <p class="text-sm font-bold text-brand-navy">ทีมงาน FTC ประจำโครงการ</p>
+              <p class="text-xs text-slate-500">ระบบจะส่งคำขออนุมัติไปหาคนในรายการนี้เท่านั้น</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <select id="staff-pick" class="fld w-auto min-w-[200px]"></select>
+              <select id="duty-pick" class="fld w-auto min-w-[160px]">
+                <option value="Safety_Officer">เจ้าหน้าที่ความปลอดภัย</option>
+                <option value="PM">ผู้จัดการโครงการ</option>
+                <option value="Engineer">วิศวกรโครงการ</option>
+                <option value="Security">รักษาความปลอดภัย</option>
+              </select>
+              <button onclick="addProjectStaff()"
+                class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">
+                เพิ่ม
+              </button>
+            </div>
+          </div>
+
+          <div id="staff-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+          <p id="staff-empty" class="hidden text-center text-sm text-slate-400 py-8">ยังไม่ได้มอบหมายทีม FTC ให้โครงการนี้</p>
+        </div>
+
+        <!-- ============ แท็บ 3 : พื้นที่ ============ -->
+        <div id="tab-site" class="hidden p-5 sm:p-6">
+          <div class="rounded-xl border-2 border-slate-200 p-4 mb-5">
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">พิกัดและขอบเขตพื้นที่</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="lbl">ละติจูด (Latitude)</label>
+                <input id="s-lat" class="fld font-mono" placeholder="13.7563">
+              </div>
+              <div>
+                <label class="lbl">ลองจิจูด (Longitude)</label>
+                <input id="s-lng" class="fld font-mono" placeholder="100.5018">
+              </div>
+              <div>
+                <label class="lbl">รัศมีพื้นที่ (เมตร) <span class="text-red-500">*</span></label>
+                <input id="s-radius" class="fld" inputmode="numeric" placeholder="100"
+                       oninput="this.value=this.value.replace(/\D/g,'')">
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button onclick="useMyLocation()"
+                class="px-4 py-2 rounded-lg border-2 border-slate-200 text-xs font-bold text-brand-navy hover:bg-slate-50 transition">
+                ดึงพิกัดปัจจุบัน
+              </button>
+              <button onclick="previewMap()"
+                class="px-4 py-2 rounded-lg border-2 border-slate-200 text-xs font-bold text-brand-navy hover:bg-slate-50 transition">
+                เปิดแผนที่ตรวจสอบ
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">
+              รัศมีนี้ใช้ตรวจว่าโฟร์แมนอยู่หน้าไซต์จริงตอนปิดใบงาน 5ส
+              ถ้าตั้งกว้างเกินไปจะปิดงานจากที่ไหนก็ได้ ถ้าแคบเกินไปจะปิดไม่ได้ทั้งที่ยืนอยู่หน้างาน
+            </p>
+          </div>
+
+          <div class="rounded-xl border-2 border-slate-200 p-4 mb-5">
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">เวลาทำงานและเพดานชั่วโมง</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <label class="lbl">เริ่มงาน</label>
+                <input type="time" id="s-start" class="fld">
+              </div>
+              <div>
+                <label class="lbl">เลิกงาน</label>
+                <input type="time" id="s-end" class="fld">
+              </div>
+              <div>
+                <label class="lbl">เตือนเมื่อเกิน (ชม.)</label>
+                <input id="s-maxhr" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+              </div>
+              <div>
+                <label class="lbl">บังคับออกเมื่อ (ชม.)</label>
+                <input id="s-forcehr" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl border-2 border-slate-200 p-4 mb-5">
+            <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">ข้อมูลฉุกเฉิน</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="lbl">โรงพยาบาลใกล้เคียง</label>
+                <input id="s-hospital" class="fld">
+              </div>
+              <div>
+                <label class="lbl">เบอร์ติดต่อฉุกเฉิน</label>
+                <input id="s-emgphone" class="fld">
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl border-2 border-slate-200 p-4 mb-5">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-brand-orange">จุดรวมพล</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">ระบบนับหัวคนตอนอพยพต้องอ้างอิงจุดเหล่านี้</p>
+              </div>
+              <button onclick="addMuster()"
+                class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">
+                เพิ่มจุดรวมพล
+              </button>
+            </div>
+            <div id="muster-list" class="space-y-2"></div>
+            <p id="muster-empty" class="hidden text-center text-sm text-slate-400 py-6">
+              ยังไม่มีจุดรวมพล — ระบบอพยพฉุกเฉินจะใช้งานไม่ได้จนกว่าจะกำหนดอย่างน้อย 1 จุด
+            </p>
+          </div>
+
+          <button onclick="saveSite()" id="btn-site"
+            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">
+            บันทึกแท็บนี้
+          </button>
+        </div>
+
+        <!-- ============ แท็บ 4 : ผู้รับเหมา ============ -->
+        <div id="tab-vendor" class="hidden p-5 sm:p-6">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <p class="text-sm font-bold text-brand-navy">ผู้รับเหมาที่เข้าทำงานในโครงการนี้</p>
+              <p class="text-xs text-slate-500">ต้องมีอย่างน้อย 1 รายจึงจะเปิดใช้งานโครงการได้</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <select id="vendor-pick" class="fld w-auto min-w-[240px]"></select>
+              <button onclick="addProjectVendor()"
+                class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">
+                เพิ่มเข้าโครงการ
+              </button>
+            </div>
+          </div>
+          <div id="pvendor-list" class="space-y-2"></div>
+          <p id="pvendor-empty" class="hidden text-center text-sm text-slate-400 py-8">ยังไม่มีผู้รับเหมาในโครงการนี้</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== Quick Create ===================== -->
+<div id="modal-create" class="modal-wrap hidden">
+  <div class="pop w-full max-w-lg bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 class="text-base font-bold text-brand-navy">สร้างโครงการใหม่</h3>
+      <button onclick="closeModal('modal-create')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <p class="text-xs text-slate-500 leading-relaxed bg-slate-50 border border-slate-200 rounded-lg p-3">
+        กรอกแค่ 5 ช่องนี้ก่อนก็บันทึกได้ทันที รายละเอียดอื่นเติมทีหลังได้ตลอด
+        โครงการจะอยู่ในสถานะร่างจนกว่าข้อมูลจะครบ
+      </p>
+      <div>
+        <label class="lbl">รหัสโครงการ <span class="text-red-500">*</span></label>
+        <input id="q-id" class="fld font-mono">
+        <p class="text-[10px] text-red-500 mt-1">⚠️ ล็อกถาวรหลังบันทึก แก้ไม่ได้เพราะมีตารางอื่นอ้างอิง</p>
+      </div>
+      <div>
+        <label class="lbl">ชื่อโครงการ <span class="text-red-500">*</span></label>
+        <input id="q-name" class="fld">
+      </div>
+      <div>
+        <label class="lbl">ประเภทโครงการ</label>
+        <select id="q-type" class="fld">
+          <option value="">-- เลือกภายหลังได้ --</option>
+          <option value="Construction">งานก่อสร้างใหม่</option>
+          <option value="MEP">งานระบบประกอบอาคาร</option>
+          <option value="Renovation">งานปรับปรุง/ต่อเติม</option>
+          <option value="Maintenance">งานซ่อมบำรุง</option>
+          <option value="Shutdown">งานหยุดซ่อมโรงงาน</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">วันเริ่มสัญญา</label>
+          <input type="date" id="q-start" class="fld">
+        </div>
+        <div>
+          <label class="lbl">วันสิ้นสุดสัญญา</label>
+          <input type="date" id="q-end" class="fld">
+        </div>
+      </div>
+      <div>
+        <label class="lbl">มูลค่าสัญญา (บาท)</label>
+        <input id="q-value" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+      </div>
+    </div>
+    <div class="flex flex-col-reverse sm:flex-row gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+      <button onclick="closeModal('modal-create')" class="sm:w-auto w-full px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition">ยกเลิก</button>
+      <button id="btn-create" onclick="createProject()" class="flex-1 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">สร้างโครงการ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ผู้เกี่ยวข้อง ===================== -->
+<div id="modal-contact" class="modal-wrap hidden">
+  <div class="pop w-full max-w-lg bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 id="contact-title" class="text-base font-bold text-brand-navy">เพิ่มผู้เกี่ยวข้อง</h3>
+      <button onclick="closeModal('modal-contact')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">ฝ่าย <span class="text-red-500">*</span></label>
+          <select id="ct-side" class="fld">
+            <option value="Owner">เจ้าของโครงการ</option>
+            <option value="Consultant">ที่ปรึกษาโครงการ</option>
+            <option value="FTC">ฝ่าย FTC</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">บทบาท <span class="text-red-500">*</span></label>
+          <input id="ct-role" class="fld" placeholder="เจ้าหน้าที่ความปลอดภัย">
+        </div>
+      </div>
+      <div>
+        <label class="lbl">ชื่อ-สกุล <span class="text-red-500">*</span></label>
+        <input id="ct-name" class="fld">
+      </div>
+      <div>
+        <label class="lbl">บริษัท / หน่วยงาน</label>
+        <input id="ct-company" class="fld">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">เบอร์โทรศัพท์</label>
+          <input id="ct-phone" class="fld">
+        </div>
+        <div>
+          <label class="lbl">อีเมล</label>
+          <input id="ct-email" type="email" class="fld">
+        </div>
+      </div>
+      <div>
+        <label class="lbl">LINE ID ที่ใช้ติดต่อ</label>
+        <input id="ct-lineid" class="fld" placeholder="@example">
+        <p class="text-[10px] text-slate-400 mt-1">
+          ช่องนี้ใช้ติดต่อด้วยคน ระบบส่งข้อความอัตโนมัติไม่ได้ — ต้องกดสร้างลิงก์ผูกในตารางหลังบันทึก
+        </p>
+      </div>
+      <div>
+        <label class="lbl">หมายเหตุ</label>
+        <input id="ct-note" class="fld">
+      </div>
+    </div>
+    <div class="flex flex-col-reverse sm:flex-row gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+      <button onclick="closeModal('modal-contact')" class="sm:w-auto w-full px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition">ยกเลิก</button>
+      <button id="btn-contact-save" onclick="saveContact()" class="flex-1 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const sb = FTC.supabase();
+let PROJECTS = [], CUR = null, CONTACTS = [], PSTAFF = [], PVENDORS = [], MUSTERS = [];
+let ALL_STAFF = [], ALL_VENDORS = [];
+let editingContact = null;
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent='กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
+  if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  await Promise.all([loadProjects(), loadLookups()]);
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadLookups() {
+  const s = await sb.from('tb_internal_staff')
+    .select('staff_id, full_name, role_level, line_uid').eq('account_status','Active').order('full_name');
+  if (!s.error) {
+    ALL_STAFF = s.data || [];
+    document.getElementById('staff-pick').innerHTML =
+      '<option value="">-- เลือกบุคลากร --</option>' +
+      ALL_STAFF.map(x => `<option value="${FTC.esc(x.staff_id)}">${FTC.esc(x.full_name)}</option>`).join('');
+  }
+  const v = await sb.from('tb_vendors')
+    .select('vendor_id, vendor_name, entity_type, is_blacklisted').order('vendor_name');
+  if (!v.error) {
+    ALL_VENDORS = v.data || [];
+    document.getElementById('vendor-pick').innerHTML =
+      '<option value="">-- เลือกผู้รับเหมา --</option>' +
+      ALL_VENDORS.filter(x => !x.is_blacklisted)
+        .map(x => `<option value="${FTC.esc(x.vendor_id)}">${FTC.esc(x.vendor_name)} (${FTC.esc(x.vendor_id)})</option>`).join('');
+  }
+}
+
+async function loadProjects(keepId) {
+  const { data, error } = await sb.from('tb_projects').select('*').order('created_at', { ascending:false });
+  if (error) { reportError('โหลดรายการโครงการไม่สำเร็จ', error, 'select tb_projects'); return; }
+  PROJECTS = data || [];
+
+  const sel = document.getElementById('proj-select');
+  sel.innerHTML = PROJECTS.length
+    ? PROJECTS.map(p => `<option value="${FTC.esc(p.project_id)}">${FTC.esc(p.project_name)} — ${FTC.esc(p.project_id)}</option>`).join('')
+    : '<option value="">-- ยังไม่มีโครงการ --</option>';
+
+  document.getElementById('no-project').classList.toggle('hidden', PROJECTS.length > 0);
+  document.getElementById('workspace').classList.toggle('hidden', PROJECTS.length === 0);
+
+  if (PROJECTS.length) {
+    const pick = keepId && PROJECTS.some(p => p.project_id === keepId) ? keepId : PROJECTS[0].project_id;
+    sel.value = pick;
+    await selectProject(pick);
+  }
+}
+
+async function selectProject(id) {
+  CUR = PROJECTS.find(p => p.project_id === id) || null;
+  if (!CUR) return;
+  fillContract();
+  fillSite();
+  await Promise.all([loadContacts(), loadProjectStaff(), loadProjectVendors(), loadMusters()]);
+  renderHeader();
+}
+
+/* ---------------------- ส่วนหัวและเกณฑ์ความพร้อม ---------------------- */
+const STATUS_LABEL = { Draft:'ร่าง', Setup:'กำลังตั้งค่า', Active:'เปิดใช้งาน', On_Hold:'พักชั่วคราว', Closed:'ปิดโครงการ' };
+const STATUS_CLASS = {
+  Draft:'bg-slate-100 text-slate-600 border border-slate-200',
+  Setup:'bg-amber-50 text-amber-700 border border-amber-200',
+  Active:'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  On_Hold:'bg-orange-50 text-orange-700 border border-orange-200',
+  Closed:'bg-slate-200 text-slate-500 border border-slate-300'
+};
+
+/** เกณฑ์ที่ต้องผ่านก่อนเปิดใช้งานโครงการ */
+function checklist() {
+  const p = CUR || {};
+  return [
+    { ok: !!p.project_name && !!p.start_date && !!p.end_date, text: 'ชื่อโครงการและระยะเวลาสัญญา' },
+    { ok: Number(p.total_project_value_thb || 0) > 0,          text: 'มูลค่าสัญญา' },
+    { ok: !!p.gps_lat && !!p.gps_lng,                          text: 'พิกัดที่ตั้งโครงการ' },
+    { ok: Number(p.geofence_radius || 0) > 0,                  text: 'รัศมีพื้นที่โครงการ' },
+    { ok: MUSTERS.length > 0,                                  text: 'จุดรวมพลอย่างน้อย 1 จุด' },
+    { ok: CONTACTS.length > 0,                                 text: 'ผู้เกี่ยวข้องฝั่งเจ้าของงาน' },
+    { ok: PSTAFF.some(s => s.duty_role === 'Safety_Officer'),  text: 'เจ้าหน้าที่ความปลอดภัยประจำโครงการ' },
+    { ok: PSTAFF.some(s => s.duty_role === 'PM'),              text: 'ผู้จัดการโครงการ' },
+    { ok: PVENDORS.length > 0,                                 text: 'ผู้รับเหมาอย่างน้อย 1 ราย' }
+  ];
+}
+
+function renderHeader() {
+  const p = CUR;
+  document.getElementById('ws-name').textContent = p.project_name;
+  document.getElementById('ws-sub').textContent =
+    p.project_id + (p.project_ref_code ? ' · ' + p.project_ref_code : '');
+
+  const st = p.status || 'Draft';
+  const chip = document.getElementById('ws-status');
+  chip.className = 'chip ' + (STATUS_CLASS[st] || STATUS_CLASS.Draft);
+  chip.textContent = STATUS_LABEL[st] || st;
+
+  const list = checklist();
+  const done = list.filter(x => x.ok).length;
+  const pct  = Math.round(done / list.length * 100);
+  document.getElementById('ws-pct').textContent = pct;
+  document.getElementById('ws-bar').style.width = pct + '%';
+
+  const missing = list.filter(x => !x.ok);
+  const gate = document.getElementById('ws-gate');
+
+  if (!missing.length) {
+    gate.className = 'rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4';
+    gate.innerHTML = st === 'Active'
+      ? `<p class="text-sm font-bold text-emerald-800">ข้อมูลครบถ้วน โครงการเปิดใช้งานแล้ว</p>
+         <p class="text-xs text-emerald-700 mt-1">ผู้รับเหมาสามารถขอใบอนุญาตทำงานในโครงการนี้ได้</p>`
+      : `<div class="flex flex-wrap items-center justify-between gap-3">
+           <div>
+             <p class="text-sm font-bold text-emerald-800">ข้อมูลครบตามเกณฑ์แล้ว</p>
+             <p class="text-xs text-emerald-700 mt-1">เปิดใช้งานโครงการเพื่อให้เริ่มขอใบอนุญาตทำงานได้</p>
+           </div>
+           <button onclick="activateProject()" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition">
+             เปิดใช้งานโครงการ
+           </button>
+         </div>`;
+  } else {
+    gate.className = 'rounded-xl border-2 border-amber-200 bg-amber-50 p-4';
+    gate.innerHTML =
+      `<p class="text-sm font-bold text-amber-900 mb-2">ยังขาดอีก ${missing.length} รายการจึงจะเปิดใช้งานโครงการได้</p>
+       <ul class="text-xs text-amber-800 space-y-1">` +
+       missing.map(m => `<li class="flex items-center gap-1.5"><span>○</span>${FTC.esc(m.text)}</li>`).join('') +
+       `</ul>
+       <p class="text-[11px] text-amber-700 mt-2.5">ระหว่างนี้ยังเปิดใบอนุญาตทำงานในโครงการนี้ไม่ได้</p>`;
+  }
+  lucide.createIcons();
+}
+
+async function activateProject() {
+  const r = await sb.from('tb_projects').update({ status:'Active', updated_at:new Date().toISOString() })
+    .eq('project_id', CUR.project_id);
+  if (r.error) { reportError('เปิดใช้งานโครงการไม่สำเร็จ', r.error, 'update status'); return; }
+  Swal.fire({ icon:'success', title:'เปิดใช้งานโครงการแล้ว', timer:1400, showConfirmButton:false });
+  await loadProjects(CUR.project_id);
+}
+
+/* ---------------------- Quick Create ---------------------- */
+function openQuickCreate() {
+  const year = new Date().getFullYear() + 543;
+  const nums = PROJECTS.map(p => {
+    const m = new RegExp('^PRJ-' + year + '-(\\d+)$').exec(p.project_id || '');
+    return m ? parseInt(m[1],10) : 0;
+  });
+  const next = (nums.length ? Math.max.apply(null, nums) : 0) + 1;
+  document.getElementById('q-id').value    = 'PRJ-' + year + '-' + String(next).padStart(3,'0');
+  document.getElementById('q-name').value  = '';
+  document.getElementById('q-type').value  = '';
+  document.getElementById('q-start').value = '';
+  document.getElementById('q-end').value   = '';
+  document.getElementById('q-value').value = '';
+  openModal('modal-create');
+}
+
+async function createProject() {
+  const btn = document.getElementById('btn-create');
+  try {
+    const id   = document.getElementById('q-id').value.trim();
+    const name = document.getElementById('q-name').value.trim();
+    const s    = document.getElementById('q-start').value;
+    const e    = document.getElementById('q-end').value;
+    if (!id)   return Swal.fire('ยังกรอกไม่ครบ','ระบุรหัสโครงการ','warning');
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อโครงการ','warning');
+    if (s && e && new Date(e) < new Date(s))
+      return Swal.fire('วันที่ไม่ถูกต้อง','วันสิ้นสุดต้องไม่ก่อนวันเริ่มสัญญา','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังสร้าง…';
+    const { data:u } = await sb.auth.getUser();
+    const r = await sb.from('tb_projects').insert({
+      project_id: id, project_name: name,
+      project_type: document.getElementById('q-type').value || null,
+      start_date: s || null, end_date: e || null,
+      total_project_value_thb: parseFloat(document.getElementById('q-value').value) || 0,
+      duration_days: (s && e) ? Math.round((new Date(e)-new Date(s))/86400000) + 1 : null,
+      status: 'Draft', geofence_radius: 100,
+      created_by: (u && u.user && u.user.email) || null
+    });
+    if (r.error) throw r.error;
+    closeModal('modal-create');
+    await loadProjects(id);
+  } catch (err) {
+    if (err && err.code === '23505') Swal.fire('รหัสซ้ำ','รหัสโครงการนี้มีอยู่แล้ว','warning');
+    else reportError('สร้างโครงการไม่สำเร็จ', err, 'insert tb_projects');
+  } finally { btn.disabled = false; btn.textContent = 'สร้างโครงการ'; }
+}
+
+/* ---------------------- แท็บสัญญา ---------------------- */
+function fillContract() {
+  const p = CUR;
+  document.getElementById('c-name').value     = p.project_name || '';
+  document.getElementById('c-ref').value      = p.project_ref_code || '';
+  document.getElementById('c-type').value     = p.project_type || '';
+  document.getElementById('c-address').value  = p.site_address || '';
+  document.getElementById('c-value').value    = p.total_project_value_thb || '';
+  document.getElementById('c-start').value    = p.start_date || '';
+  document.getElementById('c-end').value      = p.end_date || '';
+  document.getElementById('c-pen-type').value = p.penalty_type || '';
+  document.getElementById('c-pen-day').value  = p.penalty_per_day_thb || '';
+  document.getElementById('c-pen-pct').value  = p.penalty_pct || '';
+  document.getElementById('c-basis').value    = p.duration_basis || 'Calendar';
+  document.getElementById('c-special').value  = p.special_conditions || '';
+  ['f-contract','f-safety','f-plan'].forEach(id => { document.getElementById(id).value = ''; });
+  showCurrentFile('cur-contract', p.contract_file_url);
+  showCurrentFile('cur-safety',   p.safety_agreement_url);
+  showCurrentFile('cur-plan',     p.site_plan_url);
+  togglePenalty(); calcDuration();
+}
+
+function showCurrentFile(elId, path) {
+  const el = document.getElementById(elId);
+  if (!path) { el.classList.add('hidden'); return; }
+  el.className = 'text-[11px] mt-1';
+  el.innerHTML = `<button onclick="viewDoc('${FTC.esc(path)}')" class="text-brand-navy underline">ดูไฟล์ที่มีอยู่</button>
+                  <span class="text-slate-400"> — เลือกไฟล์ใหม่เพื่อแทนที่</span>`;
+}
+
+function togglePenalty() {
+  const t = document.getElementById('c-pen-type').value;
+  document.getElementById('box-pen-day').classList.toggle('hidden', t !== 'PerDay');
+  document.getElementById('box-pen-pct').classList.toggle('hidden', t !== 'Percent');
+}
+
+function calcDuration() {
+  const s = document.getElementById('c-start').value, e = document.getElementById('c-end').value;
+  const out = document.getElementById('c-duration');
+  if (!s || !e) { out.value = '—'; return; }
+  const days = Math.round((new Date(e) - new Date(s)) / 86400000) + 1;
+  out.value = days > 0 ? days.toLocaleString('th-TH') + ' วัน' : 'วันที่ไม่ถูกต้อง';
+}
+
+async function uploadProjectFile(inputId, prefix) {
+  const f = document.getElementById(inputId).files[0];
+  if (!f) return null;
+  const ext  = (f.name.split('.').pop() || 'pdf').toLowerCase();
+  const path = 'projects/' + CUR.project_id + '/' + prefix + '_' + Date.now() + '.' + ext;
+  const up = await sb.storage.from('vendor-documents').upload(path, f, { upsert:true });
+  if (up.error) throw up.error;
+  return path;
+}
+
+async function saveContract() {
+  const btn = document.getElementById('btn-contract');
+  let step = 'ตรวจข้อมูล';
+  try {
+    const name = document.getElementById('c-name').value.trim();
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อโครงการ','warning');
+    const s = document.getElementById('c-start').value, e = document.getElementById('c-end').value;
+    if (s && e && new Date(e) < new Date(s))
+      return Swal.fire('วันที่ไม่ถูกต้อง','วันสิ้นสุดต้องไม่ก่อนวันเริ่มสัญญา','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    const payload = {
+      project_name: name,
+      project_ref_code: document.getElementById('c-ref').value.trim() || null,
+      project_type: document.getElementById('c-type').value || null,
+      site_address: document.getElementById('c-address').value.trim() || null,
+      total_project_value_thb: parseFloat(document.getElementById('c-value').value) || 0,
+      start_date: s || null, end_date: e || null,
+      penalty_type: document.getElementById('c-pen-type').value || null,
+      penalty_per_day_thb: parseFloat(document.getElementById('c-pen-day').value) || null,
+      penalty_pct: parseFloat(document.getElementById('c-pen-pct').value) || null,
+      duration_basis: document.getElementById('c-basis').value,
+      duration_days: (s && e) ? Math.round((new Date(e)-new Date(s))/86400000)+1 : null,
+      special_conditions: document.getElementById('c-special').value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    // เลือกวิธีคิดค่าปรับได้อย่างเดียว ล้างอีกช่องทิ้งเพื่อไม่ให้ข้อมูลขัดกัน
+    if (payload.penalty_type === 'PerDay')  payload.penalty_pct = null;
+    if (payload.penalty_type === 'Percent') payload.penalty_per_day_thb = null;
+
+    step = 'อัปโหลดเอกสาร';
+    const c1 = await uploadProjectFile('f-contract','contract');
+    const c2 = await uploadProjectFile('f-safety','safety');
+    const c3 = await uploadProjectFile('f-plan','siteplan');
+    if (c1) payload.contract_file_url = c1;
+    if (c2) payload.safety_agreement_url = c2;
+    if (c3) payload.site_plan_url = c3;
+
+    step = 'บันทึกข้อมูล';
+    const r = await sb.from('tb_projects').update(payload).eq('project_id', CUR.project_id);
+    if (r.error) throw r.error;
+
+    Swal.fire({ icon:'success', title:'บันทึกแล้ว', timer:1200, showConfirmButton:false });
+    await loadProjects(CUR.project_id);
+  } catch (err) {
+    reportError('บันทึกข้อมูลสัญญาไม่สำเร็จ', err, step);
+  } finally { btn.disabled = false; btn.textContent = 'บันทึกแท็บนี้'; }
+}
+
+async function viewDoc(path) {
+  try {
+    const { data, error } = await sb.storage.from('vendor-documents').createSignedUrl(path, 300);
+    if (error) throw error;
+    window.open(data.signedUrl, '_blank');
+  } catch (err) { reportError('เปิดเอกสารไม่สำเร็จ', err, 'createSignedUrl'); }
+}
+
+/* ---------------------- แท็บพื้นที่ ---------------------- */
+function fillSite() {
+  const p = CUR;
+  document.getElementById('s-lat').value      = p.gps_lat || '';
+  document.getElementById('s-lng').value      = p.gps_lng || '';
+  document.getElementById('s-radius').value   = p.geofence_radius || 100;
+  document.getElementById('s-start').value    = (p.work_start_time || '08:00').slice(0,5);
+  document.getElementById('s-end').value      = (p.work_end_time || '17:00').slice(0,5);
+  document.getElementById('s-maxhr').value    = p.max_work_hours || 10;
+  document.getElementById('s-forcehr').value  = p.force_checkout_hours || 12;
+  document.getElementById('s-hospital').value = p.emergency_hospital || '';
+  document.getElementById('s-emgphone').value = p.emergency_phone || '';
+}
+
+function useMyLocation() {
+  if (!navigator.geolocation) return Swal.fire('ไม่รองรับ','เบราว์เซอร์นี้ดึงพิกัดไม่ได้','warning');
+  Swal.fire({ title:'กำลังอ่านพิกัด…', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      Swal.close();
+      document.getElementById('s-lat').value = pos.coords.latitude.toFixed(7);
+      document.getElementById('s-lng').value = pos.coords.longitude.toFixed(7);
+    },
+    err => { Swal.close(); Swal.fire('อ่านพิกัดไม่สำเร็จ','กรุณาอนุญาตให้เว็บเข้าถึงตำแหน่ง แล้วลองใหม่','error'); },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
+
+function previewMap() {
+  const lat = document.getElementById('s-lat').value.trim();
+  const lng = document.getElementById('s-lng').value.trim();
+  if (!lat || !lng) return Swal.fire('ยังไม่มีพิกัด','กรอกละติจูดและลองจิจูดก่อน','warning');
+  window.open('https://www.google.com/maps?q=' + encodeURIComponent(lat + ',' + lng), '_blank');
+}
+
+async function saveSite() {
+  const btn = document.getElementById('btn-site');
+  try {
+    const lat = parseFloat(document.getElementById('s-lat').value);
+    const lng = parseFloat(document.getElementById('s-lng').value);
+    const rad = parseInt(document.getElementById('s-radius').value, 10);
+
+    if (document.getElementById('s-lat').value && (isNaN(lat) || lat < -90 || lat > 90))
+      return Swal.fire('ละติจูดไม่ถูกต้อง','ค่าต้องอยู่ระหว่าง -90 ถึง 90 (ประเทศไทยประมาณ 5 ถึง 21)','warning');
+    if (document.getElementById('s-lng').value && (isNaN(lng) || lng < -180 || lng > 180))
+      return Swal.fire('ลองจิจูดไม่ถูกต้อง','ค่าต้องอยู่ระหว่าง -180 ถึง 180 (ประเทศไทยประมาณ 97 ถึง 106)','warning');
+    if (!rad || rad < 10)
+      return Swal.fire('รัศมีน้อยเกินไป','รัศมีพื้นที่ควรอย่างน้อย 10 เมตร','warning');
+
+    const maxhr   = parseFloat(document.getElementById('s-maxhr').value) || 10;
+    const forcehr = parseFloat(document.getElementById('s-forcehr').value) || 12;
+    if (forcehr <= maxhr)
+      return Swal.fire('ค่าชั่วโมงขัดกัน','ชั่วโมงบังคับออกต้องมากกว่าชั่วโมงที่เริ่มเตือน','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    const payload = {
+      gps_lat: isNaN(lat) ? null : lat,
+      gps_lng: isNaN(lng) ? null : lng,
+      gps_lat_long: (!isNaN(lat) && !isNaN(lng)) ? (lat + ',' + lng) : null,
+      geofence_radius: rad,
+      work_start_time: document.getElementById('s-start').value || null,
+      work_end_time: document.getElementById('s-end').value || null,
+      max_work_hours: maxhr, force_checkout_hours: forcehr,
+      emergency_hospital: document.getElementById('s-hospital').value.trim() || null,
+      emergency_phone: document.getElementById('s-emgphone').value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    const r = await sb.from('tb_projects').update(payload).eq('project_id', CUR.project_id);
+    if (r.error) throw r.error;
+    Swal.fire({ icon:'success', title:'บันทึกแล้ว', timer:1200, showConfirmButton:false });
+    await loadProjects(CUR.project_id);
+  } catch (err) {
+    reportError('บันทึกข้อมูลพื้นที่ไม่สำเร็จ', err, 'update tb_projects');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึกแท็บนี้'; }
+}
+
+/* ---------------------- จุดรวมพล ---------------------- */
+async function loadMusters() {
+  const r = await sb.from('tb_muster_points').select('*').eq('project_id', CUR.project_id).order('point_name');
+  MUSTERS = r.error ? [] : (r.data || []);
+  const box = document.getElementById('muster-list');
+  document.getElementById('muster-empty').classList.toggle('hidden', MUSTERS.length > 0);
+  box.innerHTML = MUSTERS.map(m => `
+    <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold text-slate-800 truncate">${FTC.esc(m.point_name)}</p>
+        <p class="text-[11px] text-slate-400 font-mono">${FTC.esc(m.muster_point_id)}${
+          m.gps_lat ? ' · ' + m.gps_lat + ', ' + m.gps_lng : ''}${
+          m.capacity ? ' · รองรับ ' + m.capacity + ' คน' : ''}</p>
+      </div>
+      <button onclick="delMuster('${FTC.esc(m.muster_point_id)}')"
+        class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition shrink-0">
+        <i data-lucide="trash-2" class="w-4 h-4"></i></button>
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+async function addMuster() {
+  const { value: f } = await Swal.fire({
+    title: 'เพิ่มจุดรวมพล',
+    html:
+      '<input id="m1" class="swal2-input" placeholder="ชื่อจุดรวมพล เช่น ลานจอดรถหน้าโรงงาน">' +
+      '<input id="m2" class="swal2-input" placeholder="ละติจูด (ไม่บังคับ)">' +
+      '<input id="m3" class="swal2-input" placeholder="ลองจิจูด (ไม่บังคับ)">' +
+      '<input id="m4" class="swal2-input" placeholder="รองรับได้กี่คน (ไม่บังคับ)">',
+    focusConfirm: false, showCancelButton: true,
+    confirmButtonText: 'เพิ่ม', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#DB5A24',
+    preConfirm: () => {
+      const name = document.getElementById('m1').value.trim();
+      if (!name) { Swal.showValidationMessage('ต้องระบุชื่อจุดรวมพล'); return false; }
+      return { name,
+        lat: parseFloat(document.getElementById('m2').value) || null,
+        lng: parseFloat(document.getElementById('m3').value) || null,
+        cap: parseInt(document.getElementById('m4').value,10) || null };
+    }
+  });
+  if (!f) return;
+  const id = 'MP-' + CUR.project_id.replace(/[^A-Za-z0-9]/g,'').slice(-8) + '-' + (MUSTERS.length + 1);
+  const r = await sb.from('tb_muster_points').insert({
+    muster_point_id: id, project_id: CUR.project_id, point_name: f.name,
+    gps_lat: f.lat, gps_lng: f.lng, capacity: f.cap
+  });
+  if (r.error) { reportError('เพิ่มจุดรวมพลไม่สำเร็จ', r.error, 'insert tb_muster_points'); return; }
+  await loadMusters(); renderHeader();
+}
+
+async function delMuster(id) {
+  const c = await Swal.fire({ icon:'warning', title:'ลบจุดรวมพลนี้', showCancelButton:true,
+    confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก', confirmButtonColor:'#DC2626' });
+  if (!c.isConfirmed) return;
+  const r = await sb.from('tb_muster_points').delete().eq('muster_point_id', id);
+  if (r.error) {
+    if (r.error.code === '23503') {
+      Swal.fire('ลบไม่ได้','จุดรวมพลนี้ถูกใช้ในบันทึกการอพยพไปแล้ว ลบทิ้งไม่ได้เพราะเป็นหลักฐาน','warning');
+    } else { reportError('ลบจุดรวมพลไม่สำเร็จ', r.error, 'delete'); }
+    return;
+  }
+  await loadMusters(); renderHeader();
+}
+
+/* ---------------------- ผู้เกี่ยวข้อง C3 ---------------------- */
+async function loadContacts() {
+  const r = await sb.from('tb_project_contacts').select('*')
+    .eq('project_id', CUR.project_id).eq('is_active', true).order('contact_side');
+  CONTACTS = r.error ? [] : (r.data || []);
+  const SIDE = { Owner:'เจ้าของโครงการ', Consultant:'ที่ปรึกษา', FTC:'ฝ่าย FTC' };
+  document.getElementById('contact-empty').classList.toggle('hidden', CONTACTS.length > 0);
+  document.getElementById('contact-rows').innerHTML = CONTACTS.map(c => `
+    <tr>
+      <td class="px-3 py-2.5">
+        <p class="text-[12px] font-semibold text-slate-700">${FTC.esc(SIDE[c.contact_side] || c.contact_side)}</p>
+        <p class="text-[11px] text-slate-400">${FTC.esc(c.contact_role)}</p>
+      </td>
+      <td class="px-3 py-2.5">
+        <p class="font-semibold text-slate-800">${FTC.esc(c.full_name)}</p>
+        <p class="text-[11px] text-slate-400">${FTC.esc(c.company_name || '—')}</p>
+      </td>
+      <td class="px-3 py-2.5">
+        <p class="text-[12px] text-slate-600">${FTC.esc(c.phone || '—')}</p>
+        <p class="text-[11px] text-slate-400 truncate max-w-[170px]">${FTC.esc(c.email || '—')}</p>
+      </td>
+      <td class="px-3 py-2.5">${
+        c.line_uid
+          ? '<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">ผูกแล้ว</span>'
+          : `<button onclick="bindContact('${FTC.esc(c.contact_id)}')"
+               class="px-2.5 py-1 rounded-lg bg-brand-navy text-white text-[11px] font-bold hover:bg-brand-navy-light transition">
+               สร้างลิงก์ผูก</button>`}
+      </td>
+      <td class="px-3 py-2.5 text-right">
+        <button onclick="openContact('${FTC.esc(c.contact_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition">
+          <i data-lucide="pencil" class="w-4 h-4"></i></button>
+        <button onclick="delContact('${FTC.esc(c.contact_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </td>
+    </tr>`).join('');
+  lucide.createIcons();
+}
+
+function openContact(id) {
+  editingContact = id;
+  const c = id ? CONTACTS.find(x => x.contact_id === id) : null;
+  document.getElementById('contact-title').textContent = c ? 'แก้ไขผู้เกี่ยวข้อง' : 'เพิ่มผู้เกี่ยวข้อง';
+  document.getElementById('ct-side').value    = c ? c.contact_side : 'Owner';
+  document.getElementById('ct-role').value    = c ? (c.contact_role || '') : '';
+  document.getElementById('ct-name').value    = c ? (c.full_name || '') : '';
+  document.getElementById('ct-company').value = c ? (c.company_name || '') : '';
+  document.getElementById('ct-phone').value   = c ? (c.phone || '') : '';
+  document.getElementById('ct-email').value   = c ? (c.email || '') : '';
+  document.getElementById('ct-lineid').value  = c ? (c.line_display_id || '') : '';
+  document.getElementById('ct-note').value    = c ? (c.remarks || '') : '';
+  openModal('modal-contact');
+}
+
+async function saveContact() {
+  const btn = document.getElementById('btn-contact-save');
+  try {
+    const name = document.getElementById('ct-name').value.trim();
+    const role = document.getElementById('ct-role').value.trim();
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อ-สกุล','warning');
+    if (!role) return Swal.fire('ยังกรอกไม่ครบ','ระบุบทบาทในโครงการ','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    const payload = {
+      project_id: CUR.project_id,
+      contact_side: document.getElementById('ct-side').value,
+      contact_role: role, full_name: name,
+      company_name: document.getElementById('ct-company').value.trim() || null,
+      phone: document.getElementById('ct-phone').value.trim() || null,
+      email: document.getElementById('ct-email').value.trim() || null,
+      line_display_id: document.getElementById('ct-lineid').value.trim() || null,
+      remarks: document.getElementById('ct-note').value.trim() || null
+    };
+    const r = editingContact
+      ? await sb.from('tb_project_contacts').update(payload).eq('contact_id', editingContact)
+      : await sb.from('tb_project_contacts').insert(payload);
+    if (r.error) throw r.error;
+    closeModal('modal-contact');
+    await loadContacts(); renderHeader();
+  } catch (err) {
+    reportError('บันทึกผู้เกี่ยวข้องไม่สำเร็จ', err, 'tb_project_contacts');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+}
+
+async function delContact(id) {
+  const c = await Swal.fire({ icon:'warning', title:'นำผู้เกี่ยวข้องรายนี้ออก', showCancelButton:true,
+    confirmButtonText:'นำออก', cancelButtonText:'ยกเลิก', confirmButtonColor:'#DC2626' });
+  if (!c.isConfirmed) return;
+  const r = await sb.from('tb_project_contacts').update({ is_active:false }).eq('contact_id', id);
+  if (r.error) { reportError('นำออกไม่สำเร็จ', r.error, 'update is_active'); return; }
+  await loadContacts(); renderHeader();
+}
+
+/** ใช้ระบบผูก LINE ตัวเดียวกับหน้า Staff Management */
+async function bindContact(contactId) {
+  try {
+    const c = CONTACTS.find(x => x.contact_id === contactId);
+    await sb.from('tb_line_bindings').update({ status:'Revoked' })
+      .eq('subject_type','Contact').eq('subject_id',contactId).eq('status','Pending');
+    const ins = await sb.from('tb_line_bindings')
+      .insert({ subject_type:'Contact', subject_id:contactId })
+      .select('bind_token').single();
+    if (ins.error) throw ins.error;
+    const url = FTC.bindUrl(ins.data.bind_token);
+    await Swal.fire({
+      icon:'info', title:'ลิงก์ผูกบัญชี LINE',
+      html: `<p style="font-size:.85rem;margin-bottom:.5rem">${FTC.esc(c ? c.full_name : '')}</p>` +
+            `<pre style="font-size:.7rem;background:#F1F5F9;border-radius:.5rem;padding:.6rem;` +
+            `white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(url)}</pre>`,
+      confirmButtonText:'คัดลอกลิงก์', showCancelButton:true, cancelButtonText:'ปิด',
+      confirmButtonColor:'#19335A'
+    }).then(r => { if (r.isConfirmed) navigator.clipboard.writeText(url); });
+  } catch (err) { reportError('สร้างลิงก์ผูกบัญชีไม่สำเร็จ', err, 'tb_line_bindings'); }
+}
+
+/* ---------------------- ทีม FTC ---------------------- */
+async function loadProjectStaff() {
+  const r = await sb.from('tb_project_staff').select('*')
+    .eq('project_id', CUR.project_id).eq('is_active', true);
+  PSTAFF = r.error ? [] : (r.data || []);
+  const DUTY = { Safety_Officer:'จป. ประจำโครงการ', PM:'ผู้จัดการโครงการ', Engineer:'วิศวกร', Security:'รักษาความปลอดภัย' };
+  document.getElementById('staff-empty').classList.toggle('hidden', PSTAFF.length > 0);
+  document.getElementById('staff-list').innerHTML = PSTAFF.map(s => {
+    const st = ALL_STAFF.find(x => x.staff_id === s.staff_id);
+    const warn = st && !st.line_uid;
+    return `<div class="rounded-xl border ${warn ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'} p-3">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-slate-800 truncate">${FTC.esc(st ? st.full_name : s.staff_id)}</p>
+          <p class="text-[11px] text-slate-500">${FTC.esc(DUTY[s.duty_role] || s.duty_role)}</p>
+          ${warn ? '<p class="text-[11px] text-amber-700 mt-1">⚠️ ยังไม่ผูก LINE จะไม่ได้รับแจ้งเตือน</p>' : ''}
+        </div>
+        <button onclick="delProjectStaff('${FTC.esc(s.id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition shrink-0">
+          <i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function addProjectStaff() {
+  const staffId = document.getElementById('staff-pick').value;
+  const duty    = document.getElementById('duty-pick').value;
+  if (!staffId) return Swal.fire('ยังไม่ได้เลือก','เลือกบุคลากรก่อนกดเพิ่ม','warning');
+  const r = await sb.from('tb_project_staff')
+    .insert({ project_id: CUR.project_id, staff_id: staffId, duty_role: duty });
+  if (r.error) {
+    if (r.error.code === '23505') Swal.fire('ซ้ำ','คนนี้ถูกมอบหมายบทบาทนี้ในโครงการแล้ว','warning');
+    else reportError('เพิ่มทีมงานไม่สำเร็จ', r.error, 'insert tb_project_staff');
+    return;
+  }
+  document.getElementById('staff-pick').value = '';
+  await loadProjectStaff(); renderHeader();
+}
+
+async function delProjectStaff(id) {
+  const r = await sb.from('tb_project_staff').update({ is_active:false }).eq('id', id);
+  if (r.error) { reportError('นำออกไม่สำเร็จ', r.error, 'update'); return; }
+  await loadProjectStaff(); renderHeader();
+}
+
+/* ---------------------- ผู้รับเหมาในโครงการ ---------------------- */
+async function loadProjectVendors() {
+  const r = await sb.from('tb_project_vendors').select('*')
+    .eq('project_id', CUR.project_id).eq('is_active', true);
+  PVENDORS = r.error ? [] : (r.data || []);
+  document.getElementById('pvendor-empty').classList.toggle('hidden', PVENDORS.length > 0);
+  document.getElementById('pvendor-list').innerHTML = PVENDORS.map(pv => {
+    const v = ALL_VENDORS.find(x => x.vendor_id === pv.vendor_id);
+    const personal = v && ['personal','individual'].indexOf(String(v.entity_type||'').toLowerCase()) !== -1;
+    return `<div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold text-slate-800 truncate">${FTC.esc(v ? v.vendor_name : pv.vendor_id)}</p>
+        <p class="text-[11px] text-slate-400 font-mono">${FTC.esc(pv.vendor_id)}</p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        ${personal ? '<span class="chip bg-purple-50 text-purple-700 border border-purple-200">บุคคลธรรมดา</span>' : ''}
+        <button onclick="delProjectVendor('${FTC.esc(pv.id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
+          <i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function addProjectVendor() {
+  const vid = document.getElementById('vendor-pick').value;
+  if (!vid) return Swal.fire('ยังไม่ได้เลือก','เลือกผู้รับเหมาก่อนกดเพิ่ม','warning');
+  const r = await sb.from('tb_project_vendors').insert({ project_id: CUR.project_id, vendor_id: vid });
+  if (r.error) {
+    if (r.error.code === '23505') Swal.fire('ซ้ำ','ผู้รับเหมารายนี้อยู่ในโครงการแล้ว','warning');
+    else reportError('เพิ่มผู้รับเหมาไม่สำเร็จ', r.error, 'insert tb_project_vendors');
+    return;
+  }
+  document.getElementById('vendor-pick').value = '';
+  await loadProjectVendors(); renderHeader();
+}
+
+async function delProjectVendor(id) {
+  const r = await sb.from('tb_project_vendors').update({ is_active:false }).eq('id', id);
+  if (r.error) { reportError('นำออกไม่สำเร็จ', r.error, 'update'); return; }
+  await loadProjectVendors(); renderHeader();
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function showTab(name) {
+  ['contract','team','site','vendor'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+  });
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+}
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal('modal-create'); closeModal('modal-contact'); }
+});
+['modal-create','modal-contact'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
+});
+
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step, error: err });
+  const e = err || {};
+  const detail = 'ขั้นตอน: ' + (step || '-') + '\n' +
+    'code: ' + (e.code || e.name || e.statusCode || '-') + '\n' +
+    'message: ' + (e.message || String(err)) +
+    (e.details ? '\ndetails: ' + e.details : '') + (e.hint ? '\nhint: ' + e.hint : '');
+  let hint = '';
+  const code = String(e.code || e.statusCode || ''), msg = String(e.message || '');
+  if (code === '42501' || /row-level security|permission denied/i.test(msg) || e.status === 403)
+    hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ต้อง GRANT ให้ role authenticated บนตารางนี้';
+  else if (code === '42703') hint = 'มีคอลัมน์ที่ยังไม่มีในฐานข้อมูล — ตรวจว่ารัน sprint1 PART 8 ถึง 11 แล้วหรือยัง';
+  else if (code === '42P01') hint = 'ยังไม่มีตารางนี้ — ตรวจว่ารัน sprint1 ครบทุก PART แล้วหรือยัง';
+  else if (/Bucket not found/i.test(msg)) hint = 'ยังไม่ได้สร้าง Storage bucket ชื่อ vendor-documents';
+  else if (code === '23503') hint = 'ข้อมูลนี้ถูกอ้างอิงจากตารางอื่นอยู่ ลบหรือแก้ไม่ได้';
+
+  Swal.fire({
+    icon:'error', title:title,
+    html: (hint ? `<p style="text-align:left;font-size:.85rem;margin-bottom:.75rem"><b>คำแนะนำ:</b> ${FTC.esc(hint)}</p>` : '') +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border:1px solid #E2E8F0;` +
+      `border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(detail)}</pre>`,
+    confirmButtonText:'คัดลอกรายละเอียด', showCancelButton:true, cancelButtonText:'ปิด',
+    confirmButtonColor:'#19335A', width:560
+  }).then(r => { if (r.isConfirmed) navigator.clipboard.writeText(detail); });
+}
+
+window.addEventListener('error', ev =>
+  reportError('เกิดข้อผิดพลาดในหน้าเว็บ', ev.error || { message: ev.message },
+              (ev.filename||'') + ':' + (ev.lineno||'')));
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ', (r && typeof r === 'object') ? r : { message:String(r) },
+              'promise ที่ไม่มีใครดัก');
+});
+
+(async function init() {
+  lucide.createIcons();
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
