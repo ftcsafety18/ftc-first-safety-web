@@ -705,22 +705,76 @@
     }
 
     // ---- ระบบสแกน QR Code ด้วย html5-qrcode ----
+    // หมายเหตุ: html5-qrcode ใช้ navigator.mediaDevices.getUserMedia ซึ่ง WebView ของ LINE บน Android
+    // มักไม่รองรับ (undefined หรือ reject) — ต้องบอกผู้ใช้ให้ชัดว่าต้องเปิดในเบราว์เซอร์ภายนอก
+    function isLineAndroidBrowser() {
+        return /\bLine\//i.test(navigator.userAgent) && /Android/i.test(navigator.userAgent);
+    }
+
+    function openExternalBrowserForScan() {
+        var url = window.location.href;
+        try {
+            if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient() && liff.openWindow) {
+                liff.openWindow({ url: url, external: true });
+                return;
+            }
+        } catch (e) { console.error('liff.openWindow failed:', e); }
+
+        if (/Android/i.test(navigator.userAgent)) {
+            var intentUrl = 'intent://' + url.replace(/^https?:\/\//, '') +
+                '#Intent;scheme=https;action=android.intent.action.VIEW;' +
+                'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+            window.location.href = intentUrl;
+            return;
+        }
+        window.open(url, '_blank');
+    }
+
     function openScanner() {
         if (!supabaseClient) {
             Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
             return;
         }
+
+        // กล้องแบบสด (getUserMedia) ใช้ไม่ได้ในเบราว์เซอร์ของแอป LINE บน Android
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || isLineAndroidBrowser()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'สแกน QR ในแอป LINE ไม่ได้',
+                html: 'เบราว์เซอร์ในแอป LINE บน Android ไม่รองรับกล้องแบบสด<br>กรุณาเปิดหน้านี้ในเบราว์เซอร์ภายนอก แล้วสแกนอีกครั้งครับ',
+                confirmButtonText: 'เปิดในเบราว์เซอร์ภายนอก',
+                confirmButtonColor: '#19335A',
+                showCancelButton: true,
+                cancelButtonText: 'ปิด'
+            }).then(function (res) {
+                if (res.isConfirmed) openExternalBrowserForScan();
+            });
+            return;
+        }
+
         document.getElementById('qrModal').classList.remove('hidden');
         document.getElementById('qrModal').classList.add('flex');
-        
+
         html5QrcodeScanner = new Html5Qrcode("reader");
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        
-        html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+
+        // ใช้ ideal ไม่ใช่ exact — ถ้าเครื่องไม่มีกล้องหลังจะได้ไม่ throw OverconstrainedError
+        html5QrcodeScanner.start({ facingMode: { ideal: "environment" } }, config, onScanSuccess, onScanFailure)
         .catch(err => {
             console.error("Camera start failed", err);
-            Swal.fire('ไม่สามารถเปิดกล้องได้', 'กรุณาอนุญาตให้เบราว์เซอร์ใช้งานกล้องถ่ายรูป', 'error');
-            closeScanner();
+            // ลองใหม่แบบไม่ระบุกล้อง (บางเครื่องมีแต่กล้องหน้า)
+            html5QrcodeScanner.start({ facingMode: "user" }, config, onScanSuccess, onScanFailure)
+            .catch(err2 => {
+                console.error("Camera fallback failed", err2);
+                var name = (err2 && err2.name) || (err && err.name) || '';
+                var msg = 'กรุณาอนุญาตให้เบราว์เซอร์ใช้งานกล้องถ่ายรูป';
+                if (name === 'NotAllowedError') msg = 'ท่านปฏิเสธสิทธิ์การใช้กล้อง กรุณาอนุญาตในตั้งค่าเบราว์เซอร์แล้วลองใหม่';
+                else if (name === 'NotFoundError') msg = 'ไม่พบกล้องบนอุปกรณ์นี้';
+                else if (name === 'NotReadableError') msg = 'กล้องถูกใช้งานโดยแอปอื่นอยู่ กรุณาปิดแอปนั้นแล้วลองใหม่';
+                else if (name === 'OverconstrainedError') msg = 'อุปกรณ์นี้ไม่รองรับกล้องรูปแบบที่ระบบต้องการ';
+                Swal.fire('ไม่สามารถเปิดกล้องได้', msg, 'error');
+                closeScanner();
+            });
         });
     }
 

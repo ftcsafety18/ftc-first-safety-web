@@ -62,6 +62,16 @@
         }
         .btn-filepick:hover { border-color: #19335A; background: #F7F9FC; }
         .btn-filepick:active { transform: scale(0.97); }
+
+        /* ⚠️ อย่าใช้ .hidden (display:none) กับ <input type="file">
+           WebView ของ LINE บน Android จะไม่เปิด file chooser ให้ ถ้า input ถูก display:none
+           ต้องคง input ไว้ใน layout แต่ซ่อนด้วย opacity/clip แทน */
+        .file-input-hidden {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+            opacity: 0; pointer-events: none;
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-800">
@@ -99,6 +109,17 @@
                 กดเพื่อลงทะเบียน <i data-lucide="arrow-right-circle" class="w-5 h-5"></i>
             </button>
             <p class="text-[11px] text-gray-400 mt-4">* ระบบจะเปิดหน้าต่างนี้ในเบราว์เซอร์หลักของท่านอัตโนมัติ</p>
+
+            <!-- ทางออกสำรอง: ถ้าเปิดเบราว์เซอร์ภายนอกไม่สำเร็จ (เครื่องไม่มี Chrome / LINE บล็อก intent)
+                 ต้องมีทางให้ผู้ใช้ทำงานต่อในแอป LINE ได้ ไม่งั้นจะค้างอยู่หน้านี้ถาวร -->
+            <div class="w-full mt-6 pt-5 border-t border-gray-200">
+                <p class="text-[11px] text-gray-500 leading-relaxed mb-3">
+                    หากกดปุ่มด้านบนแล้วไม่มีอะไรเกิดขึ้น (เครื่องไม่มีเบราว์เซอร์หลัก)<br>ท่านสามารถลงทะเบียนต่อในแอป LINE ได้จากปุ่มนี้
+                </p>
+                <button onclick="continueInLineApp()" id="continue-in-line-btn" class="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-brand-navy/30 text-brand-navy text-sm font-bold rounded-xl hover:bg-slate-50 transition-all">
+                    <i data-lucide="smartphone" class="w-4 h-4"></i> ลงทะเบียนต่อในแอป LINE (โหมดสำรอง)
+                </button>
+            </div>
         </div>
     </div>
 
@@ -276,20 +297,31 @@
                     </div>
                 </div>
 
+                <!-- แจ้งเตือนเฉพาะกรณีใช้งานในแอป LINE บน Android (โหมดสำรอง) -->
+                <div id="line-camera-note" class="hidden rounded-xl bg-amber-50 border border-amber-300 p-4 mb-6 flex items-start gap-3">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+                    <div class="text-xs text-amber-900 leading-relaxed">
+                        <p class="font-bold mb-1">ท่านกำลังใช้งานผ่านแอป LINE บน Android</p>
+                        <p>ถ้ากด "เปิดกล้องถ่ายภาพ" แล้วกล้องไม่ขึ้น ให้ใช้ปุ่ม <b>"เลือกรูปจากแฟ้ม"</b> แทน (เลือก "กล้อง/Camera" ในหน้าต่างที่ขึ้นมาได้)
+                        หรือกด <button type="button" onclick="openInExternalBrowser()" class="underline font-bold text-brand-navy">เปิดในเบราว์เซอร์ภายนอก</button> เพื่อใช้กล้องได้เต็มรูปแบบ</p>
+                    </div>
+                </div>
+
                 <!-- กล่องที่ 1 (บัตรหลัก) -->
                 <div class="mb-8">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสาร บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู <span class="text-red-500">*</span></label>
                     <div id="dropzone-main" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-navy/30 bg-blue-50/50 px-4 py-8 text-center transition-colors">
                         <div id="main-btn-group" class="w-full max-w-xs flex flex-col gap-3">
-                            <label class="btn-camera leading-tight">
-                                <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span> 
+                            <div class="btn-camera leading-tight" role="button" tabindex="0" onclick="openCameraPicker('file-main-camera')">
+                                <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span>
                                 <span class="text-[12px] sm:text-sm">เปิดกล้องถ่ายภาพ บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู</span>
-                                <input type="file" id="file-main-camera" class="hidden" accept="image/*" capture="environment" onchange="handleMainCameraCapture(this)">
-                            </label>
-                            <label class="btn-filepick">
+                            </div>
+                            <input type="file" id="file-main-camera" class="file-input-hidden" accept="image/*" capture="environment" onchange="handleMainCameraCapture(this)">
+
+                            <div class="btn-filepick" role="button" tabindex="0" onclick="openFilePicker('file-main-upload')">
                                 <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
-                                <input type="file" id="file-main-upload" class="hidden" accept="image/*" onchange="handleMainFileSelect(this)">
-                            </label>
+                            </div>
+                            <input type="file" id="file-main-upload" class="file-input-hidden" accept="image/*" onchange="handleMainFileSelect(this)">
                         </div>
 
                         <div id="main-success-status" class="hidden flex flex-col items-center gap-2 mt-4">
@@ -419,6 +451,15 @@
             }
         }
 
+        /* ===== ตรวจสภาพแวดล้อมเบราว์เซอร์ =====
+           LINE in-app browser บน Android ใช้ Android WebView ซึ่งเปิดกล้องได้จำกัด
+           (getUserMedia มักถูกบล็อก และ file input ที่ display:none จะไม่เปิด chooser)
+           iOS ของ LINE ใช้ WKWebView ซึ่งทำงานได้ปกติ — ห้ามเอาเงื่อนไข iOS มารวมกับ Android */
+        var IS_LINE_APP = /\bLine\//i.test(navigator.userAgent);
+        var IS_ANDROID  = /Android/i.test(navigator.userAgent);
+        var IS_IOS      = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        var IS_LINE_ANDROID = IS_LINE_APP && IS_ANDROID;
+
         async function initApp() {
             try {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -426,10 +467,7 @@
                 populateDateDropdowns('dob', thisYearBE - 15, thisYearBE - 70);
                 populateDateDropdowns('exp', thisYearBE, thisYearBE + 15);
 
-                var isLineApp = /Line/i.test(navigator.userAgent);
-                var isAndroid = /Android/i.test(navigator.userAgent);
-
-                if (isLineApp && isAndroid) {
+                if (IS_LINE_ANDROID) {
                     document.getElementById('main-form').style.display = 'none';
                     document.getElementById('liff-blocker').classList.remove('hidden');
                 } else {
@@ -464,13 +502,176 @@
         }
 
         function openInExternalBrowser() {
-            var withoutScheme = window.location.href.replace(/^https?:\/\//, '');
-            var intentUrl = 'intent://' + withoutScheme + '#Intent;scheme=https;package=com.android.chrome;end';
+            var url = window.location.href;
+
+            // 1) วิธีทางการของ LIFF — ใช้ได้ทั้ง iOS และ Android และไม่ต้องเดาว่าเครื่องมีเบราว์เซอร์อะไร
             try {
-                window.location.href = intentUrl;
+                if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient() && liff.openWindow) {
+                    liff.openWindow({ url: url, external: true });
+                    watchExternalOpen();
+                    return;
+                }
             } catch (e) {
-                console.error('intent redirect failed:', e);
+                console.error('liff.openWindow failed:', e);
             }
+
+            // 2) Android intent — ไม่ระบุ package เพื่อให้ระบบเลือกเบราว์เซอร์หลักเอง
+            //    (ของเดิม hardcode com.android.chrome ทำให้เครื่องที่ไม่มี Chrome กดแล้วเงียบ)
+            //    และใส่ browser_fallback_url กันเคสไม่มีตัวรับ intent เลย
+            if (IS_ANDROID) {
+                var withoutScheme = url.replace(/^https?:\/\//, '');
+                var intentUrl = 'intent://' + withoutScheme +
+                    '#Intent;scheme=https;action=android.intent.action.VIEW;' +
+                    'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+                try {
+                    window.location.href = intentUrl;
+                } catch (e) {
+                    console.error('intent redirect failed:', e);
+                }
+                watchExternalOpen();
+                return;
+            }
+
+            // 3) iOS / เบราว์เซอร์ทั่วไป
+            try {
+                window.open(url, '_blank');
+            } catch (e) {
+                console.error('window.open failed:', e);
+            }
+            watchExternalOpen();
+        }
+
+        // ถ้ายังอยู่หน้าเดิมหลังกดเปิดเบราว์เซอร์ภายนอก แปลว่าเปิดไม่สำเร็จ → บอกทางออกให้ผู้ใช้
+        function watchExternalOpen() {
+            setTimeout(function () {
+                if (document.visibilityState === 'hidden') return; // เปิดสำเร็จ (หน้านี้ถูกพักไว้)
+                Swal.fire({
+                    icon: 'info',
+                    title: 'เปิดเบราว์เซอร์ภายนอกไม่สำเร็จ',
+                    html: 'เครื่องของท่านอาจไม่มีเบราว์เซอร์หลัก หรือแอป LINE ไม่อนุญาต<br><br>' +
+                          'ท่านสามารถกด <b>"ลงทะเบียนต่อในแอป LINE"</b> เพื่อใช้งานต่อได้เลยครับ<br>' +
+                          '<span style="font-size:11px;color:#64748b">หรือคัดลอกลิงก์ไปเปิดในเบราว์เซอร์เอง</span>',
+                    confirmButtonText: 'ลงทะเบียนต่อในแอป LINE',
+                    confirmButtonColor: '#19335A',
+                    showCancelButton: true,
+                    cancelButtonText: 'คัดลอกลิงก์'
+                }).then(function (res) {
+                    if (res.isConfirmed) {
+                        continueInLineApp();
+                    } else if (res.dismiss === Swal.DismissReason.cancel) {
+                        copyCurrentLink();
+                    }
+                });
+            }, 2000);
+        }
+
+        function copyCurrentLink() {
+            var url = window.location.href;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url);
+                    Swal.fire('คัดลอกลิงก์แล้ว', 'นำลิงก์ไปวางในเบราว์เซอร์ (Chrome / Safari) เพื่อใช้งานครับ', 'success');
+                    return;
+                }
+            } catch (e) {
+                console.error('clipboard failed:', e);
+            }
+            Swal.fire({ icon: 'info', title: 'ลิงก์สำหรับเปิดในเบราว์เซอร์', html: '<div style="font-size:12px;word-break:break-all">' + url + '</div>' });
+        }
+
+        // โหมดสำรอง: ให้ทำงานต่อในแอป LINE ได้ (ใช้ native file input ซึ่ง Android WebView รองรับดีที่สุด)
+        function continueInLineApp() {
+            document.getElementById('liff-blocker').classList.add('hidden');
+            document.getElementById('main-form').style.display = 'block';
+            var note = document.getElementById('line-camera-note');
+            if (note) note.classList.remove('hidden');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            window.scrollTo(0, 0);
+        }
+
+        /* ===== ตัวเปิดกล้อง / ตัวเลือกไฟล์ =====
+           เดิมใช้ <label> ครอบ <input class="hidden"> (display:none)
+           Android WebView ของ LINE ไม่ส่ง click ต่อไปยัง input ที่ display:none → กดแล้วเงียบ
+           จึงเปลี่ยนเป็นเรียก input.click() ตรง ๆ ภายใต้ user gesture และซ่อน input ด้วย opacity แทน */
+        function triggerFileInput(inputId) {
+            var input = document.getElementById(inputId);
+            if (!input) return false;
+            try {
+                input.click();
+                return true;
+            } catch (e) {
+                console.error('file input click failed:', e);
+                return false;
+            }
+        }
+
+        function openFilePicker(inputId) {
+            if (!triggerFileInput(inputId)) {
+                Swal.fire('เปิดหน้าต่างเลือกไฟล์ไม่ได้', 'กรุณาลองเปิดหน้านี้ในเบราว์เซอร์ภายนอก (Chrome / Safari) ครับ', 'error');
+            }
+        }
+
+        // ปุ่มกล้อง: input มี capture="environment" → Android/iOS จะเรียกกล้องหลังโดยตรง
+        // ถ้าอยู่ในแอป LINE บน Android แล้วกล้องไม่ตอบสนอง จะเสนอทางเลือกให้อัตโนมัติ
+        function openCameraPicker(inputId) {
+            var input = document.getElementById(inputId);
+            if (!input) return;
+
+            if (!triggerFileInput(inputId)) {
+                offerCameraFallback(inputId);
+                return;
+            }
+            if (IS_LINE_ANDROID) watchCameraResult(input);
+        }
+
+        function watchCameraResult(input) {
+            if (input.dataset.watching === '1') return;
+            input.dataset.watching = '1';
+
+            var opened = false;
+            var onHide = function () { if (document.visibilityState === 'hidden') opened = true; };
+            document.addEventListener('visibilitychange', onHide);
+
+            setTimeout(function () {
+                document.removeEventListener('visibilitychange', onHide);
+                input.dataset.watching = '0';
+                // กล้องไม่เคยถูกเปิดเลย และไม่ได้ไฟล์มา → WebView ของ LINE บล็อกกล้องอยู่
+                if (!opened && document.visibilityState === 'visible' && (!input.files || input.files.length === 0)) {
+                    offerCameraFallback(input.id);
+                }
+            }, 3000);
+        }
+
+        // ถ้ากล้องกลับมาทำงานทีหลัง (WebView บางรุ่นช้า) ให้ปิดกล่องข้อความสำรองทิ้งไป
+        var cameraFallbackOpen = false;
+        function dismissCameraFallback() {
+            if (cameraFallbackOpen && typeof Swal !== 'undefined') {
+                Swal.close();
+                cameraFallbackOpen = false;
+            }
+        }
+
+        function offerCameraFallback(cameraInputId) {
+            var uploadInputId = String(cameraInputId).replace('-camera', '-upload');
+            cameraFallbackOpen = true;
+            Swal.fire({
+                icon: 'warning',
+                title: 'แอป LINE เปิดกล้องให้ไม่ได้',
+                html: 'เบราว์เซอร์ในแอป LINE บน Android มีข้อจำกัดเรื่องกล้องครับ<br><br>' +
+                      'กรุณาเลือกวิธีใดวิธีหนึ่งด้านล่าง',
+                confirmButtonText: 'เลือกรูป / เปิดกล้องจากเมนูไฟล์',
+                confirmButtonColor: '#DB5A24',
+                showCancelButton: true,
+                cancelButtonText: 'เปิดในเบราว์เซอร์ภายนอก'
+            }).then(function (res) {
+                cameraFallbackOpen = false;
+                if (res.isConfirmed) {
+                    // input นี้ไม่มี capture → Android จะเปิดหน้าต่างให้เลือกได้ทั้ง "กล้อง" และ "แกลเลอรี"
+                    triggerFileInput(uploadInputId);
+                } else if (res.dismiss === Swal.DismissReason.cancel) {
+                    openInExternalBrowser();
+                }
+            });
         }
 
         function exitApp() {
@@ -673,6 +874,7 @@
         var capturedMainFile = null;
 
         function handleMainCameraCapture(inputElement) {
+            dismissCameraFallback();
             if (inputElement.files.length === 0) return;
             var file = inputElement.files[0];
             capturedMainFile = file;
@@ -742,15 +944,16 @@
                 </div>
 
                 <div id="wp-btn-group-${id}" class="w-full max-w-xs flex flex-col gap-3">
-                    <label class="btn-camera" onclick="return validateExtraDocType(${id})">
-                        <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span> 
+                    <div class="btn-camera" role="button" tabindex="0" onclick="if(validateExtraDocType(${id})) openCameraPicker('file-wp-camera-${id}')">
+                        <span class="icon-badge shrink-0"><i data-lucide="camera" class="w-4 h-4"></i></span>
                         <span class="text-sm">เปิดกล้อง ถ่ายภาพเอกสารความปลอดภัย</span>
-                        <input type="file" id="file-wp-camera-${id}" class="hidden" accept="image/*" capture="environment" onchange="handleExtraCameraCapture(${id}, this)">
-                    </label>
-                    <label class="btn-filepick" onclick="return validateExtraDocType(${id})">
+                    </div>
+                    <input type="file" id="file-wp-camera-${id}" class="file-input-hidden" accept="image/*" capture="environment" onchange="handleExtraCameraCapture(${id}, this)">
+
+                    <div class="btn-filepick" role="button" tabindex="0" onclick="if(validateExtraDocType(${id})) openFilePicker('file-wp-upload-${id}')">
                         <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
-                        <input type="file" id="file-wp-upload-${id}" class="hidden" accept="image/*" onchange="handleExtraFileSelect(${id}, this)">
-                    </label>
+                    </div>
+                    <input type="file" id="file-wp-upload-${id}" class="file-input-hidden" accept="image/*" onchange="handleExtraFileSelect(${id}, this)">
                 </div>
 
                 <div id="wp-success-status-${id}" class="hidden flex flex-col items-center gap-2 mt-4">
@@ -787,6 +990,7 @@
         }
 
         function handleExtraCameraCapture(id, inputElement) {
+            dismissCameraFallback();
             if (!document.getElementById('extra-doc-type-' + id).value) { inputElement.value = ''; return; }
             if (inputElement.files.length === 0) return;
             var file = inputElement.files[0];
