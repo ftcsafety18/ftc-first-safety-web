@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <script src="../shared/config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -721,17 +721,50 @@ ${url}
   drawQr(url);
 }
 
+/** โหลดไลบรารี QR แบบมีแหล่งสำรอง เผื่อ CDN ใดถูกบล็อกหรือล่ม */
+let _qrLibPromise = null;
+function ensureQrLib() {
+  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) return Promise.resolve(true);
+  if (_qrLibPromise) return _qrLibPromise;
+
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
+    'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js',
+    'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js'
+  ];
+
+  _qrLibPromise = new Promise(resolve => {
+    let i = 0;
+    (function next() {
+      if (i >= sources.length) { resolve(false); return; }
+      const url = sources[i++];
+      const tag = document.createElement('script');
+      tag.src = url;
+      tag.onload  = () => {
+        if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+          console.log('[FTC] โหลดไลบรารี QR สำเร็จจาก', url);
+          resolve(true);
+        } else { next(); }
+      };
+      tag.onerror = () => { console.warn('[FTC] โหลด QR ไม่สำเร็จจาก', url); next(); };
+      document.head.appendChild(tag);
+    })();
+  });
+  return _qrLibPromise;
+}
+
 /** วาด QR แยกออกมา ล้มเหลวได้โดยไม่กระทบหน้าต่างที่เปิดไปแล้ว */
-function drawQr(url) {
+async function drawQr(url) {
   const canvas = document.getElementById('bind-qr');
   const warn   = document.getElementById('qr-warn');
   warn.classList.add('hidden');
 
-  if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
+  const ready = await ensureQrLib();
+
+  if (!ready) {
     canvas.style.display = 'none';
-    warn.textContent = 'สร้างภาพ QR ไม่ได้ (โหลดไลบรารี qrcode ไม่สำเร็จ) — ใช้ปุ่มคัดลอกลิงก์ด้านล่างแทนได้';
+    warn.textContent = 'สร้างภาพ QR ไม่ได้ (เครือข่ายเข้าถึงไลบรารีไม่ได้) — ใช้ปุ่มคัดลอกลิงก์หรือส่งทางอีเมลแทนได้ตามปกติ';
     warn.classList.remove('hidden');
-    console.warn('[FTC] QRCode library not available');
     return;
   }
 
