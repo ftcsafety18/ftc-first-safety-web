@@ -132,7 +132,10 @@ tailwind.config = { theme: { extend: {
         <option value="">ทุกสถานะ</option>
         <option value="tax_over">บุคคลธรรมดา ยอดทะลุ 1.5 ล้าน</option>
         <option value="tax_near">บุคคลธรรมดา ใกล้เพดาน 1.2-1.5 ล้าน</option>
-        <option value="no_kt20">นิติบุคคล ขาดเอกสาร กท.20</option>
+        <option value="no_pp20">ยอดถึงเกณฑ์ แต่ยังไม่มี ภ.พ.20</option>
+        <option value="no_kt20">ขาดเอกสาร กท.20 (ประกันสังคม)</option>
+        <option value="ins_expired">ประกันลูกจ้างหมดอายุแล้ว</option>
+        <option value="ins_soon">ประกันใกล้หมดอายุใน 30 วัน</option>
         <option value="no_agree">บุคคลธรรมดา ยังไม่ลงนามข้อตกลง</option>
         <option value="no_line">ยังไม่ผูกบัญชี LINE</option>
         <option value="blacklist">ติดบัญชีดำ</option>
@@ -229,25 +232,49 @@ tailwind.config = { theme: { extend: {
         </div>
       </div>
 
-      <!-- ================= Tax Shield ================= -->
+      <!-- ================= เอกสารตามข้อกำหนด ================= -->
       <div class="rounded-xl border-2 border-slate-200 p-4">
-        <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">เอกสารตามข้อกำหนดภาษี</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">เอกสารตามข้อกำหนด</p>
 
-        <!-- นิติบุคคล : กท.20 -->
-        <div id="box-kt20">
-          <label class="lbl">แบบ กท.20 (ขึ้นทะเบียนนายจ้าง) <span class="text-red-500">*</span></label>
+        <!-- ภ.พ.20 — ใช้ได้ทั้งสองประเภท -->
+        <div class="mb-4 pb-4 border-b border-slate-200">
+          <label class="lbl">
+            ภ.พ.20 ใบทะเบียนภาษีมูลค่าเพิ่ม
+            <span id="pp20-req" class="hidden text-red-500">*</span>
+          </label>
+          <p class="text-[11px] text-slate-500 mb-2">
+            ออกโดยกรมสรรพากร — ใช้ตอบโจทย์ฝ่ายบัญชีเรื่องเพดานรายได้ 1.5 ล้านบาทต่อปีภาษี
+          </p>
+          <input type="file" id="e-pp20" accept="image/*,application/pdf"
+            class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg
+                   file:border-0 file:text-xs file:font-bold file:bg-brand-navy file:text-white
+                   hover:file:bg-brand-navy-light file:cursor-pointer">
+          <p id="pp20-current" class="hidden text-[11px] text-emerald-700 mt-2"></p>
+          <div class="mt-2">
+            <label class="lbl">วันที่จดทะเบียน</label>
+            <input type="date" id="e-pp20-date" class="fld">
+          </div>
+          <p id="pp20-warn" class="hidden text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5 mt-2"></p>
+        </div>
+
+        <!-- กท.20 — หัวใจฝั่งความปลอดภัย -->
+        <div id="box-kt20" class="mb-4 pb-4 border-b border-slate-200">
+          <label class="lbl">กท.20 แบบขึ้นทะเบียนนายจ้าง <span class="text-red-500">*</span></label>
+          <p class="text-[11px] text-slate-500 mb-2">
+            ออกโดยสำนักงานประกันสังคม — ยืนยันว่าคนงานมีกองทุนเงินทดแทนรองรับเมื่อเกิดอุบัติเหตุ
+          </p>
           <input type="file" id="e-kt20" accept="image/*,application/pdf"
             class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg
                    file:border-0 file:text-xs file:font-bold file:bg-brand-navy file:text-white
                    hover:file:bg-brand-navy-light file:cursor-pointer">
           <p id="kt20-current" class="hidden text-[11px] text-emerald-700 mt-2"></p>
-          <div class="mt-3">
+          <div class="mt-2">
             <label class="lbl">วันหมดอายุเอกสาร</label>
             <input type="date" id="e-kt20-exp" class="fld">
           </div>
         </div>
 
-        <!-- บุคคลธรรมดา : ข้อตกลงสละสิทธิเรียกร้อง -->
+        <!-- ข้อตกลงสละสิทธิ — เฉพาะบุคคลธรรมดา -->
         <div id="box-agree" class="hidden">
           <div class="rounded-lg bg-slate-50 border border-slate-200 p-3 mb-3 max-h-48 overflow-y-auto">
             <p class="text-[11px] font-bold text-brand-navy mb-1">
@@ -317,7 +344,21 @@ tailwind.config = { theme: { extend: {
             <option value="Insured">มีประกันอุบัติเหตุ / ประกันสังคมให้ลูกจ้าง</option>
             <option value="None">ไม่มี</option>
           </select>
-          <input id="e-welfare-note" class="fld mt-2" placeholder="ระบุบริษัทประกันหรือเลขกรมธรรม์ (ถ้ามี)">
+          <div id="box-insurance" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+            <div>
+              <label class="lbl">บริษัทประกัน</label>
+              <input id="e-ins-company" class="fld">
+            </div>
+            <div>
+              <label class="lbl">เลขกรมธรรม์</label>
+              <input id="e-ins-policy" class="fld">
+            </div>
+            <div>
+              <label class="lbl">วันหมดอายุประกัน <span class="text-red-500">*</span></label>
+              <input type="date" id="e-ins-expiry" class="fld">
+            </div>
+          </div>
+          <input id="e-welfare-note" class="fld mt-2" placeholder="หมายเหตุเพิ่มเติมเรื่องสวัสดิการ (ถ้ามี)">
           <p id="welfare-warn" class="hidden text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5 mt-2">
             🔴 ผู้รับเหมาที่ไม่มีประกันให้ลูกจ้าง คือความเสี่ยงสูงสุดของ FTC เมื่อเกิดอุบัติเหตุ
             เพราะข้อตกลงสละสิทธิ์ไม่ได้ทำให้ผู้บาดเจ็บมีเงินรักษาพยาบาล
@@ -474,7 +515,8 @@ async function loadVendors() {
             'kt20_uploaded, kt20_file_url, kt20_expiry_date, e_agreement_signed, e_agreement_at, ' +
             'accum_billing_thb, is_blacklisted, blacklist_reason, contact_person, contact_email, ' +
             'contact_phone, line_display_id, line_uid, invite_token, invite_status, ' +
-            'worker_welfare, welfare_note, agreement_version, agreement_channel, vendor_documents')
+            'worker_welfare, welfare_note, agreement_version, agreement_channel, vendor_documents, ' +
+            'pp20_uploaded, pp20_file_url, pp20_reg_date, insurance_policy_no, insurance_expiry_date, insurance_company')
     .order('vendor_id');
 
   if (error) { reportError('โหลดข้อมูลผู้รับเหมาไม่สำเร็จ', error, 'select tb_vendors'); return; }
@@ -486,9 +528,10 @@ function isPersonal(v) {
   return ['personal','individual','บุคคลธรรมดา'].indexOf(String(v.entity_type || '').toLowerCase()) !== -1;
 }
 
-/** เอกสารภาษีครบหรือยัง — นิติบุคคลดู กท.20 / บุคคลธรรมดาดูการลงนาม */
+/** เอกสารครบหรือยัง — กท.20 บังคับทุกราย ส่วนบุคคลธรรมดาต้องลงนามข้อตกลงด้วย */
 function docOk(v) {
-  return isPersonal(v) ? !!v.e_agreement_signed : !!v.kt20_uploaded;
+  if (!v.kt20_uploaded) return false;
+  return isPersonal(v) ? !!v.e_agreement_signed : true;
 }
 
 function money(n) {
@@ -504,16 +547,36 @@ function gradeOf(v) {
   } catch (e) { return ''; }
 }
 
+/** ต้องมี ภ.พ.20 เมื่อรายได้ถึงเกณฑ์จดทะเบียนภาษีมูลค่าเพิ่ม */
+function needPp20(v) {
+  return Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD && !v.pp20_uploaded;
+}
+
+/** สถานะประกันลูกจ้าง: expired / soon / ok / none */
+function insState(v) {
+  if (!v.insurance_expiry_date) return v.worker_welfare === 'Insured' ? 'unknown' : 'none';
+  const d = new Date(v.insurance_expiry_date), t = new Date();
+  t.setHours(0,0,0,0);
+  const days = Math.floor((d - t) / 86400000);
+  if (days < 0)  return 'expired';
+  if (days <= 30) return 'soon';
+  return 'ok';
+}
+
 /** เงื่อนไขของตัวกรองแต่ละแบบ รวมไว้ที่เดียวเพื่อให้แถบเตือนกับ dropdown ใช้ตรรกะเดียวกัน */
 const FILTERS = {
   tax_over:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD,
   tax_near:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_WARN_AT
                                  && Number(v.accum_billing_thb || 0) <  TAX_THRESHOLD,
-  no_kt20:   v => !isPersonal(v) && !v.kt20_uploaded,
+  no_kt20:   v => !v.kt20_uploaded,
+  no_pp20:   v => needPp20(v),
+  ins_expired: v => insState(v) === 'expired',
+  ins_soon:  v => insState(v) === 'soon',
   no_agree:  v => isPersonal(v) && !v.e_agreement_signed,
   no_line:   v => !v.line_uid,
   blacklist: v => !!v.is_blacklisted,
   ok:        v => docOk(v) && !!v.line_uid && !v.is_blacklisted
+                  && !needPp20(v) && ['expired','soon'].indexOf(insState(v)) === -1
 };
 
 /** กดแถบเตือนแล้วให้ตารางกรองตามนั้นทันที กดซ้ำเพื่อยกเลิก */
@@ -544,7 +607,10 @@ function render() {
   const active = document.getElementById('f-doc').value;
   const CARDS = [
     { key:'tax_over',  label:'ยอดทะลุ 1.5 ล้าน',      sub:'บุคคลธรรมดา ต้องจดทะเบียนภาษีมูลค่าเพิ่ม', tone:'red' },
-    { key:'no_kt20',   label:'ขาดเอกสาร กท.20',        sub:'นิติบุคคลที่ยังไม่ส่งเอกสาร',              tone:'amber' },
+    { key:'no_pp20',   label:'ยังไม่มี ภ.พ.20',        sub:'ยอดถึงเกณฑ์แล้วแต่ยังไม่จดทะเบียน VAT',    tone:'red' },
+    { key:'ins_expired', label:'ประกันลูกจ้างหมดอายุ',  sub:'ควรระงับการเข้าพื้นที่จนกว่าจะต่ออายุ',     tone:'red' },
+    { key:'ins_soon',  label:'ประกันใกล้หมดอายุ',       sub:'เหลือไม่ถึง 30 วัน',                        tone:'amber' },
+    { key:'no_kt20',   label:'ขาดเอกสาร กท.20',        sub:'ยังไม่ขึ้นทะเบียนนายจ้างประกันสังคม',       tone:'amber' },
     { key:'no_agree',  label:'ยังไม่ลงนามข้อตกลง',      sub:'บุคคลธรรมดาที่ยังไม่ยอมรับเงื่อนไข',        tone:'amber' },
     { key:'no_line',   label:'ยังไม่ผูกบัญชี LINE',     sub:'ส่งแจ้งเตือนถึงไม่ได้',                    tone:'slate' }
   ];
@@ -592,43 +658,58 @@ function render() {
       ? `<span class="chip bg-purple-50 text-purple-700 border border-purple-200">บุคคลธรรมดา</span>`
       : `<span class="chip bg-blue-50 text-blue-700 border border-blue-200">นิติบุคคล</span>`;
 
-    let docCell;
+    let docCell = '';
+
+    // ภ.พ.20 แสดงเฉพาะรายที่ยอดถึงเกณฑ์แล้ว เพราะรายอื่นยังไม่จำเป็น
+    if (Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD) {
+      docCell += v.pp20_uploaded
+        ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">ภ.พ.20 ✓</span> `
+        : `<span class="chip bg-red-50 text-red-700 border border-red-200">ขาด ภ.พ.20</span> `;
+    }
+    docCell += v.kt20_uploaded
+      ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">กท.20 ✓</span>`
+      : `<span class="chip bg-red-50 text-red-700 border border-red-200">ขาด กท.20</span>`;
+
+    if (v.kt20_file_url || v.pp20_file_url) {
+      docCell += `<div class="mt-1 flex gap-2">` +
+        (v.pp20_file_url ? `<button onclick="viewDoc('${e(v.pp20_file_url)}')" class="text-[10px] text-brand-navy underline">ดู ภ.พ.20</button>` : '') +
+        (v.kt20_file_url ? `<button onclick="viewDoc('${e(v.kt20_file_url)}')" class="text-[10px] text-brand-navy underline">ดู กท.20</button>` : '') +
+        `</div>`;
+    }
+
     if (personal) {
-      docCell = v.e_agreement_signed
-        ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">
-             <i data-lucide="file-check-2" class="w-3 h-3"></i> ลงนามแล้ว</span>`
-        : `<span class="chip bg-red-50 text-red-700 border border-red-200">
-             <i data-lucide="file-x-2" class="w-3 h-3"></i> ยังไม่ลงนาม</span>`;
-      const used = Number(v.accum_billing_thb || 0);
-      const pct  = Math.min(100, Math.round(used / TAX_THRESHOLD * 100));
-      const bar  = used >= TAX_THRESHOLD ? 'bg-red-500'
-                 : used >= TAX_WARN_AT   ? 'bg-amber-500' : 'bg-emerald-500';
+      docCell += v.e_agreement_signed
+        ? `<div class="mt-1"><span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">ลงนามแล้ว</span>`
+        : `<div class="mt-1"><span class="chip bg-red-50 text-red-700 border border-red-200">ยังไม่ลงนาม</span>`;
       if (v.agreement_channel === 'Admin') {
         docCell += `<span class="chip bg-slate-100 text-slate-500 border border-slate-200 ml-1"
           title="เจ้าหน้าที่ติ๊กแทน หลักฐานอ่อน">แอดมินติ๊กแทน</span>`;
       }
-      docCell += v.worker_welfare === 'None'
-        ? `<div class="mt-1"><span class="chip bg-red-50 text-red-700 border border-red-200">
-             <i data-lucide="shield-off" class="w-3 h-3"></i> ลูกจ้างไม่มีประกัน</span></div>`
-        : (v.worker_welfare === 'Insured'
-            ? `<div class="mt-1"><span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">
-                 <i data-lucide="shield-check" class="w-3 h-3"></i> ลูกจ้างมีประกัน</span></div>` : '');
+      docCell += `</div>`;
+
+      // สถานะประกันลูกจ้าง
+      const st = insState(v);
+      const INS = {
+        expired: ['bg-red-50 text-red-700 border-red-200',       'ประกันหมดอายุแล้ว'],
+        soon:    ['bg-amber-50 text-amber-700 border-amber-200', 'ประกันใกล้หมดอายุ'],
+        ok:      ['bg-emerald-50 text-emerald-700 border-emerald-200', 'ประกันยังคุ้มครอง'],
+        unknown: ['bg-slate-100 text-slate-500 border-slate-200','ไม่ระบุวันหมดอายุ'],
+        none:    ['bg-red-50 text-red-700 border-red-200',       'ลูกจ้างไม่มีประกัน']
+      };
+      const [cls, label] = INS[st];
+      docCell += `<div class="mt-1"><span class="chip border ${cls}">${label}` +
+        (v.insurance_expiry_date && st !== 'none' ? ' · ' + e(v.insurance_expiry_date) : '') + `</span></div>`;
+
+      const used = Number(v.accum_billing_thb || 0);
+      const pct  = Math.min(100, Math.round(used / TAX_THRESHOLD * 100));
+      const bar  = used >= TAX_THRESHOLD ? 'bg-red-500'
+                 : used >= TAX_WARN_AT   ? 'bg-amber-500' : 'bg-emerald-500';
       docCell += `<div class="mt-1.5 w-32">
           <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
             <div class="h-full ${bar}" style="width:${pct}%"></div>
           </div>
           <p class="text-[10px] text-slate-400 mt-0.5">ยอดสะสม ${money(used)} บาท</p>
         </div>`;
-    } else {
-      docCell = v.kt20_uploaded
-        ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">
-             <i data-lucide="file-check-2" class="w-3 h-3"></i> มี กท.20</span>`
-        : `<span class="chip bg-red-50 text-red-700 border border-red-200">
-             <i data-lucide="file-x-2" class="w-3 h-3"></i> ยังไม่มี กท.20</span>`;
-      if (v.kt20_file_url) {
-        docCell += `<button onclick="viewDoc('${e(v.kt20_file_url)}')"
-          class="block text-[10px] text-brand-navy underline mt-1">ดูเอกสาร</button>`;
-      }
     }
 
     const lineChip = v.line_uid
@@ -683,7 +764,6 @@ function setEntity(type) {
   document.getElementById('btn-personal').className = type === 'Personal' ? on : off;
 
   // หัวใจของ Tax Shield : สองประเภทใช้เอกสารคนละชุด
-  document.getElementById('box-kt20').classList.toggle('hidden',  type !== 'Company');
   document.getElementById('box-agree').classList.toggle('hidden', type !== 'Personal');
   document.getElementById('box-welfare').classList.toggle('hidden', type !== 'Personal');
 
@@ -730,6 +810,11 @@ function openEdit(vendorId) {
   document.getElementById('e-tax').value      = v ? (v.tax_id || '') : '';
   document.getElementById('e-value').value    = v ? (v.contract_value_thb || '') : '';
   document.getElementById('e-kt20').value     = '';
+  document.getElementById('e-pp20').value     = '';
+  document.getElementById('e-pp20-date').value = v ? (v.pp20_reg_date || '') : '';
+  document.getElementById('e-ins-company').value = v ? (v.insurance_company || '') : '';
+  document.getElementById('e-ins-policy').value  = v ? (v.insurance_policy_no || '') : '';
+  document.getElementById('e-ins-expiry').value  = v ? (v.insurance_expiry_date || '') : '';
   document.getElementById('e-kt20-exp').value = v ? (v.kt20_expiry_date || '') : '';
   document.getElementById('e-agree').checked  = v ? !!v.e_agreement_signed : false;
   document.getElementById('e-contact').value  = v ? (v.contact_person || '') : '';
@@ -745,24 +830,42 @@ function openEdit(vendorId) {
   document.getElementById('e-blacklist-reason').value = v ? (v.blacklist_reason || '') : '';
   toggleBlacklistReason();
 
-  const cur = document.getElementById('kt20-current');
-  if (v && v.kt20_file_url) {
-    cur.textContent = 'มีไฟล์ในระบบแล้ว — เลือกไฟล์ใหม่เพื่อแทนที่';
-    cur.classList.remove('hidden');
-  } else { cur.classList.add('hidden'); }
+  showFileStatus('kt20-current', v && v.kt20_file_url);
+  showFileStatus('pp20-current', v && v.pp20_file_url);
+
+  // เตือนเมื่อยอดถึงเกณฑ์แล้วแต่ยังไม่มี ภ.พ.20
+  const warn = document.getElementById('pp20-warn');
+  const req  = document.getElementById('pp20-req');
+  if (v && Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD) {
+    req.classList.remove('hidden');
+    if (!v.pp20_uploaded) {
+      warn.textContent = 'ผู้รับเหมารายนี้มียอดรับงานปีนี้ ' + money(v.accum_billing_thb) +
+        ' บาท ถึงเกณฑ์ที่ต้องจดทะเบียนภาษีมูลค่าเพิ่มแล้ว แต่ยังไม่มี ภ.พ.20 ในระบบ';
+      warn.classList.remove('hidden');
+    } else { warn.classList.add('hidden'); }
+  } else { req.classList.add('hidden'); warn.classList.add('hidden'); }
 
   openModal('modal-edit');
 }
 
 function onWelfareChange() {
-  const none = document.getElementById('e-welfare').value === 'None';
-  document.getElementById('welfare-warn').classList.toggle('hidden', !none);
+  const val = document.getElementById('e-welfare').value;
+  document.getElementById('welfare-warn').classList.toggle('hidden', val !== 'None');
+  document.getElementById('box-insurance').classList.toggle('hidden', val !== 'Insured');
 }
 
 document.getElementById('e-blacklist').addEventListener('change', toggleBlacklistReason);
 function toggleBlacklistReason() {
   const on = document.getElementById('e-blacklist').value === 'true';
   document.getElementById('box-blacklist-reason').classList.toggle('hidden', !on);
+}
+
+function showFileStatus(elId, hasFile) {
+  const el = document.getElementById(elId);
+  if (hasFile) {
+    el.textContent = 'มีไฟล์ในระบบแล้ว — เลือกไฟล์ใหม่เพื่อแทนที่';
+    el.classList.remove('hidden');
+  } else { el.classList.add('hidden'); }
 }
 
 async function saveVendor() {
@@ -785,10 +888,18 @@ async function saveVendor() {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return Swal.fire('อีเมลไม่ถูกต้อง', 'อีเมลใช้ส่ง QR เชิญลงทะเบียน ต้องกรอกให้ถูกรูปแบบ', 'warning');
 
-    // ---- กฎ Tax Shield ----
-    if (currentEntity === 'Company' && !kt20File && !(existing && existing.kt20_uploaded)) {
+    const pp20File = document.getElementById('e-pp20').files[0];
+
+    // ---- กฎเอกสาร ----
+    if (!kt20File && !(existing && existing.kt20_uploaded)) {
       return Swal.fire('ยังไม่มีเอกสาร กท.20',
-        'ผู้รับเหมาประเภทนิติบุคคลต้องแนบแบบ กท.20 ก่อนขึ้นทะเบียน', 'warning');
+        'ต้องแนบแบบขึ้นทะเบียนนายจ้าง (กท.20) เพื่อยืนยันว่าคนงานมีกองทุนเงินทดแทนรองรับ', 'warning');
+    }
+    // ภ.พ.20 บังคับเมื่อยอดสะสมถึงเกณฑ์แล้วเท่านั้น
+    if (existing && Number(existing.accum_billing_thb || 0) >= TAX_THRESHOLD
+        && !pp20File && !existing.pp20_uploaded) {
+      return Swal.fire('ยังไม่มีเอกสาร ภ.พ.20',
+        'ผู้รับเหมารายนี้มียอดรับงานถึงเกณฑ์จดทะเบียนภาษีมูลค่าเพิ่มแล้ว ต้องแนบ ภ.พ.20', 'warning');
     }
     if (currentEntity === 'Personal') {
       const val = parseFloat(document.getElementById('e-value').value) || 0;
@@ -802,9 +913,14 @@ async function saveVendor() {
                 'อาจถูกมองว่าเป็นการหลีกเลี่ยงภาษี ควรปรึกษาฝ่ายบัญชีก่อน</span>'
         });
       }
-      if (!document.getElementById('e-welfare').value) {
+      const wf = document.getElementById('e-welfare').value;
+      if (!wf) {
         return Swal.fire('ยังไม่ได้ระบุสวัสดิการ',
           'ต้องระบุว่าผู้รับเหมามีประกันอุบัติเหตุหรือประกันสังคมให้ลูกจ้างหรือไม่', 'warning');
+      }
+      if (wf === 'Insured' && !document.getElementById('e-ins-expiry').value) {
+        return Swal.fire('ยังไม่ได้ระบุวันหมดอายุประกัน',
+          'ต้องระบุวันหมดอายุ เพื่อให้ระบบเตือนก่อนประกันขาดและกันคนเข้าพื้นที่โดยไม่มีความคุ้มครอง', 'warning');
       }
       if (!document.getElementById('e-agree').checked) {
         return Swal.fire('ยังไม่ได้ยอมรับข้อตกลง',
@@ -830,22 +946,36 @@ async function saveVendor() {
       updated_at:         new Date().toISOString()
     };
 
+    // ---- เอกสารที่ใช้ร่วมกันทั้งสองประเภท ----
+    payload.kt20_expiry_date = document.getElementById('e-kt20-exp').value || null;
+    payload.pp20_reg_date    = document.getElementById('e-pp20-date').value || null;
+
+    async function upload(file, folder) {
+      const ext  = (file.name.split('.').pop() || 'pdf').toLowerCase();
+      const path = folder + '/' + id + '_' + Date.now() + '.' + ext;
+      const up = await sb.storage.from('vendor-documents').upload(path, file, { upsert: true });
+      if (up.error) throw up.error;
+      return path;   // เก็บ path เพราะ bucket เป็น private
+    }
+
+    if (kt20File) {
+      step = 'อัปโหลดไฟล์ กท.20';
+      payload.kt20_file_url = await upload(kt20File, 'kt20');
+      payload.kt20_uploaded = true;
+    }
+    if (pp20File) {
+      step = 'อัปโหลดไฟล์ ภ.พ.20';
+      payload.pp20_file_url = await upload(pp20File, 'pp20');
+      payload.pp20_uploaded = true;
+    }
+
     if (currentEntity === 'Company') {
-      payload.kt20_expiry_date  = document.getElementById('e-kt20-exp').value || null;
       payload.e_agreement_signed = false;
-      if (kt20File) {
-        step = 'อัปโหลดไฟล์ กท.20';
-        const ext  = (kt20File.name.split('.').pop() || 'pdf').toLowerCase();
-        const path = 'kt20/' + id + '_' + Date.now() + '.' + ext;
-        const up = await sb.storage.from('vendor-documents')
-          .upload(path, kt20File, { upsert: true });
-        if (up.error) throw up.error;
-        payload.kt20_file_url = path;      // เก็บ path เพราะ bucket เป็น private
-        payload.kt20_uploaded = true;
-      }
     } else {
-      payload.kt20_uploaded  = false;
       payload.worker_welfare = document.getElementById('e-welfare').value;
+      payload.insurance_company    = document.getElementById('e-ins-company').value.trim() || null;
+      payload.insurance_policy_no  = document.getElementById('e-ins-policy').value.trim() || null;
+      payload.insurance_expiry_date = document.getElementById('e-ins-expiry').value || null;
       payload.welfare_note   = document.getElementById('e-welfare-note').value.trim() || null;
       payload.e_agreement_signed = true;
 
