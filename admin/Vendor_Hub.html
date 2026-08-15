@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ทะเบียนผู้รับเหมา | FTC First Safety</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="../shared/config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#19335A', 'navy-light':'#254B82', orange:'#DB5A24', 'orange-hover':'#C14B1A' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+
+<style>
+  body { background:#EEF2F7; font-family:'Sarabun',sans-serif; }
+  .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid #D1D8E0;
+         background:#F9FAFB; font-size:.875rem; transition:.15s; }
+  .fld:focus { outline:none; border-color:#19335A; background:#fff; box-shadow:0 0 0 3px rgba(25,51,90,.1); }
+  .fld:disabled { background:#F1F5F9; color:#94A3B8; cursor:not-allowed; }
+  .lbl { display:block; font-size:.8rem; font-weight:600; color:#334155; margin-bottom:.35rem; }
+  .chip { display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .55rem;
+          border-radius:999px; font-size:.7rem; font-weight:700; white-space:nowrap; }
+  tbody tr:hover { background:#F8FAFC; }
+  .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:60;
+                display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pop { animation: pop .18s ease-out; }
+    @keyframes pop { from { opacity:0; transform:translateY(-8px);} to { opacity:1; transform:none;} }
+  }
+  :focus-visible { outline:2px solid #DB5A24; outline-offset:2px; }
+</style>
+</head>
+<body class="text-slate-800 min-h-screen">
+
+<!-- ========================= เข้าสู่ระบบ ========================= -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-11 h-11 rounded-xl bg-brand-navy flex items-center justify-center">
+        <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
+      </div>
+      <div>
+        <p class="text-base font-bold text-brand-navy leading-tight">FTC First Safety</p>
+        <p class="text-xs text-slate-500 leading-tight">ทะเบียนผู้รับเหมา</p>
+      </div>
+    </div>
+    <label class="lbl">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="lbl">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login"
+      class="w-full py-3 rounded-xl bg-brand-navy text-white text-sm font-bold hover:bg-brand-navy-light transition">
+      เข้าสู่ระบบ
+    </button>
+    <p id="log-err" class="hidden mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-3"></p>
+  </div>
+</div>
+
+<!-- ========================= หน้าหลัก ========================= -->
+<div id="app" class="hidden">
+
+  <header class="sticky top-0 z-40 bg-brand-navy shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-white/10 ring-1 ring-white/20 flex items-center justify-center shrink-0">
+          <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-bold text-white leading-tight truncate">ทะเบียนผู้รับเหมา</h1>
+          <p class="text-[10px] sm:text-xs text-white/60 leading-tight">ขึ้นทะเบียน เอกสารภาษี และเชิญแรงงานเข้าระบบ</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="Staff_Management.html" class="hidden sm:block text-xs font-semibold text-white/70 hover:text-white
+          border border-white/25 rounded-lg px-3 py-1.5 transition">บุคลากร FTC</a>
+        <button onclick="doLogout()" class="text-xs font-semibold text-white/80 hover:text-white
+          border border-white/25 rounded-lg px-3 py-1.5 transition">ออกจากระบบ</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ---- สรุปภาพรวม ---- -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">ผู้รับเหมาทั้งหมด</p>
+        <p class="text-2xl font-bold text-brand-navy" id="k-total">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">นิติบุคคล</p>
+        <p class="text-2xl font-bold text-brand-navy" id="k-company">0</p>
+        <p class="text-[11px] text-slate-400 mt-0.5"><span id="k-kt20">0</span> รายมี กท.20 แล้ว</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">บุคคลธรรมดา</p>
+        <p class="text-2xl font-bold text-brand-navy" id="k-personal">0</p>
+        <p class="text-[11px] text-slate-400 mt-0.5"><span id="k-agree">0</span> รายลงนามแล้ว</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">รอยืนยันตัวตน</p>
+        <p class="text-2xl font-bold text-brand-orange" id="k-pending">0</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">ยังไม่ผูก LINE</p>
+      </div>
+    </section>
+
+    <!-- ---- แจ้งเตือนเพดานภาษี ---- -->
+    <div id="tax-alert" class="hidden mb-5 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5">
+      <div class="flex items-start gap-3">
+        <i data-lucide="triangle-alert" class="w-6 h-6 text-amber-600 shrink-0 mt-0.5"></i>
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-amber-900 mb-1">มีบุคคลธรรมดาใกล้ถึงเพดานภาษี 1,500,000 บาท</p>
+          <p id="tax-alert-list" class="text-xs text-amber-800 leading-relaxed"></p>
+          <p class="text-[11px] text-amber-700 mt-2">
+            เมื่อยอดจ่ายสะสมถึงเกณฑ์ ผู้รับเหมาต้องจดทะเบียนภาษีมูลค่าเพิ่ม
+            แนะนำให้ประสานฝ่ายจัดซื้อก่อนออกใบสั่งจ้างเพิ่ม
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- ตัวกรอง ---- -->
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <div class="relative flex-1 min-w-[220px]">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+        <input id="q" class="fld pl-9" placeholder="ค้นหาชื่อบริษัท รหัส หรือเลขผู้เสียภาษี" oninput="render()">
+      </div>
+      <select id="f-entity" class="fld w-auto min-w-[170px]" onchange="render()">
+        <option value="">ทุกประเภท</option>
+        <option value="Company">นิติบุคคล</option>
+        <option value="Personal">บุคคลธรรมดา</option>
+      </select>
+      <select id="f-doc" class="fld w-auto min-w-[180px]" onchange="render()">
+        <option value="">เอกสารทุกสถานะ</option>
+        <option value="ok">เอกสารครบ</option>
+        <option value="missing">เอกสารไม่ครบ</option>
+      </select>
+      <button onclick="openEdit(null)"
+        class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold
+               hover:bg-brand-orange-hover shadow-md transition">
+        <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มผู้รับเหมา
+      </button>
+    </div>
+
+    <!-- ---- ตาราง ---- -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr class="text-left text-[11px] uppercase tracking-wider text-slate-500">
+              <th class="px-4 py-3 font-bold">ผู้รับเหมา</th>
+              <th class="px-4 py-3 font-bold">ประเภท</th>
+              <th class="px-4 py-3 font-bold">เอกสารภาษี</th>
+              <th class="px-4 py-3 font-bold">ผู้ติดต่อ</th>
+              <th class="px-4 py-3 font-bold">สถานะ</th>
+              <th class="px-4 py-3 font-bold text-right">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="hidden py-16 text-center">
+        <i data-lucide="building" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
+        <p class="text-sm text-slate-500">ไม่พบผู้รับเหมาตามเงื่อนไขที่เลือก</p>
+      </div>
+    </div>
+
+    <p class="mt-4 text-[11px] text-slate-400">
+      รหัสผู้รับเหมา: C = นิติบุคคล / P = บุคคลธรรมดา — บุคคลธรรมดาถูกระบบห้ามขอใบอนุญาตงานเสี่ยงสูงโดยอัตโนมัติ
+    </p>
+  </main>
+</div>
+
+<!-- ========================= กล่องเพิ่ม/แก้ไข ========================= -->
+<div id="modal-edit" class="modal-wrap hidden">
+  <div class="pop w-full max-w-2xl bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 id="edit-title" class="text-base font-bold text-brand-navy">เพิ่มผู้รับเหมา</h3>
+      <button onclick="closeModal('modal-edit')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="px-6 py-5 space-y-4">
+
+      <!-- ประเภทนิติบุคคล : ตัวกำหนดทุกอย่างที่ตามมา -->
+      <div>
+        <label class="lbl">ประเภทผู้รับเหมา <span class="text-red-500">*</span></label>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" id="btn-company" onclick="setEntity('Company')"
+            class="rounded-xl border-2 p-3 text-left transition">
+            <span class="flex items-center gap-2 font-bold text-sm"><i data-lucide="building-2" class="w-4 h-4"></i> นิติบุคคล</span>
+            <span class="block text-[11px] mt-1 opacity-70">บริษัท / ห้างหุ้นส่วน — ต้องมี กท.20</span>
+          </button>
+          <button type="button" id="btn-personal" onclick="setEntity('Personal')"
+            class="rounded-xl border-2 p-3 text-left transition">
+            <span class="flex items-center gap-2 font-bold text-sm"><i data-lucide="user" class="w-4 h-4"></i> บุคคลธรรมดา</span>
+            <span class="block text-[11px] mt-1 opacity-70">ต้องลงนามข้อตกลงรับภาระภาษี</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="lbl">รหัสผู้รับเหมา <span class="text-red-500">*</span></label>
+          <input id="e-id" class="fld font-mono">
+          <p class="text-[10px] text-slate-400 mt-1">แก้ไขไม่ได้หลังบันทึก</p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="lbl">ชื่อผู้รับเหมา <span class="text-red-500">*</span></label>
+          <input id="e-name" class="fld" placeholder="บจก. ตัวอย่าง วิศวกรรม">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">เลขประจำตัวผู้เสียภาษี 13 หลัก</label>
+          <input id="e-tax" class="fld font-mono" maxlength="13" inputmode="numeric"
+                 oninput="this.value=this.value.replace(/\D/g,'')">
+        </div>
+        <div>
+          <label class="lbl">มูลค่าสัญญา (บาท)</label>
+          <input id="e-value" class="fld" inputmode="decimal"
+                 oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+        </div>
+      </div>
+
+      <!-- ================= Tax Shield ================= -->
+      <div class="rounded-xl border-2 border-slate-200 p-4">
+        <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">เอกสารตามข้อกำหนดภาษี</p>
+
+        <!-- นิติบุคคล : กท.20 -->
+        <div id="box-kt20">
+          <label class="lbl">แบบ กท.20 (ขึ้นทะเบียนนายจ้าง) <span class="text-red-500">*</span></label>
+          <input type="file" id="e-kt20" accept="image/*,application/pdf"
+            class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg
+                   file:border-0 file:text-xs file:font-bold file:bg-brand-navy file:text-white
+                   hover:file:bg-brand-navy-light file:cursor-pointer">
+          <p id="kt20-current" class="hidden text-[11px] text-emerald-700 mt-2"></p>
+          <div class="mt-3">
+            <label class="lbl">วันหมดอายุเอกสาร</label>
+            <input type="date" id="e-kt20-exp" class="fld">
+          </div>
+        </div>
+
+        <!-- บุคคลธรรมดา : E-Agreement -->
+        <div id="box-agree" class="hidden">
+          <div class="rounded-lg bg-slate-50 border border-slate-200 p-3 mb-3 max-h-40 overflow-y-auto">
+            <p class="text-[11px] font-bold text-brand-navy mb-1">ข้อตกลงรับภาระภาษีหัก ณ ที่จ่าย</p>
+            <p id="agreement-text" class="text-[11px] text-slate-600 leading-relaxed"></p>
+          </div>
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" id="e-agree" class="mt-0.5 w-5 h-5 rounded accent-brand-navy shrink-0">
+            <span class="text-sm text-slate-700 leading-relaxed">
+              ผู้รับเหมารายนี้ได้รับทราบและยอมรับข้อตกลงข้างต้นแล้ว
+            </span>
+          </label>
+          <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mt-3">
+            ⚠️ ข้อความข้างต้นเป็นฉบับร่างชั่วคราว ต้องเปลี่ยนเป็นถ้อยคำที่ฝ่ายบัญชีหรือฝ่ายกฎหมายของ FTC รับรองก่อนใช้งานจริง
+          </p>
+        </div>
+      </div>
+
+      <!-- ================= ผู้ติดต่อ ================= -->
+      <div class="border-t border-slate-200 pt-4">
+        <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">ผู้ติดต่อหลัก</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="lbl">ชื่อผู้ติดต่อ <span class="text-red-500">*</span></label>
+            <input id="e-contact" class="fld">
+          </div>
+          <div>
+            <label class="lbl">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
+            <input id="e-phone" class="fld" maxlength="12" oninput="fmtPhone(this)">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="lbl">อีเมล <span class="text-red-500">*</span></label>
+            <input id="e-email" type="email" class="fld">
+            <p class="text-[10px] text-slate-400 mt-1">ใช้ส่ง QR เชิญลงทะเบียนและเอกสารทางการ</p>
+          </div>
+          <div>
+            <label class="lbl">LINE ID ที่ใช้ติดต่อ</label>
+            <input id="e-lineid" class="fld" placeholder="@vendor">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+        <div>
+          <label class="lbl">สถานะการตรวจสอบ</label>
+          <select id="e-verify" class="fld">
+            <option value="Pending">รอตรวจสอบ</option>
+            <option value="Verified">ผ่านการตรวจสอบ</option>
+            <option value="Rejected">ไม่ผ่าน</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">บัญชีดำ</label>
+          <select id="e-blacklist" class="fld">
+            <option value="false">ปกติ</option>
+            <option value="true">ขึ้นบัญชีดำ (ห้ามขอใบงานทุกประเภท)</option>
+          </select>
+        </div>
+      </div>
+      <div id="box-blacklist-reason" class="hidden">
+        <label class="lbl">เหตุผลที่ขึ้นบัญชีดำ</label>
+        <input id="e-blacklist-reason" class="fld">
+      </div>
+    </div>
+
+    <div class="flex flex-col-reverse sm:flex-row gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+      <button onclick="closeModal('modal-edit')"
+        class="sm:w-auto w-full px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition">
+        ยกเลิก
+      </button>
+      <button id="btn-save" onclick="saveVendor()"
+        class="flex-1 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">
+        บันทึกข้อมูล
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= กล่องเชิญลงทะเบียน ========================= -->
+<div id="modal-invite" class="modal-wrap hidden">
+  <div class="pop w-full max-w-md bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 class="text-base font-bold text-brand-navy">เชิญเข้าระบบ</h3>
+      <button onclick="closeModal('modal-invite')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="px-6 py-5">
+      <p id="inv-name" class="text-lg font-bold text-brand-navy text-center mb-1"></p>
+      <p class="text-xs text-slate-500 text-center mb-5">ส่งให้ผู้รับเหมาทำ 2 ขั้นตอนตามลำดับ</p>
+
+      <!-- ขั้นที่ 1 -->
+      <div class="rounded-xl border-2 border-brand-navy/20 p-4 mb-4">
+        <p class="text-xs font-bold text-brand-navy mb-2">
+          <span class="inline-flex w-5 h-5 rounded-full bg-brand-navy text-white items-center justify-center text-[10px] mr-1">1</span>
+          ผู้รับเหมาผูกบัญชี LINE ของตนเอง
+        </p>
+        <p class="text-[11px] text-slate-500 mb-3">เพื่อให้ระบบส่งแจ้งเตือนถึงผู้รับเหมาได้โดยตรง</p>
+        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
+          <input id="inv-bind-url" readonly class="flex-1 bg-transparent text-[11px] font-mono text-slate-600 outline-none truncate">
+          <button onclick="copyField('inv-bind-url')" class="shrink-0 px-3 py-1.5 rounded-md bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">คัดลอก</button>
+        </div>
+      </div>
+
+      <!-- ขั้นที่ 2 -->
+      <div class="rounded-xl border-2 border-brand-orange/30 p-4 mb-4">
+        <p class="text-xs font-bold text-brand-navy mb-2">
+          <span class="inline-flex w-5 h-5 rounded-full bg-brand-orange text-white items-center justify-center text-[10px] mr-1">2</span>
+          ส่ง QR นี้ให้ลูกน้องลงทะเบียนพนักงาน
+        </p>
+        <p class="text-[11px] text-slate-500 mb-3">
+          ชื่อบริษัทจะถูกล็อกไว้ตาม QR นี้ คนงานเลือกบริษัทเองไม่ได้
+        </p>
+        <div class="text-center">
+          <div class="inline-block p-3 bg-white rounded-xl border-2 border-slate-200 mb-3">
+            <canvas id="inv-qr" class="block"></canvas>
+          </div>
+          <p id="qr-warn" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 text-left"></p>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
+          <input id="inv-worker-url" readonly class="flex-1 bg-transparent text-[11px] font-mono text-slate-600 outline-none truncate">
+          <button onclick="copyField('inv-worker-url')" class="shrink-0 px-3 py-1.5 rounded-md bg-brand-orange text-white text-xs font-bold hover:bg-brand-orange-hover transition">คัดลอก</button>
+        </div>
+      </div>
+
+      <a id="inv-mail" href="#"
+        class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-slate-200 text-sm font-bold text-brand-navy hover:bg-slate-50 transition">
+        <i data-lucide="mail" class="w-4 h-4"></i> เปิดอีเมลพร้อมข้อความทั้ง 2 ลิงก์
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+ * ข้อความข้อตกลงชั่วคราว — ⚠️ ต้องเปลี่ยนเป็นฉบับที่ฝ่ายกฎหมายรับรอง
+ * ===================================================================== */
+const AGREEMENT_DRAFT =
+  'ผู้รับจ้างซึ่งเป็นบุคคลธรรมดา รับทราบและตกลงว่า ผู้ว่าจ้างมีสิทธิและหน้าที่ตามกฎหมาย ' +
+  'ในการหักภาษี ณ ที่จ่ายจากค่าจ้างตามอัตราที่กฎหมายกำหนด และผู้รับจ้างมีหน้าที่ยื่นแบบแสดง ' +
+  'รายการภาษีเงินได้บุคคลธรรมดาด้วยตนเอง อีกทั้งรับทราบว่าเมื่อรายได้จากการรับจ้างในปีภาษี ' +
+  'ถึงเกณฑ์ที่กฎหมายกำหนด ผู้รับจ้างมีหน้าที่จดทะเบียนภาษีมูลค่าเพิ่มตามประมวลรัษฎากร ' +
+  'โดยผู้ว่าจ้างไม่ต้องรับผิดชอบภาระภาษีดังกล่าวแทนผู้รับจ้าง';
+
+const TAX_THRESHOLD = 1500000;   // เพดานที่ต้องจดทะเบียนภาษีมูลค่าเพิ่ม
+const TAX_WARN_AT   = 1200000;   // เริ่มเตือนล่วงหน้าที่ 80%
+
+const sb = FTC.supabase();
+let VENDORS = [];
+let editingId = null;
+let currentEntity = 'Company';
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) {
+    err.textContent = 'กรอกอีเมลและรหัสผ่านให้ครบก่อนเข้าสู่ระบบ';
+    err.classList.remove('hidden'); return;
+  }
+  btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
+  if (error) {
+    err.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้ง';
+    err.classList.remove('hidden'); return;
+  }
+  await enterApp();
+}
+
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('agreement-text').textContent = AGREEMENT_DRAFT;
+  await loadVendors();
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadVendors() {
+  const { data, error } = await sb.from('tb_vendors')
+    .select('vendor_id, vendor_name, entity_type, tax_id, contract_value_thb, verification_status, ' +
+            'kt20_uploaded, kt20_file_url, kt20_expiry_date, e_agreement_signed, e_agreement_at, ' +
+            'accum_billing_thb, is_blacklisted, blacklist_reason, contact_person, contact_email, ' +
+            'contact_phone, line_display_id, line_uid, invite_token, invite_status')
+    .order('vendor_id');
+
+  if (error) { reportError('โหลดข้อมูลผู้รับเหมาไม่สำเร็จ', error, 'select tb_vendors'); return; }
+  VENDORS = data || [];
+  render();
+}
+
+function isPersonal(v) {
+  return ['personal','individual','บุคคลธรรมดา'].indexOf(String(v.entity_type || '').toLowerCase()) !== -1;
+}
+
+/** เอกสารภาษีครบหรือยัง — นิติบุคคลดู กท.20 / บุคคลธรรมดาดูการลงนาม */
+function docOk(v) {
+  return isPersonal(v) ? !!v.e_agreement_signed : !!v.kt20_uploaded;
+}
+
+function money(n) {
+  return Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 0 });
+}
+
+/* ---------------------- แสดงผล ---------------------- */
+function render() {
+  const q   = document.getElementById('q').value.trim().toLowerCase();
+  const fe  = document.getElementById('f-entity').value;
+  const fd  = document.getElementById('f-doc').value;
+
+  // สรุปภาพรวมคิดจากทั้งหมด ไม่ใช่เฉพาะที่กรอง
+  const personals = VENDORS.filter(isPersonal);
+  const companies = VENDORS.filter(v => !isPersonal(v));
+  document.getElementById('k-total').textContent    = VENDORS.length;
+  document.getElementById('k-company').textContent  = companies.length;
+  document.getElementById('k-personal').textContent = personals.length;
+  document.getElementById('k-kt20').textContent     = companies.filter(v => v.kt20_uploaded).length;
+  document.getElementById('k-agree').textContent    = personals.filter(v => v.e_agreement_signed).length;
+  document.getElementById('k-pending').textContent  = VENDORS.filter(v => !v.line_uid).length;
+
+  // เตือนเพดานภาษี
+  const nearLimit = personals.filter(v => Number(v.accum_billing_thb || 0) >= TAX_WARN_AT);
+  const alertBox  = document.getElementById('tax-alert');
+  if (nearLimit.length) {
+    document.getElementById('tax-alert-list').textContent =
+      nearLimit.map(v => `${v.vendor_name} (${money(v.accum_billing_thb)} บาท)`).join(' · ');
+    alertBox.classList.remove('hidden');
+  } else {
+    alertBox.classList.add('hidden');
+  }
+
+  const list = VENDORS.filter(v => {
+    if (fe === 'Company'  && isPersonal(v)) return false;
+    if (fe === 'Personal' && !isPersonal(v)) return false;
+    if (fd === 'ok'      && !docOk(v)) return false;
+    if (fd === 'missing' &&  docOk(v)) return false;
+    if (!q) return true;
+    return [v.vendor_name, v.vendor_id, v.tax_id, v.contact_person]
+      .some(x => (x || '').toLowerCase().includes(q));
+  });
+
+  const tbody = document.getElementById('rows');
+  document.getElementById('empty').classList.toggle('hidden', list.length > 0);
+
+  tbody.innerHTML = list.map(v => {
+    const e = FTC.esc;
+    const personal = isPersonal(v);
+
+    const entityChip = personal
+      ? `<span class="chip bg-purple-50 text-purple-700 border border-purple-200">บุคคลธรรมดา</span>`
+      : `<span class="chip bg-blue-50 text-blue-700 border border-blue-200">นิติบุคคล</span>`;
+
+    let docCell;
+    if (personal) {
+      docCell = v.e_agreement_signed
+        ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">
+             <i data-lucide="file-check-2" class="w-3 h-3"></i> ลงนามแล้ว</span>`
+        : `<span class="chip bg-red-50 text-red-700 border border-red-200">
+             <i data-lucide="file-x-2" class="w-3 h-3"></i> ยังไม่ลงนาม</span>`;
+      const used = Number(v.accum_billing_thb || 0);
+      const pct  = Math.min(100, Math.round(used / TAX_THRESHOLD * 100));
+      const bar  = used >= TAX_THRESHOLD ? 'bg-red-500'
+                 : used >= TAX_WARN_AT   ? 'bg-amber-500' : 'bg-emerald-500';
+      docCell += `<div class="mt-1.5 w-32">
+          <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full ${bar}" style="width:${pct}%"></div>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-0.5">ยอดสะสม ${money(used)} บาท</p>
+        </div>`;
+    } else {
+      docCell = v.kt20_uploaded
+        ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">
+             <i data-lucide="file-check-2" class="w-3 h-3"></i> มี กท.20</span>`
+        : `<span class="chip bg-red-50 text-red-700 border border-red-200">
+             <i data-lucide="file-x-2" class="w-3 h-3"></i> ยังไม่มี กท.20</span>`;
+      if (v.kt20_file_url) {
+        docCell += `<button onclick="viewDoc('${e(v.kt20_file_url)}')"
+          class="block text-[10px] text-brand-navy underline mt-1">ดูเอกสาร</button>`;
+      }
+    }
+
+    const lineChip = v.line_uid
+      ? `<span class="chip bg-emerald-50 text-emerald-700 border border-emerald-200">ผูก LINE แล้ว</span>`
+      : `<span class="chip bg-amber-50 text-amber-700 border border-amber-200">ยังไม่ผูก LINE</span>`;
+    const blackChip = v.is_blacklisted
+      ? `<span class="chip bg-red-600 text-white ml-1">บัญชีดำ</span>` : '';
+
+    return `<tr>
+      <td class="px-4 py-3">
+        <p class="font-semibold text-slate-800">${e(v.vendor_name)}</p>
+        <p class="text-[11px] font-mono text-slate-400">${e(v.vendor_id)}${v.tax_id ? ' · ' + e(v.tax_id) : ''}</p>
+      </td>
+      <td class="px-4 py-3">${entityChip}</td>
+      <td class="px-4 py-3">${docCell}</td>
+      <td class="px-4 py-3">
+        <p class="text-[12px] text-slate-700">${e(v.contact_person || '—')}</p>
+        <p class="text-[11px] text-slate-400 truncate max-w-[180px]">${e(v.contact_email || '—')}</p>
+      </td>
+      <td class="px-4 py-3">${lineChip}${blackChip}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center justify-end gap-1">
+          <button onclick="openInvite('${e(v.vendor_id)}')"
+            class="px-3 py-1.5 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">
+            เชิญเข้าระบบ</button>
+          <button onclick="openEdit('${e(v.vendor_id)}')" title="แก้ไข"
+            class="p-2 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition">
+            <i data-lucide="pencil" class="w-4 h-4"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+/* ---------------------- เพิ่ม / แก้ไข ---------------------- */
+function setEntity(type) {
+  currentEntity = type;
+  const on  = 'rounded-xl border-2 p-3 text-left transition border-brand-navy bg-brand-navy/5 text-brand-navy';
+  const off = 'rounded-xl border-2 p-3 text-left transition border-slate-200 text-slate-500 hover:border-slate-300';
+  document.getElementById('btn-company').className  = type === 'Company'  ? on : off;
+  document.getElementById('btn-personal').className = type === 'Personal' ? on : off;
+
+  // หัวใจของ Tax Shield : สองประเภทใช้เอกสารคนละชุด
+  document.getElementById('box-kt20').classList.toggle('hidden',  type !== 'Company');
+  document.getElementById('box-agree').classList.toggle('hidden', type !== 'Personal');
+
+  if (!editingId) document.getElementById('e-id').value = suggestId(type);
+  lucide.createIcons();
+}
+
+function suggestId(type) {
+  const prefix = type === 'Personal' ? 'P' : 'C';
+  const nums = VENDORS
+    .map(v => new RegExp('^' + prefix + '(\\d+)$').exec(v.vendor_id || ''))
+    .filter(Boolean).map(m => parseInt(m[1], 10));
+  const next = (nums.length ? Math.max.apply(null, nums) : 0) + 1;
+  return prefix + String(next).padStart(3, '0');
+}
+
+function fmtPhone(el) {
+  const d = el.value.replace(/\D/g, '').slice(0, 10);
+  el.value = d.length > 6 ? d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6)
+           : d.length > 3 ? d.slice(0,3)+'-'+d.slice(3) : d;
+}
+
+function openEdit(vendorId) {
+  editingId = vendorId;
+  const v = vendorId ? VENDORS.find(x => x.vendor_id === vendorId) : null;
+
+  document.getElementById('edit-title').textContent = v ? 'แก้ไขข้อมูลผู้รับเหมา' : 'เพิ่มผู้รับเหมา';
+  document.getElementById('e-id').readOnly = !!v;
+  document.getElementById('e-id').classList.toggle('bg-slate-100', !!v);
+
+  setEntity(v ? (isPersonal(v) ? 'Personal' : 'Company') : 'Company');
+
+  document.getElementById('e-id').value       = v ? v.vendor_id : suggestId('Company');
+  document.getElementById('e-name').value     = v ? (v.vendor_name || '') : '';
+  document.getElementById('e-tax').value      = v ? (v.tax_id || '') : '';
+  document.getElementById('e-value').value    = v ? (v.contract_value_thb || '') : '';
+  document.getElementById('e-kt20').value     = '';
+  document.getElementById('e-kt20-exp').value = v ? (v.kt20_expiry_date || '') : '';
+  document.getElementById('e-agree').checked  = v ? !!v.e_agreement_signed : false;
+  document.getElementById('e-contact').value  = v ? (v.contact_person || '') : '';
+  document.getElementById('e-phone').value    = v ? (v.contact_phone || '') : '';
+  document.getElementById('e-email').value    = v ? (v.contact_email || '') : '';
+  document.getElementById('e-lineid').value   = v ? (v.line_display_id || '') : '';
+  document.getElementById('e-verify').value   = v ? (v.verification_status || 'Pending') : 'Pending';
+  document.getElementById('e-blacklist').value = v && v.is_blacklisted ? 'true' : 'false';
+  document.getElementById('e-blacklist-reason').value = v ? (v.blacklist_reason || '') : '';
+  toggleBlacklistReason();
+
+  const cur = document.getElementById('kt20-current');
+  if (v && v.kt20_file_url) {
+    cur.textContent = 'มีไฟล์ในระบบแล้ว — เลือกไฟล์ใหม่เพื่อแทนที่';
+    cur.classList.remove('hidden');
+  } else { cur.classList.add('hidden'); }
+
+  openModal('modal-edit');
+}
+
+document.getElementById('e-blacklist').addEventListener('change', toggleBlacklistReason);
+function toggleBlacklistReason() {
+  const on = document.getElementById('e-blacklist').value === 'true';
+  document.getElementById('box-blacklist-reason').classList.toggle('hidden', !on);
+}
+
+async function saveVendor() {
+  let step = 'ตรวจข้อมูล';
+  const btn = document.getElementById('btn-save');
+  try {
+    const id    = document.getElementById('e-id').value.trim();
+    const name  = document.getElementById('e-name').value.trim();
+    const email = document.getElementById('e-email').value.trim();
+    const phone = document.getElementById('e-phone').value.replace(/-/g, '');
+    const kt20File = document.getElementById('e-kt20').files[0];
+    const existing = editingId ? VENDORS.find(x => x.vendor_id === editingId) : null;
+
+    if (!id)   return Swal.fire('ยังกรอกไม่ครบ', 'ระบุรหัสผู้รับเหมา', 'warning');
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ', 'ระบุชื่อผู้รับเหมา', 'warning');
+    if (!document.getElementById('e-contact').value.trim())
+      return Swal.fire('ยังกรอกไม่ครบ', 'ระบุชื่อผู้ติดต่อหลัก', 'warning');
+    if (phone.length !== 10)
+      return Swal.fire('เบอร์ไม่ถูกต้อง', 'เบอร์โทรศัพท์ต้องมี 10 หลัก', 'warning');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return Swal.fire('อีเมลไม่ถูกต้อง', 'อีเมลใช้ส่ง QR เชิญลงทะเบียน ต้องกรอกให้ถูกรูปแบบ', 'warning');
+
+    // ---- กฎ Tax Shield ----
+    if (currentEntity === 'Company' && !kt20File && !(existing && existing.kt20_uploaded)) {
+      return Swal.fire('ยังไม่มีเอกสาร กท.20',
+        'ผู้รับเหมาประเภทนิติบุคคลต้องแนบแบบ กท.20 ก่อนขึ้นทะเบียน', 'warning');
+    }
+    if (currentEntity === 'Personal' && !document.getElementById('e-agree').checked) {
+      return Swal.fire('ยังไม่ได้ยอมรับข้อตกลง',
+        'ผู้รับเหมาประเภทบุคคลธรรมดาต้องยอมรับข้อตกลงรับภาระภาษีก่อนขึ้นทะเบียน', 'warning');
+    }
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+
+    const payload = {
+      vendor_id:          id,
+      vendor_name:        name,
+      entity_type:        currentEntity,
+      tax_id:             document.getElementById('e-tax').value.trim() || null,
+      contract_value_thb: parseFloat(document.getElementById('e-value').value) || 0,
+      contact_person:     document.getElementById('e-contact').value.trim(),
+      contact_phone:      phone,
+      contact_email:      email,
+      line_display_id:    document.getElementById('e-lineid').value.trim() || null,
+      verification_status: document.getElementById('e-verify').value,
+      is_blacklisted:     document.getElementById('e-blacklist').value === 'true',
+      blacklist_reason:   document.getElementById('e-blacklist-reason').value.trim() || null,
+      updated_at:         new Date().toISOString()
+    };
+
+    if (currentEntity === 'Company') {
+      payload.kt20_expiry_date  = document.getElementById('e-kt20-exp').value || null;
+      payload.e_agreement_signed = false;
+      if (kt20File) {
+        step = 'อัปโหลดไฟล์ กท.20';
+        const ext  = (kt20File.name.split('.').pop() || 'pdf').toLowerCase();
+        const path = 'kt20/' + id + '_' + Date.now() + '.' + ext;
+        const up = await sb.storage.from('vendor-documents')
+          .upload(path, kt20File, { upsert: true });
+        if (up.error) throw up.error;
+        payload.kt20_file_url = path;      // เก็บ path เพราะ bucket เป็น private
+        payload.kt20_uploaded = true;
+      }
+    } else {
+      payload.kt20_uploaded = false;
+      payload.e_agreement_signed = true;
+      if (!existing || !existing.e_agreement_signed) {
+        payload.e_agreement_at = new Date().toISOString();
+      }
+    }
+
+    step = editingId ? 'อัปเดตข้อมูล' : 'บันทึกข้อมูลใหม่';
+    const res = editingId
+      ? await sb.from('tb_vendors').update(payload).eq('vendor_id', editingId)
+      : await sb.from('tb_vendors').insert(payload);
+    if (res.error) throw res.error;
+
+    closeModal('modal-edit');
+    await loadVendors();
+
+  } catch (err) {
+    if (err && err.code === '23505') {
+      Swal.fire('รหัสซ้ำ', 'รหัสผู้รับเหมานี้มีอยู่ในระบบแล้ว ใช้รหัสอื่นแทน', 'warning');
+    } else if (err && err.code === '23514') {
+      Swal.fire('ค่าไม่ถูกต้อง', 'ประเภทผู้รับเหมาต้องเป็น Company หรือ Personal เท่านั้น', 'warning');
+    } else {
+      reportError('บันทึกข้อมูลผู้รับเหมาไม่สำเร็จ', err, step);
+    }
+  } finally {
+    btn.disabled = false; btn.textContent = 'บันทึกข้อมูล';
+  }
+}
+
+/** เปิดดูเอกสารใน bucket แบบ private ด้วยลิงก์ชั่วคราว */
+async function viewDoc(path) {
+  try {
+    const { data, error } = await sb.storage.from('vendor-documents').createSignedUrl(path, 300);
+    if (error) throw error;
+    window.open(data.signedUrl, '_blank');
+  } catch (err) {
+    reportError('เปิดเอกสารไม่สำเร็จ', err, 'createSignedUrl');
+  }
+}
+
+/* ---------------------- เชิญเข้าระบบ ---------------------- */
+async function openInvite(vendorId) {
+  let step = 'เริ่มต้น';
+  try {
+    const v = VENDORS.find(x => x.vendor_id === vendorId);
+    if (!v) return;
+
+    Swal.fire({ title: 'กำลังเตรียมลิงก์…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    step = 'ยกเลิกลิงก์ผูก LINE เดิม';
+    const rev = await sb.from('tb_line_bindings').update({ status: 'Revoked' })
+      .eq('subject_type', 'Vendor').eq('subject_id', vendorId).eq('status', 'Pending');
+    if (rev.error) throw rev.error;
+
+    step = 'สร้างลิงก์ผูก LINE ใหม่';
+    const ins = await sb.from('tb_line_bindings')
+      .insert({ subject_type: 'Vendor', subject_id: vendorId })
+      .select('bind_token').single();
+    if (ins.error) throw ins.error;
+
+    step = 'บันทึกสถานะการเชิญ';
+    const upd = await sb.from('tb_vendors')
+      .update({ invite_status: 'Sent', invite_sent_at: new Date().toISOString() })
+      .eq('vendor_id', vendorId);
+    if (upd.error) throw upd.error;
+
+    step = 'ประกอบหน้าจอ';
+    Swal.close();
+    await new Promise(r => setTimeout(r, 250));
+
+    const bindUrl   = FTC.bindUrl(ins.data.bind_token);
+    const workerUrl = FTC.siteRoot() + '/Worker/Worker_Registration_ToSystem.html?inv=' + v.invite_token;
+
+    document.getElementById('inv-name').textContent      = v.vendor_name;
+    document.getElementById('inv-bind-url').value        = bindUrl;
+    document.getElementById('inv-worker-url').value      = workerUrl;
+
+    const subject = 'ขึ้นทะเบียนผู้รับเหมาและลงทะเบียนแรงงาน — FTC First Safety';
+    const body =
+`เรียน ${v.contact_person || v.vendor_name}
+
+ระบบความปลอดภัย FTC First Safety ได้ขึ้นทะเบียน ${v.vendor_name} เรียบร้อยแล้ว
+กรุณาดำเนินการ 2 ขั้นตอนตามลำดับ
+
+ขั้นที่ 1 — ผูกบัญชี LINE ของท่านกับระบบ (กดจากมือถือที่มีแอป LINE)
+${bindUrl}
+
+ขั้นที่ 2 — ส่งลิงก์นี้ให้พนักงานของท่านลงทะเบียนเข้าระบบ
+${workerUrl}
+
+ลิงก์ขั้นที่ 1 มีอายุ 30 วันและใช้ได้ครั้งเดียว
+ส่วนลิงก์ขั้นที่ 2 ใช้ได้กับพนักงานทุกคนในสังกัดของท่าน
+โดยระบบจะผูกชื่อบริษัทไว้ให้อัตโนมัติ พนักงานไม่ต้องเลือกเอง
+
+หากมีข้อสงสัยกรุณาติดต่อฝ่ายจัดซื้อหรือฝ่ายความปลอดภัย`;
+
+    document.getElementById('inv-mail').href =
+      'mailto:' + encodeURIComponent(v.contact_email || '') +
+      '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+    openModal('modal-invite');
+    lucide.createIcons();
+    drawQr(workerUrl);
+    loadVendors();
+
+  } catch (err) {
+    Swal.close();
+    await new Promise(r => setTimeout(r, 250));
+    reportError('เตรียมลิงก์เชิญไม่สำเร็จ', err, step);
+  }
+}
+
+/* ---------------------- QR ---------------------- */
+let _qrLibPromise = null;
+function ensureQrLib() {
+  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) return Promise.resolve(true);
+  if (_qrLibPromise) return _qrLibPromise;
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
+    'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js',
+    'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js'
+  ];
+  _qrLibPromise = new Promise(resolve => {
+    let i = 0;
+    (function next() {
+      if (i >= sources.length) { resolve(false); return; }
+      const url = sources[i++];
+      const tag = document.createElement('script');
+      tag.src = url;
+      tag.onload  = () => (typeof QRCode !== 'undefined' && QRCode.toCanvas) ? resolve(true) : next();
+      tag.onerror = () => next();
+      document.head.appendChild(tag);
+    })();
+  });
+  return _qrLibPromise;
+}
+
+async function drawQr(url) {
+  const canvas = document.getElementById('inv-qr');
+  const warn   = document.getElementById('qr-warn');
+  warn.classList.add('hidden');
+  const ready = await ensureQrLib();
+  if (!ready) {
+    canvas.style.display = 'none';
+    warn.textContent = 'สร้างภาพ QR ไม่ได้ (เครือข่ายเข้าถึงไลบรารีไม่ได้) — ใช้ปุ่มคัดลอกลิงก์หรือส่งทางอีเมลแทนได้ตามปกติ';
+    warn.classList.remove('hidden');
+    return;
+  }
+  canvas.style.display = 'block';
+  QRCode.toCanvas(canvas, url,
+    { width: 190, margin: 1, color: { dark: '#19335A', light: '#FFFFFF' } },
+    function (err) {
+      if (err) {
+        canvas.style.display = 'none';
+        warn.textContent = 'วาดภาพ QR ไม่สำเร็จ — ใช้ปุ่มคัดลอกลิงก์แทนได้';
+        warn.classList.remove('hidden');
+      }
+    });
+}
+
+function copyField(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.value).then(
+    () => Swal.fire({ icon:'success', title:'คัดลอกแล้ว', timer:1100, showConfirmButton:false }),
+    () => { el.select(); document.execCommand('copy'); }
+  );
+}
+
+/* ---------------------- รายงานข้อผิดพลาด ---------------------- */
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step: step, error: err });
+  const e = err || {};
+  const detail =
+    'ขั้นตอน: ' + (step || '-') + '\n' +
+    'code: '    + (e.code || e.name || e.statusCode || '-') + '\n' +
+    'message: ' + (e.message || String(err)) +
+    (e.details ? '\ndetails: ' + e.details : '') +
+    (e.hint    ? '\nhint: '    + e.hint    : '');
+
+  let hint = '';
+  const code = String(e.code || e.statusCode || '');
+  const msg  = String(e.message || '');
+  if (code === '42501' || /row-level security|permission denied/i.test(msg) || e.status === 403) {
+    hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ตรวจ GRANT ของตาราง tb_vendors สำหรับ role authenticated';
+  } else if (code === '42703') {
+    hint = 'มีคอลัมน์ที่ยังไม่มีในฐานข้อมูล — ตรวจว่ารัน sprint0 PART 1 และ sprint1 PART 2 แล้วหรือยัง';
+  } else if (code === '23514') {
+    hint = 'ค่าที่บันทึกไม่ผ่านเงื่อนไขของฐานข้อมูล — entity_type ต้องเป็น Company หรือ Personal';
+  } else if (/Bucket not found/i.test(msg)) {
+    hint = 'ยังไม่ได้สร้าง Storage bucket ชื่อ vendor-documents หรือสะกดไม่ตรง';
+  } else if (/new row violates|not-null/i.test(msg)) {
+    hint = 'มีช่องบังคับที่ยังไม่ได้กรอก';
+  }
+
+  Swal.fire({
+    icon: 'error', title: title,
+    html: (hint ? `<p style="text-align:left;font-size:.85rem;margin-bottom:.75rem"><b>คำแนะนำ:</b> ${FTC.esc(hint)}</p>` : '') +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border:1px solid #E2E8F0;` +
+      `border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(detail)}</pre>`,
+    confirmButtonText: 'คัดลอกรายละเอียด', showCancelButton: true, cancelButtonText: 'ปิด',
+    confirmButtonColor: '#19335A', width: 560
+  }).then(r => { if (r.isConfirmed) navigator.clipboard.writeText(detail); });
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal('modal-edit'); closeModal('modal-invite'); }
+});
+['modal-edit','modal-invite'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.id === id) closeModal(id);
+  });
+});
+
+/* ตาข่ายกันข้อผิดพลาดหลุด */
+window.addEventListener('error', ev =>
+  reportError('เกิดข้อผิดพลาดในหน้าเว็บ', ev.error || { message: ev.message },
+              (ev.filename || '') + ':' + (ev.lineno || '')));
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ',
+              (r && typeof r === 'object') ? r : { message: String(r) }, 'promise ที่ไม่มีใครดัก');
+});
+
+/* ---------------------- เริ่มทำงาน ---------------------- */
+(async function init() {
+  lucide.createIcons();
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
