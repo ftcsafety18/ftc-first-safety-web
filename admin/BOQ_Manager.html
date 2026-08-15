@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOQ และแผนงาน WBS | FTC First Safety</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="../shared/config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#19335A', 'navy-light':'#254B82', orange:'#DB5A24', 'orange-hover':'#C14B1A' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+
+<style>
+  body { background:#EEF2F7; font-family:'Sarabun',sans-serif; }
+  .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid #D1D8E0;
+         background:#F9FAFB; font-size:.875rem; transition:.15s; }
+  .fld:focus { outline:none; border-color:#19335A; background:#fff; box-shadow:0 0 0 3px rgba(25,51,90,.1); }
+  .lbl { display:block; font-size:.8rem; font-weight:600; color:#334155; margin-bottom:.35rem; }
+  .chip { display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .6rem;
+          border-radius:999px; font-size:.7rem; font-weight:700; white-space:nowrap; }
+  .tab { padding:.7rem 1.1rem; font-size:.82rem; font-weight:700; color:#64748B;
+         border-bottom:3px solid transparent; white-space:nowrap; transition:.15s; }
+  .tab.on { color:#19335A; border-bottom-color:#DB5A24; }
+  .card { background:#fff; border:1px solid #E2E8F0; border-radius:1rem; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:60;
+                display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  tbody tr:hover { background:#F8FAFC; }
+  .num { font-variant-numeric: tabular-nums; text-align:right; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pop { animation: pop .18s ease-out; }
+    @keyframes pop { from { opacity:0; transform:translateY(-8px);} to { opacity:1; transform:none;} }
+  }
+  :focus-visible { outline:2px solid #DB5A24; outline-offset:2px; }
+</style>
+</head>
+<body class="text-slate-800 min-h-screen">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm card p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-11 h-11 rounded-xl bg-brand-navy flex items-center justify-center">
+        <i data-lucide="list-tree" class="w-6 h-6 text-white"></i>
+      </div>
+      <div>
+        <p class="text-base font-bold text-brand-navy leading-tight">FTC First Safety</p>
+        <p class="text-xs text-slate-500 leading-tight">BOQ และแผนงาน WBS</p>
+      </div>
+    </div>
+    <label class="lbl">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="lbl">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login"
+      class="w-full py-3 rounded-xl bg-brand-navy text-white text-sm font-bold hover:bg-brand-navy-light transition">
+      เข้าสู่ระบบ
+    </button>
+    <p id="log-err" class="hidden mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-3"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden">
+
+  <header class="sticky top-0 z-40 bg-brand-navy shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-white/10 ring-1 ring-white/20 flex items-center justify-center shrink-0">
+          <i data-lucide="list-tree" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-sm sm:text-base font-bold text-white leading-tight truncate">BOQ และแผนงาน WBS</h1>
+          <p class="text-[10px] sm:text-xs text-white/60 leading-tight">แตกเนื้องานและมอบหมายให้ผู้รับเหมา</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="Project_Setup.html" class="hidden md:block text-xs font-semibold text-white/70 hover:text-white border border-white/25 rounded-lg px-3 py-1.5 transition">โครงการ</a>
+        <a href="Vendor_Hub.html" class="hidden md:block text-xs font-semibold text-white/70 hover:text-white border border-white/25 rounded-lg px-3 py-1.5 transition">ผู้รับเหมา</a>
+        <button onclick="doLogout()" class="text-xs font-semibold text-white/80 hover:text-white border border-white/25 rounded-lg px-3 py-1.5 transition">ออกจากระบบ</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+    <div class="mb-5">
+      <label class="lbl">โครงการ</label>
+      <select id="proj-select" class="fld max-w-xl" onchange="selectProject(this.value)">
+        <option value="">-- ยังไม่มีโครงการ --</option>
+      </select>
+    </div>
+
+    <div id="no-project" class="card p-12 text-center">
+      <i data-lucide="folder-x" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+      <h2 class="text-lg font-bold text-brand-navy mb-2">ยังไม่มีโครงการในระบบ</h2>
+      <p class="text-sm text-slate-500">สร้างโครงการที่หน้าตั้งค่าโครงการก่อน แล้วจึงกลับมาทำ BOQ</p>
+    </div>
+
+    <div id="workspace" class="hidden">
+
+      <!-- สรุปงบประมาณ -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <div class="card p-4">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">มูลค่าสัญญา</p>
+          <p class="text-xl font-bold text-brand-navy num" id="k-contract">0</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">มูลค่ารวมใน BOQ</p>
+          <p class="text-xl font-bold text-brand-navy num" id="k-boq">0</p>
+          <p class="text-[11px] mt-0.5" id="k-boq-diff"></p>
+        </div>
+        <div class="card p-4">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">มอบหมายแล้ว</p>
+          <p class="text-xl font-bold text-brand-navy num" id="k-alloc">0</p>
+          <p class="text-[11px] text-slate-400 mt-0.5"><span id="k-tasks">0</span> งานย่อย</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">พร้อมเปิดใบงาน</p>
+          <p class="text-xl font-bold" id="k-ready">—</p>
+          <p class="text-[11px] text-slate-400 mt-0.5" id="k-ready-note"></p>
+        </div>
+      </section>
+
+      <div class="card overflow-hidden">
+        <div class="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
+          <button class="tab on" data-tab="boq" onclick="showTab('boq')">รายการ BOQ</button>
+          <button class="tab"    data-tab="wbs" onclick="showTab('wbs')">แผนงาน WBS ที่มอบหมาย</button>
+        </div>
+
+        <!-- ============ BOQ ============ -->
+        <div id="tab-boq" class="p-5 sm:p-6">
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <div class="relative flex-1 min-w-[220px]">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input id="q-boq" class="fld pl-9" placeholder="ค้นหารายการงานหรือหมวดงาน" oninput="renderBoq()">
+            </div>
+            <button onclick="openImport()"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-brand-navy hover:bg-slate-50 transition">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> นำเข้าจาก Excel
+            </button>
+            <button onclick="openBoq(null)"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow-md transition">
+              <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มรายการ
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 border-y border-slate-200">
+                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-3 py-2.5 font-bold">รายการงาน</th>
+                  <th class="px-3 py-2.5 font-bold">ปริมาณ</th>
+                  <th class="px-3 py-2.5 font-bold num">ค่าวัสดุ</th>
+                  <th class="px-3 py-2.5 font-bold num">ค่าแรง</th>
+                  <th class="px-3 py-2.5 font-bold num">รวม</th>
+                  <th class="px-3 py-2.5 font-bold">มอบหมาย</th>
+                  <th class="px-3 py-2.5 font-bold text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="boq-rows" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <p id="boq-empty" class="hidden text-center text-sm text-slate-400 py-12">
+            ยังไม่มีรายการ BOQ — เพิ่มทีละรายการหรือนำเข้าจาก Excel ก็ได้
+          </p>
+        </div>
+
+        <!-- ============ WBS ============ -->
+        <div id="tab-wbs" class="hidden p-5 sm:p-6">
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <div class="relative flex-1 min-w-[220px]">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input id="q-wbs" class="fld pl-9" placeholder="ค้นหางานย่อยหรือผู้รับเหมา" oninput="renderWbs()">
+            </div>
+            <select id="f-risk" class="fld w-auto min-w-[170px]" onchange="renderWbs()">
+              <option value="">ทุกเขตพื้นที่</option>
+              <option value="เขตอันตราย">เขตอันตราย</option>
+              <option value="เขตควบคุม">เขตควบคุม</option>
+              <option value="เขตปลอดภัย">เขตปลอดภัย</option>
+            </select>
+            <button onclick="openWbs(null)"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow-md transition">
+              <i data-lucide="plus" class="w-4 h-4"></i> มอบหมายงานย่อย
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 border-y border-slate-200">
+                <tr class="text-left text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="px-3 py-2.5 font-bold">งานย่อย</th>
+                  <th class="px-3 py-2.5 font-bold">ผู้รับเหมา</th>
+                  <th class="px-3 py-2.5 font-bold">ช่วงเวลา</th>
+                  <th class="px-3 py-2.5 font-bold num">มูลค่า</th>
+                  <th class="px-3 py-2.5 font-bold">เขตพื้นที่</th>
+                  <th class="px-3 py-2.5 font-bold text-right">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="wbs-rows" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <p id="wbs-empty" class="hidden text-center text-sm text-slate-400 py-12">
+            ยังไม่มีงานย่อย — ระบบขอใบอนุญาตทำงานต้องอ้างอิงงานย่อยเสมอ จึงยังเปิดใบงานไม่ได้
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== เพิ่ม/แก้ไข BOQ ===================== -->
+<div id="modal-boq" class="modal-wrap hidden">
+  <div class="pop w-full max-w-lg bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 id="boq-title" class="text-base font-bold text-brand-navy">เพิ่มรายการ BOQ</h3>
+      <button onclick="closeModal('modal-boq')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">รหัสรายการ <span class="text-red-500">*</span></label>
+          <input id="b-id" class="fld font-mono">
+        </div>
+        <div>
+          <label class="lbl">หมวดงาน <span class="text-red-500">*</span></label>
+          <input id="b-cat" class="fld" list="cat-list" placeholder="งานระบบไฟฟ้า">
+          <datalist id="cat-list"></datalist>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">รายละเอียดงาน <span class="text-red-500">*</span></label>
+        <textarea id="b-desc" rows="2" class="fld"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">ปริมาณ <span class="text-red-500">*</span></label>
+          <input id="b-qty" class="fld num" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcBoq()">
+        </div>
+        <div>
+          <label class="lbl">หน่วย <span class="text-red-500">*</span></label>
+          <input id="b-unit" class="fld" list="unit-list" placeholder="ชุด">
+          <datalist id="unit-list">
+            <option value="ชุด"><option value="ตร.ม."><option value="ลบ.ม."><option value="เมตร">
+            <option value="ตัว"><option value="จุด"><option value="งาน"><option value="เครื่อง">
+          </datalist>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">ค่าวัสดุต่อหน่วย (บาท)</label>
+          <input id="b-mat" class="fld num" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcBoq()">
+        </div>
+        <div>
+          <label class="lbl">ค่าแรงต่อหน่วย (บาท)</label>
+          <input id="b-lab" class="fld num" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcBoq()">
+        </div>
+      </div>
+      <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-600">มูลค่ารวมรายการนี้</span>
+        <span class="text-lg font-bold text-brand-navy num" id="b-total">0.00</span>
+      </div>
+    </div>
+    <div class="flex flex-col-reverse sm:flex-row gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+      <button onclick="closeModal('modal-boq')" class="sm:w-auto w-full px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition">ยกเลิก</button>
+      <button id="btn-boq-save" onclick="saveBoq()" class="flex-1 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== มอบหมายงานย่อย ===================== -->
+<div id="modal-wbs" class="modal-wrap hidden">
+  <div class="pop w-full max-w-2xl bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 id="wbs-title" class="text-base font-bold text-brand-navy">มอบหมายงานย่อย</h3>
+      <button onclick="closeModal('modal-wbs')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label class="lbl">อยู่ภายใต้รายการ BOQ <span class="text-red-500">*</span></label>
+        <select id="w-boq" class="fld" onchange="onWbsBoqChange()"></select>
+        <p id="w-boq-info" class="text-[11px] text-slate-500 mt-1"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">รหัสงานย่อย <span class="text-red-500">*</span></label>
+          <input id="w-id" class="fld font-mono">
+        </div>
+        <div>
+          <label class="lbl">ผู้รับเหมาที่รับผิดชอบ <span class="text-red-500">*</span></label>
+          <select id="w-vendor" class="fld"></select>
+          <p class="text-[10px] text-slate-400 mt-1">แสดงเฉพาะรายที่ผูกกับโครงการนี้แล้ว</p>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">ชื่องานย่อย <span class="text-red-500">*</span></label>
+        <input id="w-name" class="fld" placeholder="เดินท่อร้อยสายชั้น 3 โซน A">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">มูลค่าที่มอบหมาย (บาท) <span class="text-red-500">*</span></label>
+          <input id="w-value" class="fld num" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');calcWeight()">
+        </div>
+        <div>
+          <label class="lbl">น้ำหนักงาน (%) <span class="text-red-500">*</span></label>
+          <input id="w-weight" class="fld num" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+          <p class="text-[10px] text-slate-400 mt-1">ใช้คำนวณความคืบหน้าโครงการ</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">วันเริ่มงาน <span class="text-red-500">*</span></label>
+          <input type="date" id="w-start" class="fld">
+        </div>
+        <div>
+          <label class="lbl">วันสิ้นสุดงาน <span class="text-red-500">*</span></label>
+          <input type="date" id="w-end" class="fld">
+        </div>
+      </div>
+      <div>
+        <label class="lbl">เขตพื้นที่ความเสี่ยง <span class="text-red-500">*</span></label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="setRisk('เขตปลอดภัย')" id="rb-safe"  class="rounded-xl border-2 py-2.5 text-sm font-bold transition">เขตปลอดภัย</button>
+          <button type="button" onclick="setRisk('เขตควบคุม')"  id="rb-ctrl"  class="rounded-xl border-2 py-2.5 text-sm font-bold transition">เขตควบคุม</button>
+          <button type="button" onclick="setRisk('เขตอันตราย')" id="rb-danger" class="rounded-xl border-2 py-2.5 text-sm font-bold transition">เขตอันตราย</button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+          เขตอันตรายจะทำให้ใบอนุญาตทำงานในพื้นที่นี้ถูกตรวจเข้มขึ้น และผู้รับเหมาบุคคลธรรมดาอาจถูกบล็อกตามประเภทงาน
+        </p>
+      </div>
+      <div>
+        <label class="lbl">รายละเอียดตำแหน่งงาน</label>
+        <input id="w-loc" class="fld" placeholder="อาคาร A ชั้น 3 ห้องเครื่อง">
+      </div>
+    </div>
+    <div class="flex flex-col-reverse sm:flex-row gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+      <button onclick="closeModal('modal-wbs')" class="sm:w-auto w-full px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition">ยกเลิก</button>
+      <button id="btn-wbs-save" onclick="saveWbs()" class="flex-1 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== นำเข้า Excel ===================== -->
+<div id="modal-import" class="modal-wrap hidden">
+  <div class="pop w-full max-w-4xl bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+      <h3 class="text-base font-bold text-brand-navy">นำเข้า BOQ จาก Excel</h3>
+      <button onclick="closeModal('modal-import')" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="px-6 py-5">
+      <div id="imp-step1">
+        <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 mb-4">
+          <p class="text-xs font-bold text-brand-navy mb-2">ไฟล์ต้องมีคอลัมน์เหล่านี้</p>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            หมวดงาน · รายละเอียด · ปริมาณ · หน่วย · ค่าวัสดุ · ค่าแรง<br>
+            ระบบจะจับคู่คอลัมน์ให้อัตโนมัติจากชื่อหัวตาราง และให้ตรวจก่อนบันทึกจริงเสมอ
+          </p>
+        </div>
+        <input type="file" id="imp-file" accept=".xlsx,.xls,.csv" onchange="parseExcel(this)"
+          class="block w-full text-sm file:mr-3 file:py-2.5 file:px-5 file:rounded-lg file:border-0
+                 file:text-sm file:font-bold file:bg-brand-navy file:text-white hover:file:bg-brand-navy-light file:cursor-pointer">
+      </div>
+
+      <div id="imp-step2" class="hidden">
+        <div class="flex flex-wrap items-center gap-3 mb-3">
+          <p class="text-sm font-bold text-brand-navy">ตรวจข้อมูลก่อนบันทึก</p>
+          <span id="imp-count" class="chip bg-slate-100 text-slate-600 border border-slate-200"></span>
+          <span id="imp-bad" class="chip bg-red-50 text-red-700 border border-red-200 hidden"></span>
+        </div>
+        <div class="border border-slate-200 rounded-xl overflow-hidden mb-4">
+          <div class="overflow-auto max-h-80">
+            <table class="w-full text-xs">
+              <thead class="bg-slate-50 sticky top-0">
+                <tr class="text-left text-[10px] uppercase text-slate-500">
+                  <th class="px-2 py-2">แถว</th><th class="px-2 py-2">หมวดงาน</th>
+                  <th class="px-2 py-2">รายละเอียด</th><th class="px-2 py-2 num">ปริมาณ</th>
+                  <th class="px-2 py-2">หน่วย</th><th class="px-2 py-2 num">ค่าวัสดุ</th>
+                  <th class="px-2 py-2 num">ค่าแรง</th><th class="px-2 py-2 num">รวม</th>
+                  <th class="px-2 py-2">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody id="imp-rows" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+          ⚠️ แถวที่ขึ้นสีแดงจะถูกข้าม ไม่บันทึกเข้าระบบ — ระบบจะนำเข้าเฉพาะแถวที่ผ่านเท่านั้น
+        </p>
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button onclick="resetImport()" class="sm:w-auto w-full px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 transition">เลือกไฟล์ใหม่</button>
+          <button id="btn-import" onclick="commitImport()" class="flex-1 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition">บันทึกเข้าระบบ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sb = FTC.supabase();
+const RISK_LEVELS = ['เขตปลอดภัย', 'เขตควบคุม', 'เขตอันตราย'];   // ต้องตรงกับ CHECK ในฐานข้อมูลเป๊ะ
+let PROJECTS = [], CUR = null, BOQ = [], WBS = [], PVENDORS = [];
+let editingBoq = null, editingWbs = null, currentRisk = 'เขตปลอดภัย', IMPORT_ROWS = [];
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent='กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent='กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent='เข้าสู่ระบบ';
+  if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  await loadProjects();
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+function money(n, dec) {
+  return Number(n || 0).toLocaleString('th-TH',
+    { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 });
+}
+
+async function loadProjects() {
+  const { data, error } = await sb.from('tb_projects')
+    .select('project_id, project_name, total_project_value_thb, start_date, end_date, status')
+    .order('created_at', { ascending:false });
+  if (error) { reportError('โหลดรายการโครงการไม่สำเร็จ', error, 'select tb_projects'); return; }
+  PROJECTS = data || [];
+
+  const sel = document.getElementById('proj-select');
+  sel.innerHTML = PROJECTS.length
+    ? PROJECTS.map(p => `<option value="${FTC.esc(p.project_id)}">${FTC.esc(p.project_name)} — ${FTC.esc(p.project_id)}</option>`).join('')
+    : '<option value="">-- ยังไม่มีโครงการ --</option>';
+  document.getElementById('no-project').classList.toggle('hidden', PROJECTS.length > 0);
+  document.getElementById('workspace').classList.toggle('hidden', PROJECTS.length === 0);
+  if (PROJECTS.length) { sel.value = PROJECTS[0].project_id; await selectProject(PROJECTS[0].project_id); }
+}
+
+async function selectProject(id) {
+  CUR = PROJECTS.find(p => p.project_id === id) || null;
+  if (!CUR) return;
+  await Promise.all([loadBoq(), loadWbs(), loadProjectVendors()]);
+  renderAll();
+}
+
+async function loadBoq() {
+  const r = await sb.from('tb_boq_master').select('*').eq('project_id', CUR.project_id).order('boq_id');
+  if (r.error) { reportError('โหลดรายการ BOQ ไม่สำเร็จ', r.error, 'select tb_boq_master'); BOQ = []; return; }
+  BOQ = r.data || [];
+}
+
+async function loadWbs() {
+  const ids = BOQ.map(b => b.boq_id);
+  if (!ids.length) { WBS = []; return; }
+  const r = await sb.from('tb_wbs_tasks').select('*').in('boq_id', ids).order('start_date');
+  if (r.error) { reportError('โหลดแผนงาน WBS ไม่สำเร็จ', r.error, 'select tb_wbs_tasks'); WBS = []; return; }
+  WBS = r.data || [];
+}
+
+/** โหลดเฉพาะผู้รับเหมาที่ผูกกับโครงการนี้ กันการมอบหมายงานให้รายที่ไม่ได้อยู่ในโครงการ */
+async function loadProjectVendors() {
+  const pv = await sb.from('tb_project_vendors').select('vendor_id')
+    .eq('project_id', CUR.project_id).eq('is_active', true);
+  if (pv.error || !pv.data || !pv.data.length) { PVENDORS = []; return; }
+  const v = await sb.from('tb_vendors')
+    .select('vendor_id, vendor_name, entity_type, is_blacklisted')
+    .in('vendor_id', pv.data.map(x => x.vendor_id));
+  PVENDORS = v.error ? [] : (v.data || []);
+}
+
+/* ---------------------- สรุปภาพรวม ---------------------- */
+function renderAll() {
+  const contract = Number(CUR.total_project_value_thb || 0);
+  const boqTotal = BOQ.reduce((s, b) => s + Number(b.total_item_value_thb || 0), 0);
+  const alloc    = WBS.reduce((s, w) => s + Number(w.allocated_value_thb || 0), 0);
+
+  document.getElementById('k-contract').textContent = money(contract);
+  document.getElementById('k-boq').textContent      = money(boqTotal);
+  document.getElementById('k-alloc').textContent    = money(alloc);
+  document.getElementById('k-tasks').textContent    = WBS.length;
+
+  const diff = boqTotal - contract;
+  const dEl = document.getElementById('k-boq-diff');
+  if (!contract || !boqTotal) { dEl.textContent = ''; }
+  else if (Math.abs(diff) < 1) { dEl.textContent = 'ตรงกับมูลค่าสัญญา'; dEl.className = 'text-[11px] mt-0.5 text-emerald-600'; }
+  else if (diff > 0) { dEl.textContent = 'เกินสัญญา ' + money(diff) + ' บาท'; dEl.className = 'text-[11px] mt-0.5 text-red-600 font-semibold'; }
+  else { dEl.textContent = 'ต่ำกว่าสัญญา ' + money(-diff) + ' บาท'; dEl.className = 'text-[11px] mt-0.5 text-amber-600'; }
+
+  const ready = BOQ.length > 0 && WBS.length > 0 && PVENDORS.length > 0;
+  const rEl = document.getElementById('k-ready');
+  rEl.textContent = ready ? 'พร้อม' : 'ยังไม่พร้อม';
+  rEl.className = 'text-xl font-bold ' + (ready ? 'text-emerald-600' : 'text-amber-600');
+  document.getElementById('k-ready-note').textContent = ready
+    ? 'เปิดใบอนุญาตทำงานได้แล้ว'
+    : (!PVENDORS.length ? 'ยังไม่มีผู้รับเหมาในโครงการ'
+       : !BOQ.length ? 'ยังไม่มีรายการ BOQ' : 'ยังไม่มีงานย่อย WBS');
+
+  document.getElementById('cat-list').innerHTML =
+    [...new Set(BOQ.map(b => b.category))].map(c => `<option value="${FTC.esc(c)}">`).join('');
+
+  renderBoq(); renderWbs();
+}
+
+function allocOf(boqId) {
+  return WBS.filter(w => w.boq_id === boqId).reduce((s, w) => s + Number(w.allocated_value_thb || 0), 0);
+}
+
+function renderBoq() {
+  const q = document.getElementById('q-boq').value.trim().toLowerCase();
+  const list = BOQ.filter(b => !q ||
+    [b.boq_id, b.category, b.description].some(x => (x || '').toLowerCase().includes(q)));
+
+  document.getElementById('boq-empty').classList.toggle('hidden', list.length > 0);
+  document.getElementById('boq-rows').innerHTML = list.map(b => {
+    const e = FTC.esc;
+    const total = Number(b.total_item_value_thb || 0);
+    const used  = allocOf(b.boq_id);
+    const pct   = total ? Math.min(100, Math.round(used / total * 100)) : 0;
+    const over  = used > total + 0.5;
+    return `<tr>
+      <td class="px-3 py-2.5">
+        <p class="font-semibold text-slate-800">${e(b.description)}</p>
+        <p class="text-[11px] text-slate-400 font-mono">${e(b.boq_id)} · ${e(b.category)}</p>
+      </td>
+      <td class="px-3 py-2.5 text-slate-600">${money(b.quantity, 2)} ${e(b.unit)}</td>
+      <td class="px-3 py-2.5 num text-slate-600">${money(b.material_cost_thb, 2)}</td>
+      <td class="px-3 py-2.5 num text-slate-600">${money(b.labor_cost_thb, 2)}</td>
+      <td class="px-3 py-2.5 num font-semibold text-brand-navy">${money(total, 2)}</td>
+      <td class="px-3 py-2.5">
+        <div class="w-28">
+          <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full ${over ? 'bg-red-500' : 'bg-emerald-500'}" style="width:${pct}%"></div>
+          </div>
+          <p class="text-[10px] mt-0.5 ${over ? 'text-red-600 font-semibold' : 'text-slate-400'}">
+            ${money(used)} / ${money(total)}${over ? ' เกิน' : ''}</p>
+        </div>
+      </td>
+      <td class="px-3 py-2.5 text-right">
+        <button onclick="openBoq('${e(b.boq_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition">
+          <i data-lucide="pencil" class="w-4 h-4"></i></button>
+        <button onclick="delBoq('${e(b.boq_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function renderWbs() {
+  const q  = document.getElementById('q-wbs').value.trim().toLowerCase();
+  const fr = document.getElementById('f-risk').value;
+  const RISK_CLASS = {
+    'เขตอันตราย':'bg-red-50 text-red-700 border border-red-200',
+    'เขตควบคุม':'bg-amber-50 text-amber-700 border border-amber-200',
+    'เขตปลอดภัย':'bg-emerald-50 text-emerald-700 border border-emerald-200'
+  };
+
+  const list = WBS.filter(w => {
+    if (fr && w.risk_area_class !== fr) return false;
+    if (!q) return true;
+    const v = PVENDORS.find(x => x.vendor_id === w.vendor_id);
+    return [w.task_id, w.task_name, w.vendor_id, v && v.vendor_name]
+      .some(x => (x || '').toLowerCase().includes(q));
+  });
+
+  document.getElementById('wbs-empty').classList.toggle('hidden', list.length > 0);
+  document.getElementById('wbs-rows').innerHTML = list.map(w => {
+    const e = FTC.esc;
+    const v = PVENDORS.find(x => x.vendor_id === w.vendor_id);
+    const b = BOQ.find(x => x.boq_id === w.boq_id);
+    const personal = v && ['personal','individual'].indexOf(String(v.entity_type||'').toLowerCase()) !== -1;
+    return `<tr>
+      <td class="px-3 py-2.5">
+        <p class="font-semibold text-slate-800">${e(w.task_name)}</p>
+        <p class="text-[11px] text-slate-400 font-mono">${e(w.task_id)}${b ? ' · ' + e(b.category) : ''}</p>
+      </td>
+      <td class="px-3 py-2.5">
+        <p class="text-[12px] text-slate-700">${e(v ? v.vendor_name : w.vendor_id)}</p>
+        ${personal ? '<span class="chip bg-purple-50 text-purple-700 border border-purple-200 mt-0.5">บุคคลธรรมดา</span>' : ''}
+      </td>
+      <td class="px-3 py-2.5 text-[12px] text-slate-600">${e(w.start_date)}<br>ถึง ${e(w.end_date)}</td>
+      <td class="px-3 py-2.5 num text-slate-700">${money(w.allocated_value_thb)}<br>
+          <span class="text-[10px] text-slate-400">${w.weight_pct}%</span></td>
+      <td class="px-3 py-2.5"><span class="chip ${RISK_CLASS[w.risk_area_class] || ''}">${e(w.risk_area_class)}</span></td>
+      <td class="px-3 py-2.5 text-right">
+        <button onclick="openWbs('${e(w.task_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition">
+          <i data-lucide="pencil" class="w-4 h-4"></i></button>
+        <button onclick="delWbs('${e(w.task_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+/* ---------------------- BOQ ---------------------- */
+function nextBoqId() {
+  const pre = 'BOQ-' + CUR.project_id.replace(/[^A-Za-z0-9]/g, '').slice(-6) + '-';
+  const nums = BOQ.map(b => { const m = new RegExp('^' + pre + '(\\d+)$').exec(b.boq_id || ''); return m ? +m[1] : 0; });
+  return pre + String((nums.length ? Math.max.apply(null, nums) : 0) + 1).padStart(4, '0');
+}
+
+function calcBoq() {
+  const q = parseFloat(document.getElementById('b-qty').value) || 0;
+  const m = parseFloat(document.getElementById('b-mat').value) || 0;
+  const l = parseFloat(document.getElementById('b-lab').value) || 0;
+  document.getElementById('b-total').textContent = money(q * (m + l), 2);
+}
+
+function openBoq(id) {
+  editingBoq = id;
+  const b = id ? BOQ.find(x => x.boq_id === id) : null;
+  document.getElementById('boq-title').textContent = b ? 'แก้ไขรายการ BOQ' : 'เพิ่มรายการ BOQ';
+  document.getElementById('b-id').value   = b ? b.boq_id : nextBoqId();
+  document.getElementById('b-id').readOnly = !!b;
+  document.getElementById('b-id').classList.toggle('bg-slate-100', !!b);
+  document.getElementById('b-cat').value  = b ? b.category : '';
+  document.getElementById('b-desc').value = b ? b.description : '';
+  document.getElementById('b-qty').value  = b ? b.quantity : '';
+  document.getElementById('b-unit').value = b ? b.unit : '';
+  document.getElementById('b-mat').value  = b ? b.material_cost_thb : '';
+  document.getElementById('b-lab').value  = b ? b.labor_cost_thb : '';
+  calcBoq();
+  openModal('modal-boq');
+}
+
+async function saveBoq() {
+  const btn = document.getElementById('btn-boq-save');
+  try {
+    const id   = document.getElementById('b-id').value.trim();
+    const cat  = document.getElementById('b-cat').value.trim();
+    const desc = document.getElementById('b-desc').value.trim();
+    const qty  = parseFloat(document.getElementById('b-qty').value);
+    const unit = document.getElementById('b-unit').value.trim();
+    if (!id || !cat || !desc || !unit) return Swal.fire('ยังกรอกไม่ครบ','กรอกรหัส หมวดงาน รายละเอียด และหน่วยให้ครบ','warning');
+    if (!qty || qty <= 0) return Swal.fire('ปริมาณไม่ถูกต้อง','ปริมาณต้องมากกว่า 0','warning');
+
+    const payload = {
+      boq_id: id, project_id: CUR.project_id, category: cat, description: desc,
+      quantity: qty, unit: unit,
+      material_cost_thb: parseFloat(document.getElementById('b-mat').value) || 0,
+      labor_cost_thb: parseFloat(document.getElementById('b-lab').value) || 0
+    };
+
+    // ห้ามลดมูลค่าจนต่ำกว่าที่มอบหมายไปแล้ว ไม่งั้นงบจะติดลบโดยไม่มีใครรู้
+    if (editingBoq) {
+      const newTotal = qty * (payload.material_cost_thb + payload.labor_cost_thb);
+      const used = allocOf(editingBoq);
+      if (used > newTotal + 0.5) {
+        return Swal.fire('มูลค่าน้อยกว่าที่มอบหมายไปแล้ว',
+          'รายการนี้มอบหมายให้ผู้รับเหมาไปแล้ว ' + money(used) +
+          ' บาท แต่มูลค่าใหม่เหลือ ' + money(newTotal) + ' บาท<br>ต้องแก้งานย่อยก่อน', 'warning');
+      }
+    }
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    const r = editingBoq
+      ? await sb.from('tb_boq_master').update(payload).eq('boq_id', editingBoq)
+      : await sb.from('tb_boq_master').insert(payload);
+    if (r.error) throw r.error;
+    closeModal('modal-boq');
+    await loadBoq(); await loadWbs(); renderAll();
+  } catch (err) {
+    if (err && err.code === '23505') Swal.fire('รหัสซ้ำ','รหัสรายการนี้มีอยู่แล้ว','warning');
+    else reportError('บันทึกรายการ BOQ ไม่สำเร็จ', err, 'tb_boq_master');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+}
+
+async function delBoq(id) {
+  if (WBS.some(w => w.boq_id === id))
+    return Swal.fire('ลบไม่ได้','รายการนี้มีงานย่อยผูกอยู่ ต้องลบงานย่อยก่อน','warning');
+  const c = await Swal.fire({ icon:'warning', title:'ลบรายการนี้', showCancelButton:true,
+    confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก', confirmButtonColor:'#DC2626' });
+  if (!c.isConfirmed) return;
+  const r = await sb.from('tb_boq_master').delete().eq('boq_id', id);
+  if (r.error) { reportError('ลบไม่สำเร็จ', r.error, 'delete tb_boq_master'); return; }
+  await loadBoq(); await loadWbs(); renderAll();
+}
+
+/* ---------------------- WBS ---------------------- */
+function nextTaskId() {
+  const pre = 'WBS-' + CUR.project_id.replace(/[^A-Za-z0-9]/g, '').slice(-6) + '-';
+  const nums = WBS.map(w => { const m = new RegExp('^' + pre + '(\\d+)$').exec(w.task_id || ''); return m ? +m[1] : 0; });
+  return pre + String((nums.length ? Math.max.apply(null, nums) : 0) + 1).padStart(4, '0');
+}
+
+function setRisk(v) {
+  currentRisk = v;
+  const map = { 'เขตปลอดภัย':['rb-safe','emerald'], 'เขตควบคุม':['rb-ctrl','amber'], 'เขตอันตราย':['rb-danger','red'] };
+  Object.keys(map).forEach(k => {
+    const [id, color] = map[k];
+    document.getElementById(id).className = 'rounded-xl border-2 py-2.5 text-sm font-bold transition ' +
+      (k === v ? `border-${color}-500 bg-${color}-50 text-${color}-700`
+               : 'border-slate-200 text-slate-500 hover:border-slate-300');
+  });
+}
+
+function onWbsBoqChange() {
+  const b = BOQ.find(x => x.boq_id === document.getElementById('w-boq').value);
+  const info = document.getElementById('w-boq-info');
+  if (!b) { info.textContent = ''; return; }
+  const total = Number(b.total_item_value_thb || 0);
+  const used  = allocOf(b.boq_id) - (editingWbs
+    ? Number((WBS.find(w => w.task_id === editingWbs) || {}).allocated_value_thb || 0) : 0);
+  info.innerHTML = `มูลค่ารายการนี้ ${money(total)} บาท · มอบหมายไปแล้ว ${money(used)} บาท · ` +
+                   `<b>คงเหลือ ${money(total - used)} บาท</b>`;
+  calcWeight();
+}
+
+function calcWeight() {
+  const b = BOQ.find(x => x.boq_id === document.getElementById('w-boq').value);
+  const val = parseFloat(document.getElementById('w-value').value) || 0;
+  const contract = Number(CUR.total_project_value_thb || 0);
+  if (contract > 0 && val > 0 && !document.getElementById('w-weight').dataset.touched) {
+    document.getElementById('w-weight').value = (val / contract * 100).toFixed(2);
+  }
+}
+
+function openWbs(id) {
+  editingWbs = id;
+  const w = id ? WBS.find(x => x.task_id === id) : null;
+
+  if (!BOQ.length) return Swal.fire('ยังไม่มีรายการ BOQ','ต้องสร้างรายการ BOQ ก่อนจึงจะมอบหมายงานย่อยได้','warning');
+  if (!PVENDORS.length) return Swal.fire('ยังไม่มีผู้รับเหมาในโครงการ',
+    'ไปที่หน้าตั้งค่าโครงการ แท็บผู้รับเหมา เพื่อผูกผู้รับเหมาเข้าโครงการก่อน','warning');
+
+  document.getElementById('wbs-title').textContent = w ? 'แก้ไขงานย่อย' : 'มอบหมายงานย่อย';
+  document.getElementById('w-boq').innerHTML = BOQ.map(b =>
+    `<option value="${FTC.esc(b.boq_id)}">${FTC.esc(b.category)} — ${FTC.esc(b.description.slice(0,50))}</option>`).join('');
+  document.getElementById('w-vendor').innerHTML = PVENDORS.map(v =>
+    `<option value="${FTC.esc(v.vendor_id)}"${v.is_blacklisted ? ' disabled' : ''}>` +
+    `${FTC.esc(v.vendor_name)}${v.is_blacklisted ? ' (บัญชีดำ)' : ''}</option>`).join('');
+
+  document.getElementById('w-boq').value    = w ? w.boq_id : BOQ[0].boq_id;
+  document.getElementById('w-id').value     = w ? w.task_id : nextTaskId();
+  document.getElementById('w-id').readOnly  = !!w;
+  document.getElementById('w-id').classList.toggle('bg-slate-100', !!w);
+  document.getElementById('w-vendor').value = w ? w.vendor_id : (PVENDORS[0] || {}).vendor_id;
+  document.getElementById('w-name').value   = w ? w.task_name : '';
+  document.getElementById('w-value').value  = w ? w.allocated_value_thb : '';
+  document.getElementById('w-weight').value = w ? w.weight_pct : '';
+  document.getElementById('w-weight').dataset.touched = w ? '1' : '';
+  document.getElementById('w-start').value  = w ? w.start_date : (CUR.start_date || '');
+  document.getElementById('w-end').value    = w ? w.end_date : (CUR.end_date || '');
+  document.getElementById('w-loc').value    = w ? (w.location_detail || '') : '';
+  setRisk(w ? w.risk_area_class : 'เขตปลอดภัย');
+  onWbsBoqChange();
+  openModal('modal-wbs');
+}
+
+document.getElementById('w-weight').addEventListener('input', function () { this.dataset.touched = '1'; });
+
+async function saveWbs() {
+  const btn = document.getElementById('btn-wbs-save');
+  try {
+    const id     = document.getElementById('w-id').value.trim();
+    const boqId  = document.getElementById('w-boq').value;
+    const vendor = document.getElementById('w-vendor').value;
+    const name   = document.getElementById('w-name').value.trim();
+    const val    = parseFloat(document.getElementById('w-value').value) || 0;
+    const weight = parseFloat(document.getElementById('w-weight').value) || 0;
+    const s      = document.getElementById('w-start').value;
+    const e      = document.getElementById('w-end').value;
+
+    if (!id || !name)   return Swal.fire('ยังกรอกไม่ครบ','กรอกรหัสและชื่องานย่อย','warning');
+    if (!vendor)        return Swal.fire('ยังไม่ได้เลือก','เลือกผู้รับเหมาที่รับผิดชอบ','warning');
+    if (val <= 0)       return Swal.fire('มูลค่าไม่ถูกต้อง','มูลค่าที่มอบหมายต้องมากกว่า 0','warning');
+    if (weight <= 0 || weight > 100) return Swal.fire('น้ำหนักงานไม่ถูกต้อง','ต้องอยู่ระหว่าง 0 ถึง 100','warning');
+    if (!s || !e)       return Swal.fire('ยังไม่ได้เลือกวันที่','ระบุวันเริ่มและวันสิ้นสุดงาน','warning');
+    if (new Date(e) < new Date(s)) return Swal.fire('วันที่ไม่ถูกต้อง','วันสิ้นสุดต้องไม่ก่อนวันเริ่มงาน','warning');
+    if (RISK_LEVELS.indexOf(currentRisk) === -1) return Swal.fire('ยังไม่ได้เลือกเขตพื้นที่','เลือกเขตพื้นที่ความเสี่ยง','warning');
+
+    // งานย่อยต้องอยู่ในช่วงสัญญาโครงการ ไม่งั้นแผนงานจะหลุดกรอบเวลาที่รับผิดชอบ
+    if (CUR.start_date && s < CUR.start_date)
+      return Swal.fire('วันเริ่มงานอยู่นอกสัญญา','โครงการเริ่ม ' + CUR.start_date + ' งานย่อยเริ่มก่อนหน้านั้นไม่ได้','warning');
+    if (CUR.end_date && e > CUR.end_date)
+      return Swal.fire('วันสิ้นสุดอยู่นอกสัญญา','โครงการสิ้นสุด ' + CUR.end_date + ' งานย่อยจบหลังจากนั้นไม่ได้','warning');
+
+    // ห้ามมอบหมายเกินมูลค่ารายการ BOQ
+    const b = BOQ.find(x => x.boq_id === boqId);
+    const total = Number(b.total_item_value_thb || 0);
+    const usedOther = allocOf(boqId) - (editingWbs
+      ? Number((WBS.find(w => w.task_id === editingWbs) || {}).allocated_value_thb || 0) : 0);
+    if (usedOther + val > total + 0.5) {
+      return Swal.fire('มอบหมายเกินมูลค่ารายการ',
+        'รายการนี้เหลือให้มอบหมายได้ ' + money(total - usedOther) +
+        ' บาท แต่กำลังจะมอบหมาย ' + money(val) + ' บาท', 'warning');
+    }
+
+    const v = PVENDORS.find(x => x.vendor_id === vendor);
+    if (v && v.is_blacklisted)
+      return Swal.fire('ผู้รับเหมาถูกขึ้นบัญชีดำ','ไม่สามารถมอบหมายงานให้ผู้รับเหมารายนี้ได้','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    const payload = {
+      task_id: id, boq_id: boqId, vendor_id: vendor, task_name: name,
+      allocated_value_thb: val, weight_pct: weight,
+      start_date: s, end_date: e,
+      location_detail: document.getElementById('w-loc').value.trim() || null,
+      risk_area_class: currentRisk
+    };
+    const r = editingWbs
+      ? await sb.from('tb_wbs_tasks').update(payload).eq('task_id', editingWbs)
+      : await sb.from('tb_wbs_tasks').insert(payload);
+    if (r.error) throw r.error;
+    closeModal('modal-wbs');
+    await loadWbs(); renderAll();
+  } catch (err) {
+    if (err && err.code === '23505') Swal.fire('รหัสซ้ำ','รหัสงานย่อยนี้มีอยู่แล้ว','warning');
+    else if (err && err.code === '23514') Swal.fire('ค่าไม่ถูกต้อง',
+      'เขตพื้นที่ต้องเป็น เขตอันตราย เขตควบคุม หรือ เขตปลอดภัย เท่านั้น','warning');
+    else reportError('บันทึกงานย่อยไม่สำเร็จ', err, 'tb_wbs_tasks');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+}
+
+async function delWbs(id) {
+  const c = await Swal.fire({ icon:'warning', title:'ลบงานย่อยนี้',
+    text:'ถ้ามีใบอนุญาตทำงานอ้างอิงอยู่จะลบไม่ได้', showCancelButton:true,
+    confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก', confirmButtonColor:'#DC2626' });
+  if (!c.isConfirmed) return;
+  const r = await sb.from('tb_wbs_tasks').delete().eq('task_id', id);
+  if (r.error) {
+    if (r.error.code === '23503') Swal.fire('ลบไม่ได้','งานย่อยนี้มีใบอนุญาตทำงานอ้างอิงอยู่ ลบทิ้งไม่ได้เพราะเป็นหลักฐาน','warning');
+    else reportError('ลบไม่สำเร็จ', r.error, 'delete tb_wbs_tasks');
+    return;
+  }
+  await loadWbs(); renderAll();
+}
+
+/* ---------------------- นำเข้าจาก Excel ---------------------- */
+const IMP_HINTS = {
+  category:    ['หมวดงาน','หมวด','กลุ่มงาน','category'],
+  description: ['รายละเอียด','รายการ','description','item'],
+  quantity:    ['ปริมาณ','จำนวน','qty','quantity'],
+  unit:        ['หน่วย','unit'],
+  material:    ['ค่าวัสดุ','วัสดุ','material'],
+  labor:       ['ค่าแรง','แรงงาน','labor','labour']
+};
+
+function openImport() { resetImport(); openModal('modal-import'); }
+function resetImport() {
+  IMPORT_ROWS = [];
+  document.getElementById('imp-file').value = '';
+  document.getElementById('imp-step1').classList.remove('hidden');
+  document.getElementById('imp-step2').classList.add('hidden');
+}
+
+function parseExcel(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    try {
+      const wb = XLSX.read(ev.target.result, { type:'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { defval:'' });
+      if (!raw.length) { Swal.fire('ไฟล์ว่าง','ไม่พบข้อมูลในชีตแรกของไฟล์','warning'); return; }
+
+      // จับคู่คอลัมน์จากชื่อหัวตาราง
+      const headers = Object.keys(raw[0]);
+      const map = {};
+      Object.keys(IMP_HINTS).forEach(k => {
+        const hit = headers.find(h => IMP_HINTS[k].some(x => String(h).toLowerCase().includes(x.toLowerCase())));
+        if (hit) map[k] = hit;
+      });
+      if (!map.description || !map.quantity) {
+        Swal.fire('จับคู่คอลัมน์ไม่ได้',
+          'ไม่พบคอลัมน์รายละเอียดหรือปริมาณ<br>หัวตารางที่พบ: ' + FTC.esc(headers.join(', ')), 'warning');
+        return;
+      }
+
+      const num = v => parseFloat(String(v).replace(/[^0-9.\-]/g, '')) || 0;
+      let seq = 0;
+      const pre = 'BOQ-' + CUR.project_id.replace(/[^A-Za-z0-9]/g,'').slice(-6) + '-';
+      const existing = BOQ.map(b => { const m = new RegExp('^' + pre + '(\\d+)$').exec(b.boq_id||''); return m ? +m[1] : 0; });
+      let next = (existing.length ? Math.max.apply(null, existing) : 0);
+
+      IMPORT_ROWS = raw.map((r, i) => {
+        const desc = String(r[map.description] || '').trim();
+        const qty  = num(r[map.quantity]);
+        const unit = String(map.unit ? r[map.unit] : '' ).trim() || 'งาน';
+        const cat  = String(map.category ? r[map.category] : '').trim() || 'ไม่ระบุหมวด';
+        const mat  = map.material ? num(r[map.material]) : 0;
+        const lab  = map.labor ? num(r[map.labor]) : 0;
+        const errs = [];
+        if (!desc) errs.push('ไม่มีรายละเอียด');
+        if (qty <= 0) errs.push('ปริมาณต้องมากกว่า 0');
+        if (mat + lab <= 0) errs.push('ไม่มีค่าวัสดุและค่าแรง');
+        const ok = errs.length === 0;
+        if (ok) { next++; seq++; }
+        return { row:i+2, boq_id: ok ? pre + String(next).padStart(4,'0') : null,
+                 category:cat, description:desc, quantity:qty, unit:unit,
+                 material_cost_thb:mat, labor_cost_thb:lab,
+                 total: qty*(mat+lab), ok, note: errs.join(' · ') };
+      });
+
+      const good = IMPORT_ROWS.filter(r => r.ok).length;
+      const bad  = IMPORT_ROWS.length - good;
+      document.getElementById('imp-count').textContent = 'นำเข้าได้ ' + good + ' รายการ';
+      const badEl = document.getElementById('imp-bad');
+      badEl.classList.toggle('hidden', bad === 0);
+      badEl.textContent = 'ข้าม ' + bad + ' แถว';
+
+      document.getElementById('imp-rows').innerHTML = IMPORT_ROWS.map(r => `
+        <tr class="${r.ok ? '' : 'bg-red-50'}">
+          <td class="px-2 py-1.5 text-slate-400">${r.row}</td>
+          <td class="px-2 py-1.5">${FTC.esc(r.category)}</td>
+          <td class="px-2 py-1.5">${FTC.esc(r.description.slice(0,60))}</td>
+          <td class="px-2 py-1.5 num">${money(r.quantity,2)}</td>
+          <td class="px-2 py-1.5">${FTC.esc(r.unit)}</td>
+          <td class="px-2 py-1.5 num">${money(r.material_cost_thb,2)}</td>
+          <td class="px-2 py-1.5 num">${money(r.labor_cost_thb,2)}</td>
+          <td class="px-2 py-1.5 num font-semibold">${money(r.total,2)}</td>
+          <td class="px-2 py-1.5 ${r.ok ? 'text-emerald-600' : 'text-red-600 font-semibold'}">
+            ${r.ok ? 'ผ่าน' : FTC.esc(r.note)}</td>
+        </tr>`).join('');
+
+      document.getElementById('imp-step1').classList.add('hidden');
+      document.getElementById('imp-step2').classList.remove('hidden');
+    } catch (err) {
+      reportError('อ่านไฟล์ Excel ไม่สำเร็จ', err, 'parseExcel');
+    }
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+async function commitImport() {
+  const rows = IMPORT_ROWS.filter(r => r.ok);
+  if (!rows.length) return Swal.fire('ไม่มีข้อมูลให้บันทึก','ทุกแถวถูกข้ามเพราะข้อมูลไม่ครบ','warning');
+
+  const btn = document.getElementById('btn-import');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+  try {
+    const payload = rows.map(r => ({
+      boq_id: r.boq_id, project_id: CUR.project_id, category: r.category,
+      description: r.description, quantity: r.quantity, unit: r.unit,
+      material_cost_thb: r.material_cost_thb, labor_cost_thb: r.labor_cost_thb
+    }));
+    // แบ่งเป็นก้อนละ 100 กันคำสั่งใหญ่เกินจนถูกปฏิเสธ
+    for (let i = 0; i < payload.length; i += 100) {
+      const r = await sb.from('tb_boq_master').insert(payload.slice(i, i + 100));
+      if (r.error) throw r.error;
+    }
+    closeModal('modal-import');
+    await loadBoq(); await loadWbs(); renderAll();
+    Swal.fire({ icon:'success', title:'นำเข้า ' + rows.length + ' รายการแล้ว', timer:1600, showConfirmButton:false });
+  } catch (err) {
+    reportError('นำเข้าข้อมูลไม่สำเร็จ', err, 'insert tb_boq_master');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึกเข้าระบบ'; }
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function showTab(name) {
+  ['boq','wbs'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== name));
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+}
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') ['modal-boq','modal-wbs','modal-import'].forEach(closeModal);
+});
+['modal-boq','modal-wbs','modal-import'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
+});
+
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step, error: err });
+  const e = err || {};
+  const detail = 'ขั้นตอน: ' + (step || '-') + '\n' +
+    'code: ' + (e.code || e.name || '-') + '\n' + 'message: ' + (e.message || String(err)) +
+    (e.details ? '\ndetails: ' + e.details : '') + (e.hint ? '\nhint: ' + e.hint : '');
+  let hint = '';
+  const code = String(e.code || ''), msg = String(e.message || '');
+  if (code === '42501' || /row-level security|permission denied/i.test(msg) || e.status === 403)
+    hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ต้อง GRANT ให้ role authenticated บน tb_boq_master และ tb_wbs_tasks';
+  else if (code === '23503') hint = 'ข้อมูลอ้างอิงไม่ครบ — ตรวจว่าโครงการและผู้รับเหมามีอยู่จริง';
+  else if (code === '23514') hint = 'ค่าไม่ผ่านเงื่อนไขฐานข้อมูล — เขตพื้นที่ต้องเป็น 1 ใน 3 ค่าที่กำหนด';
+  else if (code === '42P01') hint = 'ยังไม่มีตารางนี้ในฐานข้อมูล';
+
+  Swal.fire({
+    icon:'error', title:title,
+    html: (hint ? `<p style="text-align:left;font-size:.85rem;margin-bottom:.75rem"><b>คำแนะนำ:</b> ${FTC.esc(hint)}</p>` : '') +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border:1px solid #E2E8F0;` +
+      `border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(detail)}</pre>`,
+    confirmButtonText:'คัดลอกรายละเอียด', showCancelButton:true, cancelButtonText:'ปิด',
+    confirmButtonColor:'#19335A', width:560
+  }).then(r => { if (r.isConfirmed) navigator.clipboard.writeText(detail); });
+}
+
+window.addEventListener('error', ev =>
+  reportError('เกิดข้อผิดพลาดในหน้าเว็บ', ev.error || { message: ev.message },
+              (ev.filename||'') + ':' + (ev.lineno||'')));
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ', (r && typeof r === 'object') ? r : { message:String(r) },
+              'promise ที่ไม่มีใครดัก');
+});
+
+(async function init() {
+  lucide.createIcons();
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
