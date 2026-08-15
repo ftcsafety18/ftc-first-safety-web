@@ -279,6 +279,7 @@ tailwind.config = {
       <div class="inline-block p-3 bg-white rounded-xl border-2 border-slate-200 mb-4">
         <canvas id="bind-qr" class="block"></canvas>
       </div>
+      <p id="qr-warn" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4"></p>
 
       <p class="text-xs text-slate-500 mb-4 leading-relaxed">
         ให้เจ้าตัวสแกน QR นี้ด้วยแอป LINE หรือส่งลิงก์ให้กดเปิดเอง
@@ -422,6 +423,55 @@ async function reportDbError(error) {
     html:
       `<p style="text-align:left;font-size:.85rem;margin-bottom:.5rem"><b>สาเหตุ:</b> ${FTC.esc(cause)}</p>` +
       `<p style="text-align:left;font-size:.85rem;margin-bottom:.75rem"><b>วิธีแก้:</b> ${FTC.esc(fix)}</p>` +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border:1px solid #E2E8F0;` +
+      `border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(detail)}</pre>`,
+    confirmButtonText: 'คัดลอกรายละเอียด',
+    showCancelButton: true,
+    cancelButtonText: 'ปิด',
+    confirmButtonColor: '#19335A',
+    width: 560
+  }).then(r => { if (r.isConfirmed) navigator.clipboard.writeText(detail); });
+}
+
+/* ---------------------------------------------------------------------
+ * รายงานข้อผิดพลาดแบบทั่วไป — ใช้ได้กับทั้ง error ของ Supabase และ
+ * ข้อผิดพลาดของ JavaScript เอง  ออกแบบให้ "ไม่มีทางเงียบ"
+ * ------------------------------------------------------------------- */
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step: step, error: err });
+
+  const e = err || {};
+  const detail =
+    'ขั้นตอน: ' + (step || '-') + '\n' +
+    'code: '    + (e.code || e.name || '-') + '\n' +
+    'message: ' + (e.message || String(err)) +
+    (e.details ? '\ndetails: ' + e.details : '') +
+    (e.hint    ? '\nhint: '    + e.hint    : '') +
+    (e.status  ? '\nstatus: '  + e.status  : '');
+
+  let hint = '';
+  const code = String(e.code || '');
+  const msg  = String(e.message || '');
+
+  if (code === '42501' || /row-level security|permission denied/i.test(msg) || e.status === 403) {
+    hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ตรวจ Policy และ GRANT ของตาราง tb_line_bindings ' +
+           'สำหรับ role authenticated (ดูไฟล์ fix_403_rls_staff.sql)';
+  } else if (code === '42703') {
+    hint = 'มีคอลัมน์ที่ยังไม่มีในฐานข้อมูล — ตรวจว่ารัน sprint1 PART 4 แล้วหรือยัง';
+  } else if (code === '42P01') {
+    hint = 'ไม่พบตาราง tb_line_bindings — ยังไม่ได้รัน sprint1 PART 4';
+  } else if (code === 'PGRST116') {
+    hint = 'บันทึกได้แต่อ่านค่ากลับมาไม่ได้ — role authenticated ยังไม่มีสิทธิ์ SELECT บนตารางนี้';
+  } else if (/Failed to fetch|NetworkError/i.test(msg)) {
+    hint = 'ติดต่อเซิร์ฟเวอร์ไม่ได้ — ตรวจอินเทอร์เน็ตและค่า SUPABASE_URL';
+  } else if (/is not defined/i.test(msg)) {
+    hint = 'ไลบรารีภายนอกโหลดไม่สำเร็จ — ตรวจแท็บ Network ว่ามีไฟล์ไหนขึ้นแดง';
+  }
+
+  Swal.fire({
+    icon: 'error',
+    title: title,
+    html: (hint ? `<p style="text-align:left;font-size:.85rem;margin-bottom:.75rem"><b>คำแนะนำ:</b> ${FTC.esc(hint)}</p>` : '') +
       `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border:1px solid #E2E8F0;` +
       `border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(detail)}</pre>`,
     confirmButtonText: 'คัดลอกรายละเอียด',
@@ -597,35 +647,54 @@ async function saveStaff() {
 }
 
 /* ---------------------- ผูกบัญชี LINE ---------------------- */
-async function openBind(staffId) {
-  const s = STAFF.find(x => x.staff_id === staffId);
-  if (!s) return;
 
-  Swal.fire({ title: 'กำลังสร้างลิงก์…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-  // ยกเลิกลิงก์เก่าที่ยังค้างอยู่ เพื่อให้มีลิงก์ที่ใช้ได้เพียงอันเดียว
-  await sb.from('tb_line_bindings')
-    .update({ status: 'Revoked' })
-    .eq('subject_type', 'Staff').eq('subject_id', staffId).eq('status', 'Pending');
-
-  const { data, error } = await sb.from('tb_line_bindings')
-    .insert({ subject_type: 'Staff', subject_id: staffId })
-    .select('bind_token').single();
-
+/** ปิดกล่อง Swal แล้วรอแอนิเมชันจบ ไม่งั้นกล่องถัดไปจะถูกกลืนหายไป */
+async function swalCloseThenWait() {
   Swal.close();
+  await new Promise(r => setTimeout(r, 250));
+}
 
-  if (error) {
-    Swal.fire('สร้างลิงก์ไม่สำเร็จ', 'ลองใหม่อีกครั้ง หากยังไม่ได้ให้แจ้งผู้ดูแลระบบ', 'error');
-    console.error(error);
-    return;
+async function openBind(staffId) {
+  let step = 'เริ่มต้น';
+  try {
+    const s = STAFF.find(x => x.staff_id === staffId);
+    if (!s) {
+      Swal.fire('ไม่พบข้อมูล', 'ไม่พบบุคลากรรายนี้ในหน้าจอ ลองรีเฟรชหน้าใหม่', 'warning');
+      return;
+    }
+
+    Swal.fire({ title: 'กำลังสร้างลิงก์…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    step = 'ยกเลิกลิงก์เก่า (update tb_line_bindings)';
+    const rev = await sb.from('tb_line_bindings')
+      .update({ status: 'Revoked' })
+      .eq('subject_type', 'Staff').eq('subject_id', staffId).eq('status', 'Pending');
+    if (rev.error) throw rev.error;
+
+    step = 'สร้างลิงก์ใหม่ (insert tb_line_bindings)';
+    const { data, error } = await sb.from('tb_line_bindings')
+      .insert({ subject_type: 'Staff', subject_id: staffId })
+      .select('bind_token').single();
+    if (error) throw error;
+    if (!data || !data.bind_token) {
+      throw new Error('บันทึกลิงก์แล้วแต่อ่านค่า bind_token กลับมาไม่ได้ ' +
+                      '(มักเกิดจากสิทธิ์ SELECT ของตาราง tb_line_bindings)');
+    }
+
+    step = 'ประกอบหน้าจอแสดงผล';
+    await swalCloseThenWait();
+    buildBindModal(s, data.bind_token);
+
+  } catch (err) {
+    await swalCloseThenWait();
+    reportError('สร้างลิงก์ผูกบัญชีไม่สำเร็จ', err, step);
   }
+}
 
-  const url = FTC.bindUrl(data.bind_token);
+function buildBindModal(s, token) {
+  const url = FTC.bindUrl(token);
   document.getElementById('bind-name').textContent = s.full_name;
   document.getElementById('bind-url').value = url;
-
-  QRCode.toCanvas(document.getElementById('bind-qr'), url,
-    { width: 190, margin: 1, color: { dark: '#19335A', light: '#FFFFFF' } });
 
   const subject = 'ผูกบัญชี LINE เพื่อรับแจ้งเตือนความปลอดภัย — FTC First Safety';
   const body =
@@ -645,8 +714,38 @@ ${url}
     '?subject=' + encodeURIComponent(subject) +
     '&body=' + encodeURIComponent(body);
 
+  // เปิดหน้าต่างก่อนเสมอ แล้วค่อยวาด QR
+  // ถ้าวาด QR ไม่ได้ อย่างน้อยผู้ใช้ยังได้ลิงก์ไปใช้งานต่อ
   openModal('modal-bind');
   lucide.createIcons();
+  drawQr(url);
+}
+
+/** วาด QR แยกออกมา ล้มเหลวได้โดยไม่กระทบหน้าต่างที่เปิดไปแล้ว */
+function drawQr(url) {
+  const canvas = document.getElementById('bind-qr');
+  const warn   = document.getElementById('qr-warn');
+  warn.classList.add('hidden');
+
+  if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
+    canvas.style.display = 'none';
+    warn.textContent = 'สร้างภาพ QR ไม่ได้ (โหลดไลบรารี qrcode ไม่สำเร็จ) — ใช้ปุ่มคัดลอกลิงก์ด้านล่างแทนได้';
+    warn.classList.remove('hidden');
+    console.warn('[FTC] QRCode library not available');
+    return;
+  }
+
+  canvas.style.display = 'block';
+  QRCode.toCanvas(canvas, url,
+    { width: 190, margin: 1, color: { dark: '#19335A', light: '#FFFFFF' } },
+    function (err) {
+      if (err) {
+        canvas.style.display = 'none';
+        warn.textContent = 'วาดภาพ QR ไม่สำเร็จ — ใช้ปุ่มคัดลอกลิงก์ด้านล่างแทนได้';
+        warn.classList.remove('hidden');
+        console.error('[FTC] QR draw error:', err);
+      }
+    });
 }
 
 function copyBindUrl() {
@@ -695,6 +794,21 @@ document.addEventListener('keydown', e => {
   document.getElementById(id).addEventListener('click', e => {
     if (e.target.id === id) closeModal(id);
   });
+});
+
+/* ---------------------------------------------------------------------
+ * ตาข่ายกันข้อผิดพลาดหลุด — ถ้ามี error ใดที่ไม่มีใครดัก จะเด้งให้เห็นเสมอ
+ * ป้องกันอาการ "กดปุ่มแล้วเงียบ" ไม่ให้เกิดขึ้นอีก
+ * ------------------------------------------------------------------- */
+window.addEventListener('error', function (ev) {
+  reportError('เกิดข้อผิดพลาดในหน้าเว็บ', ev.error || { message: ev.message },
+              (ev.filename || '') + ':' + (ev.lineno || ''));
+});
+window.addEventListener('unhandledrejection', function (ev) {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ',
+              (r && typeof r === 'object') ? r : { message: String(r) },
+              'promise ที่ไม่มีใครดัก');
 });
 
 /* ---------------------- เริ่มทำงาน ---------------------- */
