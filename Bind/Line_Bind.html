@@ -1,1 +1,212 @@
 
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ผูกบัญชี LINE | FTC First Safety</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../shared/config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#19335A', 'navy-light':'#254B82', orange:'#DB5A24' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+<style>body{font-family:'Sarabun',sans-serif;background:#F1F4F8;}</style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-5 py-10">
+
+<div class="w-full max-w-sm">
+
+  <!-- กำลังทำงาน -->
+  <div id="v-loading" class="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 text-center">
+    <div class="w-14 h-14 rounded-full border-4 border-slate-200 border-t-brand-navy animate-spin mx-auto mb-5"></div>
+    <p id="loading-text" class="text-sm font-semibold text-slate-600">กำลังเชื่อมต่อกับ LINE…</p>
+  </div>
+
+  <!-- สำเร็จ -->
+  <div id="v-success" class="hidden bg-white rounded-2xl border border-slate-200 shadow-lg p-8 text-center">
+    <div class="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/30">
+      <i data-lucide="check" class="w-10 h-10 text-white"></i>
+    </div>
+    <h1 class="text-xl font-bold text-brand-navy mb-2">ผูกบัญชีเรียบร้อย</h1>
+    <p id="success-name" class="text-sm text-slate-600 mb-6"></p>
+
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left mb-6">
+      <p class="text-xs font-bold text-brand-navy mb-2">จากนี้ท่านจะได้รับข้อความจากระบบเมื่อ</p>
+      <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4">
+        <li>มีคำขออนุมัติใบอนุญาตทำงานรอการพิจารณา</li>
+        <li>ใบรับรองเครื่องมือหรือเอกสารใกล้หมดอายุ</li>
+        <li>เกิดเหตุฉุกเฉินหรือมีการกดสัญญาณ SOS ในพื้นที่</li>
+      </ul>
+    </div>
+
+    <button onclick="closeApp()"
+      class="w-full py-3.5 rounded-xl bg-brand-navy text-white text-sm font-bold hover:bg-brand-navy-light transition">
+      ปิดหน้าต่าง
+    </button>
+  </div>
+
+  <!-- ผิดพลาด -->
+  <div id="v-error" class="hidden bg-white rounded-2xl border border-slate-200 shadow-lg p-8 text-center">
+    <div class="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-5">
+      <i data-lucide="alert-triangle" class="w-9 h-9 text-amber-600"></i>
+    </div>
+    <h1 id="err-title" class="text-lg font-bold text-brand-navy mb-2">ผูกบัญชีไม่สำเร็จ</h1>
+    <p id="err-msg" class="text-sm text-slate-600 leading-relaxed mb-6"></p>
+    <button onclick="closeApp()"
+      class="w-full py-3.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition">
+      ปิดหน้าต่าง
+    </button>
+  </div>
+
+  <p class="text-center text-[11px] text-slate-400 mt-5">FTC First Safety — ระบบความปลอดภัยแบบไร้กระดาษ</p>
+</div>
+
+<script>
+const sb = FTC.supabase();
+
+/* ตารางปลายทางของแต่ละกลุ่มผู้ใช้ */
+const SUBJECT_MAP = {
+  Staff:   { table: 'tb_internal_staff',   key: 'staff_id',   name: 'full_name' },
+  Vendor:  { table: 'tb_vendors',          key: 'vendor_id',  name: 'vendor_name' },
+  Contact: { table: 'tb_project_contacts', key: 'contact_id', name: 'full_name' }
+};
+
+function show(view) {
+  ['v-loading','v-success','v-error'].forEach(id =>
+    document.getElementById(id).classList.toggle('hidden', id !== view));
+  lucide.createIcons();
+}
+
+function fail(title, msg) {
+  document.getElementById('err-title').textContent = title;
+  document.getElementById('err-msg').textContent = msg;
+  show('v-error');
+}
+
+function setLoading(text) {
+  document.getElementById('loading-text').textContent = text;
+}
+
+function closeApp() {
+  try {
+    if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+      liff.closeWindow();
+      return;
+    }
+  } catch (e) { /* ไม่ได้อยู่ในแอป LINE */ }
+  window.location.href = '../index.html';
+}
+
+async function run() {
+  lucide.createIcons();
+
+  const token = new URLSearchParams(window.location.search).get('t');
+  if (!token) {
+    fail('ลิงก์ไม่สมบูรณ์',
+         'ลิงก์ที่เปิดมาไม่มีรหัสยืนยัน กรุณาขอลิงก์ใหม่จากผู้ดูแลระบบ');
+    return;
+  }
+
+  /* ---- 1. เชื่อมต่อ LINE ---- */
+  let profile;
+  try {
+    await liff.init({ liffId: FTC.LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: window.location.href });
+      return;   // หน้าจะโหลดใหม่หลังล็อกอิน
+    }
+    setLoading('กำลังอ่านข้อมูลบัญชี…');
+    profile = await liff.getProfile();
+  } catch (e) {
+    console.error('LIFF error:', e);
+    fail('เปิดผ่านแอป LINE เท่านั้น',
+         'หน้านี้ต้องเปิดจากแอป LINE บนมือถือ กรุณากดลิงก์อีกครั้งจากในแอป LINE');
+    return;
+  }
+
+  /* ---- 2. ตรวจสอบรหัสยืนยัน ---- */
+  setLoading('กำลังตรวจสอบรหัสยืนยัน…');
+  const { data: binding, error: e1 } = await sb
+    .from('tb_line_bindings')
+    .select('binding_id, subject_type, subject_id, status, expires_at')
+    .eq('bind_token', token)
+    .maybeSingle();
+
+  if (e1) {
+    console.error(e1);
+    fail('เชื่อมต่อระบบไม่ได้', 'ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่');
+    return;
+  }
+  if (!binding) {
+    fail('ไม่พบรหัสยืนยันนี้', 'ลิงก์อาจถูกยกเลิกไปแล้ว กรุณาขอลิงก์ใหม่จากผู้ดูแลระบบ');
+    return;
+  }
+  if (binding.status === 'Bound') {
+    fail('ลิงก์นี้ถูกใช้ไปแล้ว', 'บัญชีนี้ผูกเรียบร้อยแล้ว หากต้องการเปลี่ยนบัญชีกรุณาขอลิงก์ใหม่');
+    return;
+  }
+  if (binding.status !== 'Pending') {
+    fail('ลิงก์ถูกยกเลิกแล้ว', 'กรุณาขอลิงก์ใหม่จากผู้ดูแลระบบ');
+    return;
+  }
+  if (new Date(binding.expires_at) < new Date()) {
+    await sb.from('tb_line_bindings').update({ status: 'Expired' }).eq('binding_id', binding.binding_id);
+    fail('ลิงก์หมดอายุแล้ว', 'ลิงก์มีอายุ 30 วัน กรุณาขอลิงก์ใหม่จากผู้ดูแลระบบ');
+    return;
+  }
+
+  const map = SUBJECT_MAP[binding.subject_type];
+  if (!map) {
+    fail('ลิงก์ไม่ถูกต้อง', 'ประเภทข้อมูลในลิงก์ไม่รองรับ กรุณาแจ้งผู้ดูแลระบบ');
+    return;
+  }
+
+  /* ---- 3. เขียนรหัสผู้ใช้ LINE ลงระบบ ---- */
+  setLoading('กำลังบันทึกข้อมูล…');
+  const upd = await sb.from(map.table)
+    .update({ line_uid: profile.userId })
+    .eq(map.key, binding.subject_id)
+    .select(map.name)
+    .maybeSingle();
+
+  if (upd.error) {
+    console.error(upd.error);
+    if (upd.error.code === '23505') {
+      fail('บัญชี LINE นี้ถูกใช้แล้ว',
+           'บัญชี LINE ที่ท่านใช้อยู่ถูกผูกกับผู้ใช้รายอื่นในระบบแล้ว กรุณาแจ้งผู้ดูแลระบบเพื่อตรวจสอบ');
+    } else {
+      fail('บันทึกไม่สำเร็จ', 'ระบบบันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+    }
+    return;
+  }
+  if (!upd.data) {
+    fail('ไม่พบข้อมูลผู้ใช้', 'ไม่พบรายชื่อที่ผูกกับลิงก์นี้ในระบบ กรุณาแจ้งผู้ดูแลระบบ');
+    return;
+  }
+
+  await sb.from('tb_line_bindings').update({
+    line_uid:     profile.userId,
+    display_name: profile.displayName,
+    status:       'Bound',
+    bound_at:     new Date().toISOString()
+  }).eq('binding_id', binding.binding_id);
+
+  /* ---- 4. สำเร็จ ---- */
+  document.getElementById('success-name').textContent =
+    (upd.data[map.name] || profile.displayName) + ' พร้อมรับการแจ้งเตือนจากระบบแล้ว';
+  show('v-success');
+}
+
+run();
+</script>
+</body>
+</html>
