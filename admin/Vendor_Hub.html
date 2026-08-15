@@ -114,20 +114,8 @@ tailwind.config = { theme: { extend: {
       </div>
     </section>
 
-    <!-- ---- แจ้งเตือนเพดานภาษี ---- -->
-    <div id="tax-alert" class="hidden mb-5 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5">
-      <div class="flex items-start gap-3">
-        <i data-lucide="triangle-alert" class="w-6 h-6 text-amber-600 shrink-0 mt-0.5"></i>
-        <div class="min-w-0">
-          <p class="text-sm font-bold text-amber-900 mb-1">มีบุคคลธรรมดาใกล้ถึงเพดานภาษี 1,500,000 บาท</p>
-          <p id="tax-alert-list" class="text-xs text-amber-800 leading-relaxed"></p>
-          <p class="text-[11px] text-amber-700 mt-2">
-            เมื่อยอดจ่ายสะสมถึงเกณฑ์ ผู้รับเหมาต้องจดทะเบียนภาษีมูลค่าเพิ่ม
-            แนะนำให้ประสานฝ่ายจัดซื้อก่อนออกใบสั่งจ้างเพิ่ม
-          </p>
-        </div>
-      </div>
-    </div>
+    <!-- ---- แถบเตือนแบบกดกรองได้ ---- -->
+    <div id="alert-row" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5"></div>
 
     <!-- ---- ตัวกรอง ---- -->
     <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -140,10 +128,15 @@ tailwind.config = { theme: { extend: {
         <option value="Company">นิติบุคคล</option>
         <option value="Personal">บุคคลธรรมดา</option>
       </select>
-      <select id="f-doc" class="fld w-auto min-w-[180px]" onchange="render()">
-        <option value="">เอกสารทุกสถานะ</option>
-        <option value="ok">เอกสารครบ</option>
-        <option value="missing">เอกสารไม่ครบ</option>
+      <select id="f-doc" class="fld w-auto min-w-[230px]" onchange="render()">
+        <option value="">ทุกสถานะ</option>
+        <option value="tax_over">บุคคลธรรมดา ยอดทะลุ 1.5 ล้าน</option>
+        <option value="tax_near">บุคคลธรรมดา ใกล้เพดาน 1.2-1.5 ล้าน</option>
+        <option value="no_kt20">นิติบุคคล ขาดเอกสาร กท.20</option>
+        <option value="no_agree">บุคคลธรรมดา ยังไม่ลงนามข้อตกลง</option>
+        <option value="no_line">ยังไม่ผูกบัญชี LINE</option>
+        <option value="blacklist">ติดบัญชีดำ</option>
+        <option value="ok">เอกสารครบถ้วน</option>
       </select>
       <button onclick="openEdit(null)"
         class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-white text-sm font-bold
@@ -481,7 +474,7 @@ async function loadVendors() {
             'kt20_uploaded, kt20_file_url, kt20_expiry_date, e_agreement_signed, e_agreement_at, ' +
             'accum_billing_thb, is_blacklisted, blacklist_reason, contact_person, contact_email, ' +
             'contact_phone, line_display_id, line_uid, invite_token, invite_status, ' +
-            'worker_welfare, welfare_note, agreement_version, agreement_channel')
+            'worker_welfare, welfare_note, agreement_version, agreement_channel, vendor_documents')
     .order('vendor_id');
 
   if (error) { reportError('โหลดข้อมูลผู้รับเหมาไม่สำเร็จ', error, 'select tb_vendors'); return; }
@@ -502,6 +495,35 @@ function money(n) {
   return Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 0 });
 }
 
+/** เกรดผู้รับเหมาที่นำเข้ามาจากทะเบียนเดิม เก็บอยู่ใน vendor_documents */
+function gradeOf(v) {
+  try {
+    const d = typeof v.vendor_documents === 'string'
+      ? JSON.parse(v.vendor_documents) : v.vendor_documents;
+    return d && d.legacy_grade ? String(d.legacy_grade).trim().toUpperCase().slice(0,1) : '';
+  } catch (e) { return ''; }
+}
+
+/** เงื่อนไขของตัวกรองแต่ละแบบ รวมไว้ที่เดียวเพื่อให้แถบเตือนกับ dropdown ใช้ตรรกะเดียวกัน */
+const FILTERS = {
+  tax_over:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD,
+  tax_near:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_WARN_AT
+                                 && Number(v.accum_billing_thb || 0) <  TAX_THRESHOLD,
+  no_kt20:   v => !isPersonal(v) && !v.kt20_uploaded,
+  no_agree:  v => isPersonal(v) && !v.e_agreement_signed,
+  no_line:   v => !v.line_uid,
+  blacklist: v => !!v.is_blacklisted,
+  ok:        v => docOk(v) && !!v.line_uid && !v.is_blacklisted
+};
+
+/** กดแถบเตือนแล้วให้ตารางกรองตามนั้นทันที กดซ้ำเพื่อยกเลิก */
+function quickFilter(key) {
+  const sel = document.getElementById('f-doc');
+  sel.value = (sel.value === key) ? '' : key;
+  render();
+  document.getElementById('f-doc').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
 /* ---------------------- แสดงผล ---------------------- */
 function render() {
   const q   = document.getElementById('q').value.trim().toLowerCase();
@@ -518,22 +540,42 @@ function render() {
   document.getElementById('k-agree').textContent    = personals.filter(v => v.e_agreement_signed).length;
   document.getElementById('k-pending').textContent  = VENDORS.filter(v => !v.line_uid).length;
 
-  // เตือนเพดานภาษี
-  const nearLimit = personals.filter(v => Number(v.accum_billing_thb || 0) >= TAX_WARN_AT);
-  const alertBox  = document.getElementById('tax-alert');
-  if (nearLimit.length) {
-    document.getElementById('tax-alert-list').textContent =
-      nearLimit.map(v => `${v.vendor_name} (${money(v.accum_billing_thb)} บาท)`).join(' · ');
-    alertBox.classList.remove('hidden');
-  } else {
-    alertBox.classList.add('hidden');
-  }
+  // ---- แถบเตือนแบบกดกรองได้ ----
+  const active = document.getElementById('f-doc').value;
+  const CARDS = [
+    { key:'tax_over',  label:'ยอดทะลุ 1.5 ล้าน',      sub:'บุคคลธรรมดา ต้องจดทะเบียนภาษีมูลค่าเพิ่ม', tone:'red' },
+    { key:'no_kt20',   label:'ขาดเอกสาร กท.20',        sub:'นิติบุคคลที่ยังไม่ส่งเอกสาร',              tone:'amber' },
+    { key:'no_agree',  label:'ยังไม่ลงนามข้อตกลง',      sub:'บุคคลธรรมดาที่ยังไม่ยอมรับเงื่อนไข',        tone:'amber' },
+    { key:'no_line',   label:'ยังไม่ผูกบัญชี LINE',     sub:'ส่งแจ้งเตือนถึงไม่ได้',                    tone:'slate' }
+  ];
+  const TONE = {
+    red:   ['border-red-300 bg-red-50 hover:bg-red-100',       'text-red-700',   'text-red-900'],
+    amber: ['border-amber-300 bg-amber-50 hover:bg-amber-100', 'text-amber-700', 'text-amber-900'],
+    slate: ['border-slate-300 bg-slate-50 hover:bg-slate-100', 'text-slate-500', 'text-slate-700']
+  };
+
+  document.getElementById('alert-row').innerHTML = CARDS.map(c => {
+    const n = VENDORS.filter(FILTERS[c.key]).length;
+    if (!n) return '';
+    const [box, sub, num] = TONE[c.tone];
+    const on = active === c.key;
+    return `<button onclick="quickFilter('${c.key}')" type="button"
+      class="text-left rounded-2xl border-2 p-4 transition ${box} ${on ? 'ring-2 ring-brand-navy ring-offset-1' : ''}">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="text-sm font-bold ${num} leading-tight">${c.label}</p>
+          <p class="text-[11px] ${sub} mt-0.5 leading-snug">${c.sub}</p>
+        </div>
+        <span class="text-2xl font-bold ${num} shrink-0">${n}</span>
+      </div>
+      <p class="text-[10px] ${sub} mt-2 font-semibold">${on ? 'กำลังกรองอยู่ · กดเพื่อยกเลิก' : 'กดเพื่อดูรายชื่อ'}</p>
+    </button>`;
+  }).join('');
 
   const list = VENDORS.filter(v => {
     if (fe === 'Company'  && isPersonal(v)) return false;
     if (fe === 'Personal' && !isPersonal(v)) return false;
-    if (fd === 'ok'      && !docOk(v)) return false;
-    if (fd === 'missing' &&  docOk(v)) return false;
+    if (fd && FILTERS[fd] && !FILTERS[fd](v)) return false;
     if (!q) return true;
     return [v.vendor_name, v.vendor_id, v.tax_id, v.contact_person]
       .some(x => (x || '').toLowerCase().includes(q));
@@ -595,9 +637,18 @@ function render() {
     const blackChip = v.is_blacklisted
       ? `<span class="chip bg-red-600 text-white ml-1">บัญชีดำ</span>` : '';
 
+    const g = gradeOf(v);
+    const GRADE_TONE = { A:'bg-emerald-100 text-emerald-800 border-emerald-300',
+                         B:'bg-blue-100 text-blue-800 border-blue-300',
+                         C:'bg-amber-100 text-amber-800 border-amber-300',
+                         D:'bg-red-100 text-red-800 border-red-300' };
+    const gradeChip = g
+      ? `<span class="chip border ${GRADE_TONE[g] || 'bg-slate-100 text-slate-600 border-slate-300'} ml-1.5"
+           title="เกรดจากทะเบียนผู้รับเหมาเดิม">เกรด ${e(g)}</span>` : '';
+
     return `<tr>
       <td class="px-4 py-3">
-        <p class="font-semibold text-slate-800">${e(v.vendor_name)}</p>
+        <p class="font-semibold text-slate-800">${e(v.vendor_name)}${gradeChip}</p>
         <p class="text-[11px] font-mono text-slate-400">${e(v.vendor_id)}${v.tax_id ? ' · ' + e(v.tax_id) : ''}</p>
       </td>
       <td class="px-4 py-3">${entityChip}</td>
