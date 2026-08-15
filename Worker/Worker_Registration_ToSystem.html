@@ -300,10 +300,13 @@
                 <!-- แจ้งเตือนเฉพาะกรณีใช้งานในแอป LINE บน Android (โหมดสำรอง) -->
                 <div id="line-camera-note" class="hidden rounded-xl bg-amber-50 border border-amber-300 p-4 mb-6 flex items-start gap-3">
                     <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
-                    <div class="text-xs text-amber-900 leading-relaxed">
+                    <div class="text-xs text-amber-900 leading-relaxed w-full">
                         <p class="font-bold mb-1">ท่านกำลังใช้งานผ่านแอป LINE บน Android</p>
-                        <p>ถ้ากด "เปิดกล้องถ่ายภาพ" แล้วกล้องไม่ขึ้น ให้ใช้ปุ่ม <b>"เลือกรูปจากแฟ้ม"</b> แทน (เลือก "กล้อง/Camera" ในหน้าต่างที่ขึ้นมาได้)
-                        หรือกด <button type="button" onclick="openInExternalBrowser()" class="underline font-bold text-brand-navy">เปิดในเบราว์เซอร์ภายนอก</button> เพื่อใช้กล้องได้เต็มรูปแบบ</p>
+                        <p>ปุ่ม "เปิดกล้องถ่ายภาพ" จะเปิด<b>กล้องถ่ายสดในหน้าเว็บ</b>ให้ (แอป LINE ไม่ยอมให้เรียกแอปกล้องของเครื่องโดยตรง)
+                        หากกล้องไม่ขึ้นหรือภาพไม่ชัดพอ แนะนำให้เปิดในเบราว์เซอร์ภายนอกครับ</p>
+                        <button type="button" onclick="openInExternalBrowser()" class="mt-3 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-navy text-white text-xs font-bold rounded-lg hover:bg-brand-navy-light transition-all">
+                            <i data-lucide="external-link" class="w-4 h-4"></i> เปิดในเบราว์เซอร์ภายนอก (แนะนำ)
+                        </button>
                     </div>
                 </div>
 
@@ -414,6 +417,41 @@
 
         </div>
     </main>
+
+    <!-- 📷 กล้องถ่ายสดในหน้าเว็บ (getUserMedia)
+         ใช้เมื่ออยู่ในแอป LINE บน Android เพราะ WebView ของ LINE ไม่สนใจ capture="environment"
+         แล้วไปเปิดแกลเลอรีให้แทน — ตัวนี้เป็นกล้องของหน้าเว็บเอง ไม่ผ่าน file chooser ของ LINE -->
+    <div id="live-camera-modal" class="hidden fixed inset-0 z-50 bg-black flex-col items-center justify-between">
+        <div class="w-full flex items-center justify-between px-4 py-3 bg-black/80 shrink-0">
+            <p id="live-cam-title" class="text-white text-sm font-bold">ถ่ายภาพเอกสาร</p>
+            <button type="button" onclick="closeLiveCamera()" class="text-white/80 hover:text-white p-1">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div class="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+            <video id="live-cam-video" class="w-full h-full object-contain bg-black" autoplay playsinline muted webkit-playsinline></video>
+            <!-- กรอบช่วยเล็งให้วางบัตรให้เต็มกรอบ -->
+            <div class="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+                <div class="w-full max-w-md aspect-[1.586/1] border-2 border-white/70 rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]"></div>
+            </div>
+            <p class="absolute bottom-3 left-0 right-0 text-center text-white/80 text-[11px] px-4">วางเอกสารให้อยู่ในกรอบ แล้วกดปุ่มถ่ายภาพ</p>
+        </div>
+
+        <div class="w-full bg-black/85 px-6 py-5 shrink-0 flex flex-col items-center gap-4">
+            <div class="w-full flex items-center justify-between max-w-sm">
+                <button type="button" onclick="switchLiveCamera()" class="flex flex-col items-center gap-1 text-white/80 hover:text-white text-[11px] w-20">
+                    <i data-lucide="refresh-cw" class="w-6 h-6"></i> สลับกล้อง
+                </button>
+                <button type="button" id="live-cam-shutter" onclick="captureLivePhoto()" aria-label="ถ่ายภาพ"
+                        class="w-[72px] h-[72px] rounded-full bg-white border-4 border-brand-orange active:scale-95 transition-transform shrink-0"></button>
+                <button type="button" onclick="useFilePickerInstead()" class="flex flex-col items-center gap-1 text-white/80 hover:text-white text-[11px] w-20">
+                    <i data-lucide="folder-open" class="w-6 h-6"></i> เลือกจากไฟล์
+                </button>
+            </div>
+        </div>
+        <canvas id="live-cam-canvas" class="hidden"></canvas>
+    </div>
 
     <script>
         var SUPABASE_URL = 'https://ancwqgaaqliandzdzphg.supabase.co';
@@ -611,17 +649,232 @@
             }
         }
 
-        // ปุ่มกล้อง: input มี capture="environment" → Android/iOS จะเรียกกล้องหลังโดยตรง
-        // ถ้าอยู่ในแอป LINE บน Android แล้วกล้องไม่ตอบสนอง จะเสนอทางเลือกให้อัตโนมัติ
+        /* ปุ่มกล้อง
+           - เบราว์เซอร์ปกติ / iOS: ใช้ <input capture="environment"> ตามเดิม
+             (เรียกแอปกล้องของเครื่อง ได้ภาพความละเอียดเต็ม คุณภาพดีที่สุด)
+           - LINE บน Android: WebView ของ LINE ไม่สนใจ capture แล้วเปิด photo picker/แกลเลอรีแทน
+             ซึ่งหน้าเว็บสั่งไม่ได้ → เปิด "กล้องสดในหน้าเว็บ" ด้วย getUserMedia แทน
+             เพื่อให้ได้การถ่ายสดจริง ไม่ใช่การเลือกรูปเก่า */
         function openCameraPicker(inputId) {
             var input = document.getElementById(inputId);
             if (!input) return;
+
+            if (IS_LINE_ANDROID && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                openLiveCamera(inputId);
+                return;
+            }
 
             if (!triggerFileInput(inputId)) {
                 offerCameraFallback(inputId);
                 return;
             }
             if (IS_LINE_ANDROID) watchCameraResult(input);
+        }
+
+        /* ===== กล้องถ่ายสดในหน้าเว็บ (getUserMedia) ===== */
+        var liveCamStream = null;
+        var liveCamTarget = null;
+        var liveCamFacing = 'environment';
+
+        async function openLiveCamera(cameraInputId) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                offerCameraFallback(cameraInputId);
+                return;
+            }
+
+            liveCamTarget = cameraInputId;
+            liveCamFacing = 'environment';
+
+            var modal = document.getElementById('live-camera-modal');
+            var title = document.getElementById('live-cam-title');
+            if (title) title.innerText = (cameraInputId === 'file-main-camera')
+                ? 'ถ่ายภาพบัตรประชาชน / พาสปอร์ต / บัตรสีชมพู'
+                : 'ถ่ายภาพเอกสารความปลอดภัย';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            var err = await startLiveCamStream(liveCamFacing);
+            if (err) {
+                closeLiveCamera();
+                handleLiveCamError(err, cameraInputId);
+            }
+        }
+
+        // คืน null ถ้าสำเร็จ, คืน error object ถ้าไม่สำเร็จ
+        async function startLiveCamStream(facing) {
+            stopLiveCamStream();
+            var video = document.getElementById('live-cam-video');
+
+            // ไล่จากละเอียดสุดไปหลวมสุด — ห้ามใช้ exact เพราะเครื่องที่ไม่มีกล้องหลัง
+            // จะโยน OverconstrainedError ทันที
+            var attempts = [
+                { video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
+                { video: { facingMode: { ideal: facing } }, audio: false },
+                { video: true, audio: false }
+            ];
+
+            var lastErr = null;
+            for (var i = 0; i < attempts.length; i++) {
+                try {
+                    liveCamStream = await navigator.mediaDevices.getUserMedia(attempts[i]);
+                    video.srcObject = liveCamStream;
+                    video.muted = true;
+                    video.setAttribute('playsinline', '');
+                    try {
+                        await video.play();
+                    } catch (playErr) {
+                        // บาง WebView ต้องรอ metadata ก่อนถึงจะ play ได้ — ไม่ถือว่าล้มเหลว
+                        console.warn('video.play() failed, retrying on loadedmetadata:', playErr);
+                        video.addEventListener('loadedmetadata', function once() {
+                            video.removeEventListener('loadedmetadata', once);
+                            video.play().catch(function (e2) { console.warn('replay failed:', e2); });
+                        });
+                    }
+                    return null;
+                } catch (e) {
+                    lastErr = e;
+                    console.error('getUserMedia attempt ' + i + ' failed:', e && e.name, e);
+                }
+            }
+            return lastErr || new Error('getUserMedia failed');
+        }
+
+        function stopLiveCamStream() {
+            if (liveCamStream) {
+                try {
+                    liveCamStream.getTracks().forEach(function (t) { t.stop(); });
+                } catch (e) {
+                    console.error('stop tracks failed:', e);
+                }
+                liveCamStream = null;
+            }
+            var video = document.getElementById('live-cam-video');
+            if (video) {
+                try { video.pause(); } catch (e) {}
+                video.srcObject = null;
+            }
+        }
+
+        function closeLiveCamera() {
+            stopLiveCamStream();
+            var modal = document.getElementById('live-camera-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        async function switchLiveCamera() {
+            liveCamFacing = (liveCamFacing === 'environment') ? 'user' : 'environment';
+            var err = await startLiveCamStream(liveCamFacing);
+            if (err) {
+                // สลับไม่ได้ก็กลับไปใช้กล้องเดิม
+                liveCamFacing = (liveCamFacing === 'environment') ? 'user' : 'environment';
+                await startLiveCamStream(liveCamFacing);
+                Swal.fire('สลับกล้องไม่ได้', 'อุปกรณ์นี้มีกล้องให้ใช้งานตัวเดียวครับ', 'info');
+            }
+        }
+
+        // ปุ่ม "เลือกจากไฟล์" ในหน้ากล้องสด — เผื่อผู้ใช้อยากใช้รูปที่ถ่ายไว้แล้ว
+        function useFilePickerInstead() {
+            var target = liveCamTarget;
+            closeLiveCamera();
+            if (target) triggerFileInput(String(target).replace('-camera', '-upload'));
+        }
+
+        function captureLivePhoto() {
+            var video = document.getElementById('live-cam-video');
+            if (!video || !video.videoWidth || !video.videoHeight) {
+                Swal.fire('กล้องยังไม่พร้อม', 'กรุณารอสักครู่ให้ภาพขึ้นก่อน แล้วกดถ่ายอีกครั้งครับ', 'info');
+                return;
+            }
+
+            var canvas = document.getElementById('live-cam-canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            var target = liveCamTarget;
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    Swal.fire('ถ่ายภาพไม่สำเร็จ', 'กรุณาลองใหม่อีกครั้งครับ', 'error');
+                    return;
+                }
+                closeLiveCamera();
+                deliverCapturedFile(target, blobToNamedFile(blob));
+            }, 'image/jpeg', 0.92);
+        }
+
+        // compressImage() อ่าน file.name จึงต้องได้ File ที่มีชื่อจริง
+        function blobToNamedFile(blob) {
+            var name = 'camera_' + Date.now() + '.jpg';
+            try {
+                return new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() });
+            } catch (e) {
+                console.warn('File constructor unavailable, using blob:', e);
+                blob.name = name;
+                return blob;
+            }
+        }
+
+        // ส่งไฟล์ที่ถ่ายได้เข้าสู่ state เดิมของฟอร์ม (ไม่แตะ flow อัปโหลด/Supabase)
+        function deliverCapturedFile(cameraInputId, file) {
+            dismissCameraFallback();
+            var uploadInputId = String(cameraInputId).replace('-camera', '-upload');
+            try {
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                var up = document.getElementById(uploadInputId);
+                if (up) up.files = dt.files;
+            } catch (e) {}
+
+            if (cameraInputId === 'file-main-camera') {
+                capturedMainFile = file;
+                showMainSuccessUI(file.name);
+                return;
+            }
+            var m = String(cameraInputId).match(/file-wp-camera-(\d+)/);
+            if (m) {
+                var id = parseInt(m[1], 10);
+                capturedExtraFiles[id] = file;
+                showExtraSuccessUI(id, file.name);
+            }
+        }
+
+        function handleLiveCamError(err, cameraInputId) {
+            var name = (err && err.name) || '';
+            var msg = 'ไม่สามารถเปิดกล้องได้';
+            if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+                msg = 'ยังไม่ได้รับสิทธิ์ใช้กล้อง<br>กรุณาอนุญาตให้แอป LINE เข้าถึงกล้องในตั้งค่าเครื่อง (ตั้งค่า → แอป → LINE → สิทธิ์ → กล้อง) แล้วลองใหม่ครับ';
+            } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+                msg = 'ไม่พบกล้องบนอุปกรณ์นี้ครับ';
+            } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+                msg = 'กล้องกำลังถูกใช้งานโดยแอปอื่นอยู่<br>กรุณาปิดแอปที่ใช้กล้องแล้วลองใหม่ครับ';
+            } else if (name === 'OverconstrainedError') {
+                msg = 'อุปกรณ์นี้ไม่รองรับกล้องรูปแบบที่ระบบต้องการครับ';
+            } else if (name === 'NotSupportedError' || name === 'SecurityError') {
+                msg = 'เบราว์เซอร์ในแอป LINE ไม่อนุญาตให้ใช้กล้องในหน้านี้ครับ';
+            }
+
+            cameraFallbackOpen = true;
+            Swal.fire({
+                icon: 'warning',
+                title: 'เปิดกล้องในแอป LINE ไม่ได้',
+                html: msg + '<br><br><b>วิธีที่ใช้ได้แน่นอน:</b> เปิดหน้านี้ในเบราว์เซอร์ภายนอก (Chrome) แล้วถ่ายภาพ',
+                confirmButtonText: 'เปิดในเบราว์เซอร์ภายนอก',
+                confirmButtonColor: '#19335A',
+                showCancelButton: true,
+                cancelButtonText: 'เลือกรูปจากไฟล์แทน'
+            }).then(function (res) {
+                cameraFallbackOpen = false;
+                if (res.isConfirmed) {
+                    openInExternalBrowser();
+                } else if (res.dismiss === Swal.DismissReason.cancel) {
+                    triggerFileInput(String(cameraInputId).replace('-camera', '-upload'));
+                }
+            });
         }
 
         function watchCameraResult(input) {
