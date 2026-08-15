@@ -82,7 +82,8 @@
       <div class="grid grid-cols-2 gap-4" id="menu-grid"></div>
 
       <!-- ===== Bottom Gateway Button ===== -->
-      <button type="button" onclick="openModule('ftc_admin_home.html')"
+      <!-- เจนนี่ปรับแก้ Path ตรง onclick ให้วิ่งไปหา Admin/ftc_admin_home.html เรียบร้อยแล้วค่ะ -->
+      <button type="button" onclick="openModule('Admin/ftc_admin_home.html')"
         class="group mt-6 flex w-full items-center gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-navy to-navy-dark p-5 text-left shadow-xl shadow-navy/30 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-navy/40 active:translate-y-0 active:scale-[0.98]">
         <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
           <i data-lucide="settings" class="h-7 w-7 text-white"></i>
@@ -103,7 +104,7 @@
   <script>
     // Data Structure for Menus
     const menuItems = [
-      { num: '01', icon: 'user-check',      th: 'ลงทะเบียนพนักงานใหม่และออกบัตร',                    en: 'New Worker Registration & Badging', url: 'Worker/Worker_Registration_ToSystem.html' },
+      { num: '01', icon: 'user-check',    th: 'ลงทะเบียนพนักงานใหม่และออกบัตร',                    en: 'New Worker Registration & Badging', url: 'Worker/Worker_Registration_ToSystem.html' },
       { num: '02', icon: 'graduation-cap',  th: 'อบรมความปลอดภัยก่อนเข้าพื้นที่',                      en: 'Safety Induction Training', url: 'Training/Training_Menu.html' },
       { num: '03', icon: 'clipboard-check', th: 'ขอเปิดใบอนุญาตเข้าทำงาน',                          en: 'Work Request (PTW)', url: 'Permit/Permit_Request.html' },
       { num: '04', icon: 'users',           th: 'ชี้แจงความปลอดภัยก่อนทำงาน / ลงเวลาเข้างาน',        en: 'Toolbox Talk (TBT) & Clock-In', disabled: true },
