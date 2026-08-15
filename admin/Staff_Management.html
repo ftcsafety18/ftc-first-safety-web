@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -371,12 +370,66 @@ async function loadStaff() {
     .order('full_name');
 
   if (error) {
-    Swal.fire('โหลดข้อมูลไม่สำเร็จ', 'ตรวจสอบการเชื่อมต่อฐานข้อมูลแล้วลองใหม่อีกครั้ง', 'error');
-    console.error(error);
+    await reportDbError(error);
     return;
   }
   STAFF = data || [];
   render();
+}
+
+/* ---------------------------------------------------------------------
+ * วินิจฉัยสาเหตุที่โหลดข้อมูลไม่สำเร็จ แล้วบอกวิธีแก้ให้ตรงจุด
+ * ------------------------------------------------------------------- */
+async function reportDbError(error) {
+  console.error('[FTC] Supabase error:', error);
+
+  const code = error.code || '-';
+  const msg  = error.message || String(error);
+  let cause  = 'ยังระบุสาเหตุไม่ได้';
+  let fix    = 'คัดลอกรายละเอียดด้านล่างส่งให้ผู้พัฒนา';
+
+  // ตรวจว่าตารางเข้าถึงได้ไหม เพื่อแยกว่าปัญหาอยู่ที่ "คอลัมน์" หรือ "ทั้งตาราง"
+  const probe = await sb.from('tb_internal_staff').select('staff_id').limit(1);
+
+  if (code === '42703' || /column .* does not exist/i.test(msg)) {
+    const m = /column\s+"?([\w.]+)"?/i.exec(msg);
+    cause = 'ตารางเข้าถึงได้ แต่ยังไม่มีคอลัมน์' + (m ? ' ' + m[1] : 'ที่หน้านี้เรียกใช้');
+    fix   = 'ยังไม่ได้รัน PART A1 ของไฟล์ sprint1_schema_completion.sql (คำสั่งเพิ่ม email, phone, line_display_id, position_title ให้ tb_internal_staff) ให้กลับไปรันส่วนนั้นแล้วรีเฟรชหน้านี้';
+  } else if (code === '42P01') {
+    cause = 'ไม่พบตาราง tb_internal_staff ในฐานข้อมูล';
+    fix   = 'ตรวจว่าเชื่อมต่อ Supabase โปรเจกต์ถูกตัวหรือไม่ ที่ค่า SUPABASE_URL ในไฟล์ shared/config.js';
+  } else if (code === '42501' || /permission denied/i.test(msg)) {
+    cause = 'ฐานข้อมูลปฏิเสธสิทธิ์การอ่านตารางนี้';
+    fix   = 'สิทธิ์ระดับตารางถูกตัด ให้รันคำสั่ง GRANT ให้ role anon และ authenticated (ดูคำแนะนำในบทสนทนา)';
+  } else if (/JWT|apikey|Invalid API key/i.test(msg) || error.status === 401) {
+    cause = 'กุญแจเชื่อมต่อไม่ถูกต้องหรือหมดอายุ';
+    fix   = 'ตรวจค่า SUPABASE_KEY ในไฟล์ shared/config.js ให้ตรงกับ Publishable key ใน Supabase';
+  } else if (/Failed to fetch|NetworkError/i.test(msg)) {
+    cause = 'ติดต่อเซิร์ฟเวอร์ไม่ได้';
+    fix   = 'ตรวจอินเทอร์เน็ต และตรวจว่า SUPABASE_URL สะกดถูกต้อง';
+  } else if (!probe.error) {
+    cause = 'ตารางเข้าถึงได้ตามปกติ แต่คำสั่งอ่านข้อมูลถูกปฏิเสธ';
+  }
+
+  const detail = `code: ${code}\nmessage: ${msg}` +
+                 (error.details ? `\ndetails: ${error.details}` : '') +
+                 (error.hint ? `\nhint: ${error.hint}` : '') +
+                 `\nprobe(staff_id): ${probe.error ? (probe.error.code + ' ' + probe.error.message) : 'อ่านได้ปกติ'}`;
+
+  Swal.fire({
+    icon: 'error',
+    title: 'โหลดข้อมูลไม่สำเร็จ',
+    html:
+      `<p style="text-align:left;font-size:.85rem;margin-bottom:.5rem"><b>สาเหตุ:</b> ${FTC.esc(cause)}</p>` +
+      `<p style="text-align:left;font-size:.85rem;margin-bottom:.75rem"><b>วิธีแก้:</b> ${FTC.esc(fix)}</p>` +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border:1px solid #E2E8F0;` +
+      `border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">${FTC.esc(detail)}</pre>`,
+    confirmButtonText: 'คัดลอกรายละเอียด',
+    showCancelButton: true,
+    cancelButtonText: 'ปิด',
+    confirmButtonColor: '#19335A',
+    width: 560
+  }).then(r => { if (r.isConfirmed) navigator.clipboard.writeText(detail); });
 }
 
 /* ---------------------- แสดงผล ---------------------- */
