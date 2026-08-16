@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="th" class="bg-background">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ผังพื้นที่และระดับความเสี่ยง | FTC First Safety</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../shared/config.js"></script>
+
+<style>
+  :root {
+    --background: oklch(0.985 0.003 250); --foreground: oklch(0.21 0.02 258);
+    --card: oklch(1 0 0); --primary: oklch(0.45 0.14 255);
+    --primary-foreground: oklch(0.99 0.005 250); --secondary: oklch(0.96 0.008 255);
+    --secondary-foreground: oklch(0.3 0.03 258); --muted: oklch(0.965 0.006 255);
+    --muted-foreground: oklch(0.53 0.02 258); --accent: oklch(0.93 0.03 250);
+    --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.9 0.008 255);
+    --ring: oklch(0.45 0.14 255);
+    --chart-1: oklch(0.58 0.22 27);   /* hot  */
+    --chart-2: oklch(0.72 0.16 65);   /* warm */
+    --chart-3: oklch(0.6 0.12 220);   /* cold */
+    --chart-5: oklch(0.55 0.14 155);
+  }
+  html, body { background: var(--background); color: var(--foreground); }
+  body { font-family: 'Sarabun', sans-serif; }
+  .font-mono { font-family: 'Sarabun', sans-serif; }
+  .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid var(--border);
+         background:var(--card); font-size:.875rem; color:var(--foreground); }
+  .fld:focus { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent); }
+  .lbl { display:block; font-size:.78rem; font-weight:600; color:var(--muted-foreground); margin-bottom:.35rem; }
+  .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.5); z-index:60;
+                display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  :focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+</style>
+
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { sans:['Sarabun','sans-serif'], mono:['Sarabun','sans-serif'] },
+  colors: {
+    background:'var(--background)', foreground:'var(--foreground)', card:'var(--card)',
+    primary:{ DEFAULT:'var(--primary)', foreground:'var(--primary-foreground)' },
+    secondary:{ DEFAULT:'var(--secondary)', foreground:'var(--secondary-foreground)' },
+    muted:{ DEFAULT:'var(--muted)', foreground:'var(--muted-foreground)' },
+    accent:'var(--accent)', destructive:'var(--destructive)', border:'var(--border)'
+  }
+}}}
+</script>
+</head>
+<body class="antialiased">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm rounded-lg border border-border bg-card p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold text-foreground">FTC First Safety</span>
+        <span class="text-xs text-muted-foreground">ผังพื้นที่และระดับความเสี่ยง</span>
+      </div>
+    </div>
+    <label class="lbl">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="lbl">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login"
+      class="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">เข้าสู่ระบบ</button>
+    <p id="log-err" class="hidden mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden min-h-screen">
+
+  <header class="border-b border-border bg-card">
+    <div class="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-semibold text-foreground">ผังพื้นที่และระดับความเสี่ยง</span>
+          <span class="text-xs text-muted-foreground">01 · ศูนย์ตั้งค่าและวิศวกรรม</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="Master_Data.html" class="hidden rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground sm:block">แผนงาน WBS</a>
+        <button onclick="doLogout()" class="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground">ออกจากระบบ</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto flex max-w-[1200px] flex-col gap-4 px-4 py-6 sm:px-6">
+
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="min-w-[240px] flex-1">
+        <label class="lbl">โครงการ</label>
+        <select id="proj-select" class="fld" onchange="selectProject(this.value)"></select>
+      </div>
+      <button onclick="openZone(null, null)"
+        class="rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
+        + เพิ่มอาคาร
+      </button>
+    </div>
+
+    <!-- คำอธิบายระดับความเสี่ยง -->
+    <section class="rounded-lg border border-border bg-card p-4">
+      <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">ระดับความเสี่ยงของพื้นที่</p>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="flex items-start gap-2">
+          <span class="mt-1 size-2.5 shrink-0 rounded-full" style="background:var(--chart-1)"></span>
+          <div><p class="text-sm font-semibold text-foreground">Hot Zone · เขตอันตราย</p>
+            <p class="text-xs text-muted-foreground">ที่อับอากาศ งานร้อน ไฟฟ้าแรงสูง ที่สูง</p></div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="mt-1 size-2.5 shrink-0 rounded-full" style="background:var(--chart-2)"></span>
+          <div><p class="text-sm font-semibold text-foreground">Warm Zone · เขตควบคุม</p>
+            <p class="text-xs text-muted-foreground">พื้นที่ก่อสร้างทั่วไป ต้องมีใบอนุญาต</p></div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="mt-1 size-2.5 shrink-0 rounded-full" style="background:var(--chart-3)"></span>
+          <div><p class="text-sm font-semibold text-foreground">Cold Zone · เขตปลอดภัย</p>
+            <p class="text-xs text-muted-foreground">สำนักงานสนาม พื้นที่พัก ทางเดิน</p></div>
+        </div>
+      </div>
+      <p class="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
+        ระบบจะแปลงระดับนี้เป็นเขตพื้นที่ในใบอนุญาตทำงานให้อัตโนมัติ
+        และงานที่จ้างผู้รับเหมาทุกงานต้องระบุพื้นที่ตั้งแต่ตอนวางแผน
+      </p>
+    </section>
+
+    <!-- ผังโซน -->
+    <section class="rounded-lg border border-border bg-card">
+      <div class="flex items-center justify-between border-b border-border px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-foreground">ผังพื้นที่โครงการ</p>
+          <p class="text-xs text-muted-foreground">อาคาร → ชั้น → โซนย่อย</p>
+        </div>
+        <span id="zone-count" class="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"></span>
+      </div>
+      <div id="zone-tree" class="divide-y divide-border"></div>
+      <div id="zone-empty" class="hidden px-4 py-12 text-center">
+        <p class="text-base font-semibold text-foreground">โครงการนี้ยังไม่มีผังพื้นที่</p>
+        <p class="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+          เริ่มจากเพิ่มอาคารก่อน แล้วจึงเพิ่มชั้นและโซนย่อยเข้าไปในอาคารนั้น
+          — งานที่จ้างผู้รับเหมาจะสร้างไม่ได้จนกว่าจะมีพื้นที่ให้เลือก
+        </p>
+      </div>
+    </section>
+
+    <p class="text-xs text-muted-foreground">
+      พื้นที่ที่มีงานอ้างอิงอยู่จะลบไม่ได้ ต้องย้ายงานไปพื้นที่อื่นก่อน
+    </p>
+  </main>
+</div>
+
+<!-- ===================== เพิ่ม/แก้ไขพื้นที่ ===================== -->
+<div id="modal-zone" class="modal-wrap hidden">
+  <div class="w-full max-w-lg rounded-lg border border-border bg-card shadow-xl">
+    <div class="flex items-center justify-between border-b border-border px-6 py-4">
+      <h3 id="zone-title" class="text-base font-semibold text-foreground">เพิ่มพื้นที่</h3>
+      <button onclick="closeModal('modal-zone')" class="text-muted-foreground hover:text-foreground">✕</button>
+    </div>
+    <div class="space-y-4 px-6 py-5">
+      <p id="zone-parent-info" class="hidden rounded-md bg-secondary px-3 py-2 text-xs text-secondary-foreground"></p>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">ระดับ <span class="text-destructive">*</span></label>
+          <select id="z-level" class="fld" onchange="onLevelChange()"></select>
+        </div>
+        <div>
+          <label class="lbl">รหัสพื้นที่ <span class="text-destructive">*</span></label>
+          <input id="z-code" class="fld font-mono" placeholder="A-03-MEP">
+          <p class="mt-1 text-[10px] text-muted-foreground">ห้ามซ้ำภายในโครงการเดียวกัน</p>
+        </div>
+      </div>
+
+      <div>
+        <label class="lbl">ชื่อพื้นที่ <span class="text-destructive">*</span></label>
+        <input id="z-name" class="fld" placeholder="โซนงานระบบ MEP">
+      </div>
+
+      <div>
+        <label class="lbl">ระดับความเสี่ยง <span class="text-destructive">*</span></label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" id="rb-Cold" onclick="setRisk('Cold')" class="rounded-md border-2 py-2.5 text-sm font-semibold transition">Cold · ปลอดภัย</button>
+          <button type="button" id="rb-Warm" onclick="setRisk('Warm')" class="rounded-md border-2 py-2.5 text-sm font-semibold transition">Warm · ควบคุม</button>
+          <button type="button" id="rb-Hot"  onclick="setRisk('Hot')"  class="rounded-md border-2 py-2.5 text-sm font-semibold transition">Hot · อันตราย</button>
+        </div>
+        <p id="risk-note" class="mt-2 text-xs text-muted-foreground"></p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="lbl">ละติจูด</label>
+          <input id="z-lat" class="fld font-mono" placeholder="13.7563">
+        </div>
+        <div>
+          <label class="lbl">ลองจิจูด</label>
+          <input id="z-lng" class="fld font-mono" placeholder="100.5018">
+        </div>
+        <div>
+          <label class="lbl">รองรับ (คน)</label>
+          <input id="z-cap" class="fld" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+        </div>
+      </div>
+
+      <div>
+        <label class="lbl">ข้อควรระวังในการเข้าพื้นที่</label>
+        <textarea id="z-note" rows="2" class="fld" placeholder="เช่น ต้องมีผู้เฝ้าระวังภายนอกตลอดเวลา"></textarea>
+      </div>
+    </div>
+    <div class="flex flex-col-reverse gap-3 rounded-b-lg border-t border-border bg-muted/40 px-6 py-4 sm:flex-row">
+      <button onclick="closeModal('modal-zone')" class="rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground sm:w-auto">ยกเลิก</button>
+      <button id="btn-zone-save" onclick="saveZone()" class="flex-1 rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+ * จัดการผังพื้นที่แบบลำดับชั้น  อาคาร → ชั้น → โซนย่อย
+ * ระดับความเสี่ยง Hot/Warm/Cold จะถูกแปลงเป็นเขตพื้นที่ภาษาไทย
+ * ในใบอนุญาตทำงานโดยอัตโนมัติผ่าน Trigger ฝั่งฐานข้อมูล
+ * ===================================================================== */
+
+const sb = FTC.supabase();
+const LEVELS = [
+  { value:'Building', label:'อาคาร / พื้นที่หลัก', child:'Floor' },
+  { value:'Floor',    label:'ชั้น / ระดับ',        child:'Area'  },
+  { value:'Area',     label:'โซนย่อย',             child:null    }
+];
+const RISK = {
+  Hot:  { token:'var(--chart-1)', th:'เขตอันตราย',  note:'งานในพื้นที่นี้จะถูกตรวจเข้มเป็นพิเศษ และผู้รับเหมาบุคคลธรรมดาอาจถูกบล็อกตามประเภทงาน' },
+  Warm: { token:'var(--chart-2)', th:'เขตควบคุม',   note:'ต้องมีใบอนุญาตทำงานก่อนเข้าปฏิบัติงานทุกครั้ง' },
+  Cold: { token:'var(--chart-3)', th:'เขตปลอดภัย',  note:'พื้นที่ความเสี่ยงต่ำ เช่น สำนักงานสนามหรือพื้นที่พัก' }
+};
+
+let PROJECTS = [], CUR = null, ZONES = [], USAGE = {};
+let editingZone = null, parentZone = null, currentRisk = 'Cold';
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent='กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent='กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent='เข้าสู่ระบบ';
+  if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  await loadProjects();
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadProjects() {
+  const r = await sb.from('tb_projects')
+    .select('project_id, project_name, status').order('created_at', { ascending:false });
+  if (r.error) { reportError('โหลดรายการโครงการไม่สำเร็จ', r.error, 'select tb_projects'); return; }
+  PROJECTS = r.data || [];
+  document.getElementById('proj-select').innerHTML = PROJECTS.length
+    ? PROJECTS.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name)}</option>`).join('')
+    : '<option value="">-- ยังไม่มีโครงการ --</option>';
+  if (PROJECTS.length) await selectProject(PROJECTS[0].project_id);
+}
+
+async function selectProject(id) {
+  CUR = PROJECTS.find(p => p.project_id === id);
+  if (!CUR) return;
+  await loadZones();
+}
+
+async function loadZones() {
+  const [z, w] = await Promise.all([
+    sb.from('tb_zones')
+      .select('zone_id, parent_zone_id, zone_code, zone_name, zone_level, risk_level, gps_lat, gps_lng, capacity, access_note')
+      .eq('project_id', CUR.project_id).eq('is_active', true).order('zone_code'),
+    sb.from('tb_wbs_tasks').select('zone_id').eq('project_id', CUR.project_id)
+  ]);
+
+  if (z.error) { reportError('โหลดผังพื้นที่ไม่สำเร็จ', z.error, 'select tb_zones'); return; }
+  ZONES = z.data || [];
+
+  USAGE = {};
+  if (!w.error) (w.data || []).forEach(t => {
+    if (t.zone_id) USAGE[t.zone_id] = (USAGE[t.zone_id] || 0) + 1;
+  });
+
+  renderTree();
+}
+
+/* ---------------------- แสดงผังโซน ---------------------- */
+function childrenOf(id) {
+  return ZONES.filter(z => (z.parent_zone_id || null) === id)
+    .sort((a,b) => (a.zone_code||'').localeCompare(b.zone_code||'', undefined, { numeric:true }));
+}
+
+function renderTree() {
+  const box = document.getElementById('zone-tree');
+  const empty = document.getElementById('zone-empty');
+  document.getElementById('zone-count').textContent = ZONES.length + ' พื้นที่';
+
+  if (!ZONES.length) { box.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  const rows = [];
+  (function walk(parentId, depth) {
+    childrenOf(parentId).forEach(z => {
+      rows.push({ z: z, depth: depth });
+      walk(z.zone_id, depth + 1);
+    });
+  })(null, 0);
+
+  box.innerHTML = rows.map(r => {
+    const z = r.z;
+    const meta = RISK[z.risk_level] || RISK.Cold;
+    const lvl  = LEVELS.find(l => l.value === z.zone_level) || LEVELS[2];
+    const used = USAGE[z.zone_id] || 0;
+    const canAddChild = !!lvl.child;
+
+    return `
+      <div class="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-accent/40" style="padding-left:${r.depth*24+16}px">
+        <span class="size-2.5 shrink-0 rounded-full" style="background:${meta.token}" title="${esc(z.risk_level)}"></span>
+        <div class="min-w-[200px] flex-1">
+          <p class="text-sm font-semibold text-foreground">${esc(z.zone_name)}</p>
+          <p class="font-mono text-[11px] text-muted-foreground">${esc(z.zone_code)} · ${esc(lvl.label)}${
+            z.capacity ? ' · รองรับ ' + z.capacity + ' คน' : ''}</p>
+          ${z.access_note ? `<p class="mt-0.5 text-[11px] text-muted-foreground">⚠ ${esc(z.access_note)}</p>` : ''}
+        </div>
+        <span class="rounded-full border px-2 py-0.5 text-[11px] font-medium"
+          style="border-color:${meta.token};color:${meta.token}">${esc(z.risk_level)} · ${esc(meta.th)}</span>
+        <span class="text-[11px] ${used ? 'text-foreground' : 'text-muted-foreground/60'}">${used ? used + ' งาน' : 'ยังไม่มีงาน'}</span>
+        <div class="flex items-center gap-1">
+          ${canAddChild ? `<button onclick="openZone(null,'${esc(z.zone_id)}')"
+            class="rounded-md border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
+            title="เพิ่ม${esc(LEVELS.find(l=>l.value===lvl.child).label)}ใต้พื้นที่นี้">+ ย่อย</button>` : ''}
+          <button onclick="openZone('${esc(z.zone_id)}',null)"
+            class="rounded-md border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground">แก้ไข</button>
+          <button onclick="delZone('${esc(z.zone_id)}')"
+            class="rounded-md border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-destructive">ลบ</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ---------------------- เพิ่ม/แก้ไข ---------------------- */
+function setRisk(v) {
+  currentRisk = v;
+  ['Cold','Warm','Hot'].forEach(k => {
+    const el = document.getElementById('rb-' + k);
+    const on = k === v;
+    el.style.borderColor = on ? RISK[k].token : 'var(--border)';
+    el.style.color = on ? RISK[k].token : 'var(--muted-foreground)';
+    el.style.background = on ? 'color-mix(in oklch, ' + RISK[k].token + ' 10%, transparent)' : 'transparent';
+  });
+  document.getElementById('risk-note').textContent = RISK[v].note;
+}
+
+function onLevelChange() {
+  const lv = document.getElementById('z-level').value;
+  // ค่าเริ่มต้นที่สมเหตุสมผล ผู้ใช้แก้ทับได้เสมอ
+  if (!editingZone && lv === 'Building') setRisk('Cold');
+}
+
+function nextCode(parent) {
+  if (!parent) {
+    const n = childrenOf(null).length + 1;
+    return String.fromCharCode(64 + Math.min(n, 26));           // A, B, C ...
+  }
+  const n = childrenOf(parent.zone_id).length + 1;
+  return parent.zone_code + '-' + String(n).padStart(2, '0');
+}
+
+function openZone(zoneId, parentId) {
+  editingZone = zoneId;
+  parentZone  = parentId ? ZONES.find(z => z.zone_id === parentId) : null;
+  const z = zoneId ? ZONES.find(x => x.zone_id === zoneId) : null;
+  if (z && z.parent_zone_id) parentZone = ZONES.find(x => x.zone_id === z.parent_zone_id) || null;
+
+  // ระดับที่เลือกได้ ขึ้นกับพื้นที่แม่ ระบบล็อกให้ลึกลงทีละขั้นเท่านั้น
+  const allowed = parentZone
+    ? LEVELS.filter(l => l.value === (LEVELS.find(x => x.value === parentZone.zone_level) || {}).child)
+    : LEVELS.filter(l => l.value === 'Building');
+
+  document.getElementById('z-level').innerHTML =
+    allowed.map(l => `<option value="${l.value}">${esc(l.label)}</option>`).join('');
+
+  const info = document.getElementById('zone-parent-info');
+  if (parentZone) {
+    info.textContent = 'อยู่ภายใต้ ' + parentZone.zone_code + ' ' + parentZone.zone_name;
+    info.classList.remove('hidden');
+  } else { info.classList.add('hidden'); }
+
+  document.getElementById('zone-title').textContent = z ? 'แก้ไขพื้นที่' : 'เพิ่มพื้นที่';
+  document.getElementById('z-level').value = z ? z.zone_level : allowed[0].value;
+  document.getElementById('z-code').value  = z ? z.zone_code : nextCode(parentZone);
+  document.getElementById('z-name').value  = z ? z.zone_name : '';
+  document.getElementById('z-lat').value   = z ? (z.gps_lat || '') : '';
+  document.getElementById('z-lng').value   = z ? (z.gps_lng || '') : '';
+  document.getElementById('z-cap').value   = z ? (z.capacity || '') : '';
+  document.getElementById('z-note').value  = z ? (z.access_note || '') : '';
+  setRisk(z ? (z.risk_level || 'Cold') : (parentZone ? parentZone.risk_level : 'Cold'));
+
+  document.getElementById('modal-zone').classList.remove('hidden');
+}
+
+async function saveZone() {
+  const btn = document.getElementById('btn-zone-save');
+  try {
+    const code = document.getElementById('z-code').value.trim();
+    const name = document.getElementById('z-name').value.trim();
+    if (!code) return Swal.fire('ยังกรอกไม่ครบ','ระบุรหัสพื้นที่','warning');
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อพื้นที่','warning');
+
+    const lat = parseFloat(document.getElementById('z-lat').value);
+    const lng = parseFloat(document.getElementById('z-lng').value);
+    if (document.getElementById('z-lat').value && (isNaN(lat) || lat < -90 || lat > 90))
+      return Swal.fire('ละติจูดไม่ถูกต้อง','ค่าต้องอยู่ระหว่าง -90 ถึง 90','warning');
+    if (document.getElementById('z-lng').value && (isNaN(lng) || lng < -180 || lng > 180))
+      return Swal.fire('ลองจิจูดไม่ถูกต้อง','ค่าต้องอยู่ระหว่าง -180 ถึง 180','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+
+    const payload = {
+      project_id: CUR.project_id,
+      parent_zone_id: parentZone ? parentZone.zone_id : null,
+      zone_code: code,
+      zone_name: name,
+      zone_level: document.getElementById('z-level').value,
+      risk_level: currentRisk,
+      gps_lat: isNaN(lat) ? null : lat,
+      gps_lng: isNaN(lng) ? null : lng,
+      capacity: parseInt(document.getElementById('z-cap').value, 10) || null,
+      access_note: document.getElementById('z-note').value.trim() || null
+    };
+
+    let res;
+    if (editingZone) {
+      res = await sb.from('tb_zones').update(payload).eq('zone_id', editingZone);
+    } else {
+      payload.zone_id = 'Z-' + CUR.project_id.replace(/[^A-Za-z0-9]/g,'').slice(-6) + '-' +
+                        code.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+      res = await sb.from('tb_zones').insert(payload);
+    }
+    if (res.error) throw res.error;
+
+    closeModal('modal-zone');
+    await loadZones();
+
+    // เตือนเมื่อพื้นที่ที่มีงานอยู่ถูกเปลี่ยนระดับความเสี่ยง
+    if (editingZone && (USAGE[editingZone] || 0) > 0) {
+      Swal.fire({ icon:'info', title:'อัปเดตแล้ว',
+        html: 'พื้นที่นี้มีงานอ้างอิงอยู่ ' + USAGE[editingZone] + ' งาน<br>' +
+              'ระบบจะใช้ระดับความเสี่ยงใหม่กับใบอนุญาตที่ขอหลังจากนี้',
+        confirmButtonColor:'#3b5bdb' });
+    }
+  } catch (err) {
+    if (err && err.code === '23505')
+      Swal.fire('รหัสซ้ำ','รหัสพื้นที่นี้มีอยู่แล้วในโครงการเดียวกัน','warning');
+    else if (err && err.code === 'P0001')
+      Swal.fire('ลำดับชั้นไม่ถูกต้อง', esc(err.message), 'warning');
+    else reportError('บันทึกพื้นที่ไม่สำเร็จ', err, 'tb_zones');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+}
+
+async function delZone(id) {
+  const z = ZONES.find(x => x.zone_id === id);
+  const used = USAGE[id] || 0;
+  const kids = childrenOf(id).length;
+
+  if (used) return Swal.fire('ลบไม่ได้',
+    'พื้นที่นี้มีงานอ้างอิงอยู่ ' + used + ' งาน ต้องย้ายงานไปพื้นที่อื่นก่อน', 'warning');
+  if (kids) return Swal.fire('ลบไม่ได้',
+    'พื้นที่นี้มีพื้นที่ย่อยอยู่ ' + kids + ' รายการ ต้องลบพื้นที่ย่อยก่อน', 'warning');
+
+  const ok = await Swal.fire({ icon:'warning', title:'ลบพื้นที่นี้',
+    text: z ? z.zone_name : '', showCancelButton:true,
+    confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก', confirmButtonColor:'#dc2626' });
+  if (!ok.isConfirmed) return;
+
+  const r = await sb.from('tb_zones').delete().eq('zone_id', id);
+  if (r.error) {
+    if (r.error.code === '23503')
+      Swal.fire('ลบไม่ได้','พื้นที่นี้ถูกอ้างอิงจากข้อมูลอื่นอยู่','warning');
+    else reportError('ลบพื้นที่ไม่สำเร็จ', r.error, 'delete tb_zones');
+    return;
+  }
+  await loadZones();
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal('modal-zone'); });
+document.getElementById('modal-zone').addEventListener('click', e => {
+  if (e.target.id === 'modal-zone') closeModal('modal-zone');
+});
+
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step: step, error: err });
+  const e = err || {};
+  const code = String(e.code || '');
+  let hint = '';
+  if (code === '42P01') hint = 'ยังไม่มีตาราง tb_zones — ตรวจว่ารัน sprint2 PART 2 แล้วหรือยัง';
+  else if (code === '42501' || e.status === 403) hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ต้อง GRANT ให้ role authenticated บน tb_zones (sprint2 PART 9)';
+  else if (code === '23514') hint = 'ค่าไม่ผ่านเงื่อนไข — ระดับต้องเป็น Building/Floor/Area และความเสี่ยงต้องเป็น Hot/Warm/Cold';
+
+  Swal.fire({
+    icon:'error', title:title,
+    html: (hint ? `<p style="font-size:.85rem;margin-bottom:.6rem">${esc(hint)}</p>` : '') +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">code: ${esc(code||'-')}\nmessage: ${esc(e.message||String(err))}\nขั้นตอน: ${esc(step||'-')}</pre>`,
+    confirmButtonColor:'#3b5bdb', width:540
+  });
+}
+
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ', (r && typeof r==='object') ? r : { message:String(r) }, 'promise ที่ไม่มีใครดัก');
+});
+
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
