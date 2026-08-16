@@ -330,16 +330,16 @@ tailwind.config = { theme: { extend: {
         </div>
       </div>
       <div>
-        <label class="lbl">เขตพื้นที่ความเสี่ยง <span class="text-red-500">*</span></label>
-        <div class="grid grid-cols-3 gap-2">
-          <button type="button" onclick="setRisk('เขตปลอดภัย')" id="rb-safe"  class="rounded-xl border-2 py-2.5 text-sm font-bold transition">เขตปลอดภัย</button>
-          <button type="button" onclick="setRisk('เขตควบคุม')"  id="rb-ctrl"  class="rounded-xl border-2 py-2.5 text-sm font-bold transition">เขตควบคุม</button>
-          <button type="button" onclick="setRisk('เขตอันตราย')" id="rb-danger" class="rounded-xl border-2 py-2.5 text-sm font-bold transition">เขตอันตราย</button>
-        </div>
-        <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
-          เขตอันตรายจะทำให้ใบอนุญาตทำงานในพื้นที่นี้ถูกตรวจเข้มขึ้น และผู้รับเหมาบุคคลธรรมดาอาจถูกบล็อกตามประเภทงาน
+        <label class="lbl">พื้นที่ปฏิบัติงาน <span class="text-red-500">*</span></label>
+        <select id="w-zone" class="fld" onchange="onZoneChange()"></select>
+        <p id="w-zone-info" class="text-[11px] text-slate-500 mt-1.5 leading-relaxed"></p>
+        <p id="w-zone-empty" class="hidden text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5 mt-2">
+          โครงการนี้ยังไม่มีผังพื้นที่ ต้องสร้างอาคาร ชั้น และโซนย่อยก่อน
+          จึงจะมอบหมายงานให้ผู้รับเหมาได้ —
+          <a href="Zone_Manager.html" class="underline font-bold">ไปหน้าจัดการผังพื้นที่</a>
         </p>
       </div>
+
       <div>
         <label class="lbl">รายละเอียดตำแหน่งงาน</label>
         <input id="w-loc" class="fld" placeholder="อาคาร A ชั้น 3 ห้องเครื่อง">
@@ -410,9 +410,10 @@ tailwind.config = { theme: { extend: {
 
 <script>
 const sb = FTC.supabase();
-const RISK_LEVELS = ['เขตปลอดภัย', 'เขตควบคุม', 'เขตอันตราย'];   // ต้องตรงกับ CHECK ในฐานข้อมูลเป๊ะ
-let PROJECTS = [], CUR = null, BOQ = [], WBS = [], PVENDORS = [];
-let editingBoq = null, editingWbs = null, currentRisk = 'เขตปลอดภัย', IMPORT_ROWS = [];
+// เขตพื้นที่ในใบงานถูกกำหนดจากระดับความเสี่ยงของโซนโดย Trigger ฝั่งฐานข้อมูล
+// หน้านี้จึงไม่ต้องเก็บรายการค่าไว้เองอีกต่อไป
+let PROJECTS = [], CUR = null, BOQ = [], WBS = [], PVENDORS = [], ZONES = [];
+let editingBoq = null, editingWbs = null, IMPORT_ROWS = [];
 
 /* ---------------------- เข้าสู่ระบบ ---------------------- */
 async function doLogin() {
@@ -461,7 +462,7 @@ async function loadProjects() {
 async function selectProject(id) {
   CUR = PROJECTS.find(p => p.project_id === id) || null;
   if (!CUR) return;
-  await Promise.all([loadBoq(), loadWbs(), loadProjectVendors()]);
+  await Promise.all([loadBoq(), loadWbs(), loadProjectVendors(), loadZones()]);
   renderAll();
 }
 
@@ -477,6 +478,39 @@ async function loadWbs() {
   const r = await sb.from('tb_wbs_tasks').select('*').in('boq_id', ids).order('start_date');
   if (r.error) { reportError('โหลดแผนงาน WBS ไม่สำเร็จ', r.error, 'select tb_wbs_tasks'); WBS = []; return; }
   WBS = r.data || [];
+}
+
+/** ผังพื้นที่ของโครงการ ใช้กำหนดว่างานย่อยแต่ละงานทำที่ไหน */
+async function loadZones() {
+  const r = await sb.from('tb_zones')
+    .select('zone_id, parent_zone_id, zone_code, zone_name, zone_level, risk_level')
+    .eq('project_id', CUR.project_id).eq('is_active', true).order('zone_code');
+  ZONES = r.error ? [] : (r.data || []);
+}
+
+const ZONE_RISK = {
+  Hot:  { th:'เขตอันตราย', cls:'text-red-700',     note:'งานในพื้นที่นี้จะถูกตรวจเข้มเป็นพิเศษ และผู้รับเหมาบุคคลธรรมดาอาจถูกบล็อกตามประเภทงาน' },
+  Warm: { th:'เขตควบคุม',  cls:'text-amber-700',   note:'ต้องมีใบอนุญาตทำงานก่อนเข้าปฏิบัติงานทุกครั้ง' },
+  Cold: { th:'เขตปลอดภัย', cls:'text-emerald-700', note:'พื้นที่ความเสี่ยงต่ำ' }
+};
+
+/** ชื่อเต็มของพื้นที่ ไล่ขึ้นไปตามลำดับชั้น อาคาร › ชั้น › โซนย่อย */
+function zonePath(zone) {
+  const parts = []; let cur = zone, guard = 0;
+  while (cur && guard++ < 10) {
+    parts.unshift(cur.zone_name);
+    cur = ZONES.find(z => z.zone_id === cur.parent_zone_id);
+  }
+  return parts.join(' › ');
+}
+
+function onZoneChange() {
+  const z = ZONES.find(x => x.zone_id === document.getElementById('w-zone').value);
+  const info = document.getElementById('w-zone-info');
+  if (!z) { info.textContent = ''; return; }
+  const m = ZONE_RISK[z.risk_level] || ZONE_RISK.Cold;
+  info.innerHTML = `<b>${FTC.esc(zonePath(z))}</b> · ระดับ ${FTC.esc(z.risk_level)} ` +
+    `<span class="${m.cls} font-semibold">(${m.th})</span><br>${m.note}`;
 }
 
 /** โหลดเฉพาะผู้รับเหมาที่ผูกกับโครงการนี้ กันการมอบหมายงานให้รายที่ไม่ได้อยู่ในโครงการ */
@@ -590,6 +624,7 @@ function renderWbs() {
     const e = FTC.esc;
     const v = PVENDORS.find(x => x.vendor_id === w.vendor_id);
     const b = BOQ.find(x => x.boq_id === w.boq_id);
+    const z = ZONES.find(x => x.zone_id === w.zone_id);
     const personal = v && ['personal','individual'].indexOf(String(v.entity_type||'').toLowerCase()) !== -1;
     return `<tr>
       <td class="px-3 py-2.5">
@@ -603,7 +638,11 @@ function renderWbs() {
       <td class="px-3 py-2.5 text-[12px] text-slate-600">${e(w.start_date)}<br>ถึง ${e(w.end_date)}</td>
       <td class="px-3 py-2.5 num text-slate-700">${money(w.allocated_value_thb)}<br>
           <span class="text-[10px] text-slate-400">${w.weight_pct}%</span></td>
-      <td class="px-3 py-2.5"><span class="chip ${RISK_CLASS[w.risk_area_class] || ''}">${e(w.risk_area_class)}</span></td>
+      <td class="px-3 py-2.5">
+        <span class="chip ${RISK_CLASS[w.risk_area_class] || ''}">${e(w.risk_area_class || '—')}</span>
+        ${z ? `<p class="text-[11px] text-slate-400 mt-0.5" title="${e(zonePath(z))}">${e(z.zone_code)} ${e(z.zone_name)}</p>`
+            : '<p class="text-[11px] text-red-500 mt-0.5">ยังไม่ระบุพื้นที่</p>'}
+      </td>
       <td class="px-3 py-2.5 text-right">
         <button onclick="openWbs('${e(w.task_id)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-brand-navy hover:bg-slate-100 transition">
           <i data-lucide="pencil" class="w-4 h-4"></i></button>
@@ -706,17 +745,6 @@ function nextTaskId() {
   return pre + String((nums.length ? Math.max.apply(null, nums) : 0) + 1).padStart(4, '0');
 }
 
-function setRisk(v) {
-  currentRisk = v;
-  const map = { 'เขตปลอดภัย':['rb-safe','emerald'], 'เขตควบคุม':['rb-ctrl','amber'], 'เขตอันตราย':['rb-danger','red'] };
-  Object.keys(map).forEach(k => {
-    const [id, color] = map[k];
-    document.getElementById(id).className = 'rounded-xl border-2 py-2.5 text-sm font-bold transition ' +
-      (k === v ? `border-${color}-500 bg-${color}-50 text-${color}-700`
-               : 'border-slate-200 text-slate-500 hover:border-slate-300');
-  });
-}
-
 function onWbsBoqChange() {
   const b = BOQ.find(x => x.boq_id === document.getElementById('w-boq').value);
   const info = document.getElementById('w-boq-info');
@@ -738,13 +766,24 @@ function calcWeight() {
   }
 }
 
-function openWbs(id) {
+async function openWbs(id) {
   editingWbs = id;
   const w = id ? WBS.find(x => x.task_id === id) : null;
 
   if (!BOQ.length) return Swal.fire('ยังไม่มีรายการ BOQ','ต้องสร้างรายการ BOQ ก่อนจึงจะมอบหมายงานย่อยได้','warning');
   if (!PVENDORS.length) return Swal.fire('ยังไม่มีผู้รับเหมาในโครงการ',
     'ไปที่หน้าตั้งค่าโครงการ แท็บผู้รับเหมา เพื่อผูกผู้รับเหมาเข้าโครงการก่อน','warning');
+  if (!ZONES.length) {
+    const go = await Swal.fire({
+      icon:'warning', title:'ยังไม่มีผังพื้นที่',
+      html:'ระบบบังคับให้งานที่จ้างผู้รับเหมาต้องระบุพื้นที่ตั้งแต่ตอนวางแผน<br>' +
+           'ต้องสร้างอาคาร ชั้น และโซนย่อยก่อน',
+      showCancelButton:true, confirmButtonText:'ไปสร้างผังพื้นที่',
+      cancelButtonText:'ปิด', confirmButtonColor:'#19335A'
+    });
+    if (go.isConfirmed) window.location.href = 'Zone_Manager.html';
+    return;
+  }
 
   document.getElementById('wbs-title').textContent = w ? 'แก้ไขงานย่อย' : 'มอบหมายงานย่อย';
   document.getElementById('w-boq').innerHTML = BOQ.map(b =>
@@ -765,7 +804,19 @@ function openWbs(id) {
   document.getElementById('w-start').value  = w ? w.start_date : (CUR.start_date || '');
   document.getElementById('w-end').value    = w ? w.end_date : (CUR.end_date || '');
   document.getElementById('w-loc').value    = w ? (w.location_detail || '') : '';
-  setRisk(w ? w.risk_area_class : 'เขตปลอดภัย');
+
+  // แสดงเฉพาะโซนย่อยและชั้น เพราะงานจริงไม่ได้ทำ "ทั้งอาคาร"
+  const pickable = ZONES.filter(z => z.zone_level !== 'Building');
+  const list = pickable.length ? pickable : ZONES;
+  document.getElementById('w-zone').innerHTML =
+    '<option value="">-- เลือกพื้นที่ปฏิบัติงาน --</option>' +
+    list.map(z => {
+      const indent = z.zone_level === 'Area' ? '　　' : '　';
+      return `<option value="${FTC.esc(z.zone_id)}">${indent}${FTC.esc(z.zone_code)} ${FTC.esc(z.zone_name)} · ${FTC.esc(z.risk_level)}</option>`;
+    }).join('');
+  document.getElementById('w-zone').value = w ? (w.zone_id || '') : '';
+  document.getElementById('w-zone-empty').classList.toggle('hidden', ZONES.length > 0);
+  onZoneChange();
   onWbsBoqChange();
   openModal('modal-wbs');
 }
@@ -790,7 +841,9 @@ async function saveWbs() {
     if (weight <= 0 || weight > 100) return Swal.fire('น้ำหนักงานไม่ถูกต้อง','ต้องอยู่ระหว่าง 0 ถึง 100','warning');
     if (!s || !e)       return Swal.fire('ยังไม่ได้เลือกวันที่','ระบุวันเริ่มและวันสิ้นสุดงาน','warning');
     if (new Date(e) < new Date(s)) return Swal.fire('วันที่ไม่ถูกต้อง','วันสิ้นสุดต้องไม่ก่อนวันเริ่มงาน','warning');
-    if (RISK_LEVELS.indexOf(currentRisk) === -1) return Swal.fire('ยังไม่ได้เลือกเขตพื้นที่','เลือกเขตพื้นที่ความเสี่ยง','warning');
+    const zoneId = document.getElementById('w-zone').value;
+    if (!zoneId) return Swal.fire('ยังไม่ได้เลือกพื้นที่',
+      'งานที่จ้างผู้รับเหมาต้องระบุพื้นที่ปฏิบัติงาน เพื่อให้รู้ระดับความเสี่ยงตั้งแต่ตอนวางแผน','warning');
 
     // งานย่อยต้องอยู่ในช่วงสัญญาโครงการ ไม่งั้นแผนงานจะหลุดกรอบเวลาที่รับผิดชอบ
     if (CUR.start_date && s < CUR.start_date)
@@ -819,7 +872,11 @@ async function saveWbs() {
       allocated_value_thb: val, weight_pct: weight,
       start_date: s, end_date: e,
       location_detail: document.getElementById('w-loc').value.trim() || null,
-      risk_area_class: currentRisk
+      project_id: CUR.project_id,
+      task_type: 'Contract',
+      zone_id: zoneId
+      // ไม่ต้องส่ง risk_area_class เพราะ Trigger จะเติมให้จากระดับความเสี่ยงของโซน
+      // ถ้าส่งไปเองจะถูกเขียนทับอยู่ดี และเสี่ยงไม่ตรงกับผังโซน
     };
     const r = editingWbs
       ? await sb.from('tb_wbs_tasks').update(payload).eq('task_id', editingWbs)
