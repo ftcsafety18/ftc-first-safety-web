@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="th" class="bg-background">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ศูนย์ตั้งค่าและวิศวกรรม | FTC First Safety</title>
+  <meta name="description" content="WBS-Driven Master Data & Engineering Center: Gantt / Tree View รวม Timeline, Cost (BOQ) และ POC ในหน้าเดียว" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../shared/config.js"></script>
+
+  <style>
+    :root {
+      --background: oklch(0.985 0.003 250);
+      --foreground: oklch(0.21 0.02 258);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.21 0.02 258);
+      --primary: oklch(0.45 0.14 255);
+      --primary-foreground: oklch(0.99 0.005 250);
+      --secondary: oklch(0.96 0.008 255);
+      --secondary-foreground: oklch(0.3 0.03 258);
+      --muted: oklch(0.965 0.006 255);
+      --muted-foreground: oklch(0.53 0.02 258);
+      --accent: oklch(0.93 0.03 250);
+      --accent-foreground: oklch(0.35 0.08 255);
+      --destructive: oklch(0.577 0.245 27.325);
+      --border: oklch(0.9 0.008 255);
+      --input: oklch(0.9 0.008 255);
+      --ring: oklch(0.45 0.14 255);
+      /* zone risk levels: hot / warm / cold */
+      --chart-1: oklch(0.58 0.22 27);
+      --chart-2: oklch(0.72 0.16 65);
+      --chart-3: oklch(0.6 0.12 220);
+      --chart-4: oklch(0.45 0.14 255);
+      --chart-5: oklch(0.55 0.14 155);
+    }
+    html, body { background: var(--background); color: var(--foreground); }
+    body { font-family: 'Sarabun', sans-serif; }
+    .font-mono { font-family: 'Sarabun', sans-serif; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .thin-scroll::-webkit-scrollbar { height: 10px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+    .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+    .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid var(--border);
+           background:var(--card); font-size:.875rem; color:var(--foreground); }
+    .fld:focus { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent); }
+    :focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sarabun','sans-serif'], mono: ['Sarabun','sans-serif'] },
+          colors: {
+            background: 'var(--background)', foreground: 'var(--foreground)', card: 'var(--card)',
+            primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)' },
+            secondary: { DEFAULT: 'var(--secondary)', foreground: 'var(--secondary-foreground)' },
+            muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
+            accent: { DEFAULT: 'var(--accent)', foreground: 'var(--accent-foreground)' },
+            destructive: 'var(--destructive)', border: 'var(--border)',
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="antialiased">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm rounded-lg border border-border bg-card p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold text-foreground">FTC First Safety</span>
+        <span class="text-xs text-muted-foreground">01 · ศูนย์ตั้งค่าและวิศวกรรม</span>
+      </div>
+    </div>
+    <label class="mb-1.5 block text-xs font-medium text-muted-foreground">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="mb-1.5 block text-xs font-medium text-muted-foreground">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login"
+      class="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
+      เข้าสู่ระบบ
+    </button>
+    <p id="log-err" class="hidden mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden min-h-screen bg-background">
+
+  <header class="border-b border-border bg-card">
+    <div class="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-semibold tracking-tight text-foreground">FTC First Safety</span>
+          <span class="text-xs text-muted-foreground">01 · ศูนย์ตั้งค่าและวิศวกรรม</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <select id="proj-select" class="fld hidden max-w-xs sm:block" onchange="selectProject(this.value)"></select>
+        <span class="hidden items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground lg:inline-flex">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+          WBS-Driven Architecture
+        </span>
+        <button onclick="doLogout()" class="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground">ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="mx-auto max-w-[1600px] px-4 pb-3 sm:hidden">
+      <select id="proj-select-mobile" class="fld" onchange="selectProject(this.value)"></select>
+    </div>
+  </header>
+
+  <main class="mx-auto flex max-w-[1600px] flex-col gap-4 px-4 py-6 sm:px-6">
+
+    <!-- ไม่มีโครงการ -->
+    <div id="no-project" class="hidden rounded-lg border border-border bg-card p-12 text-center">
+      <p class="text-base font-semibold text-foreground">ยังไม่มีโครงการในระบบ</p>
+      <p class="mt-1 text-sm text-muted-foreground">สร้างโครงการที่หน้าตั้งค่าโครงการก่อน แล้วจึงกลับมาวางแผนงาน</p>
+      <a href="Project_Setup.html" class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">ไปหน้าตั้งค่าโครงการ</a>
+    </div>
+
+    <div id="content" class="hidden flex-col gap-4">
+      <!-- สรุปโครงการ -->
+      <section class="rounded-lg border border-border bg-card">
+        <div class="flex flex-col gap-4 border-b border-border px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <span id="proj-code" class="rounded bg-primary/10 px-2 py-0.5 font-mono text-xs font-medium text-primary"></span>
+              <span id="proj-range" class="text-xs text-muted-foreground"></span>
+              <span id="proj-status" class="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium"></span>
+            </div>
+            <h1 id="proj-name" class="text-balance text-xl font-semibold tracking-tight text-foreground"></h1>
+          </div>
+          <dl id="proj-people" class="flex flex-wrap gap-x-6 gap-y-1 text-xs"></dl>
+        </div>
+        <div id="kpi-grid" class="grid grid-cols-2 divide-x divide-y divide-border md:grid-cols-3 md:divide-y-0 xl:grid-cols-5"></div>
+      </section>
+
+      <!-- แท็บ -->
+      <nav id="tabs" class="flex items-center gap-1 overflow-x-auto border-b border-border"></nav>
+
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-col gap-0.5">
+            <h2 class="text-base font-semibold tracking-tight text-foreground">
+              Work Breakdown Structure · Gantt / Tree View
+            </h2>
+            <p class="text-xs text-muted-foreground">
+              Timeline · Cost (BOQ) · POC ในหน้าเดียว — เลื่อนแนวนอนเพื่อดู Timeline ทั้งโครงการ
+            </p>
+          </div>
+          <div id="risk-legend" class="flex items-center gap-4"></div>
+        </div>
+
+        <div class="thin-scroll overflow-x-auto rounded-lg border border-border bg-card">
+          <div id="gantt-root" class="min-w-max"></div>
+        </div>
+
+        <div id="wbs-empty" class="hidden rounded-lg border border-dashed border-border bg-card p-12 text-center">
+          <p class="text-base font-semibold text-foreground">โครงการนี้ยังไม่มีแผนงาน</p>
+          <p class="mt-1 text-sm text-muted-foreground">สร้างรายการ BOQ และมอบหมายงานย่อยที่หน้า BOQ Manager ก่อน</p>
+          <a href="BOQ_Manager.html" class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">ไปหน้า BOQ และแผนงาน</a>
+        </div>
+
+        <p class="text-xs text-muted-foreground">
+          <span class="font-medium text-destructive">เส้นสีแดง</span> คือ Data Date (วันที่ตัดข้อมูล) ·
+          แถบทึบภายในบาร์แสดง % Actual Work Done (POC) ที่อ้างอิงจากการปิด Work Permit
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+ * ศูนย์ตั้งค่าและวิศวกรรม — Gantt / Tree View ต่อข้อมูลจริงจาก Supabase
+ *
+ * โครงหน้าตาและ design token มาจากแบบที่ทีม V0 ออกแบบไว้
+ * ส่วนข้อมูลทั้งหมดดึงสดจากฐานข้อมูล ไม่มีค่าตายตัวเหลืออยู่
+ *   tb_projects · tb_project_contacts · tb_zones · tb_wbs_tasks · vw_wbs_rollup
+ * ===================================================================== */
+
+const sb = FTC.supabase();
+
+let PROJECTS = [], CUR = null, ZONES = [], TASKS = [], ROLLUP = {};
+const collapsed = new Set();
+
+const DAY   = 86400000;
+const ROW_H = 46;
+const DAY_W = 3.4;
+
+const RISK_META = {
+  hot:  { label: 'Hot Zone',  token: 'var(--chart-1)' },
+  warm: { label: 'Warm Zone', token: 'var(--chart-2)' },
+  cold: { label: 'Cold Zone', token: 'var(--chart-3)' }
+};
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent = 'กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
+  if (error) { err.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  renderTabs();
+  await loadProjects();
+}
+
+/* ---------------------- ตัวช่วย ---------------------- */
+function durationDays(start, finish) {
+  if (!start || !finish) return 1;
+  return Math.round((new Date(finish) - new Date(start)) / DAY) + 1;
+}
+function dayIndex(iso, from) {
+  return Math.round((new Date(iso) - new Date(from)) / DAY);
+}
+function formatTHB(n, compact) {
+  n = Number(n || 0);
+  if (compact) {
+    if (Math.abs(n) >= 1000000) return '฿' + (n / 1000000).toFixed(1) + 'M';
+    if (Math.abs(n) >= 1000)    return '฿' + (n / 1000).toFixed(0) + 'K';
+  }
+  return '฿' + n.toLocaleString('th-TH');
+}
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('th-TH', { day:'2-digit', month:'short', year:'2-digit' });
+}
+function riskKey(zone) {
+  return zone ? String(zone.risk_level || 'Cold').toLowerCase() : 'cold';
+}
+function zoneById(id) { return ZONES.find(z => z.zone_id === id) || null; }
+
+/** สร้างชื่อเต็มของโซนโดยไล่ขึ้นไปตามลำดับชั้น อาคาร › ชั้น › โซนย่อย */
+function zonePath(zone) {
+  const parts = [];
+  let cur = zone, guard = 0;
+  while (cur && guard++ < 10) { parts.unshift(cur.zone_name); cur = zoneById(cur.parent_zone_id); }
+  return parts.join(' › ');
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadProjects() {
+  const r = await sb.from('tb_projects')
+    .select('project_id, project_name, project_ref_code, status, start_date, end_date, total_project_value_thb')
+    .order('created_at', { ascending:false });
+  if (r.error) { reportError('โหลดรายการโครงการไม่สำเร็จ', r.error, 'select tb_projects'); return; }
+  PROJECTS = r.data || [];
+
+  const opts = PROJECTS.map(p =>
+    `<option value="${esc(p.project_id)}">${esc(p.project_name)}</option>`).join('');
+  document.getElementById('proj-select').innerHTML = opts;
+  document.getElementById('proj-select-mobile').innerHTML = opts;
+
+  const has = PROJECTS.length > 0;
+  document.getElementById('no-project').classList.toggle('hidden', has);
+  document.getElementById('content').classList.toggle('hidden', !has);
+  document.getElementById('content').classList.toggle('flex', has);
+  document.getElementById('proj-select').classList.toggle('hidden', !has);
+
+  if (has) {
+    document.getElementById('proj-select').value = PROJECTS[0].project_id;
+    document.getElementById('proj-select-mobile').value = PROJECTS[0].project_id;
+    await selectProject(PROJECTS[0].project_id);
+  }
+}
+
+async function selectProject(id) {
+  CUR = PROJECTS.find(p => p.project_id === id);
+  if (!CUR) return;
+  document.getElementById('proj-select').value = id;
+  document.getElementById('proj-select-mobile').value = id;
+  collapsed.clear();
+
+  const [z, t, rl, c] = await Promise.all([
+    sb.from('tb_zones')
+      .select('zone_id, parent_zone_id, zone_code, zone_name, zone_level, risk_level')
+      .eq('project_id', id).eq('is_active', true),
+    sb.from('tb_wbs_tasks')
+      .select('task_id, parent_task_id, wbs_code, wbs_level, task_name, task_type, zone_id, ' +
+              'vendor_id, boq_id, start_date, end_date, duration_days, ' +
+              'allocated_value_thb, percent_complete, risk_area_class')
+      .eq('project_id', id),
+    sb.from('vw_wbs_rollup')
+      .select('task_id, total_value_thb, child_count, rolled_percent_complete')
+      .eq('project_id', id),
+    sb.from('tb_project_contacts')
+      .select('contact_side, contact_role, full_name')
+      .eq('project_id', id).eq('is_active', true)
+  ]);
+
+  if (t.error) { reportError('โหลดแผนงานไม่สำเร็จ', t.error, 'select tb_wbs_tasks'); return; }
+
+  ZONES = z.error ? [] : (z.data || []);
+  TASKS = t.data || [];
+  ROLLUP = {};
+  if (!rl.error) (rl.data || []).forEach(x => { ROLLUP[x.task_id] = x; });
+
+  renderSummary(c.error ? [] : (c.data || []));
+  renderLegend();
+  renderGantt();
+}
+
+/* ---------------------- โครงสร้างต้นไม้ ---------------------- */
+function sortNodes(a, b) {
+  const ca = a.wbs_code || '', cb = b.wbs_code || '';
+  return ca.localeCompare(cb, undefined, { numeric:true }) || a.task_id.localeCompare(b.task_id);
+}
+
+/**
+ * แผ่ต้นไม้ให้เป็นรายการแถว รองรับความลึกไม่จำกัด
+ * ต่างจากต้นแบบที่รองรับแค่ 2 ระดับ เพราะแผนงานจริงลึกได้ถึง 1.1.1.1
+ */
+function flattenTree() {
+  const byParent = {};
+  TASKS.forEach(t => {
+    const k = t.parent_task_id || '__root__';
+    (byParent[k] = byParent[k] || []).push(t);
+  });
+  Object.values(byParent).forEach(a => a.sort(sortNodes));
+
+  const rows = [];
+  (function walk(parentKey, depth) {
+    (byParent[parentKey] || []).forEach(node => {
+      const kids = byParent[node.task_id] || [];
+      rows.push({ node: node, depth: depth, isParent: kids.length > 0 });
+      if (kids.length && !collapsed.has(node.task_id)) walk(node.task_id, depth + 1);
+    });
+  })('__root__', 0);
+
+  return rows;
+}
+
+/** มูลค่าที่ใช้แสดง — งานแม่ใช้ยอดรวมทั้งกิ่ง งานปลายกิ่งใช้ยอดของตัวเอง */
+function valueOf(node, isParent) {
+  const r = ROLLUP[node.task_id];
+  if (isParent && r) return Number(r.total_value_thb || 0);
+  return Number(node.allocated_value_thb || 0);
+}
+function pocOf(node, isParent) {
+  const r = ROLLUP[node.task_id];
+  if (isParent && r && r.rolled_percent_complete != null) return Number(r.rolled_percent_complete);
+  return Number(node.percent_complete || 0);
+}
+
+/* ---------------------- สรุปโครงการ ---------------------- */
+function projectKpis() {
+  // นับเฉพาะงานปลายกิ่ง ไม่งั้นยอดจะถูกนับซ้ำกับงานแม่
+  const parentIds = new Set(TASKS.map(t => t.parent_task_id).filter(Boolean));
+  const leaves = TASKS.filter(t => !parentIds.has(t.task_id));
+
+  const revenue   = Number(CUR.total_project_value_thb || 0);
+  const allocated = leaves.reduce((s, l) => s + Number(l.allocated_value_thb || 0), 0);
+  const earned    = leaves.reduce((s, l) => s + Number(l.allocated_value_thb || 0) * Number(l.percent_complete || 0) / 100, 0);
+  const remaining = revenue - allocated;
+
+  // ความก้าวหน้ารวมถ่วงน้ำหนักด้วยมูลค่า ถ้าไม่มีมูลค่าเลยจึงถ่วงด้วยจำนวนวัน
+  let overallPoc = 0;
+  if (allocated > 0) {
+    overallPoc = earned / allocated * 100;
+  } else if (leaves.length) {
+    const totalDays = leaves.reduce((s, l) => s + durationDays(l.start_date, l.end_date), 0);
+    overallPoc = leaves.reduce((s, l) =>
+      s + Number(l.percent_complete || 0) * durationDays(l.start_date, l.end_date), 0) / (totalDays || 1);
+  }
+
+  return {
+    revenue: revenue, allocated: allocated, remaining: remaining, earned: earned,
+    marginPct: revenue > 0 ? (remaining / revenue * 100) : 0,
+    overallPoc: Math.round(overallPoc * 10) / 10,
+    durationDays: durationDays(CUR.start_date, CUR.end_date)
+  };
+}
+
+const STATUS_TH = { Draft:'ร่าง', Setup:'กำลังตั้งค่า', Active:'เปิดใช้งาน', On_Hold:'พักชั่วคราว', Closed:'ปิดโครงการ' };
+
+function renderSummary(contacts) {
+  const k = projectKpis();
+  document.getElementById('proj-code').textContent = CUR.project_ref_code || CUR.project_id;
+  document.getElementById('proj-name').textContent = CUR.project_name;
+  document.getElementById('proj-range').textContent =
+    (CUR.start_date && CUR.end_date)
+      ? formatDate(CUR.start_date) + ' – ' + formatDate(CUR.end_date) + ' · ' + k.durationDays + ' วัน'
+      : 'ยังไม่ได้กำหนดช่วงเวลาโครงการ';
+
+  const st = document.getElementById('proj-status');
+  st.textContent = STATUS_TH[CUR.status] || CUR.status || '—';
+  st.className = 'rounded-full border px-2 py-0.5 text-[11px] font-medium ' +
+    (CUR.status === 'Active'
+      ? 'border-[var(--chart-5)]/40 bg-[var(--chart-5)]/10 text-[var(--chart-5)]'
+      : 'border-border bg-secondary text-muted-foreground');
+
+  // ผังองค์กรจากข้อมูลจริง ถ้าตำแหน่งไหนยังไม่มีคนจะขึ้นว่ายังไม่กำหนด
+  const pick = kw => {
+    const hit = contacts.find(c => (c.contact_role || '').includes(kw));
+    return hit ? hit.full_name : 'ยังไม่กำหนด';
+  };
+  const people = [
+    ['Project Owner',  contacts.find(c => c.contact_side === 'Owner') ? contacts.find(c => c.contact_side === 'Owner').full_name : 'ยังไม่กำหนด'],
+    ['Project Manager', pick('จัดการโครงการ') !== 'ยังไม่กำหนด' ? pick('จัดการโครงการ') : pick('PM')],
+    ['Safety Officer',  pick('ความปลอดภัย')]
+  ];
+  document.getElementById('proj-people').innerHTML = people.map(([l, v]) => `
+    <div class="flex flex-col">
+      <dt class="uppercase tracking-wider text-muted-foreground">${esc(l)}</dt>
+      <dd class="font-medium ${v === 'ยังไม่กำหนด' ? 'text-muted-foreground/70' : 'text-foreground'}">${esc(v)}</dd>
+    </div>`).join('');
+
+  const metric = (label, value, sub, color) => `
+    <div class="flex flex-col gap-1 px-4 py-3">
+      <span class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">${esc(label)}</span>
+      <span class="font-mono text-lg font-semibold leading-none ${color}">${esc(value)}</span>
+      ${sub ? `<span class="text-xs text-muted-foreground">${esc(sub)}</span>` : ''}
+    </div>`;
+
+  const marginColor = k.remaining < 0 ? 'text-destructive' : 'text-[var(--chart-5)]';
+  document.getElementById('kpi-grid').innerHTML =
+    metric('รายได้โครงการ (Revenue)', formatTHB(k.revenue, true), 'มูลค่าสัญญารวม', 'text-foreground') +
+    metric('ค่าใช้จ่ายผูกพัน (BOQ)', formatTHB(k.allocated, true), 'Allocated จากทุกทาสก์', 'text-foreground') +
+    metric('งบคงเหลือ (Margin)', formatTHB(k.remaining, true), k.marginPct.toFixed(1) + '% ของรายได้', marginColor) +
+    metric('มูลค่างานที่ทำได้ (EV)', formatTHB(k.earned, true), 'Earned Value ตาม POC', 'text-primary') +
+    `<div class="col-span-2 flex flex-col justify-center gap-2 px-4 py-3 md:col-span-1">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">ความก้าวหน้ารวม (POC)</span>
+        <span class="font-mono text-lg font-semibold leading-none text-primary">${k.overallPoc}%</span>
+      </div>
+      <div class="h-2 overflow-hidden rounded-full bg-secondary">
+        <div class="h-full rounded-full bg-primary" style="width:${Math.min(100, k.overallPoc)}%"></div>
+      </div>
+    </div>`;
+}
+
+/* ---------------------- ไอคอนและแท็บ ---------------------- */
+const ICON = {
+  chevronRight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  chevronDown:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  building:     '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/></svg>',
+  wrench:       '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  listTree:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>',
+  wallet:       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>',
+  mapPin:       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>',
+  activity:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>'
+};
+
+function renderTabs() {
+  const tabs = [
+    { label:'WBS & Master Plan', icon:ICON.listTree, active:true,  href:null },
+    { label:'BOQ & Budget',      icon:ICON.wallet,   active:false, href:'BOQ_Manager.html' },
+    { label:'Area & Zone',       icon:ICON.mapPin,   active:false, href:'Zone_Manager.html' },
+    { label:'Progress & Billing',icon:ICON.activity, active:false, href:null }
+  ];
+  document.getElementById('tabs').innerHTML = tabs.map(t => {
+    const cls = 'inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ' +
+      (t.active ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground');
+    return t.href
+      ? `<a href="${t.href}" class="${cls}">${t.icon}${esc(t.label)}</a>`
+      : `<button class="${cls}"${t.active ? '' : ' disabled title="อยู่ระหว่างพัฒนา"'}>${t.icon}${esc(t.label)}</button>`;
+  }).join('');
+}
+
+function renderLegend() {
+  document.getElementById('risk-legend').innerHTML = ['hot','warm','cold'].map(r => `
+    <span class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span class="size-2 rounded-full" style="background:${RISK_META[r].token}"></span>${RISK_META[r].label}
+    </span>`).join('');
+}
+
+/* ---------------------- Gantt ---------------------- */
+function zoneBadge(zoneId) {
+  const zone = zoneById(zoneId);
+  if (!zone) return '<span class="text-xs text-muted-foreground/60">—</span>';
+  const meta = RISK_META[riskKey(zone)];
+  return `<span class="inline-flex items-center gap-1.5" title="${esc(zonePath(zone))}">
+    <span class="size-2 shrink-0 rounded-full" style="background:${meta.token}"></span>
+    <span class="truncate text-xs text-foreground/80">${esc(zone.zone_name)}</span></span>`;
+}
+
+function renderGantt() {
+  const rows = flattenTree();
+  const root = document.getElementById('gantt-root');
+  const empty = document.getElementById('wbs-empty');
+
+  if (!rows.length) {
+    root.innerHTML = '';
+    root.parentElement.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+  root.parentElement.classList.remove('hidden');
+  empty.classList.add('hidden');
+
+  // ช่วงเวลาของแกน ใช้ของโครงการเป็นหลัก แต่ขยายให้คลุมงานที่หลุดกรอบด้วย
+  let axisStart = CUR.start_date || TASKS[0].start_date;
+  let axisEnd   = CUR.end_date   || TASKS[0].end_date;
+  TASKS.forEach(t => {
+    if (t.start_date && t.start_date < axisStart) axisStart = t.start_date;
+    if (t.end_date   && t.end_date   > axisEnd)   axisEnd   = t.end_date;
+  });
+
+  const totalDays  = durationDays(axisStart, axisEnd);
+  const ganttWidth = totalDays * DAY_W;
+
+  // Data Date = วันนี้ ถ้าอยู่นอกช่วงจะหนีบไว้ที่ขอบ
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const dataDate = todayIso < axisStart ? axisStart : (todayIso > axisEnd ? axisEnd : todayIso);
+  const dataDateX = dayIndex(dataDate, axisStart) * DAY_W;
+
+  // แถบเดือน
+  const months = [];
+  const startD = new Date(axisStart), endD = new Date(axisEnd);
+  let cur = new Date(startD.getFullYear(), startD.getMonth(), 1);
+  while (cur <= endD) {
+    const next = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+    const from = cur < startD ? startD : cur;
+    const to   = next > endD ? endD : next;
+    const left = dayIndex(from.toISOString().slice(0,10), axisStart) * DAY_W;
+    const width = ((to - from) / DAY) * DAY_W;
+    months.push({
+      label: cur.toLocaleDateString('th-TH', { month:'short' }) +
+             (cur.getMonth() === 0 || months.length === 0 ? ' ' + String(cur.getFullYear() + 543).slice(-2) : ''),
+      left: left, width: width
+    });
+    cur.setMonth(cur.getMonth() + 1);
+  }
+
+  const heads = [['WBS',56],['Task Name',248],['Zone / Risk',124],['Start',70],['Finish',70],['Dur',52],['BOQ (฿)',104],['POC',112]];
+
+  const header = `
+    <div class="flex border-b border-border bg-muted/60" style="height:56px">
+      <div class="sticky left-0 z-20 flex shrink-0 items-end border-r border-border bg-muted/60">
+        ${heads.map(([label, w]) => `<div style="width:${w}px" class="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">${esc(label)}</div>`).join('')}
+      </div>
+      <div class="relative" style="width:${ganttWidth}px">
+        <div class="absolute inset-x-0 top-0 flex h-full items-stretch">
+          ${months.map(m => `<div class="flex flex-col justify-end border-r border-border/70 pb-1 pl-1.5" style="width:${m.width}px"><span class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">${esc(m.label)}</span></div>`).join('')}
+        </div>
+        <span class="absolute left-2 top-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Timeline</span>
+      </div>
+    </div>`;
+
+  const gridBg = `repeating-linear-gradient(90deg, transparent, transparent ${DAY_W*7-1}px, var(--border) ${DAY_W*7}px, var(--border) ${DAY_W*7}px)`;
+
+  const rowsHtml = rows.map(r => {
+    const n = r.node;
+    const dur   = n.duration_days || durationDays(n.start_date, n.end_date);
+    const left  = dayIndex(n.start_date, axisStart) * DAY_W;
+    const width = dur * DAY_W;
+    const zone  = zoneById(n.zone_id);
+    const poc   = Math.round(pocOf(n, r.isParent) * 10) / 10;
+    const value = valueOf(n, r.isParent);
+    const barColor = r.isParent ? 'var(--primary)'
+                   : (zone ? RISK_META[riskKey(zone)].token : 'var(--muted-foreground)');
+
+    const toggleCell = r.isParent
+      ? `<button data-toggle="${esc(n.task_id)}" class="flex size-4 items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="พับหรือกางกิ่ง">${collapsed.has(n.task_id) ? ICON.chevronRight : ICON.chevronDown}</button>`
+      : `<span class="inline-flex size-4 items-center justify-center text-muted-foreground/50">${n.task_type === 'Contract' ? ICON.wrench : ICON.building}</span>`;
+
+    const budgetCell = value > 0
+      ? `<span class="text-foreground">${formatTHB(value, true)}</span>`
+      : `<span class="text-muted-foreground/60">Zero-cost</span>`;
+
+    const bar = r.isParent
+      ? `<div class="absolute rounded-sm" style="left:${left}px;width:${width}px;top:${ROW_H/2-5}px;height:10px;background:var(--primary);opacity:.85" title="${esc(n.task_name)} · ${poc}%">
+           <div class="h-full rounded-l-sm" style="width:${Math.min(100,poc)}%;background:rgba(0,0,0,.25)"></div>
+         </div>`
+      : `<div class="absolute overflow-hidden rounded-md border" style="left:${left}px;width:${width}px;top:${ROW_H/2-10}px;height:20px;border-color:${barColor};background:color-mix(in oklch, ${barColor} 16%, transparent)" title="${esc(n.task_name)} · ${formatDate(n.start_date)}–${formatDate(n.end_date)} · ${poc}%">
+           <div class="h-full" style="width:${Math.min(100,poc)}%;background:${barColor}"></div>
+           <span class="absolute inset-y-0 flex items-center text-[10px] font-medium tabular-nums" style="color:var(--foreground);left:${width+4}px">${poc}%</span>
+         </div>`;
+
+    return `
+      <div class="group flex border-b border-border/70 last:border-b-0 hover:bg-accent/40" style="height:${ROW_H}px">
+        <div class="sticky left-0 z-10 flex shrink-0 items-center border-r border-border bg-card group-hover:bg-accent/40 ${r.isParent ? 'font-semibold' : ''}">
+          <div style="width:56px" class="px-2 font-mono text-xs text-muted-foreground">${esc(n.wbs_code || '')}</div>
+          <div style="width:248px;padding-left:${r.depth*16+8}px" class="flex items-center gap-1.5 px-2">
+            ${toggleCell}
+            <span class="truncate text-sm text-foreground" title="${esc(n.task_name)}">${esc(n.task_name)}</span>
+          </div>
+          <div style="width:124px" class="px-2">${zoneBadge(n.zone_id)}</div>
+          <div style="width:70px" class="px-2 font-mono text-xs text-muted-foreground">${formatDate(n.start_date)}</div>
+          <div style="width:70px" class="px-2 font-mono text-xs text-muted-foreground">${formatDate(n.end_date)}</div>
+          <div style="width:52px" class="px-2 font-mono text-xs text-muted-foreground">${dur}d</div>
+          <div style="width:104px" class="px-2 text-right font-mono text-xs">${budgetCell}</div>
+          <div style="width:112px" class="flex items-center gap-2 px-2">
+            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
+              <div class="h-full rounded-full" style="width:${Math.min(100,poc)}%;background:${r.isParent ? 'var(--primary)' : barColor}"></div>
+            </div>
+            <span class="w-8 text-right font-mono text-[11px] tabular-nums text-muted-foreground">${poc}%</span>
+          </div>
+        </div>
+        <div class="relative" style="width:${ganttWidth}px;background-image:${gridBg}">
+          <div class="absolute top-0 z-10 w-px" style="left:${dataDateX}px;height:${ROW_H}px;background:color-mix(in oklch, var(--destructive) 70%, transparent)"></div>
+          ${bar}
+        </div>
+      </div>`;
+  }).join('');
+
+  root.innerHTML = header + `<div>${rowsHtml}</div>`;
+
+  root.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-toggle');
+      collapsed.has(id) ? collapsed.delete(id) : collapsed.add(id);
+      renderGantt();
+    });
+  });
+}
+
+/* ---------------------- รายงานข้อผิดพลาด ---------------------- */
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step: step, error: err });
+  const e = err || {};
+  const code = String(e.code || '');
+  let hint = '';
+  if (code === '42P01') hint = 'ยังไม่มีตารางหรือมุมมองนี้ — ตรวจว่ารัน sprint2 PART 7 (vw_wbs_rollup) แล้วหรือยัง';
+  else if (code === '42501' || e.status === 403) hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ต้อง GRANT ให้ role authenticated';
+  else if (code === '42703') hint = 'มีคอลัมน์ที่ยังไม่มีในฐานข้อมูล — ตรวจว่ารัน sprint2 ครบทุก PART แล้วหรือยัง';
+
+  Swal.fire({
+    icon: 'error', title: title,
+    html: (hint ? `<p style="font-size:.85rem;margin-bottom:.6rem">${esc(hint)}</p>` : '') +
+      `<pre style="text-align:left;font-size:.7rem;background:#F1F5F9;border-radius:.5rem;padding:.6rem;white-space:pre-wrap;word-break:break-all;margin:0">code: ${esc(code || '-')}\nmessage: ${esc(e.message || String(err))}\nขั้นตอน: ${esc(step || '-')}</pre>`,
+    confirmButtonColor: '#3b5bdb', width: 540
+  });
+}
+
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ', (r && typeof r === 'object') ? r : { message:String(r) }, 'promise ที่ไม่มีใครดัก');
+});
+
+/* ---------------------- เริ่มทำงาน ---------------------- */
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
