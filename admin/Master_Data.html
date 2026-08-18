@@ -94,6 +94,7 @@
       class="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
       เข้าสู่ระบบ
     </button>
+    <button type="button" onclick="openForgot()" class="mt-3 w-full text-center text-xs font-medium text-slate-500 underline hover:text-brand-navy">ลืมรหัสผ่าน?</button>
     <p id="log-err" class="hidden mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"></p>
   </div>
 </div>
@@ -228,6 +229,46 @@ async function doLogin() {
   if (error) { err.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
   await enterApp();
 }
+/* ---------------------- ลืมรหัสผ่าน ---------------------- */
+/**
+ * ส่งลิงก์ตั้งรหัสผ่านใหม่ทางอีเมลผ่าน Supabase Auth
+ * ระบบจะตอบข้อความเดียวกันเสมอไม่ว่าอีเมลนั้นมีอยู่จริงหรือไม่
+ * เพื่อไม่ให้ใครใช้หน้านี้ไล่เดาว่ามีบัญชีของใครอยู่ในระบบบ้าง
+ */
+async function openForgot() {
+  const { value: email } = await Swal.fire({
+    title: 'ลืมรหัสผ่าน',
+    html: '<p style="font-size:.85rem;color:#64748B;margin-bottom:.75rem">' +
+          'กรอกอีเมลที่ใช้เข้าสู่ระบบ ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้</p>',
+    input: 'email',
+    inputPlaceholder: 'name@company.co.th',
+    inputValue: (document.getElementById('log-email') || {}).value || '',
+    showCancelButton: true,
+    confirmButtonText: 'ส่งลิงก์',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#19335A',
+    inputValidator: v => (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()))
+      ? 'กรอกอีเมลให้ถูกรูปแบบ' : undefined
+  });
+  if (!email) return;
+
+  Swal.fire({ title: 'กำลังส่ง…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  Swal.close();
+  await new Promise(r => setTimeout(r, 250));
+
+  if (error) console.error('[FTC] resetPasswordForEmail', error);
+  Swal.fire({
+    icon: 'success',
+    title: 'ส่งลิงก์แล้ว',
+    html: 'ถ้าอีเมลนี้มีบัญชีอยู่ในระบบ จะได้รับลิงก์ตั้งรหัสผ่านใหม่ภายในไม่กี่นาที<br>' +
+          '<span style="font-size:.8rem;color:#64748B">หากไม่พบ กรุณาตรวจในกล่องจดหมายขยะ</span>',
+    confirmButtonColor: '#19335A'
+  });
+}
+
 async function doLogout() { await sb.auth.signOut(); location.reload(); }
 
 async function enterApp() {
