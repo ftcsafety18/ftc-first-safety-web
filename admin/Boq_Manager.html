@@ -71,6 +71,7 @@ tailwind.config = { theme: { extend: {
     <label class="lbl">รหัสผ่าน</label>
     <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
     <button onclick="doLogin()" id="btn-login" class="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">เข้าสู่ระบบ</button>
+    <button type="button" onclick="openForgot()" class="mt-3 w-full text-center text-xs font-medium text-muted-foreground underline hover:text-foreground">ลืมรหัสผ่าน?</button>
     <p id="log-err" class="hidden mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"></p>
   </div>
 </div>
@@ -187,6 +188,8 @@ tailwind.config = { theme: { extend: {
     <div class="space-y-4 px-6 py-5">
       <p id="task-parent-info" class="hidden rounded-md bg-secondary px-3 py-2 text-xs text-secondary-foreground"></p>
 
+      <div id="type-info" class="rounded-lg border-l-4 p-3 text-[12px] leading-relaxed"></div>
+
       <div>
         <label class="lbl">ประเภทงาน <span class="text-destructive">*</span></label>
         <div class="grid grid-cols-3 gap-2">
@@ -202,7 +205,7 @@ tailwind.config = { theme: { extend: {
           <input id="t-code" class="fld" placeholder="1.1">
         </div>
         <div class="col-span-2">
-          <label class="lbl">ชื่องาน <span class="text-destructive">*</span></label>
+          <label id="t-name-label" class="lbl">ชื่องาน <span class="text-destructive">*</span></label>
           <input id="t-name" class="fld" placeholder="งานปูกระเบื้องพื้นชั้น 3">
         </div>
       </div>
@@ -311,8 +314,11 @@ tailwind.config = { theme: { extend: {
       </div>
 
       <div>
-        <label class="lbl">รายละเอียดตำแหน่งงาน</label>
-        <input id="a-loc" class="fld" placeholder="อาคาร A ชั้น 3 ห้องเครื่อง">
+        <label class="lbl">หมายเหตุการจ้าง</label>
+        <input id="a-loc" class="fld" placeholder="เช่น รวมค่าขนย้าย ไม่รวมค่าวัสดุสิ้นเปลือง">
+        <p class="mt-1 text-[10px] text-muted-foreground">
+          พื้นที่ปฏิบัติงานผูกไว้แล้วตอนตั้งงบ ช่องนี้ใช้บันทึกเงื่อนไขการจ้างเพิ่มเติม
+        </p>
       </div>
     </div>
     <div class="flex flex-col-reverse gap-3 rounded-b-lg border-t border-border bg-muted/40 px-6 py-4 sm:flex-row">
@@ -364,6 +370,46 @@ async function doLogin() {
   if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
   await enterApp();
 }
+/* ---------------------- ลืมรหัสผ่าน ---------------------- */
+/**
+ * ส่งลิงก์ตั้งรหัสผ่านใหม่ทางอีเมลผ่าน Supabase Auth
+ * ระบบจะตอบข้อความเดียวกันเสมอไม่ว่าอีเมลนั้นมีอยู่จริงหรือไม่
+ * เพื่อไม่ให้ใครใช้หน้านี้ไล่เดาว่ามีบัญชีของใครอยู่ในระบบบ้าง
+ */
+async function openForgot() {
+  const { value: email } = await Swal.fire({
+    title: 'ลืมรหัสผ่าน',
+    html: '<p style="font-size:.85rem;color:#64748B;margin-bottom:.75rem">' +
+          'กรอกอีเมลที่ใช้เข้าสู่ระบบ ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้</p>',
+    input: 'email',
+    inputPlaceholder: 'name@company.co.th',
+    inputValue: (document.getElementById('log-email') || {}).value || '',
+    showCancelButton: true,
+    confirmButtonText: 'ส่งลิงก์',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#19335A',
+    inputValidator: v => (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()))
+      ? 'กรอกอีเมลให้ถูกรูปแบบ' : undefined
+  });
+  if (!email) return;
+
+  Swal.fire({ title: 'กำลังส่ง…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  Swal.close();
+  await new Promise(r => setTimeout(r, 250));
+
+  if (error) console.error('[FTC] resetPasswordForEmail', error);
+  Swal.fire({
+    icon: 'success',
+    title: 'ส่งลิงก์แล้ว',
+    html: 'ถ้าอีเมลนี้มีบัญชีอยู่ในระบบ จะได้รับลิงก์ตั้งรหัสผ่านใหม่ภายในไม่กี่นาที<br>' +
+          '<span style="font-size:.8rem;color:#64748B">หากไม่พบ กรุณาตรวจในกล่องจดหมายขยะ</span>',
+    confirmButtonColor: '#19335A'
+  });
+}
+
 async function doLogout() { await sb.auth.signOut(); location.reload(); }
 
 async function enterApp() {
@@ -564,7 +610,8 @@ function renderTree() {
           <div class="h-full rounded-full" style="width:${pct}%;background:${over ? 'var(--destructive)' : 'var(--chart-5)'}"></div>
         </div>
         <p class="mt-0.5 text-[10px] tabular-nums ${over ? 'font-semibold text-destructive' : 'text-muted-foreground'}">
-          ${money(assigned)} / ${money(budget)}${over ? ' เกินงบ' : ''}</p>`;
+          ${money(assigned)} / ${money(budget)}${over ? ' เกินงบ' : ''}</p>
+        ${t.location_detail ? `<p class="mt-0.5 truncate text-[10px] text-muted-foreground" title="${esc(t.location_detail)}">📝 ${esc(t.location_detail)}</p>` : ''}`;
 
     const actions = [];
     if (t.task_type === 'Summary')
@@ -574,7 +621,12 @@ function renderTree() {
     actions.push(`<button onclick="openTask('${esc(t.task_id)}',null)" class="rounded border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground">แก้ไข</button>`);
     actions.push(`<button onclick="delTask('${esc(t.task_id)}')" class="rounded border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-destructive">ลบ</button>`);
 
-    return `<tr class="hover:bg-accent/30 ${r.hasKids ? 'bg-muted/30 font-semibold' : ''}">
+    // ระดับบนสุดใช้พื้นหลังเทาเข้มกว่าและตัวหนา เพื่อแบ่ง section ให้เห็นชัด
+    const rowCls = r.depth === 0
+      ? 'bg-secondary font-bold border-t-2 border-border'
+      : (r.hasKids ? 'bg-muted/40 font-semibold' : '');
+
+    return `<tr class="hover:bg-accent/30 ${rowCls}">
       <td class="px-3 py-2.5 font-mono text-xs text-muted-foreground">${esc(t.wbs_code || '')}</td>
       <td class="px-3 py-2.5" style="padding-left:${r.depth*20+12}px">
         <div class="flex items-center gap-1.5">${toggle}
@@ -590,15 +642,59 @@ function renderTree() {
 }
 
 /* ---------------------- เพิ่ม/แก้ไขงาน ---------------------- */
+/** ข้อมูลประจำแต่ละประเภทงาน รวมไว้ที่เดียวเพื่อให้ป้ายกับคำอธิบายไม่หลุดจากกัน */
+const TASK_TYPE_META = {
+  Summary: {
+    label: 'ชื่อหมวดงานหลัก',
+    placeholder: 'เช่น งานโครงสร้าง, งานสถาปัตยกรรม, งานระบบไฟฟ้า',
+    info: 'หมวดงานหลักทำหน้าที่เหมือนโฟลเดอร์ ใช้รวบยอดเงินและความก้าวหน้าจากงานย่อยข้างในขึ้นมา ' +
+          'ตัวมันเองไม่มีราคา ไม่มีพื้นที่ และขอใบอนุญาตทำงานไม่ได้',
+    tone: '#3b5bdb', bg: 'rgba(59,91,219,.07)'
+  },
+  Contract: {
+    label: 'ชื่อรายการงานจ้าง',
+    placeholder: 'เช่น งานปูกระเบื้องชั้น 1, งานเดินท่อร้อยสายชั้น 3',
+    info: 'งานจ้างผู้รับเหมาคือหน้างานจริง ต้องผูกพื้นที่เพื่อให้รู้ระดับความเสี่ยงตั้งแต่วางแผน ' +
+          'และต้องตั้งงบประมาณ (BOQ) เพื่อใช้คุมไม่ให้ยอดจ้างเกินงบ — เฉพาะงานประเภทนี้เท่านั้นที่ขอใบอนุญาตทำงานได้',
+    tone: '#c2410c', bg: 'rgba(219,90,36,.08)'
+  },
+  Internal: {
+    label: 'ชื่อกิจกรรม / งานภายใน',
+    placeholder: 'เช่น ประชุมประจำสัปดาห์, จัดทำเอกสารส่งมอบ',
+    info: 'งานบริหารภายในใช้วางแผนเวลาของทีม FTC เอง ไม่มีค่าใช้จ่ายผู้รับเหมา ' +
+          'ไม่ต้องผูกพื้นที่ และขอใบอนุญาตทำงานไม่ได้',
+    tone: '#64748b', bg: 'rgba(100,116,139,.08)'
+  }
+};
+
 function setTaskType(v) {
   currentType = v;
+  const meta = TASK_TYPE_META[v];
+
   ['Summary','Contract','Internal'].forEach(k => {
     const el = document.getElementById('tt-' + k);
     const on = k === v;
-    el.style.borderColor = on ? 'var(--primary)' : 'var(--border)';
-    el.style.color = on ? 'var(--primary)' : 'var(--muted-foreground)';
-    el.style.background = on ? 'color-mix(in oklch, var(--primary) 8%, transparent)' : 'transparent';
+    // ปุ่มที่เลือกอยู่ให้ทึบเด่นชัด ส่วนที่ไม่ได้เลือกให้จางลงจนแยกออกทันที
+    el.style.borderColor = on ? TASK_TYPE_META[k].tone : 'var(--border)';
+    el.style.background  = on ? TASK_TYPE_META[k].tone : 'transparent';
+    el.style.color       = on ? '#fff' : 'var(--muted-foreground)';
+    el.style.opacity     = on ? '1' : '.65';
+    el.style.boxShadow   = on ? '0 2px 8px rgba(0,0,0,.15)' : 'none';
+    el.style.fontWeight  = on ? '700' : '500';
   });
+
+  // ป้ายกำกับและตัวอย่างเปลี่ยนตามประเภท เพื่อไม่ให้ผู้ใช้ต้องเดาว่าควรพิมพ์อะไร
+  document.getElementById('t-name-label').innerHTML =
+    esc(meta.label) + ' <span class="text-destructive">*</span>';
+  document.getElementById('t-name').placeholder = meta.placeholder;
+
+  const info = document.getElementById('type-info');
+  info.textContent = meta.info;
+  info.style.borderLeftColor = meta.tone;
+  info.style.background = meta.bg;
+  info.style.color = 'var(--foreground)';
+
+  // ซ่อนพื้นที่และงบประมาณเมื่อไม่ใช่งานจ้างผู้รับเหมา
   document.getElementById('box-contract').classList.toggle('hidden', v !== 'Contract');
 }
 
