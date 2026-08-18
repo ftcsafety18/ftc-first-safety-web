@@ -27,10 +27,13 @@ tailwind.config = { theme: { extend: {
   .lbl { display:block; font-size:.8rem; font-weight:600; color:#334155; margin-bottom:.35rem; }
   .chip { display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .6rem;
           border-radius:999px; font-size:.7rem; font-weight:700; white-space:nowrap; }
-  .tab { padding:.7rem 1.1rem; font-size:.82rem; font-weight:700; color:#64748B;
-         border-bottom:3px solid transparent; white-space:nowrap; transition:.15s; }
-  .tab:hover { color:#19335A; }
-  .tab.on { color:#19335A; border-bottom-color:#DB5A24; }
+  .tab { padding:.75rem 1.25rem; font-size:.85rem; font-weight:700; color:#64748B;
+         border-bottom:3px solid transparent; white-space:nowrap; transition:.15s;
+         border-top-left-radius:.5rem; border-top-right-radius:.5rem; }
+  .tab:hover { color:#19335A; background:#EEF2F7; }
+  .tab.on { color:#fff; background:#19335A; border-bottom-color:#DB5A24;
+            box-shadow:0 2px 6px rgba(25,51,90,.25); }
+  .tab.on:hover { background:#19335A; }
   .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:60;
                 display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
   .card { background:#fff; border:1px solid #E2E8F0; border-radius:1rem; box-shadow:0 1px 2px rgba(0,0,0,.04); }
@@ -355,6 +358,15 @@ tailwind.config = { theme: { extend: {
 
           <div class="rounded-xl border-2 border-slate-200 p-4 mb-5">
             <p class="text-xs font-bold uppercase tracking-wider text-brand-orange mb-3">เวลาทำงานและเพดานชั่วโมง</p>
+            <label class="mb-3 flex items-start gap-2.5 cursor-pointer rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <input type="checkbox" id="s-24h" class="mt-0.5 w-5 h-5 rounded accent-brand-navy shrink-0" onchange="toggle24h()">
+              <span class="text-sm text-slate-700 leading-relaxed">
+                โครงการนี้ทำงานตลอด 24 ชั่วโมง
+                <span class="block text-[11px] text-slate-500 mt-0.5">
+                  ระบบจะไม่บล็อกการขอใบอนุญาตทำงานนอกเวลาทำการ เหมาะกับงานหยุดซ่อมโรงงานหรืองานกะกลางคืน
+                </span>
+              </span>
+            </label>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <label class="lbl">เริ่มงาน</label>
@@ -384,7 +396,9 @@ tailwind.config = { theme: { extend: {
               </div>
               <div>
                 <label class="lbl">เบอร์ติดต่อฉุกเฉิน</label>
-                <input id="s-emgphone" class="fld">
+                <input id="s-emgphone" class="fld" inputmode="numeric" maxlength="15"
+                       oninput="this.value=this.value.replace(/[^0-9\-]/g,'')"
+                       placeholder="เช่น 1669 หรือ 038-123456">
               </div>
             </div>
           </div>
@@ -420,7 +434,11 @@ tailwind.config = { theme: { extend: {
               <p class="text-xs text-slate-500">ต้องมีอย่างน้อย 1 รายจึงจะเปิดใช้งานโครงการได้</p>
             </div>
             <div class="flex gap-2 flex-wrap">
-              <select id="vendor-pick" class="fld w-auto min-w-[240px]"></select>
+              <div class="relative">
+                <input id="vendor-pick" class="fld w-auto min-w-[280px]" list="vendor-list"
+                       placeholder="พิมพ์ชื่อหรือรหัสเพื่อค้นหา" autocomplete="off">
+                <datalist id="vendor-list"></datalist>
+              </div>
               <button onclick="addProjectVendor()"
                 class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">
                 เพิ่มเข้าโครงการ
@@ -504,15 +522,23 @@ tailwind.config = { theme: { extend: {
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="lbl">ฝ่าย <span class="text-red-500">*</span></label>
-          <select id="ct-side" class="fld">
-            <option value="Owner">เจ้าของโครงการ</option>
-            <option value="Consultant">ที่ปรึกษาโครงการ</option>
-            <option value="FTC">ฝ่าย FTC</option>
-          </select>
+          <input id="ct-side" class="fld" list="side-list" placeholder="เลือกหรือพิมพ์เอง">
+          <datalist id="side-list">
+            <option value="Owner" label="เจ้าของโครงการ">
+            <option value="Consultant" label="ที่ปรึกษาโครงการ">
+            <option value="FTC" label="ฝ่าย FTC">
+          </datalist>
+          <p class="text-[10px] text-slate-400 mt-1">ค่ามาตรฐาน Owner / Consultant / FTC</p>
         </div>
         <div>
           <label class="lbl">บทบาท <span class="text-red-500">*</span></label>
-          <input id="ct-role" class="fld" placeholder="เจ้าหน้าที่ความปลอดภัย">
+          <input id="ct-role" class="fld" list="role-list" placeholder="เจ้าหน้าที่ความปลอดภัย">
+          <datalist id="role-list">
+            <option value="เจ้าของโครงการ"><option value="ผู้จัดการโครงการ">
+            <option value="ที่ปรึกษาโครงการ"><option value="เจ้าหน้าที่ความปลอดภัย">
+            <option value="ผู้ควบคุมงาน"><option value="ผู้ประสานงานโครงการ">
+            <option value="วิศวกรโครงการ"><option value="ผู้ตรวจสอบงาน">
+          </datalist>
         </div>
       </div>
       <div>
@@ -526,16 +552,17 @@ tailwind.config = { theme: { extend: {
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="lbl">เบอร์โทรศัพท์</label>
-          <input id="ct-phone" class="fld">
+          <input id="ct-phone" class="fld" inputmode="numeric" maxlength="12" oninput="fmtPhone(this)">
         </div>
         <div>
           <label class="lbl">อีเมล</label>
-          <input id="ct-email" type="email" class="fld">
+          <input id="ct-email" type="email" class="fld" oninput="validateEmailField(this)">
+          <p id="ct-email-err" class="hidden text-[10px] text-red-600 mt-1">รูปแบบอีเมลไม่ถูกต้อง</p>
         </div>
       </div>
       <div>
         <label class="lbl">LINE ID ที่ใช้ติดต่อ</label>
-        <input id="ct-lineid" class="fld" placeholder="@example">
+        <input id="ct-lineid" class="fld" placeholder="@example" oninput="cleanLineId(this)">
         <p class="text-[10px] text-slate-400 mt-1">
           ช่องนี้ใช้ติดต่อด้วยคน ระบบส่งข้อความอัตโนมัติไม่ได้ — ต้องกดสร้างลิงก์ผูกในตารางหลังบันทึก
         </p>
@@ -594,10 +621,10 @@ async function loadLookups() {
     .select('vendor_id, vendor_name, entity_type, is_blacklisted').order('vendor_name');
   if (!v.error) {
     ALL_VENDORS = v.data || [];
-    document.getElementById('vendor-pick').innerHTML =
-      '<option value="">-- เลือกผู้รับเหมา --</option>' +
+    // ใช้ datalist เพื่อให้พิมพ์ค้นหาได้ เพราะรายชื่อผู้รับเหมามีหลายร้อยราย
+    document.getElementById('vendor-list').innerHTML =
       ALL_VENDORS.filter(x => !x.is_blacklisted)
-        .map(x => `<option value="${FTC.esc(x.vendor_id)}">${FTC.esc(x.vendor_name)} (${FTC.esc(x.vendor_id)})</option>`).join('');
+        .map(x => `<option value="${FTC.esc(x.vendor_id)} · ${FTC.esc(x.vendor_name)}"></option>`).join('');
   }
 }
 
@@ -876,8 +903,12 @@ function fillSite() {
   document.getElementById('s-lat').value      = p.gps_lat || '';
   document.getElementById('s-lng').value      = p.gps_lng || '';
   document.getElementById('s-radius').value   = p.geofence_radius || 100;
-  document.getElementById('s-start').value    = (p.work_start_time || '08:00').slice(0,5);
-  document.getElementById('s-end').value      = (p.work_end_time || '17:00').slice(0,5);
+  // ไม่มีเวลาเริ่ม-เลิกงานในฐานข้อมูล แปลว่าโครงการนี้ทำงานตลอด 24 ชั่วโมง
+  const is24 = !p.work_start_time && !p.work_end_time;
+  document.getElementById('s-24h').checked = is24;
+  document.getElementById('s-start').value = is24 ? '' : (p.work_start_time || '08:00').slice(0,5);
+  document.getElementById('s-end').value   = is24 ? '' : (p.work_end_time || '17:00').slice(0,5);
+  toggle24h();
   document.getElementById('s-maxhr').value    = p.max_work_hours || 10;
   document.getElementById('s-forcehr').value  = p.force_checkout_hours || 12;
   document.getElementById('s-hospital').value = p.emergency_hospital || '';
@@ -930,8 +961,8 @@ async function saveSite() {
       gps_lng: isNaN(lng) ? null : lng,
       gps_lat_long: (!isNaN(lat) && !isNaN(lng)) ? (lat + ',' + lng) : null,
       geofence_radius: rad,
-      work_start_time: document.getElementById('s-start').value || null,
-      work_end_time: document.getElementById('s-end').value || null,
+      work_start_time: document.getElementById('s-24h').checked ? null : (document.getElementById('s-start').value || null),
+      work_end_time:   document.getElementById('s-24h').checked ? null : (document.getElementById('s-end').value || null),
       max_work_hours: maxhr, force_checkout_hours: forcehr,
       emergency_hospital: document.getElementById('s-hospital').value.trim() || null,
       emergency_phone: document.getElementById('s-emgphone').value.trim() || null,
@@ -1010,6 +1041,47 @@ async function delMuster(id) {
   await loadMusters(); renderHeader();
 }
 
+/* ---------------------- ตรวจสอบข้อมูลที่ผู้ใช้กรอก ---------------------- */
+
+/** เบอร์โทรรับเฉพาะตัวเลข แล้วจัดรูปแบบให้อ่านง่าย */
+function fmtPhone(el) {
+  const d = el.value.replace(/\D/g, '').slice(0, 10);
+  el.value = d.length > 6 ? d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6)
+           : d.length > 3 ? d.slice(0,3)+'-'+d.slice(3) : d;
+}
+
+/** ตรวจรูปแบบอีเมลขณะพิมพ์ ให้เห็นทันทีไม่ต้องรอกดบันทึก */
+function validateEmailField(el) {
+  const err = document.getElementById(el.id + '-err');
+  const ok = !el.value.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(el.value.trim());
+  if (err) err.classList.toggle('hidden', ok);
+  el.style.borderColor = ok ? '' : '#DC2626';
+}
+
+/**
+ * LINE ID รับได้เฉพาะ a-z 0-9 . _ - โดยมี @ นำหน้าเสมอ
+ * ตัดภาษาไทยและอักขระอื่นออกทันทีขณะพิมพ์ เพราะ LINE ไม่รองรับ
+ * และถ้าปล่อยให้บันทึกไป จะกลายเป็นข้อมูลติดต่อที่ใช้จริงไม่ได้
+ */
+function cleanLineId(el) {
+  const v = el.value.replace(/[^a-zA-Z0-9._-]/g, '').toLowerCase();
+  el.value = v ? '@' + v : '';
+}
+
+/** ทำงาน 24 ชั่วโมง = ไม่ต้องกำหนดเวลาเริ่ม-เลิกงาน */
+function toggle24h() {
+  const box = document.getElementById('s-24h');
+  if (!box) return;
+  const on = box.checked;
+  ['s-start','s-end'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = on;
+    el.classList.toggle('bg-slate-100', on);
+    if (on) el.value = '';
+  });
+}
+
 /* ---------------------- ผู้เกี่ยวข้อง C3 ---------------------- */
 async function loadContacts() {
   const r = await sb.from('tb_project_contacts').select('*')
@@ -1071,10 +1143,21 @@ async function saveContact() {
     if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อ-สกุล','warning');
     if (!role) return Swal.fire('ยังกรอกไม่ครบ','ระบุบทบาทในโครงการ','warning');
 
+    const side = document.getElementById('ct-side').value.trim();
+    if (!side) return Swal.fire('ยังกรอกไม่ครบ','ระบุฝ่ายที่สังกัด','warning');
+
+    const email = document.getElementById('ct-email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))
+      return Swal.fire('อีเมลไม่ถูกต้อง','ตรวจรูปแบบอีเมลอีกครั้ง เช่น name@company.co.th','warning');
+
+    const phoneDigits = document.getElementById('ct-phone').value.replace(/\D/g,'');
+    if (phoneDigits && phoneDigits.length < 9)
+      return Swal.fire('เบอร์โทรไม่ครบ','เบอร์โทรศัพท์ต้องมีอย่างน้อย 9 หลัก','warning');
+
     btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
     const payload = {
       project_id: CUR.project_id,
-      contact_side: document.getElementById('ct-side').value,
+      contact_side: side,
       contact_role: role, full_name: name,
       company_name: document.getElementById('ct-company').value.trim() || null,
       phone: document.getElementById('ct-phone').value.trim() || null,
@@ -1195,8 +1278,22 @@ async function loadProjectVendors() {
 }
 
 async function addProjectVendor() {
-  const vid = document.getElementById('vendor-pick').value;
-  if (!vid) return Swal.fire('ยังไม่ได้เลือก','เลือกผู้รับเหมาก่อนกดเพิ่ม','warning');
+  const raw = document.getElementById('vendor-pick').value.trim();
+  if (!raw) return Swal.fire('ยังไม่ได้เลือก','พิมพ์ค้นหาแล้วเลือกผู้รับเหมาก่อนกดเพิ่ม','warning');
+
+  // ช่องนี้เป็นข้อความอิสระ จึงต้องหาว่าตรงกับผู้รับเหมารายไหน
+  const code = raw.split('·')[0].trim();
+  const hit = ALL_VENDORS.find(v => v.vendor_id === code) ||
+              ALL_VENDORS.find(v => v.vendor_name === raw) ||
+              ALL_VENDORS.filter(v => (v.vendor_name || '').toLowerCase().includes(raw.toLowerCase()));
+  const vid = Array.isArray(hit) ? (hit.length === 1 ? hit[0].vendor_id : null) : hit.vendor_id;
+
+  if (!vid) {
+    return Swal.fire('ไม่พบผู้รับเหมา',
+      Array.isArray(hit) && hit.length > 1
+        ? 'พบผู้รับเหมาที่ตรงกับคำค้นหลายราย กรุณาเลือกจากรายการให้ชัดเจน'
+        : 'ไม่พบผู้รับเหมาที่ตรงกับคำค้น กรุณาเลือกจากรายการที่ระบบแนะนำ', 'warning');
+  }
   const r = await sb.from('tb_project_vendors').insert({ project_id: CUR.project_id, vendor_id: vid });
   if (r.error) {
     if (r.error.code === '23505') Swal.fire('ซ้ำ','ผู้รับเหมารายนี้อยู่ในโครงการแล้ว','warning');
