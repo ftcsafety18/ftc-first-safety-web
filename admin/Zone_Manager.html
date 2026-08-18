@@ -118,17 +118,17 @@ tailwind.config = { theme: { extend: {
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div class="flex items-start gap-2">
           <span class="mt-1 size-2.5 shrink-0 rounded-full" style="background:var(--chart-1)"></span>
-          <div><p class="text-sm font-semibold text-foreground">Hot Zone · เขตอันตราย</p>
+          <div><p class="text-sm font-semibold text-foreground">Hot Zone · พื้นที่อันตราย</p>
             <p class="text-xs text-muted-foreground">ที่อับอากาศ งานร้อน ไฟฟ้าแรงสูง ที่สูง</p></div>
         </div>
         <div class="flex items-start gap-2">
           <span class="mt-1 size-2.5 shrink-0 rounded-full" style="background:var(--chart-2)"></span>
-          <div><p class="text-sm font-semibold text-foreground">Warm Zone · เขตควบคุม</p>
+          <div><p class="text-sm font-semibold text-foreground">Warm Zone · พื้นที่ควบคุมความเสี่ยง</p>
             <p class="text-xs text-muted-foreground">พื้นที่ก่อสร้างทั่วไป ต้องมีใบอนุญาต</p></div>
         </div>
         <div class="flex items-start gap-2">
           <span class="mt-1 size-2.5 shrink-0 rounded-full" style="background:var(--chart-3)"></span>
-          <div><p class="text-sm font-semibold text-foreground">Cold Zone · เขตปลอดภัย</p>
+          <div><p class="text-sm font-semibold text-foreground">Cold Zone · พื้นที่ปลอดภัย</p>
             <p class="text-xs text-muted-foreground">สำนักงานสนาม พื้นที่พัก ทางเดิน</p></div>
         </div>
       </div>
@@ -176,26 +176,31 @@ tailwind.config = { theme: { extend: {
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="lbl">ระดับ <span class="text-destructive">*</span></label>
-          <select id="z-level" class="fld" onchange="onLevelChange()"></select>
+          <!-- ระดับถูกกำหนดจากตำแหน่งในผังเสมอ ผู้ใช้เลือกเองไม่ได้ -->
+          <div id="z-level-label" class="rounded-md border border-border bg-muted px-3 py-2.5 text-sm font-semibold text-foreground"></div>
+          <input type="hidden" id="z-level">
         </div>
         <div>
           <label class="lbl">รหัสพื้นที่ <span class="text-destructive">*</span></label>
           <input id="z-code" class="fld font-mono" placeholder="A-03-MEP">
           <p class="mt-1 text-[10px] text-muted-foreground">ห้ามซ้ำภายในโครงการเดียวกัน</p>
+          <p id="z-code-used" class="mt-1 text-[10px] leading-relaxed text-muted-foreground"></p>
         </div>
       </div>
 
+      <p id="z-level-help" class="rounded-md border border-border bg-secondary px-3 py-2.5 text-[11px] leading-relaxed text-secondary-foreground"></p>
+
       <div>
-        <label class="lbl">ชื่อพื้นที่ <span class="text-destructive">*</span></label>
+        <label id="z-name-label" class="lbl">ชื่อพื้นที่ <span class="text-destructive">*</span></label>
         <input id="z-name" class="fld" placeholder="โซนงานระบบ MEP">
       </div>
 
       <div>
         <label class="lbl">ระดับความเสี่ยง <span class="text-destructive">*</span></label>
         <div class="grid grid-cols-3 gap-2">
-          <button type="button" id="rb-Cold" onclick="setRisk('Cold')" class="rounded-md border-2 py-2.5 text-sm font-semibold transition">Cold · ปลอดภัย</button>
-          <button type="button" id="rb-Warm" onclick="setRisk('Warm')" class="rounded-md border-2 py-2.5 text-sm font-semibold transition">Warm · ควบคุม</button>
-          <button type="button" id="rb-Hot"  onclick="setRisk('Hot')"  class="rounded-md border-2 py-2.5 text-sm font-semibold transition">Hot · อันตราย</button>
+          <button type="button" id="rb-Cold" onclick="setRisk('Cold')" class="rounded-md border-2 px-2 py-2.5 text-xs font-semibold leading-tight transition">Cold<br><span class="font-normal">พื้นที่ปลอดภัย</span></button>
+          <button type="button" id="rb-Warm" onclick="setRisk('Warm')" class="rounded-md border-2 px-2 py-2.5 text-xs font-semibold leading-tight transition">Warm<br><span class="font-normal">พื้นที่ควบคุมความเสี่ยง</span></button>
+          <button type="button" id="rb-Hot"  onclick="setRisk('Hot')"  class="rounded-md border-2 px-2 py-2.5 text-xs font-semibold leading-tight transition">Hot<br><span class="font-normal">พื้นที่อันตราย</span></button>
         </div>
         <p id="risk-note" class="mt-2 text-xs text-muted-foreground"></p>
       </div>
@@ -214,6 +219,16 @@ tailwind.config = { theme: { extend: {
           <input id="z-cap" class="fld" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
         </div>
       </div>
+
+      <button type="button" onclick="viewZoneOnMap()"
+        class="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card py-2.5 text-sm font-semibold text-foreground transition hover:bg-accent/40">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+        เปิดดูแผนที่ตรวจสอบพิกัด
+      </button>
+      <p class="text-[11px] leading-relaxed text-muted-foreground">
+        พิกัดนี้ใช้ตรวจว่าผู้ปฏิบัติงานอยู่ในพื้นที่จริงตอนขอใบอนุญาตและปิดงาน
+        แนะนำให้เปิดแผนที่ตรวจด้วยตาทุกครั้งก่อนบันทึก
+      </p>
 
       <div>
         <label class="lbl">ข้อควรระวังในการเข้าพื้นที่</label>
@@ -241,9 +256,12 @@ const LEVELS = [
   { value:'Area',     label:'โซนย่อย',             child:null    }
 ];
 const RISK = {
-  Hot:  { token:'var(--chart-1)', th:'เขตอันตราย',  note:'งานในพื้นที่นี้จะถูกตรวจเข้มเป็นพิเศษ และผู้รับเหมาบุคคลธรรมดาอาจถูกบล็อกตามประเภทงาน' },
-  Warm: { token:'var(--chart-2)', th:'เขตควบคุม',   note:'ต้องมีใบอนุญาตทำงานก่อนเข้าปฏิบัติงานทุกครั้ง' },
-  Cold: { token:'var(--chart-3)', th:'เขตปลอดภัย',  note:'พื้นที่ความเสี่ยงต่ำ เช่น สำนักงานสนามหรือพื้นที่พัก' }
+  Hot:  { token:'var(--chart-1)', th:'พื้นที่อันตราย',
+          note:'งานในพื้นที่นี้จะถูกตรวจเข้มเป็นพิเศษ และผู้รับเหมาบุคคลธรรมดาอาจถูกบล็อกตามประเภทงาน' },
+  Warm: { token:'var(--chart-2)', th:'พื้นที่ควบคุมความเสี่ยง',
+          note:'ต้องมีใบอนุญาตทำงานก่อนเข้าปฏิบัติงานทุกครั้ง' },
+  Cold: { token:'var(--chart-3)', th:'พื้นที่ปลอดภัย',
+          note:'พื้นที่ความเสี่ยงต่ำ เช่น สำนักงานสนามหรือพื้นที่พัก' }
 };
 
 let PROJECTS = [], CUR = null, ZONES = [], USAGE = {};
@@ -378,10 +396,39 @@ function setRisk(v) {
   document.getElementById('risk-note').textContent = RISK[v].note;
 }
 
-function onLevelChange() {
-  const lv = document.getElementById('z-level').value;
-  // ค่าเริ่มต้นที่สมเหตุสมผล ผู้ใช้แก้ทับได้เสมอ
-  if (!editingZone && lv === 'Building') setRisk('Cold');
+/**
+ * ระดับของพื้นที่ถูกกำหนดจากตำแหน่งในผังเสมอ ไม่ใช่สิ่งที่ผู้ใช้เลือก
+ *   ไม่มีพื้นที่แม่ = อาคาร  ·  อยู่ใต้อาคาร = ชั้น  ·  อยู่ใต้ชั้น = โซนย่อย
+ * เดิมทำเป็น dropdown ที่มีตัวเลือกเดียว ซึ่งชวนให้เข้าใจผิดว่าเลือกได้
+ */
+function applyLevel(level) {
+  document.getElementById('z-level').value = level;
+  const meta = LEVELS.find(l => l.value === level) || LEVELS[2];
+  document.getElementById('z-level-label').textContent = meta.label;
+
+  const nameLabel = { Building:'ชื่ออาคาร / พื้นที่หลัก', Floor:'ชื่อชั้น / ระดับ', Area:'ชื่อโซนย่อย' }[level];
+  document.getElementById('z-name-label').innerHTML =
+    esc(nameLabel) + ' <span class="text-destructive">*</span>';
+
+  document.getElementById('z-name').placeholder =
+    { Building:'อาคารสำนักงานใหญ่', Floor:'ชั้น 3', Area:'ห้องเครื่องปรับอากาศ' }[level];
+
+  document.getElementById('z-level-help').textContent = level === 'Building'
+    ? 'ข้อแนะนำ: สร้างรหัสและชื่อพื้นที่หลักก่อน แล้วจะเพิ่มชั้นและโซนย่อยได้จากปุ่ม "+ ย่อย" ในตารางหลักหลังบันทึกเสร็จ'
+    : (level === 'Floor'
+      ? 'ชั้นนี้จะอยู่ภายใต้อาคารที่เลือกไว้ และเพิ่มโซนย่อยเข้าไปข้างในได้อีกชั้นหนึ่ง'
+      : 'โซนย่อยคือระดับที่ลึกที่สุด ใช้ผูกกับงานย่อยในแผนงานโดยตรง');
+}
+
+/** เปิดแผนที่ตรวจพิกัดด้วยตา ก่อนบันทึกลงระบบ */
+function viewZoneOnMap() {
+  const lat = document.getElementById('z-lat').value.trim();
+  const lng = document.getElementById('z-lng').value.trim();
+  if (!lat || !lng) {
+    Swal.fire('ยังไม่มีพิกัด','กรอกละติจูดและลองจิจูดก่อนจึงจะเปิดแผนที่ได้','warning');
+    return;
+  }
+  window.open('https://www.google.com/maps?q=' + encodeURIComponent(lat + ',' + lng), '_blank');
 }
 
 function nextCode(parent) {
@@ -399,13 +446,9 @@ function openZone(zoneId, parentId) {
   const z = zoneId ? ZONES.find(x => x.zone_id === zoneId) : null;
   if (z && z.parent_zone_id) parentZone = ZONES.find(x => x.zone_id === z.parent_zone_id) || null;
 
-  // ระดับที่เลือกได้ ขึ้นกับพื้นที่แม่ ระบบล็อกให้ลึกลงทีละขั้นเท่านั้น
-  const allowed = parentZone
-    ? LEVELS.filter(l => l.value === (LEVELS.find(x => x.value === parentZone.zone_level) || {}).child)
-    : LEVELS.filter(l => l.value === 'Building');
-
-  document.getElementById('z-level').innerHTML =
-    allowed.map(l => `<option value="${l.value}">${esc(l.label)}</option>`).join('');
+  // ระดับถูกกำหนดจากตำแหน่งในผัง ไม่ให้ผู้ใช้เลือกเอง
+  const level = z ? z.zone_level
+    : (parentZone ? (LEVELS.find(x => x.value === parentZone.zone_level) || {}).child : 'Building');
 
   const info = document.getElementById('zone-parent-info');
   if (parentZone) {
@@ -413,8 +456,17 @@ function openZone(zoneId, parentId) {
     info.classList.remove('hidden');
   } else { info.classList.add('hidden'); }
 
-  document.getElementById('zone-title').textContent = z ? 'แก้ไขพื้นที่' : 'เพิ่มพื้นที่';
-  document.getElementById('z-level').value = z ? z.zone_level : allowed[0].value;
+  const TITLE = { Building:'อาคาร / พื้นที่หลัก', Floor:'ชั้น / ระดับ', Area:'โซนย่อย' };
+  document.getElementById('zone-title').textContent =
+    (z ? 'แก้ไข' : 'เพิ่ม') + TITLE[level];
+  applyLevel(level);
+
+  // แสดงรหัสที่ใช้ไปแล้วในระดับเดียวกัน เพื่อไม่ให้ตั้งซ้ำ
+  const siblings = childrenOf(parentZone ? parentZone.zone_id : null)
+    .filter(x => !z || x.zone_id !== z.zone_id);
+  document.getElementById('z-code-used').textContent = siblings.length
+    ? 'รหัสที่ใช้ไปแล้วในระดับนี้: ' + siblings.map(x => x.zone_code).join(', ')
+    : '';
   document.getElementById('z-code').value  = z ? z.zone_code : nextCode(parentZone);
   document.getElementById('z-name').value  = z ? z.zone_name : '';
   document.getElementById('z-lat').value   = z ? (z.gps_lat || '') : '';
