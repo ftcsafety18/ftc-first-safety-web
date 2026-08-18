@@ -168,14 +168,14 @@ tailwind.config = { theme: { extend: {
             </div>
             <div>
               <label class="lbl">ประเภทโครงการ</label>
-              <select id="c-type" class="fld">
-                <option value="">-- เลือกประเภท --</option>
-                <option value="Construction">งานก่อสร้างใหม่</option>
-                <option value="MEP">งานระบบประกอบอาคาร</option>
-                <option value="Renovation">งานปรับปรุง/ต่อเติม</option>
-                <option value="Maintenance">งานซ่อมบำรุง</option>
-                <option value="Shutdown">งานหยุดซ่อมโรงงาน</option>
-              </select>
+              <input id="c-type" class="fld" list="ptype-list" placeholder="เลือกหรือพิมพ์ประเภทใหม่">
+              <datalist id="ptype-list">
+                <option value="Construction" label="งานก่อสร้างใหม่">
+                <option value="MEP" label="งานระบบประกอบอาคาร">
+                <option value="Renovation" label="งานปรับปรุง/ต่อเติม">
+                <option value="Maintenance" label="งานซ่อมบำรุง">
+                <option value="Shutdown" label="งานหยุดซ่อมโรงงาน">
+              </datalist>
             </div>
           </div>
 
@@ -208,12 +208,20 @@ tailwind.config = { theme: { extend: {
                   <option value="">ไม่ระบุ</option>
                   <option value="PerDay">เป็นจำนวนเงินต่อวัน</option>
                   <option value="Percent">เป็นร้อยละของมูลค่าสัญญา</option>
+                  <option value="Other">อื่นๆ (ระบุเงื่อนไขเอง)</option>
                 </select>
                 <p class="text-[10px] text-slate-400 mt-1">เลือกได้อย่างใดอย่างหนึ่ง</p>
               </div>
               <div id="box-pen-day">
                 <label class="lbl">ค่าปรับ (บาท/วัน)</label>
                 <input id="c-pen-day" class="fld" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+              </div>
+              <div id="box-pen-other" class="hidden sm:col-span-2">
+                <label class="lbl">ระบุเงื่อนไขค่าปรับ</label>
+                <input id="c-pen-other" class="fld" placeholder="เช่น ปรับตามอัตราที่เจ้าของงานกำหนดในสัญญาแนบท้าย">
+                <p class="text-[10px] text-slate-400 mt-1">
+                  ระบบจะเก็บไว้ในช่องเงื่อนไขพิเศษ เพราะฐานข้อมูลรองรับการคำนวณเฉพาะสองรูปแบบมาตรฐาน
+                </p>
               </div>
               <div id="box-pen-pct" class="hidden">
                 <label class="lbl">ค่าปรับ (% ของมูลค่ารวม)</label>
@@ -820,6 +828,7 @@ function togglePenalty() {
   const t = document.getElementById('c-pen-type').value;
   document.getElementById('box-pen-day').classList.toggle('hidden', t !== 'PerDay');
   document.getElementById('box-pen-pct').classList.toggle('hidden', t !== 'Percent');
+  document.getElementById('box-pen-other').classList.toggle('hidden', t !== 'Other');
 }
 
 function calcDuration() {
@@ -858,12 +867,20 @@ async function saveContract() {
       site_address: document.getElementById('c-address').value.trim() || null,
       total_project_value_thb: parseFloat(document.getElementById('c-value').value) || 0,
       start_date: s || null, end_date: e || null,
-      penalty_type: document.getElementById('c-pen-type').value || null,
+      penalty_type: (document.getElementById('c-pen-type').value === 'Other'
+                       ? null : document.getElementById('c-pen-type').value) || null,
       penalty_per_day_thb: parseFloat(document.getElementById('c-pen-day').value) || null,
       penalty_pct: parseFloat(document.getElementById('c-pen-pct').value) || null,
       duration_basis: document.getElementById('c-basis').value,
       duration_days: (s && e) ? Math.round((new Date(e)-new Date(s))/86400000)+1 : null,
-      special_conditions: document.getElementById('c-special').value.trim() || null,
+      special_conditions: (function () {
+        // ค่าปรับรูปแบบอื่นเก็บรวมในเงื่อนไขพิเศษ เพราะฐานข้อมูลคำนวณได้เฉพาะสองแบบมาตรฐาน
+        const base = document.getElementById('c-special').value.trim();
+        const other = document.getElementById('c-pen-type').value === 'Other'
+          ? document.getElementById('c-pen-other').value.trim() : '';
+        if (!other) return base || null;
+        return (base ? base + '\n' : '') + 'เงื่อนไขค่าปรับ: ' + other;
+      })(),
       updated_at: new Date().toISOString()
     };
     // เลือกวิธีคิดค่าปรับได้อย่างเดียว ล้างอีกช่องทิ้งเพื่อไม่ให้ข้อมูลขัดกัน
