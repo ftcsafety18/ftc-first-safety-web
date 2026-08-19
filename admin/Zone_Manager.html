@@ -12,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -415,10 +416,18 @@ async function loadProjects() {
   document.getElementById('proj-select').innerHTML = PROJECTS.length
     ? PROJECTS.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name)}</option>`).join('')
     : '<option value="">-- ยังไม่มีโครงการ --</option>';
-  if (PROJECTS.length) await selectProject(PROJECTS[0].project_id);
+  if (PROJECTS.length) {
+    const pick = FTC.pickProject(PROJECTS);
+    document.getElementById('proj-select').value = pick;
+    await selectProject(pick);
+  }
 }
 
 async function selectProject(id) {
+  // จำไว้เพื่อให้สลับหน้าแล้วยังอยู่โครงการเดิม
+  const _p = PROJECTS.find(x => x.project_id === id);
+  if (_p) FTC.setProject(_p.project_id, _p.project_name);
+
   CUR = PROJECTS.find(p => p.project_id === id);
   if (!CUR) return;
   await loadZones();
