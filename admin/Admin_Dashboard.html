@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ศูนย์บัญชาการองค์กร | FTC First Safety</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#19335A', 'navy-light':'#254B82', 'navy-deep':'#122442',
+                     orange:'#DB5A24', 'orange-hover':'#C14B1A', gold:'#F0B429' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+
+<style>
+  body { background:#F1F4F8; font-family:'Sarabun',sans-serif; padding-bottom:88px; }
+  .fld { width:100%; padding:.6rem .75rem; border-radius:.6rem; border:1px solid #D1D8E0;
+         background:#fff; font-size:.875rem; }
+  .fld:focus { outline:none; border-color:#19335A; box-shadow:0 0 0 3px rgba(25,51,90,.1); }
+  .hero { background:linear-gradient(160deg,#19335A 0%,#122442 100%); }
+  .hero::after { content:''; position:absolute; inset:0; opacity:.07; pointer-events:none;
+    background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+    background-size:26px 26px; }
+  .grp-body { overflow:hidden; transition:max-height .28s ease; }
+  @media (prefers-reduced-motion: reduce) { .grp-body { transition:none } }
+  :focus-visible { outline:2px solid #DB5A24; outline-offset:2px; }
+</style>
+</head>
+<body class="text-slate-800">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl border border-slate-200">
+    <div class="mb-6 flex items-center gap-3">
+      <div class="flex size-11 items-center justify-center rounded-xl bg-brand-navy text-white">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+      </div>
+      <div class="leading-tight">
+        <p class="text-base font-bold text-brand-navy">ศูนย์บัญชาการองค์กร</p>
+        <p class="text-xs text-slate-500">FTC Master Admin Portal</p>
+      </div>
+    </div>
+    <label class="mb-1.5 block text-xs font-semibold text-slate-600">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="mb-1.5 block text-xs font-semibold text-slate-600">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login" class="w-full rounded-xl bg-brand-navy py-3 text-sm font-bold text-white transition hover:bg-brand-navy-light">เข้าสู่ระบบ</button>
+    <button type="button" onclick="openForgot()" class="mt-3 w-full text-center text-xs font-medium text-slate-500 underline hover:text-brand-navy">ลืมรหัสผ่าน?</button>
+    <p id="log-err" class="hidden mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden">
+
+  <!-- แถบหัว -->
+  <header class="hero relative px-4 pb-24 pt-5 sm:px-6">
+    <div class="relative z-10 mx-auto max-w-3xl">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="flex size-11 items-center justify-center rounded-xl bg-brand-orange text-white shadow-lg">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+          </div>
+          <div class="leading-tight">
+            <h1 class="text-lg font-bold text-white">ศูนย์บัญชาการองค์กร</h1>
+            <p class="text-xs text-white/60">FTC Master Admin Portal</p>
+          </div>
+        </div>
+        <button onclick="doLogout()" title="ออกจากระบบ"
+          class="flex size-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition hover:bg-white/20">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        </button>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="rounded-full bg-brand-gold/20 px-3 py-1 text-[11px] font-bold text-brand-gold ring-1 ring-brand-gold/40">● SUPER ADMIN</span>
+        <span id="who" class="text-[11px] text-white/70"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto -mt-16 max-w-3xl px-4 sm:px-6">
+
+    <!-- ตัวเลขสรุป -->
+    <section class="mb-4 grid grid-cols-3 divide-x divide-slate-200 rounded-2xl bg-white shadow-lg">
+      <div class="px-2 py-4 text-center">
+        <div class="mb-1 flex justify-center text-slate-400">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <p id="kpi-hours" class="text-xl font-bold text-brand-navy">—</p>
+        <p class="text-[11px] text-slate-500">ชั่วโมงทำงานปลอดภัย</p>
+      </div>
+      <div class="px-2 py-4 text-center">
+        <div class="mb-1 flex justify-center text-slate-400">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+        </div>
+        <p id="kpi-permits" class="text-xl font-bold text-brand-navy">—</p>
+        <p class="text-[11px] text-slate-500">ใบอนุญาตที่ใช้งานอยู่</p>
+      </div>
+      <div class="px-2 py-4 text-center">
+        <div class="mb-1 flex justify-center text-brand-orange">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M22 8c0-2.3-.8-4.3-2-6"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/></svg>
+        </div>
+        <p id="kpi-pending" class="text-xl font-bold text-brand-orange">—</p>
+        <p class="text-[11px] text-slate-500">รออนุมัติ</p>
+      </div>
+    </section>
+
+    <!-- โครงการที่กำลังทำงาน -->
+    <section class="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-brand-orange">โครงการที่กำลังทำงาน</label>
+      <select id="proj-select" class="fld" onchange="onProjectChange(this.value)"></select>
+      <p class="mt-2 text-[11px] leading-relaxed text-slate-500">
+        ระบบจะจำโครงการนี้ไว้ เมื่อเข้าเมนูย่อยในหมวดตั้งค่าจะเปิดที่โครงการเดิมทันที ไม่ต้องเลือกซ้ำ
+      </p>
+    </section>
+
+    <!-- เมนูหลัก -->
+    <div id="menu-root" class="space-y-3 pb-6"></div>
+  </main>
+
+  <!-- แถบล่าง -->
+  <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-3xl items-center justify-around px-2 py-2">
+      <button onclick="scrollTo({top:0,behavior:'smooth'})" class="flex flex-col items-center gap-0.5 px-3 py-1 text-brand-navy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="text-[10px] font-semibold">หน้าหลัก</span>
+      </button>
+      <a href="Zone_Manager.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-brand-navy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></svg>
+        <span class="text-[10px] font-semibold">แผนที่</span>
+      </a>
+      <div class="relative -mt-6">
+        <button onclick="comingSoon('สแกน QR')" class="flex size-14 items-center justify-center rounded-full bg-brand-orange text-white shadow-lg ring-4 ring-white">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+        </button>
+      </div>
+      <button onclick="comingSoon('แจ้งเตือน')" class="relative flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-brand-navy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+        <span id="notif-dot" class="absolute right-2.5 top-0.5 hidden size-2 rounded-full bg-red-500"></span>
+        <span class="text-[10px] font-semibold">แจ้งเตือน</span>
+      </button>
+      <a href="Staff_Management.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-400 hover:text-brand-navy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="text-[10px] font-semibold">โปรไฟล์</span>
+      </a>
+    </div>
+  </nav>
+</div>
+
+<script>
+/* =====================================================================
+ * ศูนย์บัญชาการองค์กร — เมนูหลักของระบบหลังบ้านทั้งหมด
+ *
+ * เมนูถูกประกาศเป็นข้อมูลชุดเดียวด้านล่าง ไม่ได้เขียนเป็น HTML ตายตัว
+ * เพื่อให้เพิ่มโมดูลใหม่ได้โดยแก้ที่เดียว และให้ระบบรู้ว่าเมนูไหน
+ * พร้อมใช้งานแล้วบ้าง จะได้ไม่พาผู้ใช้ไปชนหน้า 404
+ * ===================================================================== */
+
+const sb = FTC.supabase();
+let PROJECTS = [];
+
+const MENU = [
+  {
+    no: '01', title: 'ศูนย์ตั้งค่าและวิศวกรรม', sub: 'Project Setup & Engineering',
+    icon: 'M3 3v16a2 2 0 0 0 2 2h16 M7 16V8 M11 16v-5 M15 16v-9 M19 16v-3',
+    open: true,
+    items: [
+      { th:'ข้อมูลหลักและค่าตั้งต้น', en:'Master Data & Settings', href:'Master_Setup.html' },
+      { th:'ตั้งค่าโครงการ',          en:'Project Setup',          href:'Project_Setup.html' },
+      { th:'โครงสร้างแผนงานและงบ',     en:'WBS & Task Control',     href:'Boq_Manager.html' },
+      { th:'กำหนดพื้นที่และโซน',       en:'Area & Zone',            href:'Zone_Manager.html' },
+      { th:'แผนงานภาพรวม (Gantt)',    en:'Master Plan Timeline',   href:'Master_Data.html' }
+    ]
+  },
+  {
+    no: '02', title: 'ศูนย์บริหารผู้รับเหมาและการเงิน', sub: 'Vendor & Finance Hub',
+    icon: 'M3 21h18 M5 21V7l8-4v18 M19 21V11l-6-4 M9 9v.01 M9 12v.01 M9 15v.01 M9 18v.01',
+    items: [
+      { th:'ทะเบียนผู้รับเหมา', en:'Vendor Master',              href:'Vendor_Hub.html' },
+      { th:'อนุมัติการเบิกจ่าย', en:'Billing & Progress Approval', href:null }
+    ]
+  },
+  {
+    no: '03', title: 'ศูนย์กำลังคนและสิทธิ์', sub: 'Workforce & Compliance',
+    icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 .01 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
+    items: [
+      { th:'บุคลากร FTC และสิทธิ์', en:'Staff & Permissions', href:'Staff_Management.html' },
+      { th:'ทะเบียนคนงาน',         en:'Worker Registry',     href:null }
+    ]
+  },
+  {
+    no: '04', title: 'ศูนย์ปฏิบัติการความปลอดภัย', sub: 'Safety Operations',
+    icon: 'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z',
+    items: [
+      { th:'ใบอนุญาตทำงาน', en:'Work Permit Control', href:null },
+      { th:'ตรวจความปลอดภัย', en:'Safety Inspection',  href:null }
+    ]
+  },
+  {
+    no: '05', title: 'ศูนย์ภาวะฉุกเฉินและสอบสวน', sub: 'Emergency & Incident Control',
+    icon: 'M12 2v4 M12 18v4 M4.93 4.93l2.83 2.83 M16.24 16.24l2.83 2.83 M2 12h4 M18 12h4 M4.93 19.07l2.83-2.83 M16.24 7.76l2.83-2.83',
+    items: [
+      { th:'เหตุฉุกเฉินและเกือบเกิดอุบัติเหตุ', en:'Incident & Near Miss', href:null },
+      { th:'จุดรวมพลและการอพยพ',             en:'Evacuation Control',   href:null }
+    ]
+  },
+  {
+    no: '06', title: 'ศูนย์บัญชาการระดับสูง', sub: "The God's Eye View",
+    icon: 'M3 3v16a2 2 0 0 0 2 2h16 M7 11.5 11 7l3.5 3.5L21 5',
+    items: [
+      { th:'แดชบอร์ดผู้บริหาร', en:'Executive Dashboard', href:null }
+    ]
+  }
+];
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent='กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent='กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent='เข้าสู่ระบบ';
+  if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); FTC.clearProject(); location.reload(); }
+
+async function openForgot() {
+  const { value: email } = await Swal.fire({
+    title: 'ลืมรหัสผ่าน',
+    html: '<p style="font-size:.85rem;color:#64748B;margin-bottom:.75rem">กรอกอีเมลที่ใช้เข้าสู่ระบบ ระบบจะส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้</p>',
+    input: 'email', inputPlaceholder: 'name@company.co.th',
+    inputValue: (document.getElementById('log-email') || {}).value || '',
+    showCancelButton: true, confirmButtonText: 'ส่งลิงก์', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#19335A',
+    inputValidator: v => (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())) ? 'กรอกอีเมลให้ถูกรูปแบบ' : undefined
+  });
+  if (!email) return;
+  Swal.fire({ title:'กำลังส่ง…', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+  const { error } = await sb.auth.resetPasswordForEmail(email.trim(),
+    { redirectTo: window.location.origin + window.location.pathname });
+  Swal.close();
+  await new Promise(r => setTimeout(r, 250));
+  if (error) console.error('[FTC] resetPasswordForEmail', error);
+  Swal.fire({ icon:'success', title:'ส่งลิงก์แล้ว',
+    html:'ถ้าอีเมลนี้มีบัญชีอยู่ในระบบ จะได้รับลิงก์ตั้งรหัสผ่านใหม่ภายในไม่กี่นาที',
+    confirmButtonColor:'#19335A' });
+}
+
+async function enterApp() {
+  const { data } = await sb.auth.getUser();
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('who').textContent = (data && data.user ? data.user.email : '') + ' · FTC First Safety';
+  renderMenu();
+  await Promise.all([loadProjects(), loadKpi()]);
+}
+
+/* ---------------------- โครงการที่กำลังทำงาน ---------------------- */
+async function loadProjects() {
+  const r = await sb.from('tb_projects')
+    .select('project_id, project_name, status').order('created_at', { ascending:false });
+  if (r.error) { console.error('[FTC] โหลดโครงการไม่สำเร็จ', r.error); return; }
+  PROJECTS = r.data || [];
+
+  const sel = document.getElementById('proj-select');
+  sel.innerHTML = PROJECTS.length
+    ? PROJECTS.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name)}` +
+        `${p.status !== 'Active' ? ' (ยังไม่เปิดใช้งาน)' : ''}</option>`).join('')
+    : '<option value="">-- ยังไม่มีโครงการ กรุณาสร้างที่หน้าตั้งค่าโครงการ --</option>';
+
+  if (PROJECTS.length) {
+    const pick = FTC.pickProject(PROJECTS);
+    sel.value = pick;
+    onProjectChange(pick);
+  }
+}
+
+function onProjectChange(id) {
+  const p = PROJECTS.find(x => x.project_id === id);
+  if (p) FTC.setProject(p.project_id, p.project_name);
+}
+
+/* ---------------------- ตัวเลขสรุป ---------------------- */
+async function loadKpi() {
+  try {
+    const [permits, pending, workers] = await Promise.all([
+      sb.from('tb_work_permits').select('ptw_id', { count:'exact', head:true }).eq('status','Approved'),
+      sb.from('tb_work_permits').select('ptw_id', { count:'exact', head:true }).eq('status','Pending'),
+      sb.from('tb_workers').select('worker_id', { count:'exact', head:true })
+    ]);
+
+    document.getElementById('kpi-permits').textContent = permits.count != null ? permits.count : '—';
+    document.getElementById('kpi-pending').textContent = pending.count != null ? pending.count : '—';
+    document.getElementById('notif-dot').classList.toggle('hidden', !(pending.count > 0));
+
+    // ชั่วโมงทำงานปลอดภัยยังไม่มีข้อมูลจริง จนกว่าระบบสแกนเข้า-ออกจะเปิดใช้งาน
+    // จึงแสดงเป็นจำนวนคนงานในระบบไปก่อน ไม่ใส่ตัวเลขสมมติเพราะจะเข้าใจผิดว่าเป็นของจริง
+    document.getElementById('kpi-hours').textContent = workers.count != null ? workers.count : '—';
+    document.querySelector('#kpi-hours + p').textContent = 'คนงานในระบบ';
+  } catch (e) {
+    console.error('[FTC] โหลดตัวเลขสรุปไม่สำเร็จ', e);
+  }
+}
+
+/* ---------------------- เมนู ---------------------- */
+function renderMenu() {
+  document.getElementById('menu-root').innerHTML = MENU.map((g, gi) => {
+    const items = g.items.map(it => {
+      const ready = !!it.href;
+      const inner = `
+        <div class="flex items-center gap-3 px-4 py-3">
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg ${ready ? 'bg-slate-100 text-brand-navy' : 'bg-slate-50 text-slate-300'}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold ${ready ? 'text-slate-800' : 'text-slate-400'}">${esc(it.th)}</p>
+            <p class="text-[11px] ${ready ? 'text-slate-400' : 'text-slate-300'}">${esc(it.en)}</p>
+          </div>
+          ${ready
+            ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-slate-300"><path d="m9 18 6-6-6-6"/></svg>'
+            : '<span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-400">เร็วๆ นี้</span>'}
+        </div>`;
+      return ready
+        ? `<a href="${it.href}" class="block border-t border-slate-100 transition hover:bg-slate-50">${inner}</a>`
+        : `<button type="button" onclick="comingSoon('${esc(it.th)}')" class="block w-full border-t border-slate-100 text-left">${inner}</button>`;
+    }).join('');
+
+    const readyCount = g.items.filter(i => i.href).length;
+
+    return `
+      <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <button type="button" onclick="toggleGroup(${gi})"
+          class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-slate-50">
+          <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-navy text-white">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${g.icon}"/></svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-bold text-slate-800">
+              <span class="text-brand-orange">${g.no}</span> ${esc(g.title)}
+            </p>
+            <p class="text-[11px] text-slate-500">${esc(g.sub)}
+              <span class="ml-1 text-slate-400">· พร้อมใช้งาน ${readyCount}/${g.items.length}</span></p>
+          </div>
+          <svg id="chev-${gi}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               class="shrink-0 text-slate-400 transition-transform ${g.open ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="grp-${gi}" class="grp-body" style="max-height:${g.open ? '600px' : '0'}">${items}</div>
+      </section>`;
+  }).join('');
+}
+
+function toggleGroup(i) {
+  const body = document.getElementById('grp-' + i);
+  const chev = document.getElementById('chev-' + i);
+  const open = body.style.maxHeight !== '0px' && body.style.maxHeight !== '0';
+  body.style.maxHeight = open ? '0' : '600px';
+  chev.classList.toggle('rotate-180', !open);
+}
+
+function comingSoon(name) {
+  Swal.fire({
+    icon: 'info', title: name,
+    html: 'โมดูลนี้อยู่ระหว่างพัฒนา ยังไม่เปิดใช้งาน<br>' +
+          '<span style="font-size:.8rem;color:#64748B">เมนูที่พร้อมใช้งานแล้วจะมีลูกศรทางขวา</span>',
+    confirmButtonColor: '#19335A'
+  });
+}
+
+window.addEventListener('unhandledrejection', ev => {
+  console.error('[FTC] promise ที่ไม่มีใครดัก', ev.reason);
+});
+
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
