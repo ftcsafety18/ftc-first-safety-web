@@ -10,6 +10,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../shared/config.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script>
@@ -1112,7 +1114,7 @@ async function delMuster(id) {
  * จึงยอมให้มีตัวเลข ขีดกลาง และช่องว่าง แต่ตัดตัวอักษรออก
  */
 function fmtEmgPhone(el) {
-  el.value = el.value.replace(/[^0-9\s-]/g, '');
+  el.value = el.value.replace(/[^0-9 -]/g, '');
 }
 
 const TH_MONTH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
@@ -1142,6 +1144,35 @@ function thaiDateShort(iso) {
  * บางเครื่องขึ้น MM/DD/YYYY บางเครื่องขึ้น DD/MM/YYYY
  * การมีข้อความไทยกำกับจึงเป็นวิธีเดียวที่กันการกรอกวันกับเดือนสลับกันได้จริง
  */
+/**
+ * ผูกปฏิทิน Flatpickr กับช่องวันที่
+ *
+ * ทำไมต้องใช้ไลบรารีแทน input type=date
+ *   ช่อง date ของ HTML แสดงรูปแบบตาม locale ของเครื่องผู้ใช้ ซึ่งบังคับไม่ได้
+ *   เครื่องที่ตั้งภาษาอังกฤษอเมริกันจะขึ้น MM/DD/YYYY เสมอ
+ *   Flatpickr แยกส่วนที่ผู้ใช้เห็น (altInput) ออกจากค่าที่ระบบใช้
+ *   จึงบังคับให้แสดง วัน/เดือน/ปี ได้ทุกเครื่อง ขณะที่ค่าเบื้องหลังยังเป็น YYYY-MM-DD
+ */
+function bindDatePicker(inputId, noteId) {
+  const el = document.getElementById(inputId);
+  if (!el || typeof flatpickr === 'undefined') { bindThaiDate(inputId, noteId); return; }
+
+  el.type = 'text';   // ปล่อยให้ Flatpickr คุมการแสดงผลแทน
+  const note = document.getElementById(noteId);
+  const showThai = () => { if (note) note.textContent = el.value ? '(' + thaiDateFull(el.value) + ')' : ''; };
+
+  flatpickr(el, {
+    dateFormat: 'Y-m-d',        // ค่าที่ส่งเข้าฐานข้อมูล
+    altInput: true,
+    altFormat: 'd/m/Y',         // สิ่งที่ผู้ใช้เห็น วัน/เดือน/ปี
+    allowInput: true,
+    locale: { firstDayOfWeek: 0 },
+    onChange: showThai,
+    onReady: showThai
+  });
+  showThai();
+}
+
 function bindThaiDate(inputId, noteId) {
   const el = document.getElementById(inputId);
   const note = document.getElementById(noteId);
@@ -1476,7 +1507,7 @@ window.addEventListener('unhandledrejection', ev => {
 
 (async function init() {
   lucide.createIcons();
-  ['c-start','c-end','q-start','q-end'].forEach(id => bindThaiDate(id, id + '-th'));
+  ['c-start','c-end','q-start','q-end'].forEach(id => bindDatePicker(id, id + '-th'));
   const { data } = await sb.auth.getSession();
   if (data && data.session) await enterApp();
 })();
