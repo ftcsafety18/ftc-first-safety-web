@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>ยืนยันทะเบียนพนักงาน | FTC First Safety</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../shared/vendor-api.js"></script>
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#1E3A5F', 'navy-light':'#2C4E7A', 'navy-deep':'#16304F',
+                     orange:'#E85D24', 'orange-hover':'#CC4D18' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+
+<style>
+  body { background:#EEF1F5; font-family:'Sarabun',sans-serif;
+         padding-bottom:calc(24px + env(safe-area-inset-bottom)); }
+  .fld { width:100%; padding:.75rem .9rem; border-radius:.85rem; border:1.5px solid #DDE3EA;
+         background:#fff; font-size:.95rem; color:#1E293B; }
+  .fld:focus { outline:none; border-color:#1E3A5F; box-shadow:0 0 0 3px rgba(30,58,95,.1); }
+  .fld::placeholder { color:#94A3B8; }
+  .lbl { display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:.45rem; }
+  .press { transition:transform .12s ease; }
+  .press:active { transform:scale(.985); }
+  @media (prefers-reduced-motion: reduce) { .press { transition:none } .press:active { transform:none } }
+  .hero-grid::after { content:''; position:absolute; inset:0; opacity:.06; pointer-events:none;
+    background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+    background-size:24px 24px; }
+  :focus-visible { outline:2px solid #E85D24; outline-offset:2px; }
+</style>
+</head>
+<body class="text-slate-800">
+
+<div class="mx-auto min-h-screen max-w-md bg-[#EEF1F5]">
+
+  <!-- ===================== ส่วนหัว ===================== -->
+  <header class="hero-grid relative rounded-b-3xl bg-gradient-to-b from-brand-navy to-brand-navy-deep px-4 pb-6 pt-5">
+    <div class="relative z-10">
+      <div class="flex items-center gap-3">
+        <button onclick="goBack()" aria-label="ย้อนกลับ"
+          class="press flex size-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-white/85 ring-1 ring-white/15 transition hover:bg-white/20">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="min-w-0 leading-tight">
+          <h1 class="text-lg font-bold text-white">ยืนยันทะเบียนพนักงาน</h1>
+          <p class="text-[11px] font-semibold tracking-[.1em] text-white/55">WORKER VERIFICATION</p>
+        </div>
+      </div>
+
+      <div class="mt-3.5 flex items-center gap-2.5 rounded-xl bg-white/8 px-3 py-2.5 ring-1 ring-white/12">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-white/70"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/></svg>
+        <p id="vendor-name" class="truncate text-sm font-bold text-white">บจก. พัฒนเวช การช่าง</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="space-y-5 px-4 pt-5">
+
+    <!-- ===================== ฟอร์มเพิ่มพนักงาน ===================== -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/70">
+      <h2 class="mb-1 flex items-center gap-2">
+        <span class="h-4 w-1 rounded-full bg-brand-orange"></span>
+        <span class="text-base font-bold text-brand-navy">เพิ่มพนักงานเข้าระบบ</span>
+      </h2>
+      <p class="mb-4 pl-3 text-xs leading-relaxed text-slate-500">
+        กรอกข้อมูลและแนบเอกสารให้ครบ แล้วส่งให้เจ้าหน้าที่ความปลอดภัยของ FTC ตรวจสอบ
+        พนักงานจะเข้าพื้นที่ได้เมื่อผ่านการอนุมัติเท่านั้น
+      </p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="lbl">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
+          <input id="w-name" class="fld" placeholder="นายสมชาย ใจดี">
+        </div>
+
+        <div>
+          <label class="lbl">ตำแหน่งงาน <span class="text-red-500">*</span></label>
+          <input id="w-position" class="fld" list="pos-list" placeholder="เลือกหรือพิมพ์เอง">
+          <datalist id="pos-list">
+            <option value="ช่างทั่วไป"><option value="ช่างไฟฟ้า"><option value="ช่างเชื่อม">
+            <option value="ช่างประปา"><option value="ช่างปูน"><option value="ช่างสี">
+            <option value="ผู้ควบคุมงาน"><option value="หัวหน้าชุด"><option value="คนงานทั่วไป">
+            <option value="พนักงานขับรถ"><option value="ผู้ควบคุมเครื่องจักร">
+          </datalist>
+        </div>
+
+        <div>
+          <label class="lbl">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
+          <input id="w-phone" class="fld" inputmode="numeric" maxlength="12"
+                 placeholder="081-234-5678" oninput="fmtPhone(this)">
+        </div>
+
+        <!-- เอกสารแนบ -->
+        <div class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-3.5">
+          <p class="mb-1 text-sm font-bold text-brand-navy">เอกสารประกอบ</p>
+          <p class="mb-3 text-[11px] leading-relaxed text-slate-500">
+            ถ่ายรูปให้เห็นข้อความชัดเจน ไม่มีเงาบัง — ระบบรับไฟล์ภาพหรือ PDF ขนาดไม่เกิน 5 MB ต่อไฟล์
+          </p>
+
+          <div class="space-y-2.5">
+            <label class="press flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M15 10h3"/><path d="M15 14h3"/></svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-bold text-brand-navy">บัตรประชาชน / พาสปอร์ต <span class="text-red-500">*</span></p>
+                <p id="file-id-name" class="truncate text-[11px] text-slate-400">ยังไม่ได้เลือกไฟล์</p>
+              </div>
+              <span class="shrink-0 rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-bold text-white">เลือก</span>
+              <input type="file" id="file-id" accept="image/*,application/pdf" capture="environment"
+                     class="hidden" onchange="showFile(this,'file-id-name')">
+            </label>
+
+            <label class="press flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-bold text-brand-navy">ใบผ่านการอบรม</p>
+                <p id="file-cert-name" class="truncate text-[11px] text-slate-400">ยังไม่ได้เลือกไฟล์</p>
+              </div>
+              <span class="shrink-0 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">เลือก</span>
+              <input type="file" id="file-cert" accept="image/*,application/pdf"
+                     class="hidden" onchange="showFile(this,'file-cert-name')">
+            </label>
+          </div>
+        </div>
+
+        <button onclick="submitWorker()" id="btn-submit"
+          class="press w-full rounded-xl bg-brand-orange py-3.5 text-[15px] font-bold text-white shadow-lg shadow-brand-orange/25 transition hover:bg-brand-orange-hover">
+          ส่งข้อมูลให้ FTC ตรวจสอบ
+        </button>
+      </div>
+    </section>
+
+    <!-- ===================== รายชื่อที่ลงทะเบียนแล้ว ===================== -->
+    <section>
+      <div class="mb-2.5 flex items-center gap-2 pl-0.5">
+        <span class="h-4 w-1 rounded-full bg-brand-navy"></span>
+        <h2 class="flex-1 text-base font-bold text-brand-navy">รายชื่อพนักงานที่ลงทะเบียนแล้ว</h2>
+        <span id="worker-total" class="rounded-full bg-white px-2.5 py-0.5 text-xs font-bold text-slate-500 ring-1 ring-slate-200">4 คน</span>
+      </div>
+
+      <!-- ตัวกรองสถานะ -->
+      <div class="mb-3 flex gap-2 overflow-x-auto pb-1">
+        <button onclick="filterStatus('')"        data-f="" class="fbtn shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold">ทั้งหมด</button>
+        <button onclick="filterStatus('Pending')" data-f="Pending" class="fbtn shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold">รอดำเนินการ</button>
+        <button onclick="filterStatus('Approved')" data-f="Approved" class="fbtn shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold">อนุมัติแล้ว</button>
+        <button onclick="filterStatus('Rejected')" data-f="Rejected" class="fbtn shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold">สั่งแก้ไข</button>
+      </div>
+
+      <div id="worker-list" class="space-y-2.5"></div>
+
+      <p id="worker-empty" class="hidden rounded-2xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">
+        ไม่มีพนักงานในสถานะนี้
+      </p>
+    </section>
+
+    <p class="pb-2 text-center text-[11px] leading-relaxed text-slate-400">
+      พนักงานที่ถูกสั่งแก้ไข ให้แตะที่รายชื่อเพื่อดูเหตุผล<br>แก้ไขเอกสารแล้วส่งใหม่ได้ทันที
+    </p>
+  </main>
+</div>
+
+<!-- ข้อความแจ้งชั่วคราว -->
+<div id="toast"
+  class="pointer-events-none fixed bottom-8 left-1/2 z-50 w-[86%] max-w-sm -translate-x-1/2 translate-y-3 rounded-xl bg-brand-navy/95 px-4 py-3 text-center text-sm font-medium text-white opacity-0 shadow-xl transition-all duration-200"></div>
+
+<script>
+/* =====================================================================
+ * ยืนยันทะเบียนพนักงาน — หน้าจอสำหรับผู้รับเหมา
+ *
+ * ⚠️ ขั้นนี้เป็นงานหน้าตาอย่างเดียว ยังไม่ต่อฐานข้อมูลตามที่ตกลงกันไว้
+ *
+ * เมื่อถึงขั้นต่อข้อมูลจริง ต้องเรียกผ่าน Edge Function เท่านั้น
+ * ไม่เรียกฐานข้อมูลตรงจากหน้านี้ เพราะ anon key พิสูจน์ตัวตนไม่ได้
+ * ว่าผู้ใช้คนนี้เป็นผู้รับเหมารายไหน (ดูรายละเอียดในไฟล์ vendor_portal_rls.sql)
+ * ===================================================================== */
+
+let WORKERS = [];
+
+/* สถานะบัตรในฐานข้อมูลมีหลายค่า จึงจับกลุ่มให้เหลือ 3 แบบที่ผู้รับเหมาต้องรู้ */
+const STATUS = {
+  Pending:  { th:'รอดำเนินการ', cls:'bg-amber-50 text-amber-700 ring-amber-200',   dot:'bg-amber-400' },
+  Approved: { th:'อนุมัติแล้ว',  cls:'bg-emerald-50 text-emerald-700 ring-emerald-200', dot:'bg-emerald-500' },
+  Rejected: { th:'สั่งแก้ไข',    cls:'bg-red-50 text-red-700 ring-red-200',        dot:'bg-red-500' }
+};
+
+function groupStatus(s) {
+  if (s === 'Active' || s === 'Approved') return 'Approved';
+  if (s === 'Revoked' || s === 'Rejected' || s === 'Suspended') return 'Rejected';
+  return 'Pending';
+}
+
+function thaiDate(iso) {
+  if (!iso) return '—';
+  const M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const d = new Date(iso);
+  return d.getDate() + ' ' + M[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+}
+
+let currentFilter = '';
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ---------------------- ฟอร์ม ---------------------- */
+function fmtPhone(el) {
+  const d = el.value.replace(/\D/g, '').slice(0, 10);
+  el.value = d.length > 6 ? d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6)
+           : d.length > 3 ? d.slice(0,3)+'-'+d.slice(3) : d;
+}
+
+function showFile(input, labelId) {
+  const el = document.getElementById(labelId);
+  const f = input.files[0];
+  if (!f) { el.textContent = 'ยังไม่ได้เลือกไฟล์'; el.className = 'truncate text-[11px] text-slate-400'; return; }
+
+  if (f.size > 5 * 1024 * 1024) {
+    toast('ไฟล์ใหญ่เกิน 5 MB กรุณาถ่ายใหม่หรือย่อขนาดก่อน');
+    input.value = '';
+    el.textContent = 'ยังไม่ได้เลือกไฟล์';
+    el.className = 'truncate text-[11px] text-slate-400';
+    return;
+  }
+
+  el.textContent = f.name + ' · ' + (f.size / 1024 / 1024).toFixed(1) + ' MB';
+  el.className = 'truncate text-[11px] font-semibold text-emerald-600';
+}
+
+async function submitWorker() {
+  const btn = document.getElementById('btn-submit');
+  const name = document.getElementById('w-name').value.trim();
+  const pos  = document.getElementById('w-position').value.trim();
+  const tel  = document.getElementById('w-phone').value.replace(/\D/g, '');
+  const idFile   = document.getElementById('file-id').files[0];
+  const certFile = document.getElementById('file-cert').files[0];
+
+  if (!name)             return toast('กรุณากรอกชื่อ-นามสกุล');
+  if (!pos)              return toast('กรุณาระบุตำแหน่งงาน');
+  if (tel.length !== 10) return toast('เบอร์โทรศัพท์ต้องมี 10 หลัก');
+  if (!idFile)           return toast('กรุณาแนบรูปบัตรประชาชนหรือพาสปอร์ต');
+
+  btn.disabled = true;
+  btn.textContent = 'กำลังอัปโหลดเอกสาร…';
+
+  try {
+    // อัปโหลดไฟล์ก่อน แล้วค่อยบันทึกข้อมูล เพื่อให้ระเบียนที่บันทึกมีเอกสารครบเสมอ
+    const documents = [];
+    documents.push({ type: 'id_card', path: await VendorAPI.uploadFile(idFile, 'id_card') });
+    if (certFile) {
+      documents.push({ type: 'training_cert', path: await VendorAPI.uploadFile(certFile, 'training_cert') });
+    }
+
+    btn.textContent = 'กำลังบันทึก…';
+    await VendorAPI.call('workers.create', {
+      full_name: name, position_title: pos, phone: tel, documents: documents
+    });
+
+    // ล้างฟอร์มให้พร้อมกรอกคนถัดไป เพราะผู้รับเหมามักลงทะเบียนทีละหลายคน
+    ['w-name','w-position','w-phone'].forEach(id => { document.getElementById(id).value = ''; });
+    ['file-id','file-cert'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('file-id-name').textContent = 'ยังไม่ได้เลือกไฟล์';
+    document.getElementById('file-id-name').className = 'truncate text-[11px] text-slate-400';
+    document.getElementById('file-cert-name').textContent = 'ยังไม่ได้เลือกไฟล์';
+    document.getElementById('file-cert-name').className = 'truncate text-[11px] text-slate-400';
+
+    toast('ส่งข้อมูลแล้ว รอเจ้าหน้าที่ FTC ตรวจสอบ');
+    await loadWorkers();
+
+  } catch (err) {
+    console.error('[FTC] บันทึกพนักงานไม่สำเร็จ', err);
+    toast(err.message || 'บันทึกไม่สำเร็จ กรุณาลองใหม่');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ส่งข้อมูลให้ FTC ตรวจสอบ';
+  }
+}
+
+/* ---------------------- โหลดข้อมูลจริง ---------------------- */
+async function loadWorkers() {
+  try {
+    const vendor = await VendorAPI.me();
+    document.getElementById('vendor-name').textContent = vendor.vendor_name;
+
+    const r = await VendorAPI.call('workers.list');
+    WORKERS = (r.workers || []).map(w => ({
+      name: w.full_name,
+      position: w.position_title || 'ไม่ระบุตำแหน่ง',
+      phone: w.phone || '—',
+      status: groupStatus(w.badge_status),
+      date: thaiDate(w.created_at),
+      badge: w.badge_no || null,
+      reason: w.revoked_reason || null
+    }));
+    renderWorkers();
+
+  } catch (err) {
+    console.error('[FTC] โหลดรายชื่อไม่สำเร็จ', err);
+    document.getElementById('vendor-name').textContent =
+      err.code === 'NOT_LINKED' ? 'บัญชียังไม่ได้ผูกกับบริษัท' : 'เชื่อมต่อไม่สำเร็จ';
+    WORKERS = [];
+    renderWorkers();
+    toast(err.message || 'โหลดข้อมูลไม่สำเร็จ');
+  }
+}
+
+/* ---------------------- รายชื่อ ---------------------- */
+const FILTER_ON  = 'fbtn shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold bg-brand-navy text-white';
+const FILTER_OFF = 'fbtn shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold bg-white text-slate-500 ring-1 ring-slate-200';
+
+function filterStatus(s) {
+  currentFilter = s;
+  document.querySelectorAll('.fbtn').forEach(b => {
+    b.className = (b.dataset.f === s) ? FILTER_ON : FILTER_OFF;
+  });
+  renderWorkers();
+}
+
+function renderWorkers() {
+  const list = currentFilter
+    ? WORKERS.filter(w => w.status === currentFilter)
+    : WORKERS;
+
+  document.getElementById('worker-total').textContent = WORKERS.length + ' คน';
+  document.getElementById('worker-empty').classList.toggle('hidden', list.length > 0);
+
+  document.getElementById('worker-list').innerHTML = list.map((w, i) => {
+    const st = STATUS[w.status];
+    const idx = WORKERS.indexOf(w);
+    return `
+      <button onclick="openWorker(${idx})"
+        class="press flex w-full items-start gap-3 rounded-2xl bg-white p-3.5 text-left shadow-sm shadow-slate-200/70
+               ${w.status === 'Rejected' ? 'ring-1 ring-red-100' : ''}">
+        <div class="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-brand-navy">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full ${st.dot} ring-2 ring-white"></span>
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[15px] font-bold leading-tight text-brand-navy">${esc(w.name)}</p>
+          <p class="mt-0.5 truncate text-xs text-slate-400">${esc(w.position)} · ${esc(w.phone)}</p>
+          <p class="mt-1 text-[11px] text-slate-400">ส่งเมื่อ ${esc(w.date)}${
+            w.badge ? ' · บัตร ' + esc(w.badge) : ''}</p>
+          ${w.reason ? `<p class="mt-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-red-700">${esc(w.reason)}</p>` : ''}
+        </div>
+
+        <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ${st.cls}">${st.th}</span>
+      </button>`;
+  }).join('');
+}
+
+function openWorker(i) {
+  const w = WORKERS[i];
+  if (w.status === 'Rejected') toast('แก้ไขเอกสารแล้วส่งใหม่ได้จากหน้านี้');
+  else toast(w.name + ' · ' + STATUS[w.status].th);
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function toast(msg) {
+  const box = document.getElementById('toast');
+  box.textContent = msg;
+  box.classList.remove('opacity-0', 'translate-y-3');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => box.classList.add('opacity-0', 'translate-y-3'), 2400);
+}
+
+function goBack() {
+  if (history.length > 1) history.back();
+  else window.location.href = 'Vendor_Portal_Dashboard.html';
+}
+
+filterStatus('');
+loadWorkers();
+</script>
+</body>
+</html>
