@@ -214,10 +214,12 @@ tailwind.config = { theme: { extend: {
         <div>
           <label class="lbl">วันเริ่มงาน <span class="text-destructive">*</span></label>
           <input type="date" id="t-start" class="fld">
+          <p id="t-start-th" class="mt-1 text-[11px] font-medium text-muted-foreground"></p>
         </div>
         <div>
           <label class="lbl">วันสิ้นสุดงาน <span class="text-destructive">*</span></label>
           <input type="date" id="t-end" class="fld">
+          <p id="t-end-th" class="mt-1 text-[11px] font-medium text-muted-foreground"></p>
         </div>
       </div>
 
@@ -349,6 +351,46 @@ const ZONE_RISK = {
   Warm: { th:'เขตควบคุม',  token:'var(--chart-2)', note:'ต้องมีใบอนุญาตทำงานก่อนเข้าปฏิบัติงานทุกครั้ง' },
   Cold: { th:'เขตปลอดภัย', token:'var(--chart-3)', note:'พื้นที่ความเสี่ยงต่ำ' }
 };
+
+const TH_MONTH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                  'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_MONTH_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
+                        'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+/** แปลง YYYY-MM-DD เป็น "6 มกราคม 2568" */
+function thaiDateFull(iso) {
+  if (!iso) return '';
+  const [y, m, d] = String(iso).split('-').map(Number);
+  if (!y || !m || !d) return '';
+  return d + ' ' + TH_MONTH[m - 1] + ' ' + (y + 543);
+}
+
+/** แบบสั้น "1 มิ.ย. 2568" ใช้ในตารางที่พื้นที่จำกัด */
+function thaiDateShort(iso) {
+  if (!iso) return '—';
+  const [y, m, d] = String(iso).split('-').map(Number);
+  if (!y || !m || !d) return '—';
+  return d + ' ' + TH_MONTH_SHORT[m - 1] + ' ' + (y + 543);
+}
+
+/**
+ * แสดงวันที่ภาษาไทยกำกับใต้ช่องกรอก
+ * ช่อง input type=date แสดงรูปแบบตาม locale ของเครื่องผู้ใช้ ซึ่งบังคับไม่ได้
+ * บางเครื่องขึ้น MM/DD/YYYY บางเครื่องขึ้น DD/MM/YYYY
+ * การมีข้อความไทยกำกับจึงเป็นวิธีเดียวที่กันการกรอกวันกับเดือนสลับกันได้จริง
+ */
+function bindThaiDate(inputId, noteId) {
+  const el = document.getElementById(inputId);
+  const note = document.getElementById(noteId);
+  if (!el || !note) return;
+  const update = () => {
+    const t = thaiDateFull(el.value);
+    note.textContent = t ? '(' + t + ')' : '';
+  };
+  el.addEventListener('change', update);
+  el.addEventListener('input', update);
+  update();
+}
 
 const esc = s => String(s == null ? '' : s)
   .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -635,7 +677,7 @@ function renderTree() {
       <td class="px-3 py-2.5">${zoneCell}</td>
       <td class="px-3 py-2.5 text-right">${budgetCell}</td>
       <td class="px-3 py-2.5">${assignCell}</td>
-      <td class="px-3 py-2.5 text-[11px] text-muted-foreground">${esc(t.start_date)}<br>${esc(t.end_date)}</td>
+      <td class="px-3 py-2.5 text-[11px] text-muted-foreground" title="${esc(t.start_date)} ถึง ${esc(t.end_date)}">${esc(thaiDateShort(t.start_date))}<br>${esc(thaiDateShort(t.end_date))}</td>
       <td class="px-3 py-2.5"><div class="flex flex-wrap justify-end gap-1">${actions.join('')}</div></td>
     </tr>`;
   }).join('');
@@ -744,7 +786,7 @@ function openTask(taskId, parentId) {
   const info = document.getElementById('task-parent-info');
   if (parentTask) {
     info.textContent = 'อยู่ภายใต้ ' + (parentTask.wbs_code || '') + ' ' + parentTask.task_name +
-      ' (' + parentTask.start_date + ' ถึง ' + parentTask.end_date + ')';
+      ' (' + thaiDateShort(parentTask.start_date) + ' - ' + thaiDateShort(parentTask.end_date) + ')';
     info.classList.remove('hidden');
   } else { info.classList.add('hidden'); }
 
@@ -768,6 +810,8 @@ function openTask(taskId, parentId) {
 
   setTaskType(t ? (t.task_type || 'Contract') : (parentTask ? 'Contract' : 'Summary'));
   onZoneChange(); calcBudget();
+  bindThaiDate('t-start', 't-start-th');
+  bindThaiDate('t-end', 't-end-th');
   document.getElementById('modal-task').classList.remove('hidden');
 }
 
