@@ -12,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
 
@@ -516,10 +517,14 @@ async function loadProjects() {
   document.getElementById('content').classList.toggle('hidden', !has);
   document.getElementById('content').classList.toggle('flex', has);
   document.getElementById('proj-select').classList.toggle('hidden', !has);
-  if (has) await selectProject(PROJECTS[0].project_id);
+  if (has) await selectProject(FTC.pickProject(PROJECTS));
 }
 
 async function selectProject(id) {
+  // จำไว้เพื่อให้สลับหน้าแล้วยังอยู่โครงการเดิม
+  const _p = PROJECTS.find(x => x.project_id === id);
+  if (_p) FTC.setProject(_p.project_id, _p.project_name);
+
   CUR = PROJECTS.find(p => p.project_id === id);
   if (!CUR) return;
   document.getElementById('proj-select').value = id;
@@ -559,6 +564,7 @@ async function loadAll() {
     PVENDORS = v.error ? [] : (v.data || []);
   }
 
+  await loadUnits();
   renderTimeline();
   renderKpi();
   renderTree();
@@ -598,6 +604,15 @@ function clearDateFilter() {
     if (el._flatpickr) el._flatpickr.clear(); else el.value = '';
   });
   renderTree();
+}
+
+/** หน่วยวัดมาจากตารางข้อมูลหลัก แก้ไขได้จากหน้า Master Setup */
+async function loadUnits() {
+  const r = await sb.from('tb_units')
+    .select('unit_code').eq('is_active', true).order('sort_order');
+  if (r.error || !r.data || !r.data.length) return;   // ใช้รายการสำรองใน HTML ต่อไป
+  document.getElementById('unit-list').innerHTML =
+    r.data.map(u => `<option value="${esc(u.unit_code)}">`).join('');
 }
 
 /* ---------------------- ต้นไม้และการรวบยอด ---------------------- */
