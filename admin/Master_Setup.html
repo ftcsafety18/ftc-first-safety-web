@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="th" class="bg-background">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ข้อมูลหลักและค่าตั้งต้น | FTC First Safety</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
+
+<style>
+  :root {
+    --background: oklch(0.985 0.003 250); --foreground: oklch(0.21 0.02 258);
+    --card: oklch(1 0 0); --primary: oklch(0.45 0.14 255);
+    --primary-foreground: oklch(0.99 0.005 250); --secondary: oklch(0.96 0.008 255);
+    --secondary-foreground: oklch(0.3 0.03 258); --muted: oklch(0.965 0.006 255);
+    --muted-foreground: oklch(0.53 0.02 258); --accent: oklch(0.93 0.03 250);
+    --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.9 0.008 255);
+    --ring: oklch(0.45 0.14 255); --chart-5: oklch(0.55 0.14 155);
+  }
+  html, body { background: var(--background); color: var(--foreground); }
+  body { font-family: 'Sarabun', sans-serif; }
+  .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid var(--border);
+         background:var(--card); font-size:.875rem; color:var(--foreground); }
+  .fld:focus { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent); }
+  .lbl { display:block; font-size:.78rem; font-weight:600; color:var(--muted-foreground); margin-bottom:.35rem; }
+  .tab { padding:.7rem 1.1rem; font-size:.85rem; font-weight:700; color:var(--muted-foreground);
+         border-bottom:3px solid transparent; white-space:nowrap; }
+  .tab.on { color:var(--primary); border-bottom-color:var(--primary); }
+  .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.5); z-index:60;
+                display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  :focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+</style>
+
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { sans:['Sarabun','sans-serif'] },
+  colors: {
+    background:'var(--background)', foreground:'var(--foreground)', card:'var(--card)',
+    primary:{ DEFAULT:'var(--primary)', foreground:'var(--primary-foreground)' },
+    secondary:{ DEFAULT:'var(--secondary)', foreground:'var(--secondary-foreground)' },
+    muted:{ DEFAULT:'var(--muted)', foreground:'var(--muted-foreground)' },
+    accent:'var(--accent)', destructive:'var(--destructive)', border:'var(--border)'
+  }
+}}}
+</script>
+</head>
+<body class="antialiased">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm rounded-lg border border-border bg-card p-8">
+    <div class="mb-6">
+      <p class="text-sm font-semibold text-foreground">FTC First Safety</p>
+      <p class="text-xs text-muted-foreground">ข้อมูลหลักและค่าตั้งต้น</p>
+    </div>
+    <label class="lbl">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="lbl">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login" class="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">เข้าสู่ระบบ</button>
+    <p id="log-err" class="hidden mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden min-h-screen">
+
+  <header class="border-b border-border" style="background:var(--primary)">
+    <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <a href="Admin_Dashboard.html" class="flex size-9 items-center justify-center rounded-md bg-white/15 text-white ring-1 ring-white/25 transition hover:bg-white/25" title="กลับหน้าเมนูหลัก">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-semibold text-white">ข้อมูลหลักและค่าตั้งต้น</span>
+          <span class="text-xs text-white/70">01 · ศูนย์ตั้งค่าและวิศวกรรม</span>
+        </div>
+      </div>
+      <button onclick="doLogout()" class="rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+
+    <p class="mb-4 rounded-lg border-l-4 border-primary bg-primary/5 p-3 text-[12px] leading-relaxed">
+      ค่าที่ตั้งในหน้านี้จะถูกดึงไปเป็นตัวเลือกในหน้าอื่นทั้งระบบ
+      การแก้ที่นี่จึงมีผลกับทุกโครงการ — รายการที่ถูกใช้งานไปแล้วควรปิดการใช้งานแทนการลบ
+      เพื่อไม่ให้ข้อมูลเดิมกำพร้า
+    </p>
+
+    <nav class="mb-4 flex items-center gap-1 overflow-x-auto border-b border-border">
+      <button class="tab on" data-tab="types" onclick="showTab('types')">ประเภทโครงการ</button>
+      <button class="tab"    data-tab="units" onclick="showTab('units')">หน่วยวัดมาตรฐาน</button>
+      <button class="tab"    data-tab="vendor" onclick="showTab('vendor')">ผู้รับเหมา</button>
+    </nav>
+
+    <!-- ============ ประเภทโครงการ ============ -->
+    <section id="tab-types">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p class="text-sm text-muted-foreground">ใช้เป็นตัวเลือก "ประเภทโครงการ" ในหน้าตั้งค่าโครงการ</p>
+        <button onclick="openType(null)" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">+ เพิ่มประเภท</button>
+      </div>
+      <div class="overflow-x-auto rounded-lg border border-border bg-card">
+        <table class="w-full text-sm">
+          <thead class="border-b border-border bg-muted/60">
+            <tr class="text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th class="px-3 py-2.5">รหัส</th><th class="px-3 py-2.5">ชื่อไทย</th>
+              <th class="px-3 py-2.5">ชื่ออังกฤษ</th><th class="px-3 py-2.5">ใช้งาน</th>
+              <th class="px-3 py-2.5 text-right">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="type-rows" class="divide-y divide-border/70"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ หน่วยวัด ============ -->
+    <section id="tab-units" class="hidden">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p class="text-sm text-muted-foreground">ใช้เป็นตัวเลือก "หน่วย" ในหน้าตั้งงบประมาณ BOQ</p>
+        <button onclick="openUnit(null)" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">+ เพิ่มหน่วย</button>
+      </div>
+      <div id="unit-groups" class="space-y-4"></div>
+    </section>
+
+    <!-- ============ ผู้รับเหมา ============ -->
+    <section id="tab-vendor" class="hidden">
+      <div class="rounded-lg border border-border bg-card p-8 text-center">
+        <p class="text-base font-semibold text-foreground">ทะเบียนผู้รับเหมามีหน้าจัดการเฉพาะอยู่แล้ว</p>
+        <p class="mx-auto mt-1 max-w-lg text-sm text-muted-foreground">
+          เพราะข้อมูลผู้รับเหมามีเอกสารภาษี ประกัน และการผูกบัญชี LINE ที่ซับซ้อนกว่าข้อมูลหลักทั่วไป
+          จึงแยกเป็นหน้าต่างหากแทนที่จะรวมมาไว้ที่นี่
+        </p>
+        <p id="vendor-count" class="mt-3 text-sm font-semibold text-primary"></p>
+        <a href="Vendor_Hub.html" class="mt-4 inline-block rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">ไปหน้าทะเบียนผู้รับเหมา</a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================== กล่องแก้ไข ===================== -->
+<div id="modal-item" class="modal-wrap hidden">
+  <div class="w-full max-w-md rounded-lg border border-border bg-card shadow-xl">
+    <div class="flex items-center justify-between border-b border-border px-6 py-4">
+      <h3 id="item-title" class="text-base font-semibold text-foreground">เพิ่มรายการ</h3>
+      <button onclick="closeModal('modal-item')" class="text-muted-foreground hover:text-foreground">✕</button>
+    </div>
+    <div class="space-y-4 px-6 py-5">
+      <div>
+        <label class="lbl">รหัส <span class="text-destructive">*</span></label>
+        <input id="i-code" class="fld font-mono">
+        <p id="i-code-note" class="mt-1 text-[10px] text-muted-foreground">แก้ไขไม่ได้หลังบันทึก เพราะข้อมูลเดิมอ้างอิงรหัสนี้อยู่</p>
+      </div>
+      <div>
+        <label id="i-name-label" class="lbl">ชื่อ <span class="text-destructive">*</span></label>
+        <input id="i-name" class="fld">
+      </div>
+      <div id="box-name-en">
+        <label class="lbl">ชื่อภาษาอังกฤษ</label>
+        <input id="i-name-en" class="fld">
+      </div>
+      <div id="box-category" class="hidden">
+        <label class="lbl">กลุ่มหน่วยวัด</label>
+        <input id="i-category" class="fld" list="cat-list" placeholder="เช่น นับจำนวน, พื้นที่, น้ำหนัก">
+        <datalist id="cat-list">
+          <option value="นับจำนวน"><option value="ความยาว"><option value="พื้นที่">
+          <option value="ปริมาตร"><option value="น้ำหนัก"><option value="เวลา"><option value="เหมารวม">
+        </datalist>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">ลำดับการแสดง</label>
+          <input id="i-sort" class="fld text-right" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        </div>
+        <div>
+          <label class="lbl">สถานะ</label>
+          <select id="i-active" class="fld">
+            <option value="true">ใช้งาน</option>
+            <option value="false">ปิดการใช้งาน</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col-reverse gap-3 rounded-b-lg border-t border-border bg-muted/40 px-6 py-4 sm:flex-row">
+      <button onclick="closeModal('modal-item')" class="rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground sm:w-auto">ยกเลิก</button>
+      <button id="btn-item-save" onclick="saveItem()" class="flex-1 rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+ * ข้อมูลหลักและค่าตั้งต้น
+ *
+ * ย้ายค่าที่เคยฝังในโค้ดหน้าเว็บมาอยู่ในฐานข้อมูล เพื่อให้แอดมินแก้เองได้
+ * โดยไม่ต้องแก้ไฟล์และอัปโหลดใหม่ทุกครั้งที่หน่วยงานเพิ่มประเภทงานใหม่
+ * ===================================================================== */
+
+const sb = FTC.supabase();
+let TYPES = [], UNITS = [], editing = null, editKind = 'type';
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent='กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent='กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent='เข้าสู่ระบบ';
+  if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  await loadAll();
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadAll() {
+  const [t, u, v] = await Promise.all([
+    sb.from('tb_project_types').select('*').order('sort_order'),
+    sb.from('tb_units').select('*').order('sort_order'),
+    sb.from('tb_vendors').select('vendor_id', { count:'exact', head:true })
+  ]);
+
+  if (t.error) { reportError('โหลดประเภทโครงการไม่สำเร็จ', t.error, 'select tb_project_types'); return; }
+  TYPES = t.data || [];
+  UNITS = u.error ? [] : (u.data || []);
+
+  document.getElementById('vendor-count').textContent =
+    v.count != null ? 'มีผู้รับเหมาในระบบ ' + v.count.toLocaleString('th-TH') + ' ราย' : '';
+
+  renderTypes();
+  renderUnits();
+}
+
+/* ---------------------- ประเภทโครงการ ---------------------- */
+function renderTypes() {
+  document.getElementById('type-rows').innerHTML = TYPES.map(x => `
+    <tr class="${x.is_active ? '' : 'opacity-50'}">
+      <td class="px-3 py-2.5 font-mono text-xs text-muted-foreground">${esc(x.type_code)}</td>
+      <td class="px-3 py-2.5 font-semibold text-foreground">${esc(x.name_th)}</td>
+      <td class="px-3 py-2.5 text-muted-foreground">${esc(x.name_en || '—')}</td>
+      <td class="px-3 py-2.5">${x.is_active
+        ? '<span class="rounded-full bg-[var(--chart-5)]/10 px-2 py-0.5 text-[11px] font-medium text-[var(--chart-5)]">ใช้งาน</span>'
+        : '<span class="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">ปิดใช้งาน</span>'}</td>
+      <td class="px-3 py-2.5 text-right">
+        <button onclick="openType('${esc(x.type_code)}')" class="rounded border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:text-foreground">แก้ไข</button>
+      </td>
+    </tr>`).join('') ||
+    '<tr><td colspan="5" class="px-3 py-10 text-center text-sm text-muted-foreground">ยังไม่มีข้อมูล</td></tr>';
+}
+
+/* ---------------------- หน่วยวัด ---------------------- */
+function renderUnits() {
+  const groups = {};
+  UNITS.forEach(u => {
+    const k = u.category || 'ไม่ระบุกลุ่ม';
+    (groups[k] = groups[k] || []).push(u);
+  });
+
+  const html = Object.keys(groups).map(k => `
+    <div class="rounded-lg border border-border bg-card">
+      <p class="border-b border-border bg-muted/50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">${esc(k)}</p>
+      <div class="flex flex-wrap gap-2 p-3">
+        ${groups[k].map(u => `
+          <button onclick="openUnit('${esc(u.unit_code)}')"
+            class="rounded-lg border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary
+                   ${u.is_active ? 'border-border text-foreground' : 'border-border/50 text-muted-foreground/50 line-through'}"
+            title="${esc(u.unit_name)}${u.is_active ? '' : ' (ปิดใช้งาน)'}">${esc(u.unit_code)}</button>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('unit-groups').innerHTML = html ||
+    '<div class="rounded-lg border border-border bg-card p-10 text-center text-sm text-muted-foreground">ยังไม่มีข้อมูล</div>';
+}
+
+/* ---------------------- กล่องแก้ไข ---------------------- */
+function openType(code) {
+  editKind = 'type';
+  editing = code;
+  const x = code ? TYPES.find(t => t.type_code === code) : null;
+
+  document.getElementById('item-title').textContent = x ? 'แก้ไขประเภทโครงการ' : 'เพิ่มประเภทโครงการ';
+  document.getElementById('i-name-label').innerHTML = 'ชื่อภาษาไทย <span class="text-destructive">*</span>';
+  document.getElementById('box-name-en').classList.remove('hidden');
+  document.getElementById('box-category').classList.add('hidden');
+
+  document.getElementById('i-code').value = x ? x.type_code : '';
+  document.getElementById('i-code').readOnly = !!x;
+  document.getElementById('i-name').value = x ? x.name_th : '';
+  document.getElementById('i-name-en').value = x ? (x.name_en || '') : '';
+  document.getElementById('i-sort').value = x ? x.sort_order : (TYPES.length + 1);
+  document.getElementById('i-active').value = x ? String(x.is_active) : 'true';
+  document.getElementById('modal-item').classList.remove('hidden');
+}
+
+function openUnit(code) {
+  editKind = 'unit';
+  editing = code;
+  const x = code ? UNITS.find(u => u.unit_code === code) : null;
+
+  document.getElementById('item-title').textContent = x ? 'แก้ไขหน่วยวัด' : 'เพิ่มหน่วยวัด';
+  document.getElementById('i-name-label').innerHTML = 'ชื่อเต็มของหน่วย <span class="text-destructive">*</span>';
+  document.getElementById('box-name-en').classList.add('hidden');
+  document.getElementById('box-category').classList.remove('hidden');
+
+  document.getElementById('i-code').value = x ? x.unit_code : '';
+  document.getElementById('i-code').readOnly = !!x;
+  document.getElementById('i-name').value = x ? x.unit_name : '';
+  document.getElementById('i-category').value = x ? (x.category || '') : '';
+  document.getElementById('i-sort').value = x ? x.sort_order : (UNITS.length + 1);
+  document.getElementById('i-active').value = x ? String(x.is_active) : 'true';
+  document.getElementById('modal-item').classList.remove('hidden');
+}
+
+async function saveItem() {
+  const btn = document.getElementById('btn-item-save');
+  try {
+    const code = document.getElementById('i-code').value.trim();
+    const name = document.getElementById('i-name').value.trim();
+    if (!code) return Swal.fire('ยังกรอกไม่ครบ','ระบุรหัส','warning');
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อ','warning');
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    const sort = parseInt(document.getElementById('i-sort').value, 10) || 99;
+    const active = document.getElementById('i-active').value === 'true';
+
+    let res;
+    if (editKind === 'type') {
+      const payload = {
+        type_code: code, name_th: name,
+        name_en: document.getElementById('i-name-en').value.trim() || null,
+        sort_order: sort, is_active: active
+      };
+      res = editing
+        ? await sb.from('tb_project_types').update(payload).eq('type_code', editing)
+        : await sb.from('tb_project_types').insert(payload);
+    } else {
+      const payload = {
+        unit_code: code, unit_name: name,
+        category: document.getElementById('i-category').value.trim() || null,
+        sort_order: sort, is_active: active
+      };
+      res = editing
+        ? await sb.from('tb_units').update(payload).eq('unit_code', editing)
+        : await sb.from('tb_units').insert(payload);
+    }
+    if (res.error) throw res.error;
+
+    closeModal('modal-item');
+    await loadAll();
+  } catch (err) {
+    if (err && err.code === '23505') Swal.fire('รหัสซ้ำ','รหัสนี้มีอยู่แล้วในระบบ','warning');
+    else reportError('บันทึกไม่สำเร็จ', err, editKind);
+  } finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function showTab(name) {
+  ['types','units','vendor'].forEach(t =>
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name));
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+}
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal('modal-item'); });
+document.getElementById('modal-item').addEventListener('click', e => {
+  if (e.target.id === 'modal-item') closeModal('modal-item');
+});
+
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step, error: err });
+  const e = err || {};
+  const code = String(e.code || '');
+  let hint = '';
+  if (code === '42P01') hint = 'ยังไม่มีตารางนี้ — ต้องรันไฟล์ master_data_tables.sql ก่อน';
+  else if (code === '42501' || e.status === 403) hint = 'ฐานข้อมูลปฏิเสธสิทธิ์ — ตรวจ Policy ของตาราง';
+
+  Swal.fire({
+    icon:'error', title:title,
+    html: (hint ? `<p style="font-size:.85rem;margin-bottom:.6rem">${esc(hint)}</p>` : '') +
+      `<p style="font-size:.85rem;color:#334155">${esc(e.message || String(err))}</p>`,
+    confirmButtonColor:'#3b5bdb', width:520
+  });
+}
+
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ', (r && typeof r==='object') ? r : { message:String(r) }, 'promise ที่ไม่มีใครดัก');
+});
+
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
