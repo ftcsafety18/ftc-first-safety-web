@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
 
   <style>
     :root {
@@ -337,13 +338,18 @@ async function loadProjects() {
   document.getElementById('proj-select').classList.toggle('hidden', !has);
 
   if (has) {
-    document.getElementById('proj-select').value = PROJECTS[0].project_id;
-    document.getElementById('proj-select-mobile').value = PROJECTS[0].project_id;
-    await selectProject(PROJECTS[0].project_id);
+    const pick = FTC.pickProject(PROJECTS);
+    document.getElementById('proj-select').value = pick;
+    document.getElementById('proj-select-mobile').value = pick;
+    await selectProject(pick);
   }
 }
 
 async function selectProject(id) {
+  // จำไว้เพื่อให้สลับหน้าแล้วยังอยู่โครงการเดิม
+  const _p = PROJECTS.find(x => x.project_id === id);
+  if (_p) FTC.setProject(_p.project_id, _p.project_name);
+
   CUR = PROJECTS.find(p => p.project_id === id);
   if (!CUR) return;
   document.getElementById('proj-select').value = id;
