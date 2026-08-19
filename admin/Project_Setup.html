@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -663,6 +664,14 @@ async function enterApp() {
 
 /* ---------------------- โหลดข้อมูล ---------------------- */
 async function loadLookups() {
+  // ประเภทโครงการมาจากตารางข้อมูลหลัก แก้ไขได้จากหน้า Master Setup
+  const pt = await sb.from('tb_project_types')
+    .select('type_code, name_th').eq('is_active', true).order('sort_order');
+  if (!pt.error && pt.data && pt.data.length) {
+    document.getElementById('ptype-list').innerHTML = pt.data
+      .map(x => `<option value="${FTC.esc(x.type_code)}" label="${FTC.esc(x.name_th)}">`).join('');
+  }
+
   const s = await sb.from('tb_internal_staff')
     .select('staff_id, full_name, role_level, line_uid').eq('account_status','Active').order('full_name');
   if (!s.error) {
@@ -696,13 +705,18 @@ async function loadProjects(keepId) {
   document.getElementById('workspace').classList.toggle('hidden', PROJECTS.length === 0);
 
   if (PROJECTS.length) {
-    const pick = keepId && PROJECTS.some(p => p.project_id === keepId) ? keepId : PROJECTS[0].project_id;
+    const pick = (keepId && PROJECTS.some(p => p.project_id === keepId))
+      ? keepId : FTC.pickProject(PROJECTS);
     sel.value = pick;
     await selectProject(pick);
   }
 }
 
 async function selectProject(id) {
+  // จำไว้เพื่อให้สลับหน้าแล้วยังอยู่โครงการเดิม
+  const _p = PROJECTS.find(x => x.project_id === id);
+  if (_p) FTC.setProject(_p.project_id, _p.project_name);
+
   CUR = PROJECTS.find(p => p.project_id === id) || null;
   if (!CUR) return;
   fillContract();
