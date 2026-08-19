@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>ขอใบอนุญาตทำงาน | FTC First Safety</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../shared/vendor-api.js"></script>
+
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { brand: { navy:'#1E3A5F', 'navy-light':'#2C4E7A', 'navy-deep':'#16304F',
+                     orange:'#E85D24', 'orange-hover':'#CC4D18' } },
+  fontFamily: { sans:['Sarabun','sans-serif'] }
+}}}
+</script>
+
+<style>
+  body { background:#EEF1F5; font-family:'Sarabun',sans-serif;
+         padding-bottom:calc(96px + env(safe-area-inset-bottom)); }
+  .fld { width:100%; padding:.75rem .9rem; border-radius:.85rem; border:1.5px solid #DDE3EA;
+         background:#fff; font-size:.95rem; color:#1E293B; }
+  .fld:focus { outline:none; border-color:#1E3A5F; box-shadow:0 0 0 3px rgba(30,58,95,.1); }
+  .lbl { display:block; font-size:.8rem; font-weight:700; color:#475569; margin-bottom:.45rem; }
+  .press { transition:transform .12s ease; }
+  .press:active { transform:scale(.985); }
+  @media (prefers-reduced-motion: reduce) { .press { transition:none } .press:active { transform:none } }
+  .hero-grid::after { content:''; position:absolute; inset:0; opacity:.06; pointer-events:none;
+    background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+    background-size:24px 24px; }
+  /* การ์ดเลือกได้ */
+  .pick { border:2px solid #E2E8F0; background:#fff; }
+  .pick.on { border-color:#E85D24; background:#FFF5F0; }
+  .pick.on .pick-check { background:#E85D24; border-color:#E85D24; color:#fff; }
+  .risk.on { border-color:#DC2626; background:#FEF2F2; }
+  .risk.on .pick-check { background:#DC2626; border-color:#DC2626; }
+  :focus-visible { outline:2px solid #E85D24; outline-offset:2px; }
+</style>
+</head>
+<body class="text-slate-800">
+
+<div class="mx-auto min-h-screen max-w-md bg-[#EEF1F5]">
+
+  <!-- ===================== ส่วนหัว ===================== -->
+  <header class="hero-grid relative rounded-b-3xl bg-gradient-to-b from-brand-navy to-brand-navy-deep px-4 pb-5 pt-5">
+    <div class="relative z-10 flex items-center gap-3">
+      <button onclick="goBack()" aria-label="ย้อนกลับ"
+        class="press flex size-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-white/85 ring-1 ring-white/15 hover:bg-white/20">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="min-w-0 flex-1 leading-tight">
+        <h1 class="text-lg font-bold text-white">ขอใบอนุญาตทำงาน</h1>
+        <p id="vendor-name" class="truncate text-[11px] text-white/55">กำลังโหลด…</p>
+      </div>
+      <span class="shrink-0 rounded-lg bg-brand-orange px-2.5 py-1 text-[10px] font-bold tracking-wider text-white">FM-SAF-03</span>
+    </div>
+  </header>
+
+  <main class="space-y-4 px-4 pt-5">
+
+    <!-- ===================== 1. เลือกแผนงาน ===================== -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/70">
+      <h2 class="mb-3 flex items-center gap-2">
+        <span class="flex size-6 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">1</span>
+        <span class="text-base font-bold text-brand-navy">เลือกแผนงาน</span>
+      </h2>
+
+      <select id="task-select" class="fld" onchange="onTaskChange()">
+        <option value="">กำลังโหลดแผนงาน…</option>
+      </select>
+
+      <div id="task-info" class="mt-3 hidden rounded-xl p-3 text-[12px] leading-relaxed"></div>
+
+      <div class="mt-3">
+        <label class="lbl">พื้นที่ปฏิบัติงานโดยละเอียด <span class="text-red-500">*</span></label>
+        <input id="p-desc" class="fld" placeholder="เช่น อาคาร A ชั้น 3 ห้องเครื่องปรับอากาศ">
+      </div>
+
+      <div class="mt-3 grid grid-cols-2 gap-3">
+        <div>
+          <label class="lbl">เวลาเริ่มงาน <span class="text-red-500">*</span></label>
+          <input type="datetime-local" id="p-start" class="fld px-3 text-[13px]">
+        </div>
+        <div>
+          <label class="lbl">เวลาสิ้นสุด <span class="text-red-500">*</span></label>
+          <input type="datetime-local" id="p-end" class="fld px-3 text-[13px]">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 2. ประเภทงาน ===================== -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/70">
+      <h2 class="mb-1 flex items-center gap-2">
+        <span class="flex size-6 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">2</span>
+        <span class="text-base font-bold text-brand-navy">ประเภทงาน</span>
+      </h2>
+      <p class="mb-3 pl-8 text-xs text-slate-500">เลือกงานทั่วไป หรือเลือกงานเสี่ยงสูงได้มากกว่า 1 ข้อ</p>
+
+      <button type="button" id="btn-general" onclick="toggleGeneral()"
+        class="pick press mb-3 flex w-full items-center gap-3 rounded-xl p-3 text-left">
+        <span class="pick-check flex size-5 shrink-0 items-center justify-center rounded-md border-2 border-slate-300 bg-white text-transparent">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <span class="text-sm font-bold text-emerald-700">งานทั่วไป <span class="font-normal text-emerald-600">— ความเสี่ยงต่ำ</span></span>
+      </button>
+
+      <div id="risk-grid" class="grid grid-cols-2 gap-2"></div>
+
+      <p id="risk-alert" class="mt-3 hidden rounded-xl border border-red-200 bg-red-50 p-3 text-[12px] font-semibold leading-relaxed text-red-700">
+        งานเสี่ยงสูงต้องแนบเอกสาร JSA ก่อนจึงจะยื่นคำขอได้
+      </p>
+    </section>
+
+    <!-- ===================== 3. คนงาน ===================== -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/70">
+      <h2 class="mb-1 flex items-center gap-2">
+        <span class="flex size-6 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">3</span>
+        <span class="flex-1 text-base font-bold text-brand-navy">คนงานที่เข้าทำงาน</span>
+        <span id="worker-count" class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-500">0 คน</span>
+      </h2>
+      <p class="mb-3 pl-8 text-xs text-slate-500">แสดงเฉพาะคนที่ FTC อนุมัติแล้วเท่านั้น</p>
+
+      <div class="mb-2 flex gap-2">
+        <input id="worker-search" class="fld flex-1 py-2 text-sm" placeholder="ค้นหาชื่อ" oninput="renderWorkers()">
+        <button onclick="toggleAll()" id="btn-all"
+          class="press shrink-0 rounded-xl border-2 border-slate-200 px-3 text-xs font-bold text-slate-600">เลือกทั้งหมด</button>
+      </div>
+
+      <div id="worker-list" class="max-h-72 space-y-2 overflow-y-auto"></div>
+      <p id="worker-empty" class="hidden rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-400"></p>
+    </section>
+
+    <!-- ===================== 4. อุปกรณ์และเอกสาร ===================== -->
+    <section class="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/70">
+      <h2 class="mb-3 flex items-center gap-2">
+        <span class="flex size-6 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">4</span>
+        <span class="text-base font-bold text-brand-navy">อุปกรณ์และเอกสาร</span>
+      </h2>
+
+      <p class="lbl">อุปกรณ์ป้องกันที่ใช้ <span class="text-red-500">*</span></p>
+      <div id="ppe-grid" class="mb-4 grid grid-cols-2 gap-2"></div>
+
+      <div id="jsa-box" class="hidden">
+        <label class="press flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-3.5">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-red-500">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-bold text-red-700">เอกสาร JSA <span class="text-red-500">*</span></p>
+            <p id="jsa-name" class="truncate text-[11px] text-red-500/80">งานเสี่ยงสูงต้องแนบเอกสารนี้</p>
+          </div>
+          <span class="shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white">เลือก</span>
+          <input type="file" id="file-jsa" accept="image/*,application/pdf" capture="environment"
+                 class="hidden" onchange="showJsa(this)">
+        </label>
+      </div>
+    </section>
+
+    <!-- ===================== 5. คำรับรอง ===================== -->
+    <section class="rounded-2xl border-2 border-red-200 bg-red-50/60 p-4">
+      <button type="button" id="btn-declare" onclick="toggleDeclare()"
+        class="press flex w-full items-start gap-3 rounded-xl bg-white p-3.5 text-left ring-1 ring-red-200">
+        <span id="declare-check" class="flex size-6 shrink-0 items-center justify-center rounded-md border-2 border-red-300 bg-white text-transparent">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <span class="text-[13px] font-semibold leading-relaxed text-red-800">
+          ข้าพเจ้ายืนยันว่าได้ตรวจสอบสภาพพื้นที่ เตรียมอุปกรณ์ระงับเหตุฉุกเฉินพร้อมแล้ว
+          และจะชี้แจงความปลอดภัยให้คนงานก่อนเริ่มงานจริง <span class="text-red-600">*</span>
+        </span>
+      </button>
+    </section>
+  </main>
+</div>
+
+<!-- ปุ่มส่งลอยอยู่ล่างสุด -->
+<div class="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md border-t border-slate-200 bg-white/97 backdrop-blur"
+     style="padding-bottom:env(safe-area-inset-bottom)">
+  <div class="px-4 py-3">
+    <button onclick="submitPermit()" id="btn-submit" disabled
+      class="press w-full rounded-xl bg-brand-navy py-3.5 text-[15px] font-bold text-white shadow-lg transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none">
+      ส่งคำขอใบอนุญาต
+    </button>
+    <p id="submit-hint" class="mt-1.5 text-center text-[11px] text-slate-400"></p>
+  </div>
+</div>
+
+<div id="toast"
+  class="pointer-events-none fixed bottom-28 left-1/2 z-50 w-[86%] max-w-sm -translate-x-1/2 translate-y-3 rounded-xl bg-brand-navy/95 px-4 py-3 text-center text-sm font-medium text-white opacity-0 shadow-xl transition-all duration-200"></div>
+
+<script>
+/* =====================================================================
+ * ขอใบอนุญาตทำงาน — หน้าจอสำหรับผู้รับเหมา
+ *
+ * ทุกคำขอไปที่ Edge Function เสมอ ไม่เรียกฐานข้อมูลตรง
+ * ค่าที่มีผลต่อความปลอดภัยถูกกำหนดจากฝั่งเซิร์ฟเวอร์ทั้งหมด
+ *   รหัสผู้รับเหมา  มาจาก LINE UID ที่ตรวจแล้ว
+ *   เขตความเสี่ยง   มาจากพื้นที่ที่ผูกไว้ในแผนงาน
+ *   คนงานที่เลือก   ต้องอยู่ในสังกัดและอนุมัติแล้ว
+ * แก้ค่าผ่าน F12 แล้วส่งมาจึงไม่มีผล
+ * ===================================================================== */
+
+const HIGH_RISK = [
+  'งานที่อับอากาศ', 'งานเชื่อม/ก่อประกายไฟ', 'งานบนที่สูง', 'งานขุดเจาะดิน',
+  'งานเกี่ยวกับไฟฟ้า', 'งานยกของหนัก/เครน', 'งานเกี่ยวกับสารเคมี', 'งานรื้อถอน/โครงสร้าง'
+];
+
+const PPE_ITEMS = [
+  { th:'หมวกนิรภัย', must:true }, { th:'รองเท้าเซฟตี้', must:true },
+  { th:'แว่นตานิรภัย' }, { th:'ถุงมือ' }, { th:'หน้ากากกันฝุ่น' },
+  { th:'ที่อุดหู' }, { th:'เข็มขัดกันตก' }, { th:'เสื้อสะท้อนแสง' }
+];
+
+const ZONE_TONE = {
+  'เขตอันตราย': ['border-red-200 bg-red-50 text-red-700', 'พื้นที่นี้ถูกตรวจเข้มเป็นพิเศษ'],
+  'เขตควบคุม':  ['border-amber-200 bg-amber-50 text-amber-800', 'ต้องมีใบอนุญาตก่อนเข้าปฏิบัติงาน'],
+  'เขตปลอดภัย': ['border-emerald-200 bg-emerald-50 text-emerald-800', 'พื้นที่ความเสี่ยงต่ำ']
+};
+
+let TASKS = [], WORKERS = [], jsaFile = null;
+let generalWork = false, declared = false;
+const pickedRisk = new Set();
+const pickedPPE  = new Set(['หมวกนิรภัย', 'รองเท้าเซฟตี้']);
+const pickedWorkers = new Set();
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadAll() {
+  try {
+    const vendor = await VendorAPI.me();
+    document.getElementById('vendor-name').textContent = vendor.vendor_name;
+
+    const [t, w] = await Promise.all([
+      VendorAPI.call('tasks.list'),
+      VendorAPI.call('workers.approved')
+    ]);
+
+    TASKS = t.tasks || [];
+    WORKERS = w.workers || [];
+
+    const sel = document.getElementById('task-select');
+    sel.innerHTML = TASKS.length
+      ? '<option value="">-- เลือกแผนงาน --</option>' + TASKS.map(x =>
+          `<option value="${esc(x.task_id)}">[${esc(x.wbs_code || '')}] ${esc(x.task_name)}</option>`).join('')
+      : '<option value="">ยังไม่มีแผนงานที่เปิดใบอนุญาตได้</option>';
+
+    if (!TASKS.length) {
+      toast('ยังไม่มีแผนงานที่มอบหมายให้บริษัทของท่านในโครงการที่เปิดใช้งาน');
+    }
+
+    renderWorkers();
+    refresh();
+
+  } catch (err) {
+    console.error('[FTC] โหลดข้อมูลไม่สำเร็จ', err);
+    document.getElementById('vendor-name').textContent =
+      err.code === 'NOT_LINKED' ? 'บัญชียังไม่ได้ผูกกับบริษัท' : 'เชื่อมต่อไม่สำเร็จ';
+    toast(err.message || 'โหลดข้อมูลไม่สำเร็จ');
+  }
+}
+
+/* ---------------------- แผนงาน ---------------------- */
+function onTaskChange() {
+  const t = TASKS.find(x => x.task_id === document.getElementById('task-select').value);
+  const box = document.getElementById('task-info');
+  if (!t) { box.classList.add('hidden'); refresh(); return; }
+
+  const tone = ZONE_TONE[t.risk_area_class] || ZONE_TONE['เขตควบคุม'];
+  box.className = 'mt-3 rounded-xl border p-3 text-[12px] leading-relaxed ' + tone[0];
+  box.innerHTML =
+    '<p class="font-bold">' + esc(t.project_name || '') + '</p>' +
+    '<p>พื้นที่: ' + esc(t.zone ? (t.zone.zone_code + ' ' + t.zone.zone_name) : 'ยังไม่ระบุ') + '</p>' +
+    '<p>เขตความเสี่ยง: <b>' + esc(t.risk_area_class || '—') + '</b> — ' + tone[1] + '</p>' +
+    '<p>ช่วงเวลาตามแผน: ' + esc(t.start_date) + ' ถึง ' + esc(t.end_date) + '</p>';
+  box.classList.remove('hidden');
+
+  // ตั้งเวลาเริ่มต้นให้อยู่ในกรอบแผนงาน ลดโอกาสกรอกหลุดกรอบ
+  const s = document.getElementById('p-start'), e = document.getElementById('p-end');
+  if (t.start_date) s.min = t.start_date + 'T00:00';
+  if (t.end_date)   e.max = t.end_date + 'T23:59';
+  if (!s.value) {
+    const now = new Date();
+    const iso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    s.value = iso;
+    e.value = new Date(now.getTime() - now.getTimezoneOffset() * 60000 + 8 * 3600000).toISOString().slice(0, 16);
+  }
+  refresh();
+}
+
+/* ---------------------- ประเภทงาน ---------------------- */
+function buildRiskGrid() {
+  document.getElementById('risk-grid').innerHTML = HIGH_RISK.map((r, i) => `
+    <button type="button" id="risk-${i}" onclick="toggleRisk(${i})"
+      class="pick risk press rounded-xl p-2.5 text-left">
+      <span class="flex items-start gap-2">
+        <span class="pick-check mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border-2 border-slate-300 bg-white text-transparent">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <span class="text-[12px] font-bold leading-tight text-red-600">${esc(r)}</span>
+      </span>
+    </button>`).join('');
+}
+
+function toggleRisk(i) {
+  const name = HIGH_RISK[i];
+  if (pickedRisk.has(name)) pickedRisk.delete(name);
+  else { pickedRisk.add(name); generalWork = false; }
+  syncTypeUI();
+}
+
+function toggleGeneral() {
+  generalWork = !generalWork;
+  if (generalWork) pickedRisk.clear();
+  syncTypeUI();
+}
+
+function syncTypeUI() {
+  document.getElementById('btn-general').classList.toggle('on', generalWork);
+  HIGH_RISK.forEach((r, i) =>
+    document.getElementById('risk-' + i).classList.toggle('on', pickedRisk.has(r)));
+
+  const high = pickedRisk.size > 0;
+  document.getElementById('risk-alert').classList.toggle('hidden', !high);
+  document.getElementById('jsa-box').classList.toggle('hidden', !high);
+  refresh();
+}
+
+/* ---------------------- คนงาน ---------------------- */
+function renderWorkers() {
+  const q = document.getElementById('worker-search').value.trim().toLowerCase();
+  const list = q ? WORKERS.filter(w => (w.full_name || '').toLowerCase().includes(q)) : WORKERS;
+
+  const empty = document.getElementById('worker-empty');
+  empty.classList.toggle('hidden', list.length > 0);
+  empty.textContent = WORKERS.length
+    ? 'ไม่พบชื่อที่ค้นหา'
+    : 'ยังไม่มีคนงานที่ผ่านการอนุมัติ กรุณาขึ้นทะเบียนพนักงานก่อน';
+
+  document.getElementById('worker-list').innerHTML = list.map(w => {
+    const on = pickedWorkers.has(w.worker_id);
+    return `
+      <button type="button" onclick="toggleWorker('${esc(w.worker_id)}')"
+        class="pick press flex w-full items-center gap-3 rounded-xl p-2.5 text-left ${on ? 'on' : ''}
+               ${w.expired ? 'opacity-50' : ''}" ${w.expired ? 'disabled' : ''}>
+        <span class="pick-check flex size-5 shrink-0 items-center justify-center rounded-md border-2 border-slate-300 bg-white text-transparent">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-sm font-bold text-brand-navy">${esc(w.full_name)}</span>
+          <span class="block truncate text-[11px] text-slate-400">${esc(w.position_title || 'ไม่ระบุตำแหน่ง')}${
+            w.badge_no ? ' · บัตร ' + esc(w.badge_no) : ''}</span>
+          ${w.expired ? '<span class="mt-0.5 block text-[11px] font-bold text-red-500">บัตรหมดอายุแล้ว เลือกไม่ได้</span>' : ''}
+        </span>
+      </button>`;
+  }).join('');
+
+  document.getElementById('worker-count').textContent = pickedWorkers.size + ' คน';
+}
+
+function toggleWorker(id) {
+  pickedWorkers.has(id) ? pickedWorkers.delete(id) : pickedWorkers.add(id);
+  renderWorkers();
+  refresh();
+}
+
+function toggleAll() {
+  const usable = WORKERS.filter(w => !w.expired);
+  const allOn = usable.length > 0 && usable.every(w => pickedWorkers.has(w.worker_id));
+  usable.forEach(w => allOn ? pickedWorkers.delete(w.worker_id) : pickedWorkers.add(w.worker_id));
+  document.getElementById('btn-all').textContent = allOn ? 'เลือกทั้งหมด' : 'ล้างที่เลือก';
+  renderWorkers();
+  refresh();
+}
+
+/* ---------------------- อุปกรณ์และ JSA ---------------------- */
+function buildPpeGrid() {
+  document.getElementById('ppe-grid').innerHTML = PPE_ITEMS.map((p, i) => `
+    <button type="button" id="ppe-${i}" onclick="togglePpe(${i})"
+      class="pick press rounded-xl p-2.5 text-left ${pickedPPE.has(p.th) ? 'on' : ''}"
+      ${p.must ? 'disabled' : ''}>
+      <span class="flex items-center gap-2">
+        <span class="pick-check flex size-4 shrink-0 items-center justify-center rounded border-2 border-slate-300 bg-white text-transparent">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <span class="text-[12px] font-bold leading-tight text-slate-700">${esc(p.th)}${
+          p.must ? '<span class="block text-[9px] font-normal text-red-500">บังคับ</span>' : ''}</span>
+      </span>
+    </button>`).join('');
+}
+
+function togglePpe(i) {
+  const p = PPE_ITEMS[i];
+  if (p.must) return;
+  pickedPPE.has(p.th) ? pickedPPE.delete(p.th) : pickedPPE.add(p.th);
+  document.getElementById('ppe-' + i).classList.toggle('on', pickedPPE.has(p.th));
+  refresh();
+}
+
+function showJsa(input) {
+  const f = input.files[0];
+  const el = document.getElementById('jsa-name');
+  if (!f) { jsaFile = null; el.textContent = 'งานเสี่ยงสูงต้องแนบเอกสารนี้'; refresh(); return; }
+  if (f.size > 5 * 1024 * 1024) {
+    toast('ไฟล์ใหญ่เกิน 5 MB กรุณาถ่ายใหม่');
+    input.value = ''; jsaFile = null; refresh(); return;
+  }
+  jsaFile = f;
+  el.textContent = f.name + ' · ' + (f.size / 1024 / 1024).toFixed(1) + ' MB';
+  el.className = 'truncate text-[11px] font-bold text-emerald-600';
+  refresh();
+}
+
+function toggleDeclare() {
+  declared = !declared;
+  const box = document.getElementById('declare-check');
+  box.classList.toggle('bg-red-600', declared);
+  box.classList.toggle('border-red-600', declared);
+  box.classList.toggle('text-white', declared);
+  refresh();
+}
+
+/* ---------------------- ตรวจความพร้อม ---------------------- */
+function refresh() {
+  const high = pickedRisk.size > 0;
+  const problems = [];
+
+  if (!document.getElementById('task-select').value) problems.push('เลือกแผนงาน');
+  if (!document.getElementById('p-desc').value.trim()) problems.push('ระบุพื้นที่ปฏิบัติงาน');
+  if (!document.getElementById('p-start').value || !document.getElementById('p-end').value) problems.push('ระบุเวลา');
+  if (!generalWork && !high) problems.push('เลือกประเภทงาน');
+  if (high && !jsaFile) problems.push('แนบเอกสาร JSA');
+  if (!pickedWorkers.size) problems.push('เลือกคนงาน');
+  if (!declared) problems.push('ติ๊กคำรับรอง');
+
+  document.getElementById('btn-submit').disabled = problems.length > 0;
+  document.getElementById('submit-hint').textContent =
+    problems.length ? 'ยังขาด: ' + problems.join(' · ') : 'ข้อมูลครบแล้ว พร้อมส่งคำขอ';
+}
+
+/* ---------------------- ส่งคำขอ ---------------------- */
+async function submitPermit() {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+
+  try {
+    let jsaPath = null;
+    if (jsaFile) {
+      btn.textContent = 'กำลังอัปโหลด JSA…';
+      jsaPath = await VendorAPI.uploadFile(jsaFile, 'jsa');
+    }
+
+    btn.textContent = 'กำลังส่งคำขอ…';
+    const r = await VendorAPI.call('permits.create', {
+      task_id: document.getElementById('task-select').value,
+      work_description: document.getElementById('p-desc').value.trim(),
+      start_time: document.getElementById('p-start').value,
+      end_time: document.getElementById('p-end').value,
+      work_types: generalWork ? ['งานทั่วไป'] : [...pickedRisk],
+      ppe: [...pickedPPE],
+      worker_ids: [...pickedWorkers],
+      jsa_path: jsaPath
+    });
+
+    toast('ส่งคำขอแล้ว เลขที่ ' + r.ptw_id);
+    setTimeout(() => { window.location.href = 'Vendor_Portal_Dashboard.html'; }, 1800);
+
+  } catch (err) {
+    console.error('[FTC] ส่งคำขอไม่สำเร็จ', err);
+    toast(err.message || 'ส่งคำขอไม่สำเร็จ');
+    btn.disabled = false;
+    btn.textContent = 'ส่งคำขอใบอนุญาต';
+  }
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function toast(msg) {
+  const box = document.getElementById('toast');
+  box.textContent = msg;
+  box.classList.remove('opacity-0', 'translate-y-3');
+  clearTimeout(window._t);
+  window._t = setTimeout(() => box.classList.add('opacity-0', 'translate-y-3'), 3000);
+}
+
+function goBack() {
+  if (history.length > 1) history.back();
+  else window.location.href = 'Vendor_Portal_Dashboard.html';
+}
+
+['p-desc','p-start','p-end'].forEach(id =>
+  document.getElementById(id).addEventListener('input', refresh));
+
+buildRiskGrid();
+buildPpeGrid();
+refresh();
+loadAll();
+</script>
+</body>
+</html>
