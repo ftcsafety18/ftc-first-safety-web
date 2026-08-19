@@ -12,6 +12,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../shared/config.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
 
 <style>
   :root {
@@ -79,22 +81,22 @@ tailwind.config = { theme: { extend: {
 <!-- ===================== หน้าหลัก ===================== -->
 <div id="app" class="hidden min-h-screen">
 
-  <header class="border-b border-border bg-card">
+  <header class="border-b border-border" style="background:var(--primary)">
     <div class="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
       <div class="flex items-center gap-3">
-        <div class="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <div class="flex size-9 items-center justify-center rounded-md bg-white/15 text-white ring-1 ring-white/25">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>
         </div>
         <div class="flex flex-col leading-tight">
-          <span class="text-sm font-semibold text-foreground">BOQ และแผนงาน</span>
-          <span class="text-xs text-muted-foreground">01 · ศูนย์ตั้งค่าและวิศวกรรม</span>
+          <span class="text-sm font-semibold text-white">BOQ และแผนงาน</span>
+          <span class="text-xs text-white/70">01 · ศูนย์ตั้งค่าและวิศวกรรม</span>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <select id="proj-select" class="fld hidden max-w-xs sm:block" onchange="selectProject(this.value)"></select>
-        <a href="Master_Data.html" class="hidden rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground lg:block">Gantt</a>
-        <a href="Zone_Manager.html" class="hidden rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground lg:block">ผังพื้นที่</a>
-        <button onclick="doLogout()" class="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground">ออกจากระบบ</button>
+        <a href="Master_Data.html" class="hidden rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white lg:block">Gantt</a>
+        <a href="Zone_Manager.html" class="hidden rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white lg:block">ผังพื้นที่</a>
+        <button onclick="doLogout()" class="rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white">ออกจากระบบ</button>
       </div>
     </div>
     <div class="mx-auto max-w-[1600px] px-4 pb-3 sm:hidden">
@@ -138,8 +140,18 @@ tailwind.config = { theme: { extend: {
         <p id="over-list" class="mt-1 text-xs leading-relaxed text-destructive/90"></p>
       </div>
 
+      <div id="timeline-badge" class="hidden items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold"></div>
+
       <div class="flex flex-wrap items-center gap-2">
-        <input id="q" class="fld min-w-[220px] flex-1" placeholder="ค้นหางาน รหัส WBS หรือผู้รับเหมา" oninput="renderTree()">
+        <input id="q" class="fld min-w-[200px] flex-1" placeholder="ค้นหางาน รหัส WBS หรือผู้รับเหมา" oninput="renderTree()">
+        <div class="flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1">
+          <span class="whitespace-nowrap text-[11px] font-medium text-muted-foreground">ช่วงวันที่</span>
+          <input id="f-from" class="w-[110px] border-0 bg-transparent text-xs outline-none" placeholder="จากวันที่">
+          <span class="text-muted-foreground">–</span>
+          <input id="f-to" class="w-[110px] border-0 bg-transparent text-xs outline-none" placeholder="ถึงวันที่">
+          <button onclick="clearDateFilter()" title="ล้างตัวกรองช่วงวันที่"
+            class="rounded px-1.5 text-xs text-muted-foreground hover:text-destructive">✕</button>
+        </div>
         <button onclick="expandAll(true)" class="rounded-md border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground">กางทั้งหมด</button>
         <button onclick="expandAll(false)" class="rounded-md border border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground">พับทั้งหมด</button>
         <button onclick="openTask(null, null)" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90">+ เพิ่มหมวดงานหลัก</button>
@@ -241,8 +253,13 @@ tailwind.config = { theme: { extend: {
               <label class="lbl text-[11px]">หน่วย</label>
               <input id="t-unit" class="fld" list="unit-list" placeholder="ตร.ม.">
               <datalist id="unit-list">
-                <option value="ชุด"><option value="ตร.ม."><option value="ลบ.ม."><option value="เมตร">
-                <option value="ตัว"><option value="จุด"><option value="งาน"><option value="เครื่อง">
+                <option value="ชุด"><option value="ตัว"><option value="อัน"><option value="ชิ้น">
+                <option value="ต้น"><option value="ท่อน"><option value="เส้น"><option value="ม้วน">
+                <option value="บาน"><option value="แผ่น"><option value="ถัง"><option value="กระสอบ">
+                <option value="เมตร"><option value="ตร.ม."><option value="ลบ.ม."><option value="คิว">
+                <option value="กก."><option value="ตัน"><option value="ลิตร">
+                <option value="จุด"><option value="เครื่อง"><option value="ชั่วโมง"><option value="วัน">
+                <option value="งาน"><option value="เหมา"><option value="ระบบ"><option value="%">
               </datalist>
             </div>
             <div>
@@ -379,6 +396,28 @@ function thaiDateShort(iso) {
  * บางเครื่องขึ้น MM/DD/YYYY บางเครื่องขึ้น DD/MM/YYYY
  * การมีข้อความไทยกำกับจึงเป็นวิธีเดียวที่กันการกรอกวันกับเดือนสลับกันได้จริง
  */
+/**
+ * ผูกปฏิทิน Flatpickr เพื่อบังคับรูปแบบ วัน/เดือน/ปี ให้เหมือนกันทุกเครื่อง
+ * ช่อง input type=date ของ HTML แสดงตาม locale ของเครื่องผู้ใช้ ซึ่งบังคับไม่ได้
+ * Flatpickr แยกสิ่งที่ผู้ใช้เห็นออกจากค่าที่ระบบใช้ จึงคุมได้ทั้งสองด้าน
+ */
+function bindDatePicker(inputId, noteId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  if (typeof flatpickr === 'undefined') { bindThaiDate(inputId, noteId); return; }
+  if (el._flatpickr) { el._flatpickr.setDate(el.value, false); return; }
+
+  el.type = 'text';
+  const note = document.getElementById(noteId);
+  const showThai = () => { if (note) note.textContent = el.value ? '(' + thaiDateFull(el.value) + ')' : ''; };
+
+  flatpickr(el, {
+    dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+    allowInput: true, onChange: showThai, onReady: showThai
+  });
+  showThai();
+}
+
 function bindThaiDate(inputId, noteId) {
   const el = document.getElementById(inputId);
   const note = document.getElementById(noteId);
@@ -520,7 +559,44 @@ async function loadAll() {
     PVENDORS = v.error ? [] : (v.data || []);
   }
 
+  renderTimeline();
   renderKpi();
+  renderTree();
+}
+
+/** แถบบอกระยะเวลาโครงการ พร้อมเตือนเมื่อใกล้หมดหรือเลยกำหนด */
+function renderTimeline() {
+  const box = document.getElementById('timeline-badge');
+  if (!CUR.start_date || !CUR.end_date) { box.classList.add('hidden'); return; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const end = new Date(CUR.end_date);
+  const daysLeft = Math.round((end - today) / 86400000);
+
+  let tone, msg;
+  if (daysLeft < 0) {
+    tone = 'border-destructive/40 bg-destructive/5 text-destructive';
+    msg = 'เลยกำหนดสิ้นสุดมาแล้ว ' + Math.abs(daysLeft) + ' วัน';
+  } else if (daysLeft <= 30) {
+    tone = 'border-[var(--chart-2)]/50 bg-[var(--chart-2)]/10 text-[var(--chart-2)]';
+    msg = 'เหลืออีก ' + daysLeft + ' วัน';
+  } else {
+    tone = 'border-border bg-secondary text-secondary-foreground';
+    msg = 'เหลืออีก ' + daysLeft + ' วัน';
+  }
+
+  box.className = 'flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold ' + tone;
+  box.innerHTML = '🗓️ ระยะเวลาโครงการ: ' + esc(thaiDateShort(CUR.start_date)) +
+                  ' – ' + esc(thaiDateShort(CUR.end_date)) +
+                  ' <span class="font-normal opacity-80">· ' + esc(msg) + '</span>';
+}
+
+/** ล้างตัวกรองช่วงวันที่ */
+function clearDateFilter() {
+  ['f-from','f-to'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el._flatpickr) el._flatpickr.clear(); else el.value = '';
+  });
   renderTree();
 }
 
@@ -590,6 +666,19 @@ function toggleNode(id) {
   renderTree();
 }
 
+/**
+ * งานจะเข้าเงื่อนไขช่วงวันที่เมื่อ "ช่วงเวลาของงานคาบเกี่ยว" กับช่วงที่ค้นหา
+ * ไม่ใช่ต้องอยู่ในช่วงทั้งหมด เพราะงานที่กินเวลาข้ามช่วงก็ถือว่าเกิดขึ้นในช่วงนั้นด้วย
+ */
+function inDateRange(t) {
+  const from = document.getElementById('f-from').value;
+  const to   = document.getElementById('f-to').value;
+  if (!from && !to) return true;
+  if (from && t.end_date   && t.end_date   < from) return false;
+  if (to   && t.start_date && t.start_date > to)   return false;
+  return true;
+}
+
 function renderTree() {
   const q = document.getElementById('q').value.trim().toLowerCase();
   const rows = [];
@@ -601,10 +690,12 @@ function renderTree() {
     });
   })(null, 0);
 
-  const filtered = q ? rows.filter(r => {
+  const filtered = rows.filter(r => {
+    if (!inDateRange(r.t)) return false;
+    if (!q) return true;
     const v = PVENDORS.find(x => x.vendor_id === r.t.vendor_id);
     return [r.t.task_name, r.t.wbs_code, v && v.vendor_name].some(x => (x||'').toLowerCase().includes(q));
-  }) : rows;
+  });
 
   document.getElementById('tree-empty').classList.toggle('hidden', rows.length > 0);
   document.getElementById('tree-wrap').classList.toggle('hidden', rows.length === 0);
@@ -810,8 +901,8 @@ function openTask(taskId, parentId) {
 
   setTaskType(t ? (t.task_type || 'Contract') : (parentTask ? 'Contract' : 'Summary'));
   onZoneChange(); calcBudget();
-  bindThaiDate('t-start', 't-start-th');
-  bindThaiDate('t-end', 't-end-th');
+  bindDatePicker('t-start', 't-start-th');
+  bindDatePicker('t-end', 't-end-th');
   document.getElementById('modal-task').classList.remove('hidden');
 }
 
@@ -1053,6 +1144,12 @@ window.addEventListener('unhandledrejection', ev => {
 });
 
 (async function init() {
+  if (typeof flatpickr !== 'undefined') {
+    ['f-from','f-to'].forEach(id => flatpickr('#' + id, {
+      dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y',
+      allowInput: true, onChange: () => renderTree()
+    }));
+  }
   const { data } = await sb.auth.getSession();
   if (data && data.session) await enterApp();
 })();
