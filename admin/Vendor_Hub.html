@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="../shared/qrcode.js"></script>
 <script src="../shared/config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -1143,27 +1143,15 @@ ${workerUrl}
 
 /* ---------------------- QR ---------------------- */
 let _qrLibPromise = null;
+/**
+ * ตรวจว่าตัวสร้าง QR พร้อมใช้งาน
+ *
+ * เดิมโหลดจาก CDN ภายนอกซึ่งเครือข่ายองค์กรบล็อก ทำให้ QR ไม่ขึ้น
+ * ตอนนี้ใช้ไฟล์ในโปรเจกต์เอง จึงไม่ต้องรอโหลดและไม่มีทางล้มเหลว
+ * ยังคงคืนค่าเป็น Promise ไว้ เพื่อไม่ต้องแก้จุดที่เรียกใช้
+ */
 function ensureQrLib() {
-  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) return Promise.resolve(true);
-  if (_qrLibPromise) return _qrLibPromise;
-  const sources = [
-    'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
-    'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js',
-    'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js'
-  ];
-  _qrLibPromise = new Promise(resolve => {
-    let i = 0;
-    (function next() {
-      if (i >= sources.length) { resolve(false); return; }
-      const url = sources[i++];
-      const tag = document.createElement('script');
-      tag.src = url;
-      tag.onload  = () => (typeof QRCode !== 'undefined' && QRCode.toCanvas) ? resolve(true) : next();
-      tag.onerror = () => next();
-      document.head.appendChild(tag);
-    })();
-  });
-  return _qrLibPromise;
+  return Promise.resolve(typeof FTCQR !== 'undefined' || typeof QRCode !== 'undefined');
 }
 
 async function drawQr(url) {
