@@ -187,12 +187,25 @@
                     <input type="text" id="foreign-nationality-other" placeholder="โปรดระบุสัญชาติ..." class="input-field mt-2 hidden">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-semibold text-gray-800 mb-1.5">คำนำหน้า <span class="text-red-500">*</span></label>
+                        <select id="title-prefix" class="input-field cursor-pointer">
+                            <option value="">-- เลือก --</option>
+                            <option value="นาย">นาย</option>
+                            <option value="นาง">นาง</option>
+                            <option value="นางสาว">นางสาว</option>
+                            <option value="Mr.">Mr.</option>
+                            <option value="Mrs.">Mrs.</option>
+                            <option value="Miss">Miss</option>
+                            <option value="อื่นๆ">อื่นๆ</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">ชื่อ (First Name) <span class="text-red-500">*</span></label>
                         <input type="text" id="fname-input" placeholder="ชื่อจริง" class="input-field">
                     </div>
-                    <div>
+                    <div class="col-span-2">
                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">นามสกุล (Last Name) <span class="text-red-500">*</span></label>
                         <input type="text" id="lname-input" placeholder="นามสกุล" class="input-field">
                     </div>
@@ -236,8 +249,9 @@
 
                 <div class="mb-2 relative" id="vendor-container">
                     <label class="block text-sm font-semibold text-gray-800 mb-1.5">บริษัท / ผู้รับเหมา (Vendor) <span class="text-red-500">*</span></label>
-                    <input type="text" id="vendor-input" placeholder="-- พิมพ์ค้นหา / เลือกบริษัท --" class="input-field cursor-text" autocomplete="off" onfocus="showVendorList()" oninput="filterVendors()">
+                    <input type="text" id="vendor-input" placeholder="กำลังตรวจสอบรหัสเชิญ..." class="input-field" autocomplete="off" readonly>
                     <ul id="vendor-list" class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto no-scrollbar hidden"></ul>
+                    <p id="vendor-locked-note" class="hidden mt-2 text-xs leading-relaxed text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2"></p>
                 </div>
 
                 <div class="section-label"><span class="bar"></span> ผู้ติดต่อในภาวะฉุกเฉิน</div>
@@ -945,18 +959,119 @@
 
         var vendorFetchStatus = 'loading';
 
+        /**
+         * ล็อกบริษัทต้นสังกัดจากรหัสเชิญใน URL
+         *
+         * เดิมโหลดรายชื่อผู้รับเหมาทั้งหมดมาให้คนงานพิมพ์ค้นหาเอง ซึ่งมีปัญหาสองข้อ
+         *   1. คนงานเลือกผิดบริษัทได้ ทำให้ตามตัวผู้รับผิดชอบไม่เจอตอนเกิดเหตุ
+         *      ซึ่งเป็นสิ่งที่ระบบนี้ถูกสร้างมาเพื่อป้องกันตั้งแต่แรก
+         *   2. เปิดให้เห็นรายชื่อผู้รับเหมาทั้งหมดโดยไม่จำเป็น
+         *
+         * ตอนนี้อ่านรหัสเชิญจาก QR ที่สแกนมา แล้วล็อกบริษัทไว้ตายตัว
+         */
         async function fetchVendors() {
+            var inviteToken = new URLSearchParams(window.location.search).get('inv');
+            var input = document.getElementById('vendor-input');
+            var list  = document.getElementById('vendor-list');
+            var note  = document.getElementById('vendor-locked-note');
+
+            if (list) list.classList.add('hidden');
+
+            if (!inviteToken) {
+                vendorFetchStatus = 'no_token';
+                input.value = '';
+                input.placeholder = 'ไม่พบรหัสเชิญ';
+                blockRegistration(
+                    'ต้องเปิดจาก QR ที่บริษัทต้นสังกัดส่งให้',
+                    'ไม่พบรหัสเชิญลงทะเบียนในลิงก์นี้<br>กรุณาสแกน QR หรือกดลิงก์ที่บริษัทผู้รับเหมาต้นสังกัดของท่านส่งให้'
+                );
+                return;
+            }
+
             if (!supabase) { vendorFetchStatus = 'error'; return; }
+
             try {
-                var res = await supabase.from('tb_vendors').select('vendor_id, vendor_name').order('vendor_name');
+                var res = await supabase.from('tb_vendors')
+                    .select('vendor_id, vendor_name, is_blacklisted')
+                    .eq('invite_token', inviteToken)
+                    .maybeSingle();
+
                 if (res.error) throw res.error;
-                vendorsMasterData = (res.data || []).map(function(v) { return { id: v.vendor_id, name: v.vendor_name }; });
-                vendorFetchStatus = vendorsMasterData.length > 0 ? 'ok_has_data' : 'ok_empty';
+
+                if (!res.data) {
+                    vendorFetchStatus = 'bad_token';
+                    input.value = '';
+                    input.placeholder = 'รหัสเชิญไม่ถูกต้อง';
+                    blockRegistration(
+                        'รหัสเชิญไม่ถูกต้อง',
+                        'ไม่พบรหัสเชิญนี้ในระบบ อาจถูกยกเลิกไปแล้ว<br>' +
+                        'กรุณาขอลิงก์ใหม่จากบริษัทผู้รับเหมาต้นสังกัดของท่าน'
+                    );
+                    return;
+                }
+
+                if (res.data.is_blacklisted) {
+                    vendorFetchStatus = 'blacklisted';
+                    blockRegistration(
+                        'บริษัทถูกระงับสิทธิ์',
+                        'บริษัทต้นสังกัดของท่านถูกระงับสิทธิ์การใช้งานชั่วคราว<br>' +
+                        'กรุณาติดต่อเจ้าหน้าที่ความปลอดภัยของ FTC'
+                    );
+                    return;
+                }
+
+                // ล็อกช่องบริษัทไม่ให้แก้ไข
+                selectedVendorId = res.data.vendor_id;
+                window.INVITE_TOKEN = inviteToken;
+
+                input.value = res.data.vendor_name;
+                input.readOnly = true;
+                input.classList.add('bg-gray-100', 'cursor-not-allowed', 'font-semibold');
+                input.classList.remove('cursor-text');
+
+                // บอกเหตุผลที่แก้ไม่ได้ ไม่งั้นคนงานจะคิดว่าระบบเสีย
+                if (note) {
+                    note.innerHTML = '🔒 ระบบผูกบริษัทต้นสังกัดไว้แล้วจากลิงก์ที่ได้รับ ไม่สามารถเปลี่ยนเองได้<br>' +
+                                     'หากบริษัทไม่ถูกต้อง กรุณาแจ้งหัวหน้าชุดของท่าน';
+                    note.classList.remove('hidden');
+                }
+
+                vendorsMasterData = [{ id: res.data.vendor_id, name: res.data.vendor_name }];
+                vendorFetchStatus = 'locked';
+
             } catch (e) {
                 console.error('fetchVendors error:', e);
                 vendorsMasterData = [];
                 vendorFetchStatus = 'error';
+                blockRegistration(
+                    'ตรวจสอบรหัสเชิญไม่สำเร็จ',
+                    'ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่'
+                );
             }
+        }
+
+        /** ปิดฟอร์มทั้งหน้าพร้อมอธิบายเหตุผล ใช้เมื่อไม่ควรให้ลงทะเบียนต่อ */
+        function blockRegistration(title, detail) {
+            if (document.getElementById('registration-blocked')) return;
+
+            var form = document.getElementById('main-form');
+            if (form) form.style.display = 'none';
+            var blocker = document.getElementById('liff-blocker');
+            if (blocker) blocker.classList.add('hidden');
+
+            var box = document.createElement('div');
+            box.id = 'registration-blocked';
+            box.className = 'max-w-3xl mx-auto px-4 py-12';
+            box.innerHTML =
+              '<div class="bg-white rounded-2xl border border-amber-200 shadow-xl p-8 text-center">' +
+                '<div class="text-5xl mb-4">⚠️</div>' +
+                '<h2 class="text-xl font-bold text-gray-800 mb-3">' + title + '</h2>' +
+                '<p class="text-sm text-gray-600 leading-relaxed">' + detail + '</p>' +
+                '<p class="text-xs text-gray-400 mt-6">' +
+                  'ระบบลงทะเบียนต้องเริ่มจากลิงก์ที่บริษัทผู้รับเหมาต้นสังกัดเป็นผู้ส่งให้เท่านั้น' +
+                '</p>' +
+              '</div>';
+            document.body.appendChild(box);
         }
 
         function renderVendorList(items) {
@@ -1295,6 +1410,9 @@
         }
 
         function validateStep1() {
+            if (!document.getElementById('title-prefix').value) {
+                Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกคำนำหน้านาม', 'warning'); return false;
+            }
             if (!document.getElementById('fname-input').value.trim() || !document.getElementById('lname-input').value.trim()) {
                 Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ-นามสกุล', 'warning'); return false;
             }
@@ -1319,7 +1437,12 @@
             var expDay = document.getElementById('exp-day').value, expMonth = document.getElementById('exp-month').value, expYear = document.getElementById('exp-year').value;
             if (!expDay || !expMonth || !expYear) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกวันหมดอายุของบัตรให้ครบ', 'warning'); return false; }
 
-            if (!selectedVendorId) { Swal.fire('ยังไม่ได้เลือกบริษัท', 'กรุณาเลือกบริษัท/ผู้รับเหมาจากรายการ', 'warning'); return false; }
+            if (!selectedVendorId) {
+                // ไปถึงตรงนี้ได้แปลว่ารหัสเชิญมีปัญหา ไม่ใช่ผู้ใช้ลืมเลือก
+                Swal.fire('ไม่พบบริษัทต้นสังกัด',
+                    'ระบบอ่านรหัสเชิญไม่สำเร็จ กรุณาปิดหน้านี้แล้วสแกน QR ใหม่อีกครั้ง', 'warning');
+                return false;
+            }
 
             var emgRelation = document.getElementById('emg-relation').value;
             var emgPhoneDigits = document.getElementById('emg-phone').value.replace(/-/g, '');
@@ -1436,11 +1559,26 @@
             Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                var dupCheck = await supabase.from('tb_workers').select('worker_id').eq('national_id', nationalId).limit(1);
-                if (dupCheck.error) throw dupCheck.error;
-                if (dupCheck.data && dupCheck.data.length > 0) {
-                    Swal.fire('เลขเอกสารซ้ำ', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
-                    return;
+                /* เช็กเลขบัตรซ้ำผ่านฟังก์ชันของฐานข้อมูล
+                   เดิมอ่านตาราง tb_workers ตรงๆ ซึ่งถูกปิดสิทธิ์ไปแล้ว
+                   เพราะการเปิดให้อ่านได้ แปลว่าใครก็ดึงเลขบัตรคนงานทุกคนในระบบได้
+                   ฟังก์ชันนี้ตอบกลับแค่ซ้ำหรือไม่ซ้ำ ไม่คืนข้อมูลใดๆ */
+                if (window.INVITE_TOKEN) {
+                    var dupCheck = await supabase.rpc('fn_check_worker_duplicate', {
+                        p_invite_token: window.INVITE_TOKEN,
+                        p_national_id: nationalId
+                    });
+
+                    if (dupCheck.error) {
+                        // เช็กไม่ได้ก็ไปต่อ เพราะฐานข้อมูลมีดัชนีห้ามซ้ำกันไว้อีกชั้น
+                        // ดีกว่าบล็อกคนงานเพราะระบบตรวจสอบมีปัญหาชั่วคราว
+                        console.error('เช็กบัตรซ้ำไม่สำเร็จ:', dupCheck.error);
+                    } else if (dupCheck.data && dupCheck.data.duplicate) {
+                        Swal.fire('เลขเอกสารซ้ำ',
+                            'เลขที่กรอกลงทะเบียนไว้แล้วในระบบ<br>' +
+                            'หากเป็นการย้ายสังกัด กรุณาแจ้งเจ้าหน้าที่ FTC', 'warning');
+                        return;
+                    }
                 }
 
                 Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารหลัก...' });
@@ -1487,6 +1625,8 @@
                 var payload = {
                     worker_id: generatedWorkerId,
                     vendor_id: selectedVendorId,
+                    invited_by_token: window.INVITE_TOKEN || null,
+                    title_prefix: document.getElementById('title-prefix').value || null,
                     full_name: document.getElementById('fname-input').value.trim() + ' ' + document.getElementById('lname-input').value.trim(),
                     national_id: nationalId,
                     nationality: nationalityValue,
@@ -1524,11 +1664,46 @@
 
             } catch (err) {
                 console.error('submitToSupabase error:', err);
-                if (err && err.code === '23505') {
-                    Swal.fire('เลขเอกสารซ้ำ', 'เลขที่กรอกมีอยู่ในระบบแล้ว กรุณาตรวจสอบอีกครั้ง', 'warning');
-                } else {
-                    Swal.fire('บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
+                var code = (err && err.code) ? String(err.code) : '';
+
+                if (code === '23505') {
+                    Swal.fire('เลขเอกสารซ้ำ',
+                        'เลขที่กรอกลงทะเบียนไว้แล้วในระบบ<br>' +
+                        'หากเป็นการย้ายสังกัด กรุณาแจ้งเจ้าหน้าที่ FTC', 'warning');
+                    return;
                 }
+
+                /* แสดงสาเหตุจริงให้เห็นด้วย
+                   ข้อความว่า "เกิดข้อผิดพลาด" อย่างเดียวทำให้หน้างานแจ้งปัญหากลับมาไม่ได้
+                   ต้องโทรถามกันไปมาหลายรอบกว่าจะรู้ว่าติดตรงไหน */
+                var hint = '';
+                if (code === '42501' || err.status === 403) {
+                    hint = 'ระบบไม่อนุญาตให้บันทึก กรุณาแจ้งผู้ดูแลระบบเรื่องสิทธิ์การเข้าถึง';
+                } else if (code === '42703') {
+                    hint = 'โครงสร้างข้อมูลไม่ตรงกัน กรุณาแจ้งผู้ดูแลระบบ';
+                } else if (code === '23503') {
+                    hint = 'ไม่พบบริษัทต้นสังกัด กรุณาสแกน QR ใหม่อีกครั้ง';
+                } else if (code === '23514') {
+                    hint = 'มีข้อมูลบางช่องไม่ถูกต้องตามที่ระบบกำหนด กรุณาตรวจสอบอีกครั้ง';
+                }
+
+                var detail = (err && err.message) ? String(err.message) : String(err);
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'บันทึกไม่สำเร็จ',
+                    html: (hint ? '<p style="font-size:.9rem;margin-bottom:.6rem">' + hint + '</p>' : '') +
+                          '<p style="font-size:.78rem;color:#64748B;word-break:break-word">' + detail + '</p>' +
+                          (code ? '<p style="font-size:.7rem;color:#94A3B8;margin-top:.5rem">รหัส ' + code + '</p>' : ''),
+                    confirmButtonText: 'คัดลอกข้อความ',
+                    showCancelButton: true,
+                    cancelButtonText: 'ปิด',
+                    confirmButtonColor: '#2A4365'
+                }).then(function (r) {
+                    if (r.isConfirmed && navigator.clipboard) {
+                        navigator.clipboard.writeText('รหัส ' + code + ' : ' + detail);
+                    }
+                });
             }
         }
     </script>
