@@ -444,12 +444,18 @@ tailwind.config = { theme: { extend: {
         <p class="text-[11px] text-slate-500 mb-3">
           ชื่อบริษัทจะถูกล็อกไว้ตาม QR นี้ คนงานเลือกบริษัทเองไม่ได้
         </p>
+        
         <div class="text-center">
           <div class="inline-block p-3 bg-white rounded-xl border-2 border-slate-200 mb-3">
             <canvas id="inv-qr" class="block"></canvas>
           </div>
+          <!-- 🚀 เพิ่มปุ่มปริ้นท์ QR Code ตามที่ตกลงกันไว้ -->
+          <button onclick="printWorkerQr()" class="w-full mb-3 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-brand-orange text-brand-orange text-sm font-bold hover:bg-brand-orange/10 transition">
+              <i data-lucide="printer" class="w-5 h-5"></i> พิมพ์ QR Code สำหรับแปะหน้าไซต์งาน
+          </button>
           <p id="qr-warn" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 text-left"></p>
         </div>
+        
         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
           <input id="inv-worker-url" readonly class="flex-1 bg-transparent text-[11px] font-mono text-slate-600 outline-none truncate">
           <button onclick="copyField('inv-worker-url')" class="shrink-0 px-3 py-1.5 rounded-md bg-brand-orange text-white text-xs font-bold hover:bg-brand-orange-hover transition">คัดลอก</button>
@@ -612,7 +618,7 @@ function insState(v) {
 const FILTERS = {
   tax_over:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD,
   tax_near:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_WARN_AT
-                                 && Number(v.accum_billing_thb || 0) <  TAX_THRESHOLD,
+                                  && Number(v.accum_billing_thb || 0) <  TAX_THRESHOLD,
   no_kt20:   v => !v.kt20_uploaded,
   no_pp20:   v => needPp20(v),
   ins_expired: v => insState(v) === 'expired',
@@ -735,7 +741,7 @@ function render() {
       // สถานะประกันลูกจ้าง
       const st = insState(v);
       const INS = {
-        expired: ['bg-red-50 text-red-700 border-red-200',       'ประกันหมดอายุแล้ว'],
+        expired: ['bg-red-50 text-red-700 border-red-200',        'ประกันหมดอายุแล้ว'],
         soon:    ['bg-amber-50 text-amber-700 border-amber-200', 'ประกันใกล้หมดอายุ'],
         ok:      ['bg-emerald-50 text-emerald-700 border-emerald-200', 'ประกันยังคุ้มครอง'],
         unknown: ['bg-slate-100 text-slate-500 border-slate-200','ไม่ระบุวันหมดอายุ'],
@@ -770,7 +776,7 @@ function render() {
                          D:'bg-red-100 text-red-800 border-red-300' };
     const gradeChip = g
       ? `<span class="chip border ${GRADE_TONE[g] || 'bg-slate-100 text-slate-600 border-slate-300'} ml-1.5"
-           title="เกรดจากทะเบียนผู้รับเหมาเดิม">เกรด ${e(g)}</span>` : '';
+            title="เกรดจากทะเบียนผู้รับเหมาเดิม">เกรด ${e(g)}</span>` : '';
 
     return `<tr>
       <td class="px-4 py-3">
@@ -1183,6 +1189,61 @@ function copyField(id) {
     () => Swal.fire({ icon:'success', title:'คัดลอกแล้ว', timer:1100, showConfirmButton:false }),
     () => { el.select(); document.execCommand('copy'); }
   );
+}
+
+/* ---------------------- พิมพ์ QR Code ---------------------- */
+function printWorkerQr() {
+    const vendorName = document.getElementById('inv-name').textContent;
+    const canvas = document.getElementById('inv-qr');
+    
+    if (canvas.style.display === 'none' || !canvas.toDataURL) {
+        Swal.fire('ไม่สามารถพิมพ์ได้', 'QR Code ยังสร้างไม่สำเร็จ', 'warning');
+        return;
+    }
+
+    const imgData = canvas.toDataURL("image/png");
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="th">
+        <head>
+            <meta charset="UTF-8">
+            <title>QR Code ลงทะเบียนพนักงาน - ${vendorName}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+            <style>
+                body { font-family: 'Sarabun', sans-serif; text-align: center; padding: 40px; color: #19335A; }
+                .container { border: 3px dashed #19335A; padding: 40px; display: inline-block; border-radius: 20px; max-width: 600px; }
+                h1 { font-size: 36px; margin-bottom: 10px; color: #19335A; }
+                h2 { font-size: 28px; margin-bottom: 30px; color: #DB5A24; }
+                img { width: 350px; height: 350px; border: 1px solid #ddd; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+                p { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+                .footer { margin-top: 30px; font-size: 16px; color: #64748B; }
+                @media print {
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>จุดลงทะเบียนเข้าปฏิบัติงาน</h1>
+                <h2>${vendorName}</h2>
+                <img src="${imgData}" alt="QR Code">
+                <p>สแกน QR Code เพื่อลงทะเบียนเข้าพื้นที่</p>
+                <div class="footer">FTC First Safety System</div>
+            </div>
+            <script>
+                window.onload = function() { 
+                    setTimeout(function() {
+                        window.print(); 
+                        setTimeout(function() { window.close(); }, 500); 
+                    }, 300);
+                }
+            <\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
 }
 
 /* ---------------------- รายงานข้อผิดพลาด ---------------------- */
