@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ทดสอบ QR Code | FTC First Safety</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="qrcode.js"></script>
+<style>
+  body { font-family:'Sarabun',sans-serif; background:#F1F4F8; color:#1E293B;
+         margin:0; padding:24px 16px; }
+  .wrap { max-width:820px; margin:0 auto; }
+  h1 { font-size:20px; color:#19335A; margin:0 0 4px; }
+  .sub { font-size:13px; color:#64748B; margin:0 0 20px; }
+  .card { background:#fff; border:1px solid #E2E8F0; border-radius:14px; padding:16px; margin-bottom:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  .item { text-align:center; }
+  .item .box { display:flex; justify-content:center; }
+  .item p { font-size:12px; color:#64748B; margin:8px 0 0; word-break:break-all; }
+  .item b { display:block; font-size:13px; color:#19335A; margin-bottom:8px; }
+  input { width:100%; padding:10px 12px; border:1px solid #D1D8E0; border-radius:8px;
+          font-family:inherit; font-size:14px; box-sizing:border-box; }
+  button { margin-top:10px; padding:10px 18px; border:0; border-radius:8px;
+           background:#19335A; color:#fff; font-family:inherit; font-weight:700;
+           font-size:14px; cursor:pointer; }
+  .note { background:#FFFBEB; border:1px solid #FDE68A; border-radius:10px;
+          padding:12px 14px; font-size:13px; line-height:1.7; color:#78350F; }
+  .ok { background:#ECFDF5; border-color:#A7F3D0; color:#065F46; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>ทดสอบ QR Code</h1>
+  <p class="sub">เปิดหน้านี้แล้วใช้มือถือสแกนทุกรูป เพื่อยืนยันว่าตัวสร้าง QR ทำงานถูกต้องก่อนนำไปใช้จริง</p>
+
+  <div class="note">
+    <b>วิธีทดสอบ</b><br>
+    เปิดกล้องมือถือหรือแอปสแกน QR แล้วส่องทีละรูป<br>
+    ทุกรูปต้องอ่านได้และข้อความที่ได้ต้องตรงกับที่เขียนกำกับไว้ใต้รูป<br>
+    ถ้ามีรูปไหนอ่านไม่ได้ กรุณาแจ้งกลับมาพร้อมบอกว่ารูปไหน
+  </div>
+
+  <div class="card">
+    <b style="font-size:14px;color:#19335A">ลองด้วยข้อความของคุณเอง</b>
+    <div style="margin-top:10px">
+      <input id="custom" value="https://ftc-first-safety-web.netlify.app/" placeholder="พิมพ์ข้อความหรือลิงก์">
+      <button onclick="makeCustom()">สร้าง QR</button>
+    </div>
+    <div id="custom-box" style="margin-top:14px;display:flex;justify-content:center"></div>
+    <p id="custom-info" style="text-align:center;font-size:12px;color:#64748B"></p>
+  </div>
+
+  <div class="card">
+    <b style="font-size:14px;color:#19335A;display:block;margin-bottom:12px">ชุดทดสอบมาตรฐาน</b>
+    <div class="grid" id="samples"></div>
+  </div>
+
+  <div class="note ok" id="result">กำลังสร้าง…</div>
+</div>
+
+<script>
+/* ชุดทดสอบครอบคลุมทุกกรณีที่ระบบใช้งานจริง */
+const SAMPLES = [
+  { label: 'ข้อความสั้น', text: 'FTC' },
+  { label: 'ตัวเลข', text: '1234567890' },
+  { label: 'ลิงก์สั้น', text: 'https://ftc-first-safety-web.netlify.app/' },
+  { label: 'ลิงก์เชิญลงทะเบียนคนงาน (ใช้จริง)',
+    text: 'https://ftc-first-safety-web.netlify.app/worker/worker_registration_tosystem.html?inv=550e8400-e29b-41d4-a716-446655440000' },
+  { label: 'ลิงก์ผูกบัญชี LINE (ใช้จริง)',
+    text: 'https://liff.line.me/2010907761-KrJ8PgNN/Bind/Line_Bind.html?t=6ba7b810-9dad-11d1-80b4-00c04fd430c8' },
+  { label: 'ภาษาไทย', text: 'ระบบความปลอดภัย FTC First Safety' },
+  { label: 'รหัสอุปกรณ์', text: 'ASSET-CRANE-0042' },
+  { label: 'ข้อความยาว 200 ตัวอักษร', text: 'A'.repeat(200) }
+];
+
+function makeCustom() {
+  const text = document.getElementById('custom').value.trim();
+  const box = document.getElementById('custom-box');
+  const info = document.getElementById('custom-info');
+  if (!text) { box.innerHTML = ''; info.textContent = 'กรุณาพิมพ์ข้อความ'; return; }
+  try {
+    FTCQR.render(box, text, { size: 240 });
+    const qr = FTCQR.create(text);
+    info.textContent = 'เวอร์ชัน ' + qr.version + ' · ระดับ ' + qr.level +
+                       ' · ตาราง ' + qr.size + 'x' + qr.size +
+                       ' · ความยาว ' + text.length + ' ตัวอักษร';
+  } catch (e) {
+    box.innerHTML = '';
+    info.textContent = 'สร้างไม่สำเร็จ: ' + e.message;
+  }
+}
+
+let okCount = 0, failCount = 0;
+
+document.getElementById('samples').innerHTML = SAMPLES.map((s, i) =>
+  `<div class="item">
+     <b>${s.label}</b>
+     <div class="box" id="s${i}"></div>
+     <p>${s.text.length > 60 ? s.text.slice(0, 60) + '…' : s.text}</p>
+     <p id="i${i}" style="color:#94A3B8"></p>
+   </div>`).join('');
+
+SAMPLES.forEach((s, i) => {
+  try {
+    FTCQR.render(document.getElementById('s' + i), s.text, { size: 180 });
+    const qr = FTCQR.create(s.text);
+    document.getElementById('i' + i).textContent = 'v' + qr.version + ' · ' + qr.level;
+    okCount++;
+  } catch (e) {
+    document.getElementById('s' + i).textContent = 'สร้างไม่สำเร็จ';
+    document.getElementById('i' + i).textContent = e.message;
+    failCount++;
+  }
+});
+
+const res = document.getElementById('result');
+if (failCount === 0) {
+  res.innerHTML = '<b>สร้างครบทั้ง ' + okCount + ' รูปแล้ว</b><br>' +
+    'ขั้นต่อไปคือใช้มือถือสแกนจริงทุกรูป — การสร้างได้ไม่ได้แปลว่าสแกนได้ ต้องลองด้วยกล้องจริงเท่านั้น';
+} else {
+  res.className = 'note';
+  res.innerHTML = '<b>สร้างไม่สำเร็จ ' + failCount + ' รูป</b><br>กรุณาแจ้งกลับมาว่ารูปไหนบ้าง';
+}
+
+makeCustom();
+</script>
+</body>
+</html>
