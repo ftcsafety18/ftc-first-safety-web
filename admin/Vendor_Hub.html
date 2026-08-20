@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="../shared/qrcode.min.js"></script> 
+<script src="../shared/qrcode.js"></script>
 <script src="../shared/config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -429,6 +429,12 @@ tailwind.config = { theme: { extend: {
           ผู้รับเหมาผูกบัญชี LINE ของตนเอง
         </p>
         <p class="text-[11px] text-slate-500 mb-3">เพื่อให้ระบบส่งแจ้งเตือนถึงผู้รับเหมาได้โดยตรง</p>
+        <div class="text-center">
+          <div class="inline-block p-3 bg-white rounded-xl border-2 border-slate-200 mb-2">
+            <canvas id="inv-bind-qr" class="block"></canvas>
+          </div>
+          <p class="text-[11px] text-slate-500 mb-3">ให้ผู้รับเหมาสแกนด้วยมือถือที่มีแอป LINE</p>
+        </div>
         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
           <input id="inv-bind-url" readonly class="flex-1 bg-transparent text-[11px] font-mono text-slate-600 outline-none truncate">
           <button onclick="copyField('inv-bind-url')" class="shrink-0 px-3 py-1.5 rounded-md bg-brand-navy text-white text-xs font-bold hover:bg-brand-navy-light transition">คัดลอก</button>
@@ -444,23 +450,22 @@ tailwind.config = { theme: { extend: {
         <p class="text-[11px] text-slate-500 mb-3">
           ชื่อบริษัทจะถูกล็อกไว้ตาม QR นี้ คนงานเลือกบริษัทเองไม่ได้
         </p>
-        
         <div class="text-center">
           <div class="inline-block p-3 bg-white rounded-xl border-2 border-slate-200 mb-3">
             <canvas id="inv-qr" class="block"></canvas>
           </div>
-          <!-- 🚀 เพิ่มปุ่มปริ้นท์ QR Code ตามที่ตกลงกันไว้ -->
-          <button onclick="printWorkerQr()" class="w-full mb-3 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-brand-orange text-brand-orange text-sm font-bold hover:bg-brand-orange/10 transition">
-              <i data-lucide="printer" class="w-5 h-5"></i> พิมพ์ QR Code สำหรับแปะหน้าไซต์งาน
-          </button>
           <p id="qr-warn" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 text-left"></p>
         </div>
-        
         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-2">
           <input id="inv-worker-url" readonly class="flex-1 bg-transparent text-[11px] font-mono text-slate-600 outline-none truncate">
           <button onclick="copyField('inv-worker-url')" class="shrink-0 px-3 py-1.5 rounded-md bg-brand-orange text-white text-xs font-bold hover:bg-brand-orange-hover transition">คัดลอก</button>
         </div>
       </div>
+
+      <button onclick="printInviteSheet()"
+        class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-orange text-white text-sm font-bold hover:bg-brand-orange-hover shadow transition mb-2">
+        <i data-lucide="file-down" class="w-4 h-4"></i> บันทึกเป็น PDF สำหรับส่งให้เถ้าแก่
+      </button>
 
       <a id="inv-mail" href="#"
         class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-slate-200 text-sm font-bold text-brand-navy hover:bg-slate-50 transition">
@@ -618,7 +623,7 @@ function insState(v) {
 const FILTERS = {
   tax_over:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_THRESHOLD,
   tax_near:  v => isPersonal(v) && Number(v.accum_billing_thb || 0) >= TAX_WARN_AT
-                                  && Number(v.accum_billing_thb || 0) <  TAX_THRESHOLD,
+                                 && Number(v.accum_billing_thb || 0) <  TAX_THRESHOLD,
   no_kt20:   v => !v.kt20_uploaded,
   no_pp20:   v => needPp20(v),
   ins_expired: v => insState(v) === 'expired',
@@ -741,7 +746,7 @@ function render() {
       // สถานะประกันลูกจ้าง
       const st = insState(v);
       const INS = {
-        expired: ['bg-red-50 text-red-700 border-red-200',        'ประกันหมดอายุแล้ว'],
+        expired: ['bg-red-50 text-red-700 border-red-200',       'ประกันหมดอายุแล้ว'],
         soon:    ['bg-amber-50 text-amber-700 border-amber-200', 'ประกันใกล้หมดอายุ'],
         ok:      ['bg-emerald-50 text-emerald-700 border-emerald-200', 'ประกันยังคุ้มครอง'],
         unknown: ['bg-slate-100 text-slate-500 border-slate-200','ไม่ระบุวันหมดอายุ'],
@@ -776,7 +781,7 @@ function render() {
                          D:'bg-red-100 text-red-800 border-red-300' };
     const gradeChip = g
       ? `<span class="chip border ${GRADE_TONE[g] || 'bg-slate-100 text-slate-600 border-slate-300'} ml-1.5"
-            title="เกรดจากทะเบียนผู้รับเหมาเดิม">เกรด ${e(g)}</span>` : '';
+           title="เกรดจากทะเบียนผู้รับเหมาเดิม">เกรด ${e(g)}</span>` : '';
 
     return `<tr>
       <td class="px-4 py-3">
@@ -1112,6 +1117,9 @@ async function openInvite(vendorId) {
     document.getElementById('inv-bind-url').value        = bindUrl;
     document.getElementById('inv-worker-url').value      = workerUrl;
 
+    // เก็บไว้ใช้ตอนสร้างใบปะหน้า PDF
+    CURRENT_INVITE = { vendor: v, bindUrl: bindUrl, workerUrl: workerUrl };
+
     const subject = 'ขึ้นทะเบียนผู้รับเหมาและลงทะเบียนแรงงาน — FTC First Safety';
     const body =
 `เรียน ${v.contact_person || v.vendor_name}
@@ -1138,6 +1146,7 @@ ${workerUrl}
     openModal('modal-invite');
     lucide.createIcons();
     drawQr(workerUrl);
+    drawBindQr(bindUrl);
     loadVendors();
 
   } catch (err) {
@@ -1147,8 +1156,210 @@ ${workerUrl}
   }
 }
 
+
+/* =====================================================================
+ * ใบปะหน้าสำหรับส่งให้ผู้รับเหมา
+ *
+ * ใช้การสั่งพิมพ์ของเบราว์เซอร์แล้วเลือกบันทึกเป็น PDF
+ * แทนการใช้ไลบรารีสร้าง PDF เพราะ
+ *   1. ไม่ต้องโหลดไลบรารีเพิ่ม ซึ่งเป็นปัญหาเดิมที่เจอกับ CDN
+ *   2. ผู้ใช้เลือกได้ว่าจะพิมพ์ลงกระดาษหรือบันทึกเป็นไฟล์
+ *   3. QR ที่ได้เป็นภาพความละเอียดสูงจริง ไม่ใช่ภาพย่อที่เบลอ
+ *
+ * เปิดเป็นหน้าต่างใหม่แทนการพิมพ์หน้าปัจจุบัน
+ * เพราะหน้าหลักมีตารางและเมนูที่ไม่ควรติดไปในเอกสาร
+ * ===================================================================== */
+async function printInviteSheet() {
+  if (!CURRENT_INVITE) {
+    Swal.fire('ยังไม่มีข้อมูล', 'กรุณาเปิดหน้าต่างเชิญเข้าระบบก่อน', 'warning');
+    return;
+  }
+
+  const { vendor, bindUrl, workerUrl } = CURRENT_INVITE;
+
+  const ready = await ensureQrLib();
+  if (!ready) {
+    Swal.fire('สร้าง QR ไม่ได้', 'ตัวสร้าง QR ยังไม่พร้อมใช้งาน', 'error');
+    return;
+  }
+
+  Swal.fire({ title: 'กำลังสร้างเอกสาร…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+  try {
+    // สร้าง QR ที่ความละเอียดสูงกว่าบนหน้าจอ เพราะเอกสารอาจถูกพิมพ์ลงกระดาษ
+    const [qrBind, qrWorker] = await Promise.all([
+      QRCode.toDataURL(bindUrl,   { width: 600, margin: 1, errorCorrectionLevel: 'M' }),
+      QRCode.toDataURL(workerUrl, { width: 600, margin: 1, errorCorrectionLevel: 'M' })
+    ]);
+
+    const today = new Date();
+    const M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+               'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const dateText = today.getDate() + ' ' + M[today.getMonth()] + ' ' + (today.getFullYear() + 543);
+
+    const html = buildInviteSheetHtml({
+      vendorName: vendor.vendor_name,
+      vendorId: vendor.vendor_id,
+      contact: vendor.contact_person || '',
+      qrBind, qrWorker, bindUrl, workerUrl, dateText
+    });
+
+    const win = window.open('', '_blank', 'width=900,height=1100');
+    if (!win) {
+      Swal.close();
+      await new Promise(r => setTimeout(r, 250));
+      Swal.fire('เบราว์เซอร์บล็อกหน้าต่างใหม่',
+        'กรุณาอนุญาตให้เว็บนี้เปิดหน้าต่างใหม่ แล้วลองอีกครั้ง', 'warning');
+      return;
+    }
+
+    win.document.write(html);
+    win.document.close();
+
+    Swal.close();
+    await new Promise(r => setTimeout(r, 250));
+
+    // รอให้รูปโหลดเสร็จก่อนสั่งพิมพ์ ไม่งั้น QR จะหายไปในเอกสาร
+    win.onload = () => setTimeout(() => win.print(), 400);
+
+  } catch (err) {
+    Swal.close();
+    await new Promise(r => setTimeout(r, 250));
+    reportError('สร้างเอกสารไม่สำเร็จ', err, 'printInviteSheet');
+  }
+}
+
+/** ประกอบหน้าเอกสาร เขียนแยกออกมาเพื่อให้อ่านและแก้ข้อความได้ง่าย */
+function buildInviteSheetHtml(d) {
+  const e = FTC.esc;
+  return `<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8">
+<title>ใบแนะนำการเข้าระบบ - ${e(d.vendorName)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family:'Sarabun',sans-serif; color:#1E293B; margin:0; padding:0;
+         -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .head { background:#19335A; color:#fff; padding:16px 20px; border-radius:12px; margin-bottom:16px; }
+  .head h1 { margin:0; font-size:19px; font-weight:800; }
+  .head p { margin:3px 0 0; font-size:12px; opacity:.75; }
+  .vendor { border:2px solid #19335A; border-radius:12px; padding:12px 16px; margin-bottom:16px;
+            display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .vendor .name { font-size:17px; font-weight:800; color:#19335A; }
+  .vendor .meta { font-size:11px; color:#64748B; margin-top:2px; }
+  .vendor .date { font-size:11px; color:#64748B; text-align:right; white-space:nowrap; }
+  .steps { display:flex; gap:14px; }
+  .step { flex:1; border:2px solid #E2E8F0; border-radius:12px; padding:14px; }
+  .step.one { border-color:#19335A; }
+  .step.two { border-color:#DB5A24; }
+  .badge { display:inline-flex; width:24px; height:24px; border-radius:999px; color:#fff;
+           align-items:center; justify-content:center; font-size:13px; font-weight:800; margin-right:6px; }
+  .one .badge { background:#19335A; }
+  .two .badge { background:#DB5A24; }
+  .step h2 { font-size:14px; font-weight:800; color:#19335A; margin:0 0 6px; display:flex; align-items:center; }
+  .step .who { font-size:11px; font-weight:700; color:#DB5A24; margin:0 0 8px; }
+  .step .desc { font-size:11px; line-height:1.65; color:#475569; margin:0 0 10px; min-height:52px; }
+  .qr { text-align:center; margin-bottom:10px; }
+  .qr img { width:150px; height:150px; display:block; margin:0 auto;
+            border:1px solid #E2E8F0; border-radius:8px; padding:6px; background:#fff; }
+  .url { font-size:8px; color:#64748B; word-break:break-all; line-height:1.5;
+         background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:6px; }
+  .note { margin-top:16px; border:1px solid #FDE68A; background:#FFFBEB; border-radius:10px;
+          padding:12px 14px; font-size:11px; line-height:1.8; color:#78350F; }
+  .note b { display:block; margin-bottom:4px; font-size:12px; }
+  .foot { margin-top:14px; padding-top:10px; border-top:1px solid #E2E8F0;
+          font-size:10px; color:#94A3B8; display:flex; justify-content:space-between; }
+  @media print { .noprint { display:none; } }
+  .noprint { text-align:center; margin-bottom:14px; }
+  .noprint button { padding:10px 22px; border:0; border-radius:8px; background:#19335A;
+                    color:#fff; font-family:inherit; font-weight:700; font-size:14px; cursor:pointer; }
+  .noprint p { font-size:12px; color:#64748B; margin:8px 0 0; }
+</style></head>
+<body>
+
+<div class="noprint">
+  <button onclick="window.print()">พิมพ์ หรือ บันทึกเป็น PDF</button>
+  <p>ในหน้าต่างพิมพ์ ให้เลือกปลายทางเป็น "บันทึกเป็น PDF" แล้วกดบันทึก</p>
+</div>
+
+<div class="head">
+  <h1>ขั้นตอนการเข้าใช้งานระบบความปลอดภัย</h1>
+  <p>FTC First Safety — ระบบจัดการความปลอดภัยสำหรับผู้รับเหมา</p>
+</div>
+
+<div class="vendor">
+  <div>
+    <div class="name">${e(d.vendorName)}</div>
+    <div class="meta">รหัสผู้รับเหมา ${e(d.vendorId)}${d.contact ? ' · ผู้ติดต่อ ' + e(d.contact) : ''}</div>
+  </div>
+  <div class="date">ออกเอกสารวันที่<br><b>${e(d.dateText)}</b></div>
+</div>
+
+<div class="steps">
+  <div class="step one">
+    <h2><span class="badge">1</span>ผูกบัญชี LINE</h2>
+    <p class="who">สำหรับเจ้าของกิจการหรือผู้ติดต่อหลัก</p>
+    <p class="desc">
+      สแกนด้วยมือถือที่ติดตั้งแอป LINE ของท่านเอง
+      เพื่อให้ระบบส่งแจ้งเตือนเรื่องใบอนุญาตทำงานและความปลอดภัยถึงท่านโดยตรง
+      <b>ทำครั้งเดียวจบ</b>
+    </p>
+    <div class="qr"><img src="${d.qrBind}" alt="QR ผูกบัญชี LINE"></div>
+    <div class="url">${e(d.bindUrl)}</div>
+  </div>
+
+  <div class="step two">
+    <h2><span class="badge">2</span>ลงทะเบียนพนักงาน</h2>
+    <p class="who">สำหรับพนักงานทุกคนในสังกัด</p>
+    <p class="desc">
+      ส่งให้พนักงานทุกคนสแกนเพื่อลงทะเบียนเข้าระบบ
+      ชื่อบริษัทจะถูกผูกไว้ให้อัตโนมัติ พนักงานไม่ต้องเลือกเอง
+      <b>ใช้ซ้ำได้กับทุกคน</b>
+    </p>
+    <div class="qr"><img src="${d.qrWorker}" alt="QR ลงทะเบียนพนักงาน"></div>
+    <div class="url">${e(d.workerUrl)}</div>
+  </div>
+</div>
+
+<div class="note">
+  <b>ข้อควรทราบ</b>
+  • ทำขั้นที่ 1 ให้เสร็จก่อน แล้วจึงส่ง QR ขั้นที่ 2 ให้พนักงาน<br>
+  • QR ขั้นที่ 1 มีอายุ 30 วันและใช้ได้ครั้งเดียว หากหมดอายุกรุณาแจ้งเจ้าหน้าที่ FTC เพื่อขอใหม่<br>
+  • QR ขั้นที่ 2 ใช้ได้ตลอดและใช้ซ้ำได้กับพนักงานทุกคนในสังกัดของท่าน<br>
+  • พนักงานต้องผ่านการอนุมัติจากเจ้าหน้าที่ความปลอดภัยก่อน จึงจะเข้าพื้นที่ทำงานได้<br>
+  • หากมีข้อสงสัยกรุณาติดต่อฝ่ายจัดซื้อหรือฝ่ายความปลอดภัยของ FTC
+</div>
+
+<div class="foot">
+  <span>เอกสารนี้สร้างจากระบบ FTC First Safety</span>
+  <span>${e(d.dateText)}</span>
+</div>
+
+</body></html>`;
+}
+
 /* ---------------------- QR ---------------------- */
 let _qrLibPromise = null;
+let CURRENT_INVITE = null;
+
+/** วาด QR ของลิงก์ผูกบัญชี LINE ในขั้นที่ 1 */
+async function drawBindQr(url) {
+  const canvas = document.getElementById('inv-bind-qr');
+  if (!canvas) return;
+  const ready = await ensureQrLib();
+  if (!ready) { canvas.style.display = 'none'; return; }
+  canvas.style.display = 'block';
+  try {
+    await QRCode.toCanvas(canvas, url, {
+      width: 168, margin: 1, errorCorrectionLevel: 'M',
+      color: { dark: '#19335A', light: '#FFFFFF' }
+    });
+  } catch (e) {
+    console.error('[FTC] วาด QR ผูกบัญชีไม่สำเร็จ', e);
+    canvas.style.display = 'none';
+  }
+}
 /**
  * ตรวจว่าตัวสร้าง QR พร้อมใช้งาน
  *
@@ -1172,19 +1383,15 @@ async function drawQr(url) {
     return;
   }
   canvas.style.display = 'block';
-  
-  // เรียกใช้งานไลบรารีแบบใหม่ หรือแบบเดิมเพื่อความเข้ากันได้
-  if (typeof FTCQR !== 'undefined') {
-    FTCQR.toCanvas(canvas, url, { width: 190, margin: 1, color: { dark: '#19335A', light: '#FFFFFF' } });
-  } else {
-    QRCode.toCanvas(canvas, url, { width: 190, margin: 1, color: { dark: '#19335A', light: '#FFFFFF' } }, function (err) {
-        if (err) {
-          canvas.style.display = 'none';
-          warn.textContent = 'วาดภาพ QR ไม่สำเร็จ — ใช้ปุ่มคัดลอกลิงก์แทนได้';
-          warn.classList.remove('hidden');
-        }
-      });
-  }
+  QRCode.toCanvas(canvas, url,
+    { width: 190, margin: 1, color: { dark: '#19335A', light: '#FFFFFF' } },
+    function (err) {
+      if (err) {
+        canvas.style.display = 'none';
+        warn.textContent = 'วาดภาพ QR ไม่สำเร็จ — ใช้ปุ่มคัดลอกลิงก์แทนได้';
+        warn.classList.remove('hidden');
+      }
+    });
 }
 
 function copyField(id) {
@@ -1193,61 +1400,6 @@ function copyField(id) {
     () => Swal.fire({ icon:'success', title:'คัดลอกแล้ว', timer:1100, showConfirmButton:false }),
     () => { el.select(); document.execCommand('copy'); }
   );
-}
-
-/* ---------------------- พิมพ์ QR Code ---------------------- */
-function printWorkerQr() {
-    const vendorName = document.getElementById('inv-name').textContent;
-    const canvas = document.getElementById('inv-qr');
-    
-    if (canvas.style.display === 'none' || !canvas.toDataURL) {
-        Swal.fire('ไม่สามารถพิมพ์ได้', 'QR Code ยังสร้างไม่สำเร็จ', 'warning');
-        return;
-    }
-
-    const imgData = canvas.toDataURL("image/png");
-    
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="th">
-        <head>
-            <meta charset="UTF-8">
-            <title>QR Code ลงทะเบียนพนักงาน - ${vendorName}</title>
-            <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Sarabun', sans-serif; text-align: center; padding: 40px; color: #19335A; }
-                .container { border: 3px dashed #19335A; padding: 40px; display: inline-block; border-radius: 20px; max-width: 600px; }
-                h1 { font-size: 36px; margin-bottom: 10px; color: #19335A; }
-                h2 { font-size: 28px; margin-bottom: 30px; color: #DB5A24; }
-                img { width: 350px; height: 350px; border: 1px solid #ddd; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-                p { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
-                .footer { margin-top: 30px; font-size: 16px; color: #64748B; }
-                @media print {
-                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>จุดลงทะเบียนเข้าปฏิบัติงาน</h1>
-                <h2>${vendorName}</h2>
-                <img src="${imgData}" alt="QR Code">
-                <p>สแกน QR Code เพื่อลงทะเบียนเข้าพื้นที่</p>
-                <div class="footer">FTC First Safety System</div>
-            </div>
-            <script>
-                window.onload = function() { 
-                    setTimeout(function() {
-                        window.print(); 
-                        setTimeout(function() { window.close(); }, 500); 
-                    }, 300);
-                }
-            <\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
 }
 
 /* ---------------------- รายงานข้อผิดพลาด ---------------------- */
