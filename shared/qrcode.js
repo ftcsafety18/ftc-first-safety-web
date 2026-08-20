@@ -279,7 +279,15 @@
     for (var a = 0; a < pos.length; a++) {
       for (var b2 = 0; b2 < pos.length; b2++) {
         var r2 = pos[a], c2 = pos[b2];
-        if (reserved[r2][c2]) continue;         // ไม่ทับลายค้นหา
+
+        /* ข้ามเฉพาะตำแหน่งที่ทับลายค้นหาสามมุมเท่านั้น
+           ตำแหน่งที่อยู่บนเส้นจังหวะ (แถวหรือคอลัมน์ที่ 6) ต้องวาดตามปกติ
+           เดิมเช็กจากช่องที่ถูกจองไว้ ทำให้ลายที่คร่อมเส้นจังหวะหายไป
+           ส่งผลกับเวอร์ชัน 7 ขึ้นไปซึ่งเป็นเวอร์ชันที่ลิงก์เชิญใช้ */
+        var nearTL = (r2 <= 8 && c2 <= 8);
+        var nearTR = (r2 <= 8 && c2 >= size - 9);
+        var nearBL = (r2 >= size - 9 && c2 <= 8);
+        if (nearTL || nearTR || nearBL) continue;
         for (var dr2 = -2; dr2 <= 2; dr2++) {
           for (var dc2 = -2; dc2 <= 2; dc2++) {
             var on2 = Math.max(Math.abs(dr2), Math.abs(dc2)) !== 1;
@@ -423,8 +431,11 @@
       else if (i === 8) m[7][8] = bit;
       else              m[14 - i][8] = bit;
 
-      // สำเนาที่สอง กระจายไปอีกสองมุม
-      if (i < 8) m[size - 1 - i][8] = bit;
+      /* สำเนาที่สอง กระจายไปอีกสองมุม
+         บิต 0-6 เรียงขึ้นจากมุมล่างซ้าย  บิต 7-14 เรียงไปทางขวาที่แถว 8
+         เดิมใช้เงื่อนไข i < 8 ทำให้บิตที่ 7 ไปทับจุดดำถาวรที่มุมล่างซ้าย
+         และช่องแรกของแถวขวาไม่ถูกเขียนเลย */
+      if (i < 7) m[size - 1 - i][8] = bit;
       else       m[8][size - 15 + i] = bit;
     }
   }
@@ -498,9 +509,13 @@
     var canvas = document.createElement('canvas');
     canvas.width = dim;
     canvas.height = dim;
-    // ขนาดที่แสดงผลอาจต่างจากขนาดจริง เพื่อให้คมบนจอความละเอียดสูง
-    canvas.style.width = px + 'px';
-    canvas.style.height = px + 'px';
+
+    /* ต้องแสดงผลที่ขนาดเท่ากับที่วาดจริงเสมอ
+       เดิมวาดที่ขนาดหนึ่งแล้วบังคับแสดงอีกขนาดหนึ่ง เบราว์เซอร์จึงยืดภาพ
+       ทำให้ขอบจุดเบลอจนกล้องมือถืออ่านไม่ออก ยิ่งตารางใหญ่ยิ่งเบลอหนัก */
+    canvas.style.width = dim + 'px';
+    canvas.style.height = dim + 'px';
+    canvas.style.imageRendering = 'pixelated';
 
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = opt.light || '#FFFFFF';
