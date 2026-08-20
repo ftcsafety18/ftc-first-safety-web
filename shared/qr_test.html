@@ -38,7 +38,10 @@
     <b>วิธีทดสอบ</b><br>
     เปิดกล้องมือถือหรือแอปสแกน QR แล้วส่องทีละรูป<br>
     ทุกรูปต้องอ่านได้และข้อความที่ได้ต้องตรงกับที่เขียนกำกับไว้ใต้รูป<br>
-    ถ้ามีรูปไหนอ่านไม่ได้ กรุณาแจ้งกลับมาพร้อมบอกว่ารูปไหน
+    ถ้ามีรูปไหนอ่านไม่ได้ กรุณาแจ้งกลับมาพร้อมบอกว่ารูปไหน<br><br>
+    <b>สิ่งที่แก้ในรอบนี้</b> ภาพเคยถูกยืดจนขอบจุดเบลอ ตอนนี้วาดและแสดงผลที่ขนาดเดียวกันแล้ว
+    จุดจึงคมชัด ตัวเลข "จุดละ Npx" ใต้แต่ละรูปบอกว่าหนึ่งจุดกว้างกี่พิกเซล
+    ถ้าต่ำกว่า 3 กล้องจะอ่านยากขึ้น
   </div>
 
   <div class="card">
@@ -80,10 +83,12 @@ function makeCustom() {
   const info = document.getElementById('custom-info');
   if (!text) { box.innerHTML = ''; info.textContent = 'กรุณาพิมพ์ข้อความ'; return; }
   try {
-    FTCQR.render(box, text, { size: 240 });
+    FTCQR.render(box, text, { size: 320 });
     const qr = FTCQR.create(text);
+    const cv = box.querySelector('canvas');
     info.textContent = 'เวอร์ชัน ' + qr.version + ' · ระดับ ' + qr.level +
                        ' · ตาราง ' + qr.size + 'x' + qr.size +
+                       ' · จุดละ ' + Math.round(cv.width / (qr.size + 8)) + 'px' +
                        ' · ความยาว ' + text.length + ' ตัวอักษร';
   } catch (e) {
     box.innerHTML = '';
@@ -103,9 +108,12 @@ document.getElementById('samples').innerHTML = SAMPLES.map((s, i) =>
 
 SAMPLES.forEach((s, i) => {
   try {
-    FTCQR.render(document.getElementById('s' + i), s.text, { size: 180 });
+    FTCQR.render(document.getElementById('s' + i), s.text, { size: 260 });
     const qr = FTCQR.create(s.text);
-    document.getElementById('i' + i).textContent = 'v' + qr.version + ' · ' + qr.level;
+    const canvas = document.querySelector('#s' + i + ' canvas');
+    const dot = canvas ? Math.round(canvas.width / (qr.size + 8)) : 0;
+    document.getElementById('i' + i).textContent =
+      'v' + qr.version + ' · ' + qr.level + ' · จุดละ ' + dot + 'px' + (dot < 3 ? ' (เล็ก)' : '');
     okCount++;
   } catch (e) {
     document.getElementById('s' + i).textContent = 'สร้างไม่สำเร็จ';
