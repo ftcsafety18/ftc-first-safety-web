@@ -98,6 +98,7 @@ tailwind.config = { theme: { extend: {
     <nav class="mb-4 flex items-center gap-1 overflow-x-auto border-b border-border">
       <button class="tab on" data-tab="types" onclick="showTab('types')">ประเภทโครงการ</button>
       <button class="tab"    data-tab="units" onclick="showTab('units')">หน่วยวัดมาตรฐาน</button>
+      <button class="tab"    data-tab="roles"  onclick="showTab('roles')">ตำแหน่งและสิทธิ์</button>
       <button class="tab"    data-tab="vendor" onclick="showTab('vendor')">ผู้รับเหมา</button>
     </nav>
 
@@ -128,6 +129,23 @@ tailwind.config = { theme: { extend: {
         <button onclick="openUnit(null)" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">+ เพิ่มหน่วย</button>
       </div>
       <div id="unit-groups" class="space-y-4"></div>
+    </section>
+
+    <!-- ============ ตำแหน่งและสิทธิ์ ============ -->
+    <section id="tab-roles" class="hidden">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p class="text-sm text-muted-foreground">กำหนดว่าตำแหน่งไหนเห็นได้ทุกโครงการ หรือเห็นเฉพาะโครงการที่ดูแล</p>
+        <button onclick="openRole(null)" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">+ เพิ่มตำแหน่ง</button>
+      </div>
+
+      <div class="mb-4 rounded-lg border-l-4 border-destructive bg-destructive/5 p-3 text-[12px] leading-relaxed">
+        <b>การแก้ในหน้านี้กระทบสิทธิ์ของทุกคนทันที</b><br>
+        การเปลี่ยนขอบเขตจาก "เห็นทุกโครงการ" เป็น "เฉพาะโครงการที่ดูแล"
+        จะทำให้คนในตำแหน่งนั้นมองไม่เห็นโครงการที่ไม่ได้ถูกมอบหมาย
+        และถ้าเขายังไม่ถูกมอบหมายโครงการใดเลย จะไม่เห็นอะไรเลย
+      </div>
+
+      <div id="role-groups" class="space-y-4"></div>
     </section>
 
     <!-- ============ ผู้รับเหมา ============ -->
@@ -195,6 +213,66 @@ tailwind.config = { theme: { extend: {
   </div>
 </div>
 
+<!-- ===================== เพิ่ม/แก้ไขตำแหน่ง ===================== -->
+<div id="modal-role" class="modal-wrap hidden">
+  <div class="w-full max-w-md rounded-lg border border-border bg-card shadow-xl">
+    <div class="flex items-center justify-between border-b border-border px-6 py-4">
+      <h3 id="role-title" class="text-base font-semibold text-foreground">เพิ่มตำแหน่ง</h3>
+      <button onclick="closeModal('modal-role')" class="text-muted-foreground hover:text-foreground">✕</button>
+    </div>
+    <div class="space-y-4 px-6 py-5">
+      <div>
+        <label class="lbl">รหัสตำแหน่ง <span class="text-destructive">*</span></label>
+        <input id="r-code" class="fld font-mono" placeholder="Safety_Officer">
+        <p class="mt-1 text-[10px] text-muted-foreground">
+          ใช้ตัวอักษรอังกฤษและขีดล่างเท่านั้น · แก้ไม่ได้หลังบันทึก เพราะข้อมูลบุคลากรอ้างอิงรหัสนี้อยู่
+        </p>
+      </div>
+      <div>
+        <label class="lbl">ชื่อภาษาไทย <span class="text-destructive">*</span></label>
+        <input id="r-name" class="fld" placeholder="เจ้าหน้าที่ความปลอดภัย (จป.)">
+      </div>
+      <div>
+        <label class="lbl">ขอบเขตสิทธิ์ <span class="text-destructive">*</span></label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="rs-Project" onclick="setScope('Project')"
+            class="rounded-md border-2 px-2 py-2.5 text-xs font-semibold leading-tight transition">
+            เฉพาะโครงการที่ดูแล<br><span class="font-normal opacity-70">ปลอดภัยกว่า</span>
+          </button>
+          <button type="button" id="rs-Global" onclick="setScope('Global')"
+            class="rounded-md border-2 px-2 py-2.5 text-xs font-semibold leading-tight transition">
+            เห็นทุกโครงการ<br><span class="font-normal opacity-70">สำหรับงานส่วนกลาง</span>
+          </button>
+        </div>
+        <p id="r-scope-note" class="mt-2 text-[11px] leading-relaxed text-muted-foreground"></p>
+      </div>
+      <div>
+        <label class="lbl">คำอธิบายหน้าที่</label>
+        <textarea id="r-desc" rows="2" class="fld" placeholder="รับผิดชอบงานอะไร ใช้ระบบส่วนไหน"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">ลำดับการแสดง</label>
+          <input id="r-sort" class="fld text-right" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        </div>
+        <div>
+          <label class="lbl">สถานะ</label>
+          <select id="r-active" class="fld">
+            <option value="true">ใช้งาน</option>
+            <option value="false">ปิดใช้งาน</option>
+          </select>
+        </div>
+      </div>
+      <p id="r-inuse" class="hidden rounded-md border border-amber-200 bg-amber-50 p-2.5 text-[11px] leading-relaxed text-amber-800"></p>
+    </div>
+    <div class="flex flex-col-reverse gap-3 rounded-b-lg border-t border-border bg-muted/40 px-6 py-4 sm:flex-row">
+      <button onclick="closeModal('modal-role')" class="rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground sm:w-auto">ยกเลิก</button>
+      <button id="btn-role-del" onclick="deleteRole()" class="hidden rounded-md border border-destructive/40 bg-card px-5 py-2.5 text-sm font-semibold text-destructive sm:w-auto">ลบ</button>
+      <button id="btn-role-save" onclick="saveRole()" class="flex-1 rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =====================================================================
  * ข้อมูลหลักและค่าตั้งต้น
@@ -248,6 +326,7 @@ async function loadAll() {
 
   renderTypes();
   renderUnits();
+  await loadRoles();
 }
 
 /* ---------------------- ประเภทโครงการ ---------------------- */
@@ -289,6 +368,208 @@ function renderUnits() {
 
   document.getElementById('unit-groups').innerHTML = html ||
     '<div class="rounded-lg border border-border bg-card p-10 text-center text-sm text-muted-foreground">ยังไม่มีข้อมูล</div>';
+}
+
+
+/* =====================================================================
+ * ตำแหน่งและขอบเขตสิทธิ์
+ *
+ * ตารางนี้เป็นตัวกำหนดว่าใครเห็นข้อมูลอะไรได้บ้างทั้งระบบ
+ * การแก้จึงกระทบทันทีกับทุกคนที่อยู่ในตำแหน่งนั้น
+ *
+ * ฐานข้อมูลมีกฎกันไว้สองข้อ หน้าเว็บจึงไม่ต้องกันซ้ำ
+ *   ลบหรือปิดตำแหน่งที่ยังมีคนใช้อยู่ไม่ได้
+ *   ต้องเหลือตำแหน่งที่เห็นทุกโครงการอย่างน้อยหนึ่ง ไม่งั้นจะไม่มีใครดูแลระบบได้
+ * ===================================================================== */
+
+let ROLES = [], STAFF_COUNT = {}, editingRole = null, currentScope = 'Project';
+
+const SCOPE_NOTE = {
+  Project: 'เห็นเฉพาะโครงการที่ถูกมอบหมายใน tb_project_staff เท่านั้น ' +
+           'เหมาะกับตำแหน่งหน้างานที่ผูกกับไซต์ เช่น จป. หัวหน้างาน พยาบาลประจำไซต์',
+  Global:  'เห็นข้อมูลทุกโครงการโดยไม่ต้องถูกมอบหมาย ' +
+           'ใช้เฉพาะตำแหน่งที่งานข้ามโครงการโดยธรรมชาติ เช่น จัดซื้อ บัญชี ผู้บริหาร'
+};
+
+async function loadRoles() {
+  const [r, s] = await Promise.all([
+    sb.from('tb_role_scopes').select('*').order('sort_order'),
+    sb.from('tb_internal_staff').select('role_level, account_status')
+  ]);
+
+  if (r.error) { reportError('โหลดตำแหน่งไม่สำเร็จ', r.error, 'select tb_role_scopes'); return; }
+  ROLES = r.data || [];
+
+  // นับจำนวนคนในแต่ละตำแหน่ง เพื่อเตือนก่อนแก้สิ่งที่มีคนใช้อยู่
+  STAFF_COUNT = {};
+  if (!s.error) {
+    (s.data || []).forEach(x => {
+      if ((x.account_status || 'Active') !== 'Active') return;
+      const k = x.role_level || '(ไม่ระบุ)';
+      STAFF_COUNT[k] = (STAFF_COUNT[k] || 0) + 1;
+    });
+  }
+
+  renderRoles();
+}
+
+function renderRoles() {
+  const groups = [
+    { key:'Global',  th:'เห็นทุกโครงการ',
+      note:'ตำแหน่งกลุ่มนี้เข้าถึงข้อมูลทุกโครงการได้โดยไม่ต้องถูกมอบหมาย',
+      tone:'border-primary/40 bg-primary/5' },
+    { key:'Project', th:'เห็นเฉพาะโครงการที่ดูแล',
+      note:'ตำแหน่งกลุ่มนี้เห็นเฉพาะโครงการที่ถูกมอบหมายเท่านั้น',
+      tone:'border-border bg-card' }
+  ];
+
+  document.getElementById('role-groups').innerHTML = groups.map(g => {
+    const list = ROLES.filter(x => x.scope === g.key);
+    return `
+      <div class="overflow-hidden rounded-lg border ${g.tone}">
+        <div class="border-b border-border px-4 py-2.5">
+          <p class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            ${esc(g.th)} · ${list.length} ตำแหน่ง</p>
+          <p class="mt-0.5 text-[11px] text-muted-foreground">${esc(g.note)}</p>
+        </div>
+        <div class="divide-y divide-border/70">
+          ${list.length ? list.map(x => {
+            const n = STAFF_COUNT[x.role_level] || 0;
+            return `
+              <button onclick="openRole('${esc(x.role_level)}')"
+                class="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-accent/40 ${x.is_active ? '' : 'opacity-50'}">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold text-foreground">
+                    ${esc(x.name_th || x.role_level)}
+                    ${x.is_active ? '' : '<span class="ml-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">ปิดใช้งาน</span>'}
+                  </p>
+                  <p class="font-mono text-[11px] text-muted-foreground">${esc(x.role_level)}</p>
+                  ${x.description ? `<p class="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">${esc(x.description)}</p>` : ''}
+                </div>
+                <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                  n ? 'bg-secondary text-secondary-foreground' : 'text-muted-foreground/60'}">
+                  ${n ? n + ' คน' : 'ยังไม่มีคน'}</span>
+              </button>`;
+          }).join('') : '<p class="px-4 py-6 text-center text-sm text-muted-foreground">ยังไม่มีตำแหน่งในกลุ่มนี้</p>'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setScope(v) {
+  currentScope = v;
+  ['Project','Global'].forEach(k => {
+    const el = document.getElementById('rs-' + k);
+    const on = k === v;
+    el.style.borderColor = on ? 'var(--primary)' : 'var(--border)';
+    el.style.background  = on ? 'var(--primary)' : 'transparent';
+    el.style.color       = on ? '#fff' : 'var(--muted-foreground)';
+  });
+  document.getElementById('r-scope-note').textContent = SCOPE_NOTE[v];
+}
+
+function openRole(code) {
+  editingRole = code;
+  const x = code ? ROLES.find(r => r.role_level === code) : null;
+  const n = code ? (STAFF_COUNT[code] || 0) : 0;
+
+  document.getElementById('role-title').textContent = x ? 'แก้ไขตำแหน่ง' : 'เพิ่มตำแหน่ง';
+  document.getElementById('r-code').value = x ? x.role_level : '';
+  document.getElementById('r-code').readOnly = !!x;
+  document.getElementById('r-name').value = x ? (x.name_th || '') : '';
+  document.getElementById('r-desc').value = x ? (x.description || '') : '';
+  document.getElementById('r-sort').value = x ? x.sort_order : (ROLES.length + 1);
+  document.getElementById('r-active').value = x ? String(x.is_active) : 'true';
+  setScope(x ? x.scope : 'Project');
+
+  // ลบได้เฉพาะตำแหน่งที่ยังไม่มีคนใช้
+  document.getElementById('btn-role-del').classList.toggle('hidden', !x || n > 0);
+
+  const inuse = document.getElementById('r-inuse');
+  if (n > 0) {
+    inuse.textContent = 'มีบุคลากร ' + n + ' คนอยู่ในตำแหน่งนี้ ' +
+      'การเปลี่ยนขอบเขตสิทธิ์จะมีผลกับทุกคนทันทีที่เข้าระบบครั้งถัดไป';
+    inuse.classList.remove('hidden');
+  } else { inuse.classList.add('hidden'); }
+
+  document.getElementById('modal-role').classList.remove('hidden');
+}
+
+async function saveRole() {
+  const btn = document.getElementById('btn-role-save');
+  try {
+    const code = document.getElementById('r-code').value.trim();
+    const name = document.getElementById('r-name').value.trim();
+
+    if (!code) return Swal.fire('ยังกรอกไม่ครบ','ระบุรหัสตำแหน่ง','warning');
+    if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(code)) {
+      return Swal.fire('รหัสไม่ถูกต้อง',
+        'ใช้ตัวอักษรอังกฤษและขีดล่างเท่านั้น และต้องขึ้นต้นด้วยตัวอักษร','warning');
+    }
+    if (!name) return Swal.fire('ยังกรอกไม่ครบ','ระบุชื่อภาษาไทย','warning');
+
+    // เตือนก่อนขยายสิทธิ์ เพราะเป็นการเปิดให้เห็นข้อมูลทุกโครงการ
+    const old = editingRole ? ROLES.find(r => r.role_level === editingRole) : null;
+    if (currentScope === 'Global' && (!old || old.scope !== 'Global')) {
+      const ok = await Swal.fire({
+        icon: 'warning',
+        title: 'ยืนยันการให้สิทธิ์เห็นทุกโครงการ',
+        html: 'ทุกคนในตำแหน่งนี้จะเห็นข้อมูลของทุกโครงการ<br>' +
+              'รวมถึงโครงการที่ไม่ได้ถูกมอบหมายให้ดูแล<br><br>' +
+              '<span style="font-size:.8rem;color:#B45309">' +
+              'ใช้เฉพาะตำแหน่งที่งานข้ามโครงการจริงๆ เท่านั้น</span>',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#3b5bdb'
+      });
+      if (!ok.isConfirmed) return;
+    }
+
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+
+    const payload = {
+      role_level: code,
+      name_th: name,
+      scope: currentScope,
+      description: document.getElementById('r-desc').value.trim() || null,
+      sort_order: parseInt(document.getElementById('r-sort').value, 10) || 99,
+      is_active: document.getElementById('r-active').value === 'true'
+    };
+
+    const res = editingRole
+      ? await sb.from('tb_role_scopes').update(payload).eq('role_level', editingRole)
+      : await sb.from('tb_role_scopes').insert(payload);
+    if (res.error) throw res.error;
+
+    closeModal('modal-role');
+    await loadRoles();
+
+  } catch (err) {
+    if (err && err.code === '23505') Swal.fire('รหัสซ้ำ','รหัสตำแหน่งนี้มีอยู่แล้ว','warning');
+    else if (err && err.code === 'P0001') Swal.fire('แก้ไขไม่ได้', esc(err.message), 'warning');
+    else reportError('บันทึกตำแหน่งไม่สำเร็จ', err, 'tb_role_scopes');
+  } finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+}
+
+async function deleteRole() {
+  const x = ROLES.find(r => r.role_level === editingRole);
+  const ok = await Swal.fire({
+    icon:'warning', title:'ลบตำแหน่งนี้',
+    text: x ? (x.name_th || x.role_level) : '',
+    showCancelButton:true, confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก',
+    confirmButtonColor:'#dc2626'
+  });
+  if (!ok.isConfirmed) return;
+
+  const r = await sb.from('tb_role_scopes').delete().eq('role_level', editingRole);
+  if (r.error) {
+    if (r.error.code === 'P0001') Swal.fire('ลบไม่ได้', esc(r.error.message), 'warning');
+    else reportError('ลบไม่สำเร็จ', r.error, 'delete tb_role_scopes');
+    return;
+  }
+  closeModal('modal-role');
+  await loadRoles();
 }
 
 /* ---------------------- กล่องแก้ไข ---------------------- */
@@ -374,14 +655,18 @@ async function saveItem() {
 
 /* ---------------------- ยูทิลิตี้ ---------------------- */
 function showTab(name) {
-  ['types','units','vendor'].forEach(t =>
+  ['types','units','roles','vendor'].forEach(t =>
     document.getElementById('tab-' + t).classList.toggle('hidden', t !== name));
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
 }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal('modal-item'); });
-document.getElementById('modal-item').addEventListener('click', e => {
-  if (e.target.id === 'modal-item') closeModal('modal-item');
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') ['modal-item','modal-role'].forEach(closeModal);
+});
+['modal-item','modal-role'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.id === id) closeModal(id);
+  });
 });
 
 function reportError(title, err, step) {
