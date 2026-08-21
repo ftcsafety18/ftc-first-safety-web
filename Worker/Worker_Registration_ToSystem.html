@@ -324,6 +324,36 @@
                     </div>
                 </div>
 
+                <!-- กล่องรูปใบหน้า -->
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">รูปใบหน้าสำหรับตรวจสอบเข้าพื้นที่ <span class="text-red-500">*</span></label>
+                    <p class="text-[12px] text-gray-500 mb-3 leading-relaxed">
+                        เจ้าหน้าที่รักษาความปลอดภัยจะใช้รูปนี้ยืนยันตัวตนตอนเข้าพื้นที่<br>
+                        <b>ถ่ายหน้าตรง ไม่สวมหมวก ไม่ใส่แว่นดำ ให้เห็นใบหน้าชัดเจน</b>
+                    </p>
+                    <div id="dropzone-face" class="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-brand-orange/40 bg-orange-50/40 px-4 py-8 text-center transition-colors">
+                        <div id="face-btn-group" class="w-full max-w-xs flex flex-col gap-3">
+                            <div class="btn-camera" role="button" tabindex="0" onclick="openCameraPicker('file-face-camera')">
+                                <span class="icon-badge shrink-0"><i data-lucide="user-round" class="w-4 h-4"></i></span>
+                                <span class="text-sm">ถ่ายรูปใบหน้า</span>
+                            </div>
+                            <input type="file" id="file-face-camera" class="file-input-hidden" accept="image/*" capture="user" onchange="handleFaceCapture(this)">
+
+                            <div class="btn-filepick" role="button" tabindex="0" onclick="openFilePicker('file-face-upload')">
+                                <i data-lucide="folder-open" class="w-5 h-5"></i> เลือกรูปจากแฟ้ม
+                            </div>
+                            <input type="file" id="file-face-upload" class="file-input-hidden" accept="image/*" onchange="handleFaceSelect(this)">
+                        </div>
+
+                        <div id="face-success-status" class="hidden flex flex-col items-center gap-3 mt-2">
+                            <img id="face-preview" alt="รูปใบหน้าที่ถ่ายไว้"
+                                 class="w-32 h-40 object-cover rounded-xl border-2 border-green-500 shadow-sm">
+                            <p class="text-sm font-bold text-green-600">รับรูปใบหน้าเรียบร้อยแล้ว</p>
+                            <button type="button" onclick="resetFaceFile()" class="text-xs text-red-500 underline">ถ่ายใหม่ / ลบรูปนี้</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- กล่องที่ 1 (บัตรหลัก) -->
                 <div class="mb-8">
                     <label class="block text-sm font-semibold text-gray-800 mb-2">อัปโหลดเอกสาร บัตรประชาชน / พาสปอร์ต / บัตรสีชมพู <span class="text-red-500">*</span></label>
@@ -697,13 +727,15 @@
             }
 
             liveCamTarget = cameraInputId;
-            liveCamFacing = 'environment';
+            // ถ่ายใบหน้าต้องใช้กล้องหน้า ส่วนถ่ายเอกสารใช้กล้องหลัง
+            liveCamFacing = (cameraInputId === 'file-face-camera') ? 'user' : 'environment';
 
             var modal = document.getElementById('live-camera-modal');
             var title = document.getElementById('live-cam-title');
-            if (title) title.innerText = (cameraInputId === 'file-main-camera')
-                ? 'ถ่ายภาพบัตรประชาชน / พาสปอร์ต / บัตรสีชมพู'
-                : 'ถ่ายภาพเอกสารความปลอดภัย';
+            if (title) title.innerText =
+                (cameraInputId === 'file-face-camera') ? 'ถ่ายรูปใบหน้า'
+              : (cameraInputId === 'file-main-camera') ? 'ถ่ายภาพบัตรประชาชน / พาสปอร์ต / บัตรสีชมพู'
+              : 'ถ่ายภาพเอกสารความปลอดภัย';
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -844,6 +876,11 @@
                 if (up) up.files = dt.files;
             } catch (e) {}
 
+            if (cameraInputId === 'file-face-camera') {
+                capturedFaceFile = file;
+                showFacePreview(file);
+                return;
+            }
             if (cameraInputId === 'file-main-camera') {
                 capturedMainFile = file;
                 showMainSuccessUI(file.name);
@@ -969,6 +1006,64 @@
          *
          * ตอนนี้อ่านรหัสเชิญจาก QR ที่สแกนมา แล้วล็อกบริษัทไว้ตายตัว
          */
+
+        /* =====================================================================
+         * ตัวเชื่อมกับ Edge Function worker-register
+         *
+         * หน้านี้ไม่เขียนลงฐานข้อมูลตรงอีกต่อไป
+         * เพราะ anon key ฝังอยู่ในไฟล์ HTML ที่ใครก็เปิดดูได้
+         * ถ้าปล่อยให้เขียนตรง ก็เท่ากับเปิดช่องให้ยิงข้อมูลปลอมเข้าระบบ
+         *
+         * ทุกคำขอส่งรหัสเชิญไปด้วย เซิร์ฟเวอร์จะตรวจก่อนทำงานเสมอ
+         * และเป็นผู้กำหนดรหัสผู้รับเหมาเอง หน้าเว็บส่งมาเองไม่ได้
+         * ===================================================================== */
+        var WORKER_API = SUPABASE_URL.replace('.supabase.co', '.functions.supabase.co') + '/worker-register';
+
+        async function callWorkerApi(action, extra) {
+            var token = window.INVITE_TOKEN ||
+                        new URLSearchParams(window.location.search).get('inv');
+            if (!token) throw new Error('ไม่พบรหัสเชิญ กรุณาสแกน QR จากบริษัทต้นสังกัด');
+
+            var body = Object.assign({ action: action, invite_token: token }, extra || {});
+
+            var res = await fetch(WORKER_API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_KEY
+                },
+                body: JSON.stringify(body)
+            });
+
+            var data = await res.json().catch(function () { return {}; });
+            if (!res.ok || !data.ok) {
+                var e = new Error(data.error || 'เชื่อมต่อระบบไม่สำเร็จ');
+                e.code = data.code;
+                e.status = res.status;
+                throw e;
+            }
+            return data;
+        }
+
+        /**
+         * อัปโหลดไฟล์ผ่านลิงก์ที่เซิร์ฟเวอร์ออกให้
+         * หน้าเว็บไม่มีสิทธิ์เขียน Storage โดยตรงแล้ว
+         * จึงต้องขอลิงก์ใช้ครั้งเดียวก่อนทุกครั้ง
+         */
+        async function uploadViaApi(file, kind) {
+            var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            var signed = await callWorkerApi('sign', { kind: kind, ext: ext });
+
+            var up = await fetch(signed.signedUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                body: file
+            });
+            if (!up.ok) throw new Error('อัปโหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่');
+
+            return signed.path;
+        }
+
         async function fetchVendors() {
             var inviteToken = new URLSearchParams(window.location.search).get('inv');
             var input = document.getElementById('vendor-input');
@@ -990,41 +1085,17 @@
 
             if (!supabase) { vendorFetchStatus = 'error'; return; }
 
+            window.INVITE_TOKEN = inviteToken;
+
             try {
-                var res = await supabase.from('tb_vendors')
-                    .select('vendor_id, vendor_name, is_blacklisted')
-                    .eq('invite_token', inviteToken)
-                    .maybeSingle();
-
-                if (res.error) throw res.error;
-
-                if (!res.data) {
-                    vendorFetchStatus = 'bad_token';
-                    input.value = '';
-                    input.placeholder = 'รหัสเชิญไม่ถูกต้อง';
-                    blockRegistration(
-                        'รหัสเชิญไม่ถูกต้อง',
-                        'ไม่พบรหัสเชิญนี้ในระบบ อาจถูกยกเลิกไปแล้ว<br>' +
-                        'กรุณาขอลิงก์ใหม่จากบริษัทผู้รับเหมาต้นสังกัดของท่าน'
-                    );
-                    return;
-                }
-
-                if (res.data.is_blacklisted) {
-                    vendorFetchStatus = 'blacklisted';
-                    blockRegistration(
-                        'บริษัทถูกระงับสิทธิ์',
-                        'บริษัทต้นสังกัดของท่านถูกระงับสิทธิ์การใช้งานชั่วคราว<br>' +
-                        'กรุณาติดต่อเจ้าหน้าที่ความปลอดภัยของ FTC'
-                    );
-                    return;
-                }
+                // ตรวจรหัสเชิญผ่าน Edge Function
+                // ไม่อ่านตารางตรง เพราะสิทธิ์ฝั่งหน้าเว็บถูกปิดไว้แล้ว
+                var res = await callWorkerApi('check', {});
 
                 // ล็อกช่องบริษัทไม่ให้แก้ไข
-                selectedVendorId = res.data.vendor_id;
-                window.INVITE_TOKEN = inviteToken;
+                selectedVendorId = res.vendor.vendor_id;
 
-                input.value = res.data.vendor_name;
+                input.value = res.vendor.vendor_name;
                 input.readOnly = true;
                 input.classList.add('bg-gray-100', 'cursor-not-allowed', 'font-semibold');
                 input.classList.remove('cursor-text');
@@ -1036,17 +1107,27 @@
                     note.classList.remove('hidden');
                 }
 
-                vendorsMasterData = [{ id: res.data.vendor_id, name: res.data.vendor_name }];
+                vendorsMasterData = [{ id: res.vendor.vendor_id, name: res.vendor.vendor_name }];
                 vendorFetchStatus = 'locked';
 
             } catch (e) {
                 console.error('fetchVendors error:', e);
                 vendorsMasterData = [];
                 vendorFetchStatus = 'error';
-                blockRegistration(
-                    'ตรวจสอบรหัสเชิญไม่สำเร็จ',
-                    'ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่'
-                );
+                input.value = '';
+                input.placeholder = 'ตรวจสอบไม่สำเร็จ';
+
+                if (e.code === 'BAD_TOKEN') {
+                    blockRegistration('รหัสเชิญไม่ถูกต้อง',
+                        (e.message || 'ไม่พบรหัสเชิญนี้ในระบบ') + '<br>' +
+                        'กรุณาขอลิงก์ใหม่จากบริษัทผู้รับเหมาต้นสังกัดของท่าน');
+                } else if (e.code === 'RATE_LIMITED') {
+                    blockRegistration('ระบบกำลังมีผู้ใช้งานหนาแน่น',
+                        'มีการส่งคำขอถี่เกินไป กรุณารอสักครู่แล้วเปิดลิงก์ใหม่อีกครั้ง');
+                } else {
+                    blockRegistration('ตรวจสอบรหัสเชิญไม่สำเร็จ',
+                        'ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่');
+                }
             }
         }
 
@@ -1237,6 +1318,57 @@
                 };
                 reader.onerror = error => reject(error);
             });
+        }
+
+
+        /* ---------------------- รูปใบหน้าสำหรับ รปภ. ---------------------- */
+        var capturedFaceFile = null;
+
+        function handleFaceCapture(inputElement) {
+            dismissCameraFallback();
+            if (inputElement.files.length === 0) return;
+            capturedFaceFile = inputElement.files[0];
+            try {
+                var dt = new DataTransfer();
+                dt.items.add(capturedFaceFile);
+                document.getElementById('file-face-upload').files = dt.files;
+            } catch (e) {}
+            showFacePreview(capturedFaceFile);
+        }
+
+        function handleFaceSelect(inputElement) {
+            if (inputElement.files.length === 0) return;
+            capturedFaceFile = null;
+            showFacePreview(inputElement.files[0]);
+        }
+
+        function getSelectedFaceFile() {
+            if (capturedFaceFile) return capturedFaceFile;
+            var input = document.getElementById('file-face-upload');
+            return input && input.files.length ? input.files[0] : null;
+        }
+
+        /**
+         * แสดงรูปให้ดูก่อนส่ง
+         * รูปนี้ใช้ยืนยันตัวตนหน้างาน ถ้าถ่ายเบลอหรือติดเงาแล้วไม่ได้ดูก่อน
+         * กว่าจะรู้ก็ตอนถูกปฏิเสธที่ป้อม ซึ่งเสียเวลาทั้งคนงานและ รปภ.
+         */
+        function showFacePreview(file) {
+            var img = document.getElementById('face-preview');
+            img.src = URL.createObjectURL(file);
+            document.getElementById('face-btn-group').classList.add('hidden');
+            document.getElementById('face-success-status').classList.remove('hidden');
+            document.getElementById('dropzone-face').classList.replace('border-brand-orange/40', 'border-green-500');
+        }
+
+        function resetFaceFile() {
+            capturedFaceFile = null;
+            document.getElementById('file-face-upload').value = '';
+            var cam = document.getElementById('file-face-camera');
+            if (cam) cam.value = '';
+            document.getElementById('face-success-status').classList.add('hidden');
+            document.getElementById('face-btn-group').classList.remove('hidden');
+            document.getElementById('dropzone-face').classList.replace('border-green-500', 'border-brand-orange/40');
         }
 
         var capturedMainFile = null;
@@ -1461,6 +1593,12 @@
         }
 
         function validateStep2() {
+            if (!getSelectedFaceFile()) {
+                Swal.fire('ขาดรูปใบหน้า',
+                    'กรุณาถ่ายรูปใบหน้า เจ้าหน้าที่รักษาความปลอดภัยต้องใช้ยืนยันตัวตนตอนเข้าพื้นที่ครับ',
+                    'warning');
+                return false;
+            }
             if (!getSelectedMainFile()) {
                 Swal.fire('ขาดรูปถ่าย', 'กรุณากดเปิดกล้องหรือเลือกไฟล์เพื่อยืนยันตัวตนบัตรหลักครับ', 'warning'); return false;
             }
@@ -1563,22 +1701,20 @@
                    เดิมอ่านตาราง tb_workers ตรงๆ ซึ่งถูกปิดสิทธิ์ไปแล้ว
                    เพราะการเปิดให้อ่านได้ แปลว่าใครก็ดึงเลขบัตรคนงานทุกคนในระบบได้
                    ฟังก์ชันนี้ตอบกลับแค่ซ้ำหรือไม่ซ้ำ ไม่คืนข้อมูลใดๆ */
-                if (window.INVITE_TOKEN) {
-                    var dupCheck = await supabase.rpc('fn_check_worker_duplicate', {
-                        p_invite_token: window.INVITE_TOKEN,
-                        p_national_id: nationalId
-                    });
-
-                    if (dupCheck.error) {
-                        // เช็กไม่ได้ก็ไปต่อ เพราะฐานข้อมูลมีดัชนีห้ามซ้ำกันไว้อีกชั้น
-                        // ดีกว่าบล็อกคนงานเพราะระบบตรวจสอบมีปัญหาชั่วคราว
-                        console.error('เช็กบัตรซ้ำไม่สำเร็จ:', dupCheck.error);
-                    } else if (dupCheck.data && dupCheck.data.duplicate) {
+                /* เช็กเลขบัตรซ้ำผ่าน Edge Function
+                   เซิร์ฟเวอร์ตอบกลับแค่ซ้ำหรือไม่ซ้ำ ไม่คืนข้อมูลของใคร */
+                try {
+                    var dup = await callWorkerApi('check', { national_id: nationalId });
+                    if (dup.duplicate) {
                         Swal.fire('เลขเอกสารซ้ำ',
                             'เลขที่กรอกลงทะเบียนไว้แล้วในระบบ<br>' +
                             'หากเป็นการย้ายสังกัด กรุณาแจ้งเจ้าหน้าที่ FTC', 'warning');
                         return;
                     }
+                } catch (e) {
+                    // เช็กไม่ได้ก็ไปต่อ เพราะฐานข้อมูลมีดัชนีห้ามซ้ำกันไว้อีกชั้น
+                    // ดีกว่าบล็อกคนงานเพราะระบบตรวจสอบมีปัญหาชั่วคราว
+                    console.error('เช็กบัตรซ้ำไม่สำเร็จ:', e);
                 }
 
                 Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารหลัก...' });
@@ -1586,10 +1722,16 @@
                 var originalMainFile = getSelectedMainFile();
                 var compressedMainFile = await compressImage(originalMainFile, 1200, 0.7); 
                 
-                var mainPath = 'id-cards/' + Date.now() + '_' + compressedMainFile.name;
-                var upMain = await supabase.storage.from('worker-documents').upload(mainPath, compressedMainFile);
-                if (upMain.error) throw upMain.error;
-                var mainUrl = supabase.storage.from('worker-documents').getPublicUrl(mainPath).data.publicUrl;
+                // เซิร์ฟเวอร์เป็นคนกำหนดชื่อไฟล์และโฟลเดอร์ปลายทาง
+                // เก็บเป็น path ไม่ใช่ลิงก์เต็ม เพราะที่เก็บไฟล์เป็นแบบส่วนตัวแล้ว
+                // การแสดงรูปต้องขอลิงก์ชั่วคราวทุกครั้ง
+                var mainUrl = await uploadViaApi(compressedMainFile, 'id_card');
+
+                // รูปใบหน้าบีบอัดน้อยกว่าเอกสาร เพราะต้องเห็นรายละเอียดใบหน้าชัด
+                // ถ้าบีบมากเกินไป รปภ. จะเทียบหน้าไม่ได้
+                Swal.update({ title: 'กำลังอัปโหลดรูปใบหน้า...' });
+                var compressedFace = await compressImage(getSelectedFaceFile(), 900, 0.85);
+                var faceUrl = await uploadViaApi(compressedFace, 'profile');
 
                 Swal.update({ title: 'กำลังบีบอัดและอัปโหลดเอกสารเพิ่มเติม...' });
                 let uploadedWpUrls = [];
@@ -1605,10 +1747,7 @@
 
                         let compressedExtraFile = await compressImage(originalExtraFile, 1200, 0.7);
 
-                        let wpPath = 'work-permits/' + Date.now() + '_' + id + '_' + compressedExtraFile.name;
-                        var upWp = await supabase.storage.from('worker-documents').upload(wpPath, compressedExtraFile);
-                        if (upWp.error) throw upWp.error;
-                        let wpUrl = supabase.storage.from('worker-documents').getPublicUrl(wpPath).data.publicUrl;
+                        let wpUrl = await uploadViaApi(compressedExtraFile, 'extra_doc');
 
                         uploadedWpUrls.push(wpUrl);
                         extraDocTypes.push(docType);
@@ -1622,10 +1761,9 @@
 
                 var generatedWorkerId = generateWorkerId();
 
+                /* ไม่ต้องส่ง worker_id, vendor_id, badge_status มาเอง
+                   เซิร์ฟเวอร์กำหนดให้ทั้งหมด เพื่อไม่ให้แก้ค่าผ่านหน้าเว็บได้ */
                 var payload = {
-                    worker_id: generatedWorkerId,
-                    vendor_id: selectedVendorId,
-                    invited_by_token: window.INVITE_TOKEN || null,
                     title_prefix: document.getElementById('title-prefix').value || null,
                     full_name: document.getElementById('fname-input').value.trim() + ' ' + document.getElementById('lname-input').value.trim(),
                     national_id: nationalId,
@@ -1634,6 +1772,7 @@
                     line_user_id: lineUserId, 
                     blood_group: document.getElementById('blood-group').value,
                     id_card_photo_url: mainUrl,
+                    profile_photo_url: faceUrl,
                     date_of_birth: beToIsoString(document.getElementById('dob-day').value, document.getElementById('dob-month').value, document.getElementById('dob-year').value),
                     id_expiry_date: beToIsoString(document.getElementById('exp-day').value, document.getElementById('exp-month').value, document.getElementById('exp-year').value),
                     emergency_contact_name: document.getElementById('emg-name').value.trim(),
@@ -1644,20 +1783,22 @@
                     pdpa_gps: document.getElementById('pdpa-gps').checked
                 };
 
-                var insertRes = await supabase.from('tb_workers').insert(payload);
-                if (insertRes.error) throw insertRes.error;
+                /* บันทึกผ่าน Edge Function ในคำสั่งเดียว
+                   เซิร์ฟเวอร์บันทึกทั้งข้อมูลคนงานและเอกสารเพิ่มเติมให้พร้อมกัน
+                   จึงไม่มีกรณีที่ข้อมูลคนงานเข้าแล้วแต่เอกสารไม่เข้า
 
-                if (uploadedWpUrls.length > 0) {
-                    var extraDocsPayload = uploadedWpUrls.map((url, index) => {
-                        return {
-                            worker_id: generatedWorkerId,
-                            document_type: extraDocTypes[index],
-                            document_url: url
-                        };
-                    });
-                    var extraInsertRes = await supabase.from('tb_worker_documents').insert(extraDocsPayload);
-                    if (extraInsertRes.error) console.error('Failed to insert extra documents:', extraInsertRes.error);
-                }
+                   ค่าที่มีผลต่อความปลอดภัยถูกกำหนดจากฝั่งเซิร์ฟเวอร์ทั้งหมด
+                     รหัสผู้รับเหมา  มาจากรหัสเชิญ
+                     สถานะบัตร      กำหนดเป็นรอตรวจสอบเสมอ
+                   ส่งมาเองไม่ได้ แม้จะแก้ผ่านเครื่องมือของเบราว์เซอร์ */
+                var createRes = await callWorkerApi('create', {
+                    payload: payload,
+                    documents: uploadedWpUrls.map(function (url, index) {
+                        return { type: extraDocTypes[index], path: url };
+                    })
+                });
+
+                generatedWorkerId = createRes.worker_id;
 
                 Swal.close();
                 goToStep('success');
