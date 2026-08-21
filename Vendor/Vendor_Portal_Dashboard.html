@@ -149,6 +149,20 @@ tailwind.config = { theme: { extend: {
           <span id="badge-worker" class="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600 ring-1 ring-blue-100">—</span>
         </button>
 
+        <button onclick="goto('tbt')"
+          class="press flex w-full items-center gap-3 rounded-2xl bg-white p-3.5 text-left shadow-sm shadow-slate-200/70 hover:shadow-md">
+          <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-brand-navy">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-[15px] font-bold leading-tight text-brand-navy">ชี้แจงความปลอดภัยก่อนทำงาน</p>
+            <p class="text-xs text-slate-400">Toolbox Talk (TBT)</p>
+          </div>
+          <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-100">หัวหน้างาน</span>
+        </button>
+
         <button onclick="goto('ptw-request')"
           class="press flex w-full items-center gap-3 rounded-2xl bg-white p-3.5 text-left shadow-sm shadow-slate-200/70 hover:shadow-md">
           <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-brand-navy">
@@ -295,6 +309,7 @@ function setTab(name) {
 
 /* ---------------------- เมนู ---------------------- */
 const SCREEN_NAME = {
+  'tbt':'ชี้แจงความปลอดภัยก่อนทำงาน',
   'worker-verify':'ยืนยันทะเบียนพนักงาน',
   'ptw-request':'จัดการคำขอใบอนุญาตทำงาน',
   'defect':'ตรวจสอบและส่งผลการแก้ไข',
@@ -305,7 +320,8 @@ const SCREEN_NAME = {
 /** หน้าจอที่ทำเสร็จแล้วให้เปิดจริง ส่วนที่ยังไม่มีให้ขึ้นข้อความแจ้ง */
 const SCREEN_URL = {
   'worker-verify': 'Vendor_Worker_Register.html',
-  'ptw-request':   'Vendor_PTW_Request.html'
+  'ptw-request':   'Vendor_PTW_Request.html',
+  'tbt':           'Vendor_TBT.html'
 };
 
 function goto(key) {
