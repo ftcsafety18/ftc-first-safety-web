@@ -116,6 +116,9 @@ tailwind.config = { theme: { extend: {
       </p>
     </section>
 
+    <!-- ===================== ส่วนขยายตามประเภทงาน ===================== -->
+    <div id="ext-sections" class="space-y-4"></div>
+
     <!-- ===================== 3. คนงาน ===================== -->
     <section class="rounded-2xl bg-white p-4 shadow-sm shadow-slate-200/70">
       <h2 class="mb-1 flex items-center gap-2">
@@ -230,19 +233,211 @@ const pickedWorkers = new Set();
 const esc = s => String(s == null ? '' : s)
   .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
+/** ช่องตัวเลขรับเฉพาะตัวเลข จุดทศนิยม และเครื่องหมายลบ */
+function numOnly(el) { el.value = el.value.replace(/[^0-9.\-]/g, ''); }
+
+
+/* =====================================================================
+ * ส่วนขยายตามประเภทงานเสี่ยงสูง
+ *
+ * นิยามช่องกรอกมาจากฐานข้อมูล ไม่ฝังในหน้านี้
+ * เพื่อให้ จป. เพิ่มหรือแก้ช่องได้เองภายหลังโดยไม่ต้องแก้โค้ด
+ *
+ * ค่าที่กรอกถูกตรวจสองชั้น ที่หน้าจอเพื่อบอกผู้ใช้ทันที
+ * และที่ฐานข้อมูลเพื่อกันการแก้ค่าผ่านเครื่องมือของเบราว์เซอร์
+ * ===================================================================== */
+
+let EXTENSIONS = [];
+
+/** หาว่าประเภทงานที่เลือกไว้ ต้องกรอกส่วนขยายอะไรบ้าง */
+function activeExtensions() {
+  const codes = [...pickedRisk].map(t => RISK_TO_CODE[t]).filter(Boolean);
+  return EXTENSIONS.filter(e => codes.includes(e.risk_code));
+}
+
+/* แผนที่จากชื่อประเภทงานไปเป็นรหัส ต้องตรงกับที่ฝั่งเซิร์ฟเวอร์ใช้ */
+const RISK_TO_CODE = {
+  'งานที่อับอากาศ': 'CONFINED_SPACE',
+  'งานเชื่อม/ก่อประกายไฟ': 'HOT_WORK',
+  'งานบนที่สูง': 'WORK_AT_HEIGHT',
+  'งานขุดเจาะดิน': 'EXCAVATION',
+  'งานเกี่ยวกับไฟฟ้า': 'ELECTRICAL',
+  'งานยกของหนัก/เครน': 'LIFTING',
+  'งานเกี่ยวกับสารเคมี': 'CHEMICAL',
+  'งานรื้อถอน/โครงสร้าง': 'DEMOLITION'
+};
+
+function renderExtensions() {
+  const box = document.getElementById('ext-sections');
+  const list = activeExtensions();
+
+  if (!list.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = list.map(e => `
+    <section class="rounded-2xl border-2 border-red-200 bg-white p-4 shadow-sm">
+      <h2 class="mb-1 flex items-center gap-2">
+        <span class="flex size-6 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">!</span>
+        <span class="flex-1 text-base font-bold text-red-700">${esc(e.name_th)}</span>
+        ${e.form_ref ? `<span class="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">${esc(e.form_ref)}</span>` : ''}
+      </h2>
+      <p class="mb-3 pl-8 text-xs text-slate-500">ข้อมูลเฉพาะที่ต้องกรอกสำหรับงานประเภทนี้</p>
+
+      <div class="space-y-3">
+        ${e.fields.map(f => renderField(e.ext_code, f)).join('')}
+      </div>
+    </section>`).join('');
+
+  // ผูกเหตุการณ์ให้ทุกช่องเรียกตรวจความพร้อมเมื่อมีการแก้ไข
+  box.querySelectorAll('[data-ext]').forEach(el => {
+    el.addEventListener('input', refresh);
+    el.addEventListener('change', refresh);
+  });
+}
+
+function renderField(extCode, f) {
+  const id = 'ext-' + extCode + '-' + f.field_key;
+  const req = f.is_required ? ' <span class="text-red-500">*</span>' : '';
+  const help = f.help_text
+    ? `<p class="mt-1 text-[11px] leading-relaxed text-slate-500">${esc(f.help_text)}</p>` : '';
+
+  // ช่วงค่าที่ยอมรับ แสดงให้เห็นตั้งแต่ก่อนกรอก จะได้รู้ว่าค่าไหนผิดปกติ
+  const range = (f.min_value != null || f.max_value != null)
+    ? `<span class="ml-1 text-[10px] font-normal text-emerald-700">เกณฑ์ ${
+        f.min_value != null ? f.min_value : ''}${
+        f.min_value != null && f.max_value != null ? ' ถึง ' : ''}${
+        f.max_value != null ? f.max_value : ''} ${esc(f.unit || '')}</span>`
+    : '';
+
+  if (f.field_type === 'checkbox') {
+    return `
+      <label class="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 p-3">
+        <input type="checkbox" id="${id}" data-ext="${esc(extCode)}" data-key="${esc(f.field_key)}"
+               data-type="checkbox" data-req="${f.is_required}"
+               class="mt-0.5 size-5 shrink-0 rounded accent-red-600">
+        <span class="min-w-0 flex-1">
+          <span class="block text-[13px] font-semibold text-slate-700">${esc(f.label_th)}${req}</span>
+          ${help}
+        </span>
+      </label>`;
+  }
+
+  if (f.field_type === 'select') {
+    const opts = Array.isArray(f.options) ? f.options : [];
+    return `
+      <div>
+        <label class="lbl">${esc(f.label_th)}${req}</label>
+        <select id="${id}" data-ext="${esc(extCode)}" data-key="${esc(f.field_key)}"
+                data-type="select" data-req="${f.is_required}" class="fld">
+          <option value="">-- เลือก --</option>
+          ${opts.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('')}
+        </select>
+        ${help}
+      </div>`;
+  }
+
+  if (f.field_type === 'textarea') {
+    return `
+      <div>
+        <label class="lbl">${esc(f.label_th)}${req}</label>
+        <textarea id="${id}" rows="2" data-ext="${esc(extCode)}" data-key="${esc(f.field_key)}"
+                  data-type="textarea" data-req="${f.is_required}" class="fld"></textarea>
+        ${help}
+      </div>`;
+  }
+
+  const inputType = f.field_type === 'time' ? 'time' : (f.field_type === 'number' ? 'text' : 'text');
+  const extra = f.field_type === 'number' ? ' inputmode="decimal" oninput="numOnly(this)"' : '';
+
+  return `
+    <div>
+      <label class="lbl">${esc(f.label_th)}${req}${range}</label>
+      <div class="flex items-center gap-2">
+        <input type="${inputType}" id="${id}" data-ext="${esc(extCode)}" data-key="${esc(f.field_key)}"
+               data-type="${esc(f.field_type)}" data-req="${f.is_required}"
+               data-min="${f.min_value != null ? f.min_value : ''}"
+               data-max="${f.max_value != null ? f.max_value : ''}"
+               class="fld"${extra}>
+        ${f.unit ? `<span class="shrink-0 text-sm font-semibold text-slate-500">${esc(f.unit)}</span>` : ''}
+      </div>
+      <p id="${id}-err" class="mt-1 hidden rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-[11px] font-semibold text-red-700"></p>
+      ${help}
+    </div>`;
+}
+
+/**
+ * รวบรวมค่าที่กรอกและตรวจความถูกต้อง
+ * คืนค่า { data, problems } เพื่อให้ตัวตรวจความพร้อมใช้ต่อได้
+ */
+function collectExtensions() {
+  const data = {};
+  const problems = [];
+  const list = activeExtensions();
+
+  list.forEach(e => {
+    data[e.ext_code] = {};
+
+    e.fields.forEach(f => {
+      const el = document.getElementById('ext-' + e.ext_code + '-' + f.field_key);
+      if (!el) return;
+
+      const errEl = document.getElementById('ext-' + e.ext_code + '-' + f.field_key + '-err');
+      if (errEl) errEl.classList.add('hidden');
+      el.style.borderColor = '';
+
+      let val;
+      if (f.field_type === 'checkbox') {
+        val = el.checked;
+        if (f.is_required && !val) problems.push(f.label_th);
+      } else {
+        val = el.value.trim();
+        if (f.is_required && !val) problems.push(f.label_th);
+      }
+
+      // ค่าที่วัดได้ต้องอยู่ในเกณฑ์ปลอดภัย
+      if (f.field_type === 'number' && val !== '') {
+        const n = parseFloat(val);
+        if (isNaN(n)) {
+          problems.push(f.label_th + ' ต้องเป็นตัวเลข');
+        } else {
+          let bad = null;
+          if (f.min_value != null && n < f.min_value) {
+            bad = 'ต่ำกว่าเกณฑ์ปลอดภัย ' + f.min_value + ' ' + (f.unit || '');
+          } else if (f.max_value != null && n > f.max_value) {
+            bad = 'เกินเกณฑ์ปลอดภัย ' + f.max_value + ' ' + (f.unit || '');
+          }
+          if (bad) {
+            problems.push(f.label_th);
+            if (errEl) {
+              errEl.textContent = '⚠ วัดได้ ' + n + ' ' + (f.unit || '') + ' ' + bad + ' — ห้ามเข้าพื้นที่';
+              errEl.classList.remove('hidden');
+            }
+            el.style.borderColor = '#DC2626';
+          }
+        }
+      }
+
+      data[e.ext_code][f.field_key] = val;
+    });
+  });
+
+  return { data: Object.keys(data).length ? data : null, problems };
+}
+
 /* ---------------------- โหลดข้อมูล ---------------------- */
 async function loadAll() {
   try {
     const vendor = await VendorAPI.me();
     document.getElementById('vendor-name').textContent = vendor.vendor_name;
 
-    const [t, w] = await Promise.all([
+    const [t, w, x] = await Promise.all([
       VendorAPI.call('tasks.list'),
-      VendorAPI.call('workers.approved')
+      VendorAPI.call('workers.approved'),
+      VendorAPI.call('permits.extensions')
     ]);
 
     TASKS = t.tasks || [];
     WORKERS = w.workers || [];
+    EXTENSIONS = x.extensions || [];
 
     const sel = document.getElementById('task-select');
     sel.innerHTML = TASKS.length
@@ -328,6 +523,7 @@ function syncTypeUI() {
   const high = pickedRisk.size > 0;
   document.getElementById('risk-alert').classList.toggle('hidden', !high);
   document.getElementById('jsa-box').classList.toggle('hidden', !high);
+  renderExtensions();
   refresh();
 }
 
@@ -432,9 +628,23 @@ function refresh() {
 
   if (!document.getElementById('task-select').value) problems.push('เลือกแผนงาน');
   if (!document.getElementById('p-desc').value.trim()) problems.push('ระบุพื้นที่ปฏิบัติงาน');
-  if (!document.getElementById('p-start').value || !document.getElementById('p-end').value) problems.push('ระบุเวลา');
+  const s = document.getElementById('p-start').value;
+  const e2 = document.getElementById('p-end').value;
+  if (!s || !e2) problems.push('ระบุเวลา');
+  else if ((new Date(e2) - new Date(s)) / 3600000 > 24) {
+    problems.push('ใบอนุญาตมีอายุไม่เกิน 24 ชั่วโมง');
+  }
   if (!generalWork && !high) problems.push('เลือกประเภทงาน');
   if (high && !jsaFile) problems.push('แนบเอกสาร JSA');
+
+  // ช่องกรอกเฉพาะของงานเสี่ยงสูง
+  const ext = collectExtensions();
+  if (ext.problems.length) {
+    problems.push(ext.problems.length === 1
+      ? ext.problems[0]
+      : 'ข้อมูลเฉพาะงานเสี่ยงสูงอีก ' + ext.problems.length + ' ช่อง');
+  }
+
   if (!pickedWorkers.size) problems.push('เลือกคนงาน');
   if (!declared) problems.push('ติ๊กคำรับรอง');
 
@@ -464,6 +674,7 @@ async function submitPermit() {
       work_types: generalWork ? ['งานทั่วไป'] : [...pickedRisk],
       ppe: [...pickedPPE],
       worker_ids: [...pickedWorkers],
+      extension_data: collectExtensions().data,
       jsa_path: jsaPath
     });
 
