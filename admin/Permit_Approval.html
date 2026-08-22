@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="th" class="bg-background">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>อนุมัติใบอนุญาตทำงาน | FTC First Safety</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../shared/config.js"></script>
+<script src="../shared/session.js"></script>
+
+<style>
+  :root {
+    --background: oklch(0.985 0.003 250); --foreground: oklch(0.21 0.02 258);
+    --card: oklch(1 0 0); --primary: oklch(0.45 0.14 255);
+    --primary-foreground: oklch(0.99 0.005 250); --secondary: oklch(0.96 0.008 255);
+    --secondary-foreground: oklch(0.3 0.03 258); --muted: oklch(0.965 0.006 255);
+    --muted-foreground: oklch(0.53 0.02 258); --accent: oklch(0.93 0.03 250);
+    --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.9 0.008 255);
+    --ring: oklch(0.45 0.14 255);
+    --chart-1: oklch(0.58 0.22 27); --chart-2: oklch(0.72 0.16 65); --chart-5: oklch(0.55 0.14 155);
+  }
+  html, body { background: var(--background); color: var(--foreground); }
+  body { font-family: 'Sarabun', sans-serif; }
+  .fld { width:100%; padding:.55rem .75rem; border-radius:.5rem; border:1px solid var(--border);
+         background:var(--card); font-size:.875rem; color:var(--foreground); }
+  .fld:focus { outline:none; border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent); }
+  .lbl { display:block; font-size:.78rem; font-weight:600; color:var(--muted-foreground); margin-bottom:.35rem; }
+  .tab { padding:.7rem 1.1rem; font-size:.85rem; font-weight:700; color:var(--muted-foreground);
+         border-bottom:3px solid transparent; white-space:nowrap; }
+  .tab.on { color:var(--primary); border-bottom-color:var(--primary); }
+  .modal-wrap { position:fixed; inset:0; background:rgba(15,23,42,.5); z-index:60;
+                display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem; overflow-y:auto; }
+  :focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+</style>
+
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { sans:['Sarabun','sans-serif'] },
+  colors: {
+    background:'var(--background)', foreground:'var(--foreground)', card:'var(--card)',
+    primary:{ DEFAULT:'var(--primary)', foreground:'var(--primary-foreground)' },
+    secondary:{ DEFAULT:'var(--secondary)', foreground:'var(--secondary-foreground)' },
+    muted:{ DEFAULT:'var(--muted)', foreground:'var(--muted-foreground)' },
+    accent:'var(--accent)', destructive:'var(--destructive)', border:'var(--border)'
+  }
+}}}
+</script>
+</head>
+<body class="antialiased">
+
+<!-- ===================== เข้าสู่ระบบ ===================== -->
+<div id="gate" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm rounded-lg border border-border bg-card p-8">
+    <p class="text-sm font-semibold text-foreground">FTC First Safety</p>
+    <p class="mb-6 text-xs text-muted-foreground">อนุมัติใบอนุญาตทำงาน</p>
+    <label class="lbl">อีเมล</label>
+    <input type="email" id="log-email" class="fld mb-3" autocomplete="username">
+    <label class="lbl">รหัสผ่าน</label>
+    <input type="password" id="log-pass" class="fld mb-5" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+    <button onclick="doLogin()" id="btn-login" class="w-full rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90">เข้าสู่ระบบ</button>
+    <p id="log-err" class="hidden mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"></p>
+  </div>
+</div>
+
+<!-- ===================== หน้าหลัก ===================== -->
+<div id="app" class="hidden min-h-screen">
+
+  <header class="border-b border-border" style="background:var(--primary)">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <a href="Admin_Dashboard.html" title="กลับหน้าเมนูหลัก"
+          class="flex size-9 items-center justify-center rounded-md bg-white/15 text-white ring-1 ring-white/25 transition hover:bg-white/25">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-semibold text-white">อนุมัติใบอนุญาตทำงาน</span>
+          <span id="who" class="text-xs text-white/70">กำลังโหลด…</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="loadAll()" class="rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white">รีเฟรช</button>
+        <button onclick="doLogout()" class="rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white">ออกจากระบบ</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+
+    <!-- ตัวเลขสรุป -->
+    <section class="mb-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border lg:grid-cols-4">
+      <div class="bg-card px-4 py-3">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">รอ จป. อนุมัติ</p>
+        <p id="k-l1" class="mt-1 text-lg font-semibold text-[var(--chart-2)]">—</p>
+      </div>
+      <div class="bg-card px-4 py-3">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">รอ ผจก. อนุมัติ</p>
+        <p id="k-l2" class="mt-1 text-lg font-semibold text-[var(--chart-1)]">—</p>
+      </div>
+      <div class="bg-card px-4 py-3">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">อนุมัติแล้ววันนี้</p>
+        <p id="k-ok" class="mt-1 text-lg font-semibold text-[var(--chart-5)]">—</p>
+      </div>
+      <div class="bg-card px-4 py-3">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">รอยืนยันยกเลิก</p>
+        <p id="k-cancel" class="mt-1 text-lg font-semibold text-destructive">—</p>
+      </div>
+    </section>
+
+    <!-- เตือนใบที่ใกล้ถึงเวลาเริ่มงาน -->
+    <div id="urgent" class="mb-4 hidden rounded-lg border-2 border-destructive/40 bg-destructive/5 p-4">
+      <p class="text-sm font-semibold text-destructive">มีใบที่ใกล้ถึงเวลาเริ่มงานแล้วแต่ยังไม่อนุมัติ</p>
+      <p id="urgent-list" class="mt-1 text-xs leading-relaxed text-destructive/90"></p>
+    </div>
+
+    <nav class="mb-4 flex items-center gap-1 overflow-x-auto border-b border-border">
+      <button class="tab on" data-tab="Pending"        onclick="showTab('Pending')">รอ จป.</button>
+      <button class="tab"    data-tab="Pending_L2"     onclick="showTab('Pending_L2')">รอ ผจก.</button>
+      <button class="tab"    data-tab="Cancel_Pending" onclick="showTab('Cancel_Pending')">รอยืนยันยกเลิก</button>
+      <button class="tab"    data-tab="Approved"       onclick="showTab('Approved')">อนุมัติแล้ว</button>
+      <button class="tab"    data-tab="All"            onclick="showTab('All')">ทั้งหมด</button>
+    </nav>
+
+    <div class="mb-3 flex flex-wrap gap-2">
+      <input id="q" class="fld min-w-[220px] flex-1" placeholder="ค้นหาเลขที่ ผู้รับเหมา หรือชื่องาน" oninput="renderList()">
+      <select id="f-project" class="fld max-w-xs" onchange="renderList()"></select>
+    </div>
+
+    <div id="list" class="space-y-2"></div>
+    <p id="empty" class="hidden rounded-lg border border-border bg-card p-10 text-center text-sm text-muted-foreground"></p>
+  </main>
+</div>
+
+<!-- ===================== รายละเอียดและอนุมัติ ===================== -->
+<div id="modal" class="modal-wrap hidden">
+  <div class="w-full max-w-3xl rounded-lg border border-border bg-card shadow-xl">
+    <div class="flex items-start justify-between gap-3 border-b border-border px-6 py-4">
+      <div class="min-w-0">
+        <h3 id="d-ptw" class="text-base font-semibold text-foreground"></h3>
+        <p id="d-sub" class="text-xs text-muted-foreground"></p>
+      </div>
+      <button onclick="closeModal()" class="shrink-0 text-muted-foreground hover:text-foreground">✕</button>
+    </div>
+
+    <div class="space-y-4 px-6 py-5">
+      <div id="d-risk" class="rounded-lg border-2 p-3 text-[12px] leading-relaxed"></div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><p class="lbl">แผนงาน</p><p id="d-task" class="text-sm text-foreground"></p></div>
+        <div><p class="lbl">พื้นที่</p><p id="d-zone" class="text-sm text-foreground"></p></div>
+        <div><p class="lbl">ช่วงเวลา</p><p id="d-time" class="text-sm text-foreground"></p></div>
+        <div><p class="lbl">จำนวนคนงาน</p><p id="d-crew" class="text-sm text-foreground"></p></div>
+      </div>
+
+      <div>
+        <p class="lbl">รายละเอียดพื้นที่ปฏิบัติงาน</p>
+        <p id="d-desc" class="rounded-md bg-muted p-3 text-sm text-foreground"></p>
+      </div>
+
+      <div id="d-ppe-box">
+        <p class="lbl">อุปกรณ์ป้องกันที่ใช้</p>
+        <div id="d-ppe" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <!-- ข้อมูลเฉพาะงานเสี่ยงสูง -->
+      <div id="d-ext" class="hidden"></div>
+
+      <div id="d-jsa-box" class="hidden">
+        <p class="lbl">เอกสาร JSA</p>
+        <button onclick="openJsa()" class="rounded-md border border-border px-3 py-2 text-xs font-semibold text-primary underline">เปิดดูเอกสาร JSA</button>
+      </div>
+
+      <!-- ประวัติการอนุมัติ -->
+      <div id="d-history" class="rounded-lg border border-border p-3 text-[12px]"></div>
+    </div>
+
+    <div class="flex flex-col-reverse gap-3 rounded-b-lg border-t border-border bg-muted/40 px-6 py-4 sm:flex-row">
+      <button onclick="closeModal()" class="rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground sm:w-auto">ปิด</button>
+      <button id="btn-cancel" onclick="askCancel()" class="hidden rounded-md border border-destructive/40 bg-card px-5 py-2.5 text-sm font-semibold text-destructive sm:w-auto">เสนอยกเลิก</button>
+      <button id="btn-reject" onclick="askReject()" class="hidden rounded-md border border-destructive/40 bg-card px-5 py-2.5 text-sm font-semibold text-destructive sm:w-auto">ตีกลับให้แก้ไข</button>
+      <button id="btn-approve" onclick="doApprove()" class="hidden flex-1 rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground">อนุมัติ</button>
+      <button id="btn-confirm-cancel" onclick="doConfirmCancel()" class="hidden flex-1 rounded-md bg-destructive py-2.5 text-sm font-semibold text-white">ยืนยันการยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+ * อนุมัติใบอนุญาตทำงาน
+ *
+ * กฎการอนุมัติบังคับที่ฐานข้อมูลทั้งหมด หน้านี้แค่ซ่อนปุ่มที่กดไม่ได้
+ * เพื่อไม่ให้ผู้ใช้เสียเวลากดแล้วโดนปฏิเสธ
+ *
+ *   งานทั่วไป   ชั้นเดียว โดย จป. ประจำโครงการ
+ *   งานเสี่ยงสูง สองชั้น จป. แล้วต่อด้วย ผจก. ของระบบงานนั้น
+ *   ยกเลิก      ต้องรับรู้ทั้งสองฝ่าย คนหนึ่งเสนอ อีกคนยืนยัน
+ * ===================================================================== */
+
+const sb = FTC.supabase();
+let PERMITS = [], EXT_DEF = [], current = null, currentTab = 'Pending';
+let ME = { staff_id: null, role: null };
+
+const RISK_TONE = {
+  'เขตอันตราย': ['border-destructive/40 bg-destructive/5', 'text-destructive'],
+  'เขตควบคุม':  ['border-[var(--chart-2)]/40 bg-[var(--chart-2)]/5', 'text-[var(--chart-2)]'],
+  'เขตปลอดภัย': ['border-[var(--chart-5)]/40 bg-[var(--chart-5)]/5', 'text-[var(--chart-5)]']
+};
+
+const STATUS_TH = {
+  Pending:'รอ จป. อนุมัติ', Pending_L2:'รอ ผจก. อนุมัติ', Approved:'อนุมัติแล้ว',
+  Rejected:'ตีกลับให้แก้ไข', Cancel_Pending:'รอยืนยันยกเลิก', Cancelled:'ยกเลิกแล้ว',
+  Closed:'ปิดงานแล้ว', Expired:'หมดอายุ'
+};
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+function thaiTime(iso) {
+  if (!iso) return '—';
+  const M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const d = new Date(iso), pad = n => String(n).padStart(2,'0');
+  return d.getDate() + ' ' + M[d.getMonth()] + ' ' + (d.getFullYear()+543) +
+         ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' น.';
+}
+
+/* ---------------------- เข้าสู่ระบบ ---------------------- */
+async function doLogin() {
+  const email = document.getElementById('log-email').value.trim();
+  const pass  = document.getElementById('log-pass').value;
+  const err   = document.getElementById('log-err');
+  const btn   = document.getElementById('btn-login');
+  err.classList.add('hidden');
+  if (!email || !pass) { err.textContent='กรอกอีเมลและรหัสผ่านให้ครบ'; err.classList.remove('hidden'); return; }
+  btn.disabled = true; btn.textContent='กำลังตรวจสอบ…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent='เข้าสู่ระบบ';
+  if (error) { err.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง'; err.classList.remove('hidden'); return; }
+  await enterApp();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function enterApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+
+  const [s, r] = await Promise.all([
+    sb.rpc('fn_current_staff_id'),
+    sb.rpc('fn_current_role_level')
+  ]);
+  ME.staff_id = s.data;
+  ME.role = r.data;
+
+  if (!ME.staff_id) {
+    Swal.fire({ icon:'warning', title:'ระบบระบุตัวตนไม่ได้',
+      html:'ไม่พบข้อมูลเจ้าหน้าที่จากอีเมลที่ใช้เข้าระบบ<br>' +
+           'กรุณาแจ้งผู้ดูแลระบบให้เพิ่มอีเมลของท่านในทะเบียนบุคลากร',
+      confirmButtonColor:'#3b5bdb' });
+  }
+
+  document.getElementById('who').textContent = (ME.role || 'ไม่ทราบตำแหน่ง');
+  await loadAll();
+}
+
+/* ---------------------- โหลดข้อมูล ---------------------- */
+async function loadAll() {
+  const [p, e] = await Promise.all([
+    sb.from('vw_permit_approval').select('*')
+      .order('start_time', { ascending: true }).limit(300),
+    sb.from('tb_permit_ext_fields').select('ext_code, field_key, label_th, unit, field_type')
+  ]);
+
+  if (p.error) { reportError('โหลดใบอนุญาตไม่สำเร็จ', p.error, 'select vw_permit_approval'); return; }
+  PERMITS = p.data || [];
+  EXT_DEF = e.error ? [] : (e.data || []);
+
+  const projects = [...new Map(PERMITS.filter(x => x.project_id)
+    .map(x => [x.project_id, x.project_name || x.project_id])).entries()];
+  document.getElementById('f-project').innerHTML =
+    '<option value="">ทุกโครงการ</option>' +
+    projects.map(([id,n]) => `<option value="${esc(id)}">${esc(n)}</option>`).join('');
+
+  renderKpi();
+  renderList();
+}
+
+function renderKpi() {
+  const c = s => PERMITS.filter(x => x.status === s).length;
+  const today = new Date().toISOString().slice(0,10);
+
+  document.getElementById('k-l1').textContent = c('Pending');
+  document.getElementById('k-l2').textContent = c('Pending_L2');
+  document.getElementById('k-cancel').textContent = c('Cancel_Pending');
+  document.getElementById('k-ok').textContent =
+    PERMITS.filter(x => x.status === 'Approved' &&
+      (x.approved_l2_at || x.approved_l1_at || '').slice(0,10) === today).length;
+
+  /* ใบที่ใกล้ถึงเวลาเริ่มงานแต่ยังไม่อนุมัติ ต้องเด่นที่สุด
+     เพราะถ้าอนุมัติไม่ทัน คนงานจะรอที่หน้างานโดยทำอะไรไม่ได้
+     หรือแย่กว่านั้นคือเข้าไปทำงานโดยไม่มีใบ */
+  const urgent = PERMITS.filter(x =>
+    ['Pending','Pending_L2'].includes(x.status) &&
+    x.hours_until_start != null && x.hours_until_start < 4);
+
+  const box = document.getElementById('urgent');
+  if (urgent.length) {
+    document.getElementById('urgent-list').textContent = urgent.map(x =>
+      x.ptw_id + ' · ' + (x.vendor_name || '') + ' · ' +
+      (x.hours_until_start < 0
+        ? 'เลยเวลาเริ่มงานแล้ว'
+        : 'เริ่มงานในอีก ' + Math.round(x.hours_until_start * 60) + ' นาที')).join('  ·  ');
+    box.classList.remove('hidden');
+  } else { box.classList.add('hidden'); }
+}
+
+/* ---------------------- รายการ ---------------------- */
+function showTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  renderList();
+}
+
+function renderList() {
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const pj = document.getElementById('f-project').value;
+
+  let list = PERMITS;
+  if (currentTab !== 'All') list = list.filter(x => x.status === currentTab);
+  if (pj) list = list.filter(x => x.project_id === pj);
+  if (q) list = list.filter(x =>
+    [x.ptw_id, x.vendor_name, x.task_name, x.ptw_type]
+      .some(v => String(v||'').toLowerCase().includes(q)));
+
+  const empty = document.getElementById('empty');
+  empty.classList.toggle('hidden', list.length > 0);
+  empty.textContent = PERMITS.length ? 'ไม่พบรายการในหมวดนี้' : 'ยังไม่มีใบอนุญาตในระบบ';
+
+  document.getElementById('list').innerHTML = list.map(x => {
+    const tone = RISK_TONE[x.risk_area_class] || RISK_TONE['เขตควบคุม'];
+    const urgent = ['Pending','Pending_L2'].includes(x.status) &&
+                   x.hours_until_start != null && x.hours_until_start < 4;
+
+    return `
+      <button onclick="openDetail('${esc(x.ptw_id)}')"
+        class="flex w-full items-center gap-3 rounded-lg border bg-card p-3 text-left transition hover:bg-accent/30
+               ${urgent ? 'border-destructive/50 ring-1 ring-destructive/20' : 'border-border'}">
+        <div class="min-w-0 flex-1">
+          <p class="flex flex-wrap items-center gap-1.5 text-sm font-semibold text-foreground">
+            ${esc(x.ptw_id)}
+            <span class="rounded px-1.5 py-0.5 text-[10px] font-medium ${tone[1]}">${esc(x.risk_area_class || '')}</span>
+            ${x.approval_level >= 2 ? '<span class="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">2 ชั้น</span>' : ''}
+            ${urgent ? '<span class="rounded bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white">ด่วน</span>' : ''}
+          </p>
+          <p class="truncate text-[11px] text-muted-foreground">
+            ${esc(x.vendor_name || '')} · ${esc(x.task_name || '')} · ${esc(x.ptw_type || '')}</p>
+          <p class="text-[11px] text-muted-foreground">
+            เริ่ม ${thaiTime(x.start_time)} · ${x.worker_count || 0} คน</p>
+        </div>
+        <span class="shrink-0 text-xs font-semibold text-muted-foreground">${esc(STATUS_TH[x.status] || x.status)}</span>
+      </button>`;
+  }).join('');
+}
+
+/* ---------------------- รายละเอียด ---------------------- */
+function openDetail(id) {
+  current = PERMITS.find(x => x.ptw_id === id);
+  if (!current) return;
+  const x = current;
+
+  document.getElementById('d-ptw').textContent = x.ptw_id + ' · ' + (STATUS_TH[x.status] || x.status);
+  document.getElementById('d-sub').textContent =
+    (x.vendor_name || '') + ' · ' + (x.project_name || '');
+
+  const tone = RISK_TONE[x.risk_area_class] || RISK_TONE['เขตควบคุม'];
+  const risk = document.getElementById('d-risk');
+  risk.className = 'rounded-lg border-2 p-3 text-[12px] leading-relaxed ' + tone[0];
+  risk.innerHTML =
+    '<p class="font-bold ' + tone[1] + '">' + esc(x.ptw_type || '') + '</p>' +
+    '<p>เขตพื้นที่: <b>' + esc(x.risk_area_class || '—') + '</b>' +
+    (x.work_system ? ' · ระบบงาน: ' + esc(x.work_system) : '') + '</p>' +
+    (x.approval_level >= 2
+      ? '<p class="mt-1 font-semibold">งานเสี่ยงสูง ต้องอนุมัติ 2 ชั้น — จป. แล้วต่อด้วยผู้จัดการโครงการ</p>' : '');
+
+  document.getElementById('d-task').textContent =
+    (x.wbs_code ? '[' + x.wbs_code + '] ' : '') + (x.task_name || '—');
+  document.getElementById('d-zone').textContent =
+    x.zone_code ? (x.zone_code + ' ' + x.zone_name) : '—';
+  document.getElementById('d-time').textContent =
+    thaiTime(x.start_time) + ' ถึง ' + thaiTime(x.end_time);
+  document.getElementById('d-crew').textContent = (x.worker_count || 0) + ' คน';
+  document.getElementById('d-desc').textContent = x.work_description || '—';
+
+  // อุปกรณ์ป้องกัน
+  const ppe = (x.specific_data && x.specific_data.ppe_required) || [];
+  document.getElementById('d-ppe').innerHTML = ppe.length
+    ? ppe.map(p => `<span class="rounded-full bg-secondary px-2.5 py-1 text-[11px] text-secondary-foreground">${esc(p)}</span>`).join('')
+    : '<span class="text-[11px] text-muted-foreground">ไม่ระบุ</span>';
+
+  renderExtension(x);
+
+  // เอกสาร JSA
+  const jsa = x.specific_data && x.specific_data.jsa_file_path;
+  document.getElementById('d-jsa-box').classList.toggle('hidden', !jsa);
+
+  renderHistory(x);
+  syncButtons(x);
+
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+/** ข้อมูลเฉพาะงานเสี่ยงสูง แสดงพร้อมเน้นค่าที่ผิดเกณฑ์ */
+function renderExtension(x) {
+  const box = document.getElementById('d-ext');
+  const data = x.extension_data;
+
+  if (!data || !Object.keys(data).length) { box.classList.add('hidden'); return; }
+
+  box.innerHTML = Object.keys(data).map(code => {
+    const rows = Object.keys(data[code]).map(key => {
+      const def = EXT_DEF.find(f => f.ext_code === code && f.field_key === key);
+      let val = data[code][key];
+      if (val === true) val = 'ใช่';
+      else if (val === false) val = 'ไม่';
+      else if (val === '' || val == null) val = '—';
+
+      return `
+        <div class="flex items-start justify-between gap-3 border-b border-border/60 py-1.5 last:border-0">
+          <span class="text-[12px] text-muted-foreground">${esc(def ? def.label_th : key)}</span>
+          <span class="shrink-0 text-[12px] font-semibold text-foreground">${esc(val)}${
+            def && def.unit ? ' ' + esc(def.unit) : ''}</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="mb-3 rounded-lg border-2 border-destructive/30 bg-destructive/5 p-3">
+        <p class="mb-2 text-[12px] font-bold text-destructive">ข้อมูลเฉพาะงานเสี่ยงสูง</p>
+        ${rows}
+      </div>`;
+  }).join('');
+
+  box.classList.remove('hidden');
+}
+
+function renderHistory(x) {
+  const rows = [];
+  rows.push('ยื่นคำขอ · ' + thaiTime(x.created_at));
+  if (x.approved_l1_at) rows.push('จป. อนุมัติ · ' + (x.l1_name || '') + ' · ' + thaiTime(x.approved_l1_at));
+  if (x.approved_l2_at) rows.push('ผจก. อนุมัติ · ' + (x.l2_name || '') + ' · ' + thaiTime(x.approved_l2_at));
+  if (x.reject_reason)  rows.push('ตีกลับ · ' + x.reject_reason);
+  if (x.cancel_requested_by)
+    rows.push('เสนอยกเลิกโดย ' + (x.cancel_requester_name || x.cancel_requested_by) +
+              ' · เหตุผล: ' + (x.cancelled_reason || ''));
+
+  document.getElementById('d-history').innerHTML =
+    '<p class="mb-1.5 font-bold text-muted-foreground">ประวัติ</p>' +
+    rows.map(r => `<p class="text-muted-foreground">• ${esc(r)}</p>`).join('');
+}
+
+/**
+ * แสดงเฉพาะปุ่มที่กดได้จริง
+ * กฎจริงอยู่ที่ฐานข้อมูล ตรงนี้แค่ไม่ให้ผู้ใช้เสียเวลากดแล้วโดนปฏิเสธ
+ */
+function syncButtons(x) {
+  const isSafety = ['Safety_Officer','Safety_Manager','Admin','Super_Admin'].includes(ME.role);
+  const isPM = ['PM','Site_Manager','Admin','Super_Admin'].includes(ME.role);
+
+  const show = (id, cond) => document.getElementById(id).classList.toggle('hidden', !cond);
+
+  show('btn-approve', (x.status === 'Pending' && isSafety) ||
+                      (x.status === 'Pending_L2' && isPM && x.approved_l1_by !== ME.staff_id));
+  show('btn-reject',  ['Pending','Pending_L2'].includes(x.status) && (isSafety || isPM));
+  show('btn-cancel',  ['Approved','Pending_L2'].includes(x.status) && (isSafety || isPM));
+  show('btn-confirm-cancel',
+       x.status === 'Cancel_Pending' && x.cancel_requested_by !== ME.staff_id && (isSafety || isPM));
+
+  const btn = document.getElementById('btn-approve');
+  btn.textContent = x.status === 'Pending'
+    ? (x.approval_level >= 2 ? 'อนุมัติชั้นที่ 1 (จป.)' : 'อนุมัติ')
+    : 'อนุมัติชั้นที่ 2 (ผจก.)';
+}
+
+/* ---------------------- การกระทำ ---------------------- */
+async function doApprove() {
+  const x = current;
+  const next = (x.status === 'Pending' && x.approval_level >= 2) ? 'Pending_L2' : 'Approved';
+
+  const ok = await Swal.fire({
+    icon: 'question',
+    title: next === 'Pending_L2' ? 'อนุมัติชั้นที่ 1' : 'ยืนยันการอนุมัติ',
+    html: '<div style="text-align:left;font-size:.85rem;line-height:1.8">' +
+          '<b>' + esc(x.ptw_id) + '</b><br>' + esc(x.task_name || '') + '<br>' +
+          'ผู้รับเหมา ' + esc(x.vendor_name || '') + '<br>' +
+          'คนงาน ' + (x.worker_count || 0) + ' คน<br>' +
+          'เขตพื้นที่ <b>' + esc(x.risk_area_class || '') + '</b></div>' +
+          (next === 'Pending_L2'
+            ? '<p style="font-size:.8rem;color:#B45309;margin-top:.75rem">' +
+              'อนุมัติแล้วจะส่งต่อให้ผู้จัดการโครงการพิจารณาอีกชั้น</p>'
+            : '<p style="font-size:.8rem;color:#065F46;margin-top:.75rem">' +
+              'อนุมัติแล้วผู้รับเหมาจะเริ่มงานได้ทันที</p>'),
+    showCancelButton: true, confirmButtonText: 'อนุมัติ', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#3b5bdb'
+  });
+  if (!ok.isConfirmed) return;
+
+  await updateStatus({ status: next });
+}
+
+async function askReject() {
+  const ask = await Swal.fire({
+    icon: 'warning', title: 'ตีกลับให้แก้ไข',
+    html: '<p style="font-size:.85rem;color:#64748B;margin-bottom:.6rem">' +
+          'ระบุให้ชัดว่าต้องแก้อะไร ผู้รับเหมาจะเห็นข้อความนี้</p>',
+    input: 'textarea',
+    inputPlaceholder: 'เช่น ผลวัดก๊าซเก่าเกิน 2 ชั่วโมง กรุณาวัดใหม่ก่อนยื่น',
+    showCancelButton: true, confirmButtonText: 'ตีกลับ', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#dc2626',
+    inputValidator: v => (!v || v.trim().length < 10) ? 'ระบุเหตุผลอย่างน้อย 10 ตัวอักษร' : undefined
+  });
+  if (!ask.isConfirmed) return;
+
+  await updateStatus({ status: 'Rejected', reject_reason: ask.value.trim() });
+}
+
+async function askCancel() {
+  const ask = await Swal.fire({
+    icon: 'warning', title: 'เสนอยกเลิกใบอนุญาต',
+    html: '<p style="font-size:.85rem;color:#64748B;margin-bottom:.6rem">' +
+          'การยกเลิกต้องได้รับการยืนยันจากอีกฝ่ายก่อนจึงจะมีผล<br>' +
+          'ถ้าท่านเป็น จป. ต้องให้ผู้จัดการโครงการยืนยัน และกลับกัน</p>',
+    input: 'textarea',
+    inputPlaceholder: 'เช่น พบสภาพอากาศไม่ปลอดภัย ฝนตกหนักและมีฟ้าผ่า',
+    showCancelButton: true, confirmButtonText: 'เสนอยกเลิก', cancelButtonText: 'ปิด',
+    confirmButtonColor: '#dc2626',
+    inputValidator: v => (!v || v.trim().length < 10) ? 'ระบุเหตุผลอย่างน้อย 10 ตัวอักษร' : undefined
+  });
+  if (!ask.isConfirmed) return;
+
+  await updateStatus({ status: 'Cancel_Pending', cancelled_reason: ask.value.trim() });
+}
+
+async function doConfirmCancel() {
+  const x = current;
+  const ok = await Swal.fire({
+    icon: 'warning', title: 'ยืนยันการยกเลิก',
+    html: 'เสนอโดย <b>' + esc(x.cancel_requester_name || '') + '</b><br>' +
+          'เหตุผล: ' + esc(x.cancelled_reason || '') +
+          '<p style="font-size:.8rem;color:#B45309;margin-top:.75rem">' +
+          'ยืนยันแล้วใบนี้จะใช้งานไม่ได้ทันที และระบบจะแจ้งทีมโครงการทุกคน<br>' +
+          'หากมีคนอยู่ในพื้นที่แล้ว ต้องแจ้งให้ออกด้วยตนเองอีกทาง</p>',
+    showCancelButton: true, confirmButtonText: 'ยืนยันยกเลิก', cancelButtonText: 'ปิด',
+    confirmButtonColor: '#dc2626'
+  });
+  if (!ok.isConfirmed) return;
+
+  await updateStatus({ status: 'Cancelled' });
+}
+
+async function updateStatus(payload) {
+  try {
+    const r = await sb.from('tb_work_permits').update(payload).eq('ptw_id', current.ptw_id);
+    if (r.error) throw r.error;
+
+    closeModal();
+    await loadAll();
+    Swal.fire({ icon:'success', title:'บันทึกแล้ว', timer:1300, showConfirmButton:false });
+
+  } catch (err) {
+    // ข้อความจากกฎในฐานข้อมูลเป็นภาษาไทยอยู่แล้ว ส่งต่อได้เลย
+    if (err && err.code === 'P0001') Swal.fire('ดำเนินการไม่ได้', esc(err.message), 'warning');
+    else reportError('บันทึกไม่สำเร็จ', err, 'update tb_work_permits');
+  }
+}
+
+async function openJsa() {
+  const path = current.specific_data && current.specific_data.jsa_file_path;
+  if (!path) return;
+  try {
+    const { data, error } = await sb.storage.from('worker-documents').createSignedUrl(path, 600);
+    if (error) throw error;
+    window.open(data.signedUrl, '_blank');
+  } catch (e) { reportError('เปิดเอกสารไม่สำเร็จ', e, 'createSignedUrl'); }
+}
+
+/* ---------------------- ยูทิลิตี้ ---------------------- */
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+function reportError(title, err, step) {
+  console.error('[FTC] ' + title, { step, error: err });
+  const e = err || {};
+  const code = String(e.code || '');
+  let hint = '';
+  if (code === '42P01') hint = 'ยังไม่มีมุมมองนี้ — ต้องรัน permit_approval_setup.sql ก่อน';
+  else if (code === '42883') hint = 'ยังไม่มีฟังก์ชันนี้ — ต้องรัน SQL ให้ครบทุก PART';
+  else if (code === '42501' || e.status === 403) hint = 'ไม่มีสิทธิ์เข้าถึง — ตรวจ Policy ของตาราง';
+
+  Swal.fire({
+    icon:'error', title:title,
+    html: (hint ? `<p style="font-size:.85rem;margin-bottom:.6rem">${esc(hint)}</p>` : '') +
+      `<p style="font-size:.85rem;color:#334155">${esc(e.message || String(err))}</p>`,
+    confirmButtonColor:'#3b5bdb', width:520
+  });
+}
+
+window.addEventListener('unhandledrejection', ev => {
+  const r = ev.reason;
+  reportError('มีคำสั่งทำงานไม่สำเร็จ', (r && typeof r==='object') ? r : { message:String(r) }, 'promise ที่ไม่มีใครดัก');
+});
+
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) await enterApp();
+})();
+</script>
+</body>
+</html>
